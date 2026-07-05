@@ -25,7 +25,7 @@ COLORES = {
     10: ("10", "Gasto Energético — Clima de Chiclayo",       "🌡️", "#F9A825", "#FFF8E1"),
     11: ("Aporte 1", "TMB en Embarazo",                       "👶", "#BA68C8", "#F8ECFB"),
     12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5E35B1", "#EDE7F6"),
-    13: ("", "Sobre Nosotros",                                 "🎓", "#7A1F2B", "#FBEAEC"),
+    13: ("", "Sobre Nosotras",                                 "🎓", "#7A1F2B", "#FBEAEC"),
 }
 
 # =========================================================================================
@@ -982,25 +982,21 @@ with tabs[13]:
         </div>
         """, unsafe_allow_html=True)
 
-    caja_titulo("👩‍🎓 Integrantes y puntos a cargo", 13)
-    EQUIPO = [
-        ("Suarez Zulueta Sofia Alejandra",
-        ("Chavez Cobian Diana Carolina",
-        ("Farro Diaz Ariana Itamar",
-        ("Paz Gonzales Kathia Lizbeth",
-    ]
-    for nombre, puntos in EQUIPO:
-        st.markdown(f"""
-        <div class="equipo-card">
-            <div class="nombre">👤 {nombre}</div>
-            <div class="puntos">{puntos}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    caja_titulo("👩‍🎓 Integrantes", 13)
+    EQUIPO = ["Diana Chavez", "Kathia Paz", "Sofia Suarez", "Ariana Farro"]
+    cols_equipo = st.columns(len(EQUIPO))
+    for c, nombre in zip(cols_equipo, EQUIPO):
+        with c:
+            st.markdown(f"""
+            <div class="equipo-card" style="text-align:center;">
+                <div class="nombre">👤 {nombre}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    col_a, col_b, col_c = st.columns(3)
+    col_a, col_b = st.columns(2)
     col_a.metric("Grado y sección", '5° "C" Secundaria')
     col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
-         
+
     st.markdown('<div class="offline-pill">📴 Toda la calculadora (Hojas 0 a 12) funciona sin conexión a '
                 'internet. Solo esta pestaña y los botones "Quiero saber más" usan recursos externos '
                 'opcionales.</div>', unsafe_allow_html=True)
@@ -1011,4 +1007,5 @@ with tabs[13]:
               emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
 
 st.markdown("---")
-st.caption("Aplicación desarrollada en Streamlit — Proyecto Sana Alimentación para el proyecto escolar sobre salud pública en Lambayeque, Grupo N°04.")
+st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
+           "Alimentación) para el proyecto de tesis escolar sobre salud pública en Lambayeque, Grupo N°04.")
