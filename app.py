@@ -1,179 +1,197 @@
 import streamlit as st
 import pandas as pd
 
-# Configuración de página completa para que las tablas se vean anchas y elegantes
-st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide", page_icon="🍎")
+# ==========================================
+# 1. CONFIGURACIÓN DE PÁGINA Y ESTILOS CSS
+# ==========================================
+st.set_page_config(page_title="Sana Alimentación - 5°C", layout="wide", page_icon="🍎")
 
-# --- TÍTULOS Y CABECERA SOLICITADOS ---
-st.title("PROYECTO: SANA ALIMENTACIÓN")
-st.subheader("SANTA MARIA REINA 5\"C\" SECUNDARIA")
+st.markdown("""
+    <style>
+    .titulo-principal { font-size:36px; font-weight:800; color:#1E3A8A; text-align:center; text-transform: uppercase; }
+    .sub-colegio { font-size:24px; font-weight:700; color:#B91C1C; text-align:center; margin-bottom:10px; }
+    .frase { font-size:18px; font-style:italic; color:#4B5563; text-align:center; margin-bottom:30px; }
+    
+    /* Cajas de Colores para Teoría y Resultados */
+    .caja { padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 6px solid; font-size: 16px; }
+    .caja-hemo { background-color: #FDF2F2; border-color: #DC2626; color: #7F1D1D; } /* Rosa/Rojo */
+    .caja-hierro { background-color: #F0FDF4; border-color: #16A34A; color: #14532D; } /* Verde */
+    .caja-trig { background-color: #FFFDF2; border-color: #D97706; color: #78350F; } /* Amarillo */
+    .caja-glucosa { background-color: #F0F9FF; border-color: #0284C7; color: #0C4A6E; } /* Celeste */
+    .caja-colesterol { background-color: #FAF5FF; border-color: #9333EA; color: #581C87; } /* Morado */
+    
+    .alerta-roja { background-color: #FEE2E2; color: #991B1B; padding: 10px; border-radius: 5px; font-weight: bold; }
+    .alerta-verde { background-color: #DCFCE7; color: #166534; padding: 10px; border-radius: 5px; font-weight: bold; }
+    </style>
+""", unsafe_allow_html=True)
 
-# Frase destacada en itálica y con diseño limpio
-st.markdown("> *La mejor nutrición es aquella que te hace sentir bien por dentro y por fuera a largo plazo*")
-st.write("Esta aplicación web interactiva procesa los datos en tiempo real.")
+st.markdown('<div class="titulo-principal">PROYECTO: SANA ALIMENTACIÓN</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-colegio">SANTA MARIA REINA 5"C" SECUNDARIA</div>', unsafe_allow_html=True)
+st.markdown('<div class="frase">"La mejor nutrición es aquella que te hace sentir bien por dentro y por fuera a largo plazo"</div>', unsafe_allow_html=True)
 
-st.markdown("---")
+# ==========================================
+# 2. MOTOR LÓGICO Y VARIABLES GLOBALES
+# ==========================================
+st.sidebar.header("📥 PANEL DE DATOS CLÍNICOS")
 
-# --- PANEL LATERAL DE CONTROL (Ficha de Ingreso) ---
-st.sidebar.header("📝 Ficha de Ingreso Digital")
-peso = st.sidebar.number_input("Peso Actual (kg):", min_value=10.0, max_value=250.0, value=58.0, step=0.1)
-estatura = st.sidebar.number_input("Estatura (cm):", min_value=50, max_value=250, value=160, step=1)
-edad = st.sidebar.number_input("Edad (años):", min_value=1, max_value=120, value=16, step=1)
-genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=0)
-actividad = st.sidebar.selectbox("Nivel de Actividad Física:", ["Sedentario", "Ligero (Ejercicio 1-3 días/sem)", "Moderado (Ejercicio 3-5 días/sem)", "Intenso (Atleta)"], index=2)
-objetivo = st.sidebar.selectbox("Objetivo Nutricional:", ["Bajar de peso", "Mantener peso", "Subir de peso"], index=0)
+# Ficha de ingreso
+peso = st.sidebar.number_input("Peso (kg):", 10.0, 200.0, 60.0, step=0.1)
+estatura_cm = st.sidebar.number_input("Estatura (cm):", 50, 250, 160)
+edad = st.sidebar.number_input("Edad (años):", 1, 100, 16)
+genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"])
+actividad = st.sidebar.selectbox("Actividad Física:", ["Sedentario", "Ligero", "Moderado", "Intenso"], index=1)
+objetivo = st.sidebar.selectbox("Objetivo:", ["Bajar de peso", "Mantener peso", "Subir de peso"], index=1)
 
-# --- CÁLCULOS MATEMÁTICOS INTERNOS EN TIEMPO REAL ---
-estatura_m = estatura / 100.0
+# Variables especiales de la investigación
+embarazo = st.sidebar.selectbox("Estado de Embarazo (Solo mujeres):", ["No aplica", "1er Trimestre", "2do Trimestre", "3er Trimestre"])
+clima = st.sidebar.selectbox("Factor Climático:", ["Templado (Estándar)", "Cálido (Chiclayo/Costa Norte)"])
+
+# Cálculos Base
+estatura_m = estatura_cm / 100.0
 imc = peso / (estatura_m ** 2)
 
-if imc < 18.5:
-    estado_imc = "Bajo peso"
-    color_imc = "orange"
-elif 18.5 <= imc < 25:
-    estado_imc = "Normopeso / Saludable"
-    color_imc = "green"
-elif 25 <= imc < 30:
-    estado_imc = "Sobrepeso"
-    color_imc = "orange"
+# Fórmulas de Mifflin-St Jeor
+if genero == "Hombre":
+    tmb_base = (10 * peso) + (6.25 * estatura_cm) - (5 * edad) + 5
 else:
-    estado_imc = "Obesidad"
-    color_imc = "red"
+    tmb_base = (10 * peso) + (6.25 * estatura_cm) - (5 * edad) - 161
 
-# Tasa Metabólica Basal (Harris-Benedict)
+# Ajuste por Clima (Cálido reduce requerimiento)
+factor_clima = 0.95 if clima == "Cálido (Chiclayo/Costa Norte)" else 1.0
+tmb_clima = tmb_base * factor_clima
+
+# Factor de Actividad
+factores_act = {"Sedentario": 1.2, "Ligero": 1.375, "Moderado": 1.55, "Intenso": 1.725}
+get = tmb_clima * factores_act[actividad]
+
+# Ajuste por Embarazo
 if genero == "Mujer":
-    tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
-else:
-    tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
+    if embarazo == "2do Trimestre": get += 340
+    elif embarazo == "3er Trimestre": get += 452
 
-# Mapeo de actividad física
-dict_actividad = {
-    "Sedentario": 1.2,
-    "Ligero (Ejercicio 1-3 días/sem)": 1.375,
-    "Moderado (Ejercicio 3-5 días/sem)": 1.55,
-    "Intenso (Atleta)": 1.725
-}
-gasto_total = tmb * dict_actividad[actividad]
+# Ajuste por Objetivo
+if objetivo == "Bajar de peso": cal_final = get - 400
+elif objetivo == "Subir de peso": cal_final = get + 400
+else: cal_final = get
 
-# Déficit o Superávit energético según objetivo
-if objetivo == "Bajar de peso":
-    calorias_objetivo = gasto_total - 400
-    deficit_texto = "-400 kcal (Déficit Calórico)"
-elif objetivo == "Subir de peso":
-    calorias_objetivo = gasto_total + 400
-    deficit_texto = "+400 kcal (Superávit Calórico)"
-else:
-    calorias_objetivo = gasto_total
-    deficit_texto = "0 kcal (Mantenimiento)"
-
-# --- PESTAÑAS INTERACTIVAS (IGUAL A LAS HOJAS DEL EXCEL) ---
-st.subheader("📋 Navegación por Hojas de Evaluación del Sistema")
-tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📂 0.- DATOS", 
-    "🩺 1.- EXAMEN MEDICO", 
-    "⚖️ 2.- IMC", 
-    "⚡ 3.- TASA METABÓLICA", 
-    "📊 4.- REQUERIMIENTO MACROS", 
-    "🍽️ 5.- PLAN DE DIETA"
+# ==========================================
+# 3. NAVEGACIÓN DE PESTAÑAS (13 HOJAS)
+# ==========================================
+tabs = st.tabs([
+    "0. DATOS", "1. EXAMEN MÉDICO", "2. IMC", "3. TMB", "4. REQUERIMIENTO", 
+    "5. OBJETIVOS", "6. MACROS", "7. PORCIONES", "8. FATSECRET", 
+    "9. DIETA", "10. CLIMA", "11. APORTE 1", "12. APORTE 2"
 ])
 
-# ---- HOJA 0: DATOS ----
-with tab0:
-    st.markdown("### Hoja 0: Variables Generales de Control")
-    st.info("Esta sección recopila los datos antropométricos base ingresados en el sistema.")
-    df_hoja0 = pd.DataFrame({
-        "Variable": ["Peso Corporal", "Estatura Ingresada", "Edad Cronológica", "Género", "Factor de Actividad", "Meta Principal"],
-        "Valor": [f"{peso} kg", f"{estatura} cm", f"{edad} años", genero, actividad.split(" (")[0], objetivo]
+# --- HOJA 0: DATOS ---
+with tabs[0]:
+    st.markdown("### 📋 Resumen de Variables Antropométricas")
+    df_datos = pd.DataFrame({
+        "Variable": ["Peso", "Estatura", "Edad", "Género", "IMC Actual", "Objetivo", "Clima"],
+        "Valor": [f"{peso} kg", f"{estatura_cm} cm", f"{edad} años", genero, f"{imc:.1f}", objetivo, clima]
     })
-    st.table(df_hoja0)
+    st.table(df_datos)
 
-# ---- HOJA 1: EXAMEN MÉDICO ----
-with tab1:
-    st.markdown("### Hoja 1: Ficha Clínico - Nutricional Estructurada")
-    st.write("Historial y rangos clínicos de evaluación del paciente:")
+# --- HOJA 1: EXAMEN MÉDICO (Interactivo) ---
+with tabs[1]:
+    st.markdown("### 🩺 Evaluación Clínica Interactiva")
+    st.write("Selecciona los valores de tus análisis de laboratorio para recibir un diagnóstico nutricional:")
     
-    datos_examen = {
-        "Parámetro Clínico": ["Presión Arterial", "Frecuencia Cardíaca", "Glucosa en ayunas", "Hemoglobina", "Nivel de Hidratación"],
-        "Rango de Referencia": ["120/80 mmHg", "60 - 100 lpm", "70 - 100 mg/dL", "12.0 - 16.0 g/dL", "Óptimo"],
-        "Estado en App": ["Normal", "Normal", "Saludable", "Normal", "Adecuado ✅"]
-    }
-    st.table(pd.DataFrame(datos_examen))
-    st.success("📝 Conclusión Clínica: El paciente se encuentra apto para el inicio del régimen alimentario personalizado.")
+    col1, col2 = st.columns(2)
+    with col1:
+        val_hemo = st.number_input("Ingresa tu Hemoglobina (g/dL):", 5.0, 20.0, 12.0)
+        val_glucosa = st.number_input("Ingresa tu Glucosa (mg/dL):", 50, 300, 90)
+    with col2:
+        val_trig = st.number_input("Ingresa tus Triglicéridos (mg/dL):", 50, 600, 150)
+        val_col = st.number_input("Ingresa tu Colesterol (mg/dL):", 100, 500, 180)
 
-# ---- HOJA 2: IMC ----
-with tab2:
-    st.markdown("### Hoja 2: Diagnóstico del Índice de Masa Corporal")
+    # Lógica Clínica Dinámica
+    st.markdown("#### 🔬 Resultados del Análisis:")
+    
+    # Hemoglobina
+    if val_hemo < 12.0 and genero == "Mujer": diag_hemo, clase_hemo = "Anemia Detectada", "alerta-roja"
+    elif val_hemo < 13.0 and genero == "Hombre": diag_hemo, clase_hemo = "Anemia Detectada", "alerta-roja"
+    else: diag_hemo, clase_hemo = "Niveles Normales", "alerta-verde"
+    
+    st.markdown(f"""
+    <div class="caja caja-hemo">
+        <b>🩸 Hemoglobina ({val_hemo} g/dL) -> <span class='{clase_hemo}'>{diag_hemo}</span></b><br>
+        <i>Proteína rica en hierro que transporta el oxígeno. Fundamental evaluar en adolescentes y mujeres gestantes.</i>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Glucosa
+    if val_glucosa < 100: diag_glu, clase_glu = "Normal", "alerta-verde"
+    elif 100 <= val_glucosa < 126: diag_glu, clase_glu = "Prediabetes", "alerta-roja"
+    else: diag_glu, clase_glu = "Diabetes", "alerta-roja"
+
+    st.markdown(f"""
+    <div class="caja caja-glucosa">
+        <b>🍬 Glucosa ({val_glucosa} mg/dL) -> <span class='{clase_glu}'>{diag_glu}</span></b><br>
+        <i>Principal fuente de energía celular. Medida en ayunas.</i>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- HOJA 2: IMC ---
+with tabs[2]:
+    st.markdown("### ⚖️ Índice de Masa Corporal y Percentiles")
     
     col_imc1, col_imc2 = st.columns(2)
     with col_imc1:
-        st.metric(label="Tu Índice de Masa Corporal (IMC)", value=f"{imc:.2f} kg/m²")
+        st.metric("IMC Calculado", f"{imc:.2f} kg/m²")
     with col_imc2:
-        st.metric(label="Clasificación Oficial", value=estado_imc)
-        
-    st.markdown("#### Tabla de Criterios de Evaluación Nutricional (OMS):")
-    tabla_rangos_imc = pd.DataFrame({
-        "Clasificación OMS": ["Bajo Peso", "Normopeso (Saludable)", "Sobrepeso", "Obesidad Grado I", "Obesidad Grado II"],
-        "Rango de IMC": ["Menor a 18.5", "18.5 a 24.9", "25.0 a 29.9", "30.0 a 34.9", "Mayor a 35.0"],
-        "Estado Actual": ["⚠️" if estado_imc == "Bajo peso" else "", "🟢" if estado_imc == "Normopeso / Saludable" else "", "⚠️" if estado_imc == "Sobrepeso" else "", "", ""]
-    })
-    st.table(tabla_rangos_imc)
+        if imc < 18.5: st.error("Clasificación: Bajo Peso")
+        elif 18.5 <= imc <= 24.9: st.success("Clasificación: Normopeso (Saludable)")
+        elif 25 <= imc <= 29.9: st.warning("Clasificación: Sobrepeso")
+        else: st.error("Clasificación: Obesidad")
 
-# ---- HOJA 3: TASA METABÓLICA ----
-with tab3:
-    st.markdown("### Hoja 3: Balance Energético y Metabolismo Basal")
-    st.write("Cálculos energéticos mediante la ecuación científica internacional:")
-    
-    df_metabolismo = pd.DataFrame({
-        "Concepto Energético": ["Tasa Metabólica Basal (TMB)", "Efecto por Actividad Física", "Gasto Energético Total Diario (GETD)"],
-        "Fórmula / Factor Aplicado": ["Harris-Benedict", f"Factor x{dict_actividad[actividad]}", "TMB × Actividad"],
-        "Resultado Obtenido": [f"{tmb:.1f} kcal", actividad.split(" (")[0], f"{gasto_total:.1f} kcal"]
+    st.markdown("#### Tabla OMS Referencial (Adolescentes)")
+    df_oms = pd.DataFrame({
+        "Edad": ["15 años", "16 años", "17 años"],
+        "P5 (Bajo Peso)": ["< 16.5", "< 16.8", "< 17.2"],
+        "P50 (Normal)": ["19.0 - 23.5", "19.5 - 24.2", "20.0 - 24.9"],
+        "P85 (Sobrepeso)": ["> 23.6", "> 24.3", "> 25.0"]
     })
-    st.table(df_metabolismo)
+    st.table(df_oms)
 
-# ---- HOJA 4: REQUERIMIENTO MACROS ----
-with tab4:
-    st.markdown("### Hoja 4: Distribución Porcentual de Macronutrientes")
-    st.write(f"Distribución calórica estratégica para el objetivo: **{objetivo}** ({deficit_texto}).")
-    st.metric(label="🎯 Total de Calorías Necesarias para la Dieta", value=f"{int(calorias_objetivo)} kcal/día")
+# --- HOJA 3: TMB & HOJA 4: REQUERIMIENTO ---
+with tabs[3]:
+    st.markdown("### ⚡ Tasa Metabólica Basal (Mifflin-St Jeor)")
+    st.write("Cálculo de la energía mínima requerida en reposo absoluto.")
+    st.info(f"**TMB Base:** {tmb_base:.1f} kcal/día")
+    if clima == "Cálido (Chiclayo/Costa Norte)":
+        st.warning(f"🌡️ Ajuste por clima cálido aplicado (Factor 0.95): **{tmb_clima:.1f} kcal/día**")
+
+with tabs[4]:
+    st.markdown("### 🔋 Gasto Energético Total (GET)")
+    st.write(f"Multiplicado por tu factor de actividad física ({actividad}):")
+    st.success(f"**Requerimiento de Mantenimiento:** {get:.1f} kcal/día")
+
+# --- HOJA 5: OBJETIVOS & HOJA 6: MACROS ---
+with tabs[5]:
+    st.markdown("### 🎯 Calorías Objetivo")
+    st.write(f"Para tu meta de **{objetivo}**:")
+    st.metric(label="Calorías Finales Diarias", value=f"{int(cal_final)} kcal")
+
+with tabs[6]:
+    st.markdown("### 📊 Distribución de Macronutrientes")
+    st.write("Estructura clínica recomendada (25% Proteínas, 50% Carbohidratos, 25% Grasas):")
     
-    # Cálculos dinámicos de gramos basados en porcentajes nutricionales reales
-    p_prot, p_carb, p_gras = 0.25, 0.50, 0.25
-    cal_prot = calorias_objetivo * p_prot
-    cal_carb = calorias_objetivo * p_carb
-    cal_gras = calorias_objetivo * p_gras
-    
-    g_prot = cal_prot / 4
-    g_carb = cal_carb / 4
-    g_gras = cal_gras / 9
+    prot_g = (cal_final * 0.25) / 4
+    carb_g = (cal_final * 0.50) / 4
+    gras_g = (cal_final * 0.25) / 9
     
     df_macros = pd.DataFrame({
-        "Macronutriente": ["Proteínas 🥩", "Carbohidratos 🌾", "Grasas Saludables 🥑", "Total General"],
-        "Distribución (%)": [f"{p_prot*100:.0f}%", f"{p_carb*100:.0f}%", f"{p_gras*100:.0f}%", "100%"],
-        "Calorías (kcal)": [f"{cal_prot:.1f} kcal", f"{cal_carb:.1f} kcal", f"{cal_gras:.1f} kcal", f"{calorias_objetivo:.1f} kcal"],
-        "Cantidad en Gramos (g)": [f"{g_prot:.1f} g", f"{g_carb:.1f} g", f"{g_gras:.1f} g", "-"]
+        "Macronutriente": ["Proteínas (🥩)", "Carbohidratos (🌾)", "Grasas (🥑)"],
+        "Kcal aportadas": [f"{cal_final*0.25:.1f}", f"{cal_final*0.50:.1f}", f"{cal_final*0.25:.1f}"],
+        "Gramos diarios": [f"{prot_g:.1f} g", f"{carb_g:.1f} g", f"{gras_g:.1f} g"]
     })
     st.table(df_macros)
 
-# ---- HOJA 5: PLAN DE DIETA ----
-with tab5:
-    st.markdown("### Hoja 5: Estructura del Menú Diario Sugerido")
-    st.write(f"Ejemplo de distribución de alimentos para cubrir las **{int(calorias_objetivo)} kcal** establecidas:")
-    
-    df_dieta_completa = pd.DataFrame({
-        "Momento del Día": ["Desayuno (25%)", "Colación Mañana (10%)", "Almuerzo (40%)", "Colación Tarde (10%)", "Cena (15%)"],
-        "Menú de Alimentos Sugeridos": [
-            "Avena con leche descremada, plátano en rodajas y 2 claras de huevo.",
-            "Una manzana verde o una porción de almendras.",
-            "Pechuga de pollo a la plancha, arroz integral, ensalada fresca de palta y espinaca.",
-            "Yogurt griego natural sin azúcar con fresas.",
-            "Filete de pescado o atún al horno con vegetales al vapor (brócoli y zanahoria)."
-        ],
-        "Calorías Estimadas": [
-            f"{int(calorias_objetivo * 0.25)} kcal",
-            f"{int(calorias_objetivo * 0.10)} kcal",
-            f"{int(calorias_objetivo * 0.40)} kcal",
-            f"{int(calorias_objetivo * 0.10)} kcal",
-            f"{int(calorias_objetivo * 0.15)} kcal"
-        ]
-    })
-    st.table(df_dieta_completa)
+# --- HOJAS RESTANTES (Estructura preparada para la investigación) ---
+with tabs[7]: st.markdown("### 🍱 7. Cálculo de Porciones\n*Sección destinada a la conversión de gramos a medidas caseras (tazas, cucharadas).*")
+with tabs[8]: st.markdown("### 📱 8. Integración FatSecret\n*Búsqueda de valores nutricionales precisos según base de datos.*")
+with tabs[9]: st.markdown("### 🍽️ 9. Plan de Dieta Diario\n*Estructuración de 5 comidas: Desayuno, Media Mañana, Almuerzo, Media Tarde, Cena.*")
+with tabs[10]: st.markdown("### 🌴 10. Estudio del Clima\n*Justificación científica de la reducción de la TMB en entornos de alta temperatura.*")
+with tabs[11]: st.markdown("### 📑 11. Aporte de Investigación 1\n*Anexos teóricos del proyecto.*")
+with tabs[12]: st.markdown("### 📑 12. Aporte de Investigación 2\n*Conclusiones y bibliografía.*")
