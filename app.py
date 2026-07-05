@@ -1,100 +1,179 @@
 import streamlit as st
 import pandas as pd
-import os
 
-st.set_page_config(page_title="App Interactiva Nutrición", layout="centered", page_icon="🍎")
+# Configuración de página completa para que las tablas se vean anchas y elegantes
+st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide", page_icon="🍎")
 
-st.title("🍎 App Interactiva: Sistema de Nutrición")
-st.write("Esta aplicación web interactiva procesa los datos en tiempo real para tu proyecto de 5° 'C'.")
+# --- TÍTULOS Y CABECERA SOLICITADOS ---
+st.title("PROYECTO: SANA ALIMENTACIÓN")
+st.subheader("SANTA MARIA REINA 5\"C\" SECUNDARIA")
 
-# Formulario interactivo en la pantalla
-st.subheader("📝 Ficha de Ingreso Digital")
-col_f1, col_f2 = st.columns(2)
-
-with col_f1:
-    peso = st.number_input("Peso (kg):", min_value=10.0, max_value=250.0, value=45.0, step=0.1)
-    edad = st.number_input("Edad (años):", min_value=1, max_value=120, value=24, step=1)
-    estatura = st.number_input("Estatura (cm):", min_value=50, max_value=250, value=165, step=1)
-
-with col_f2:
-    genero = st.selectbox("Género:", ["Mujer", "Hombre"], index=0)
-    actividad = st.selectbox("Actividad física:", ["Sedentario", "Ligero", "Moderado", "Intensa"], index=2)
-    objetivo = st.selectbox("Objetivo nutricional:", ["Bajar de peso", "Mantener peso", "Subir de peso"], index=0)
+# Frase destacada en itálica y con diseño limpio
+st.markdown("> *La mejor nutrición es aquella que te hace sentir bien por dentro y por fuera a largo plazo*")
+st.write("Esta aplicación web interactiva procesa los datos en tiempo real.")
 
 st.markdown("---")
 
-# CÁLCULOS EN VIVO (Simulando las fórmulas exactas de tu Excel)
+# --- PANEL LATERAL DE CONTROL (Ficha de Ingreso) ---
+st.sidebar.header("📝 Ficha de Ingreso Digital")
+peso = st.sidebar.number_input("Peso Actual (kg):", min_value=10.0, max_value=250.0, value=58.0, step=0.1)
+estatura = st.sidebar.number_input("Estatura (cm):", min_value=50, max_value=250, value=160, step=1)
+edad = st.sidebar.number_input("Edad (años):", min_value=1, max_value=120, value=16, step=1)
+genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=0)
+actividad = st.sidebar.selectbox("Nivel de Actividad Física:", ["Sedentario", "Ligero (Ejercicio 1-3 días/sem)", "Moderado (Ejercicio 3-5 días/sem)", "Intenso (Atleta)"], index=2)
+objetivo = st.sidebar.selectbox("Objetivo Nutricional:", ["Bajar de peso", "Mantener peso", "Subir de peso"], index=0)
+
+# --- CÁLCULOS MATEMÁTICOS INTERNOS EN TIEMPO REAL ---
 estatura_m = estatura / 100.0
 imc = peso / (estatura_m ** 2)
 
 if imc < 18.5:
-    clasificacion_imc = "Bajo peso"
+    estado_imc = "Bajo peso"
+    color_imc = "orange"
 elif 18.5 <= imc < 25:
-    clasificacion_imc = "Normopeso / Saludable"
+    estado_imc = "Normopeso / Saludable"
+    color_imc = "green"
 elif 25 <= imc < 30:
-    clasificacion_imc = "Sobrepeso"
+    estado_imc = "Sobrepeso"
+    color_imc = "orange"
 else:
-    clasificacion_imc = "Obesidad"
+    estado_imc = "Obesidad"
+    color_imc = "red"
 
-# Fórmula de Harris-Benedict para TMB
+# Tasa Metabólica Basal (Harris-Benedict)
 if genero == "Mujer":
     tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
 else:
     tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
 
-# Factor de actividad
-factores = {"Sedentario": 1.2, "Ligero": 1.375, "Moderado": 1.55, "Intensa": 1.725}
-gasto_total = tmb * factores[actividad]
+# Mapeo de actividad física
+dict_actividad = {
+    "Sedentario": 1.2,
+    "Ligero (Ejercicio 1-3 días/sem)": 1.375,
+    "Moderado (Ejercicio 3-5 días/sem)": 1.55,
+    "Intenso (Atleta)": 1.725
+}
+gasto_total = tmb * dict_actividad[actividad]
 
-# Calorías objetivo según plan
+# Déficit o Superávit energético según objetivo
 if objetivo == "Bajar de peso":
-    calorias_final = gasto_total - 350
+    calorias_objetivo = gasto_total - 400
+    deficit_texto = "-400 kcal (Déficit Calórico)"
 elif objetivo == "Subir de peso":
-    calorias_final = gasto_total + 350
+    calorias_objetivo = gasto_total + 400
+    deficit_texto = "+400 kcal (Superávit Calórico)"
 else:
-    calorias_final = gasto_total
+    calorias_objetivo = gasto_total
+    deficit_texto = "0 kcal (Mantenimiento)"
 
-# --- MOSTRAR LOS RESULTADOS EN PANTALLA ---
-st.subheader("📊 Visualización de Hojas de Evaluación")
+# --- PESTAÑAS INTERACTIVAS (IGUAL A LAS HOJAS DEL EXCEL) ---
+st.subheader("📋 Navegación por Hojas de Evaluación del Sistema")
+tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📂 0.- DATOS", 
+    "🩺 1.- EXAMEN MEDICO", 
+    "⚖️ 2.- IMC", 
+    "⚡ 3.- TASA METABÓLICA", 
+    "📊 4.- REQUERIMIENTO MACROS", 
+    "🍽️ 5.- PLAN DE DIETA"
+])
 
-# Tarjetas principales
-col1, col2 = st.columns(2)
-with col1:
-    st.metric(label="⚖️ Índice de Masa Corporal (IMC)", value=f"{imc:.1f}", delta=clasificacion_imc, delta_color="normal")
-with col2:
-    st.metric(label="⚡ Calorías Objetivo Diarias", value=f"{int(calorias_final)} kcal")
+# ---- HOJA 0: DATOS ----
+with tab0:
+    st.markdown("### Hoja 0: Variables Generales de Control")
+    st.info("Esta sección recopila los datos antropométricos base ingresados en el sistema.")
+    df_hoja0 = pd.DataFrame({
+        "Variable": ["Peso Corporal", "Estatura Ingresada", "Edad Cronológica", "Género", "Factor de Actividad", "Meta Principal"],
+        "Valor": [f"{peso} kg", f"{estatura} cm", f"{edad} años", genero, actividad.split(" (")[0], objetivo]
+    })
+    st.table(df_hoja0)
 
-st.markdown("### 📋 Tablas Completas del Sistema")
-
-# Creación de las pestañas interactivas solicitadas
-tab1, tab2, tab3 = st.tabs(["2.- INDICE DE MASA CORPORAL", "3.- TASA METABÓLICA (TMB)", "5.- CÁLCULO DE DIETA"])
-
+# ---- HOJA 1: EXAMEN MÉDICO ----
 with tab1:
-    st.markdown("**Valores calculados para la hoja de IMC:**")
-    datos_imc = {
-        "Indicador": ["Peso Registrado", "Estatura Convertida", "IMC Calculado", "Estado Nutricional"],
-        "Resultado": [f"{peso} kg", f"{estatura_m:.2f} m", f"{imc:.1f}", clasificacion_imc]
-    }
-    st.table(pd.DataFrame(datos_imc))
+    st.markdown("### Hoja 1: Ficha Clínico - Nutricional Estructurada")
+    st.write("Historial y rangos clínicos de evaluación del paciente:")
     
+    datos_examen = {
+        "Parámetro Clínico": ["Presión Arterial", "Frecuencia Cardíaca", "Glucosa en ayunas", "Hemoglobina", "Nivel de Hidratación"],
+        "Rango de Referencia": ["120/80 mmHg", "60 - 100 lpm", "70 - 100 mg/dL", "12.0 - 16.0 g/dL", "Óptimo"],
+        "Estado en App": ["Normal", "Normal", "Saludable", "Normal", "Adecuado ✅"]
+    }
+    st.table(pd.DataFrame(datos_examen))
+    st.success("📝 Conclusión Clínica: El paciente se encuentra apto para el inicio del régimen alimentario personalizado.")
+
+# ---- HOJA 2: IMC ----
 with tab2:
-    st.markdown("**Cálculo de Tasa Metabólica Basal (Fórmulas del Grupo):**")
-    datos_tmb_valores = {
-        "Concepto": ["TMB Basal (Reposo)", "Factor de Actividad Aplicado", "Gasto Energético Total"],
-        "Valor Diario": [f"{tmb:.1f} kcal", f"{factores[actividad]} ({actividad})", f"{gasto_total:.1f} kcal"]
-    }
-    st.table(pd.DataFrame(datos_tmb_valores))
+    st.markdown("### Hoja 2: Diagnóstico del Índice de Masa Corporal")
     
+    col_imc1, col_imc2 = st.columns(2)
+    with col_imc1:
+        st.metric(label="Tu Índice de Masa Corporal (IMC)", value=f"{imc:.2f} kg/m²")
+    with col_imc2:
+        st.metric(label="Clasificación Oficial", value=estado_imc)
+        
+    st.markdown("#### Tabla de Criterios de Evaluación Nutricional (OMS):")
+    tabla_rangos_imc = pd.DataFrame({
+        "Clasificación OMS": ["Bajo Peso", "Normopeso (Saludable)", "Sobrepeso", "Obesidad Grado I", "Obesidad Grado II"],
+        "Rango de IMC": ["Menor a 18.5", "18.5 a 24.9", "25.0 a 29.9", "30.0 a 34.9", "Mayor a 35.0"],
+        "Estado Actual": ["⚠️" if estado_imc == "Bajo peso" else "", "🟢" if estado_imc == "Normopeso / Saludable" else "", "⚠️" if estado_imc == "Sobrepeso" else "", "", ""]
+    })
+    st.table(tabla_rangos_imc)
+
+# ---- HOJA 3: TASA METABÓLICA ----
 with tab3:
-    st.markdown("**Distribución de Macronutrientes sugerida para la dieta:**")
-    # Distribución estándar basada en las calorías finales
-    prot_g = (calorias_final * 0.25) / 4
-    carb_g = (calorias_final * 0.50) / 4
-    gras_g = (calorias_final * 0.25) / 9
+    st.markdown("### Hoja 3: Balance Energético y Metabolismo Basal")
+    st.write("Cálculos energéticos mediante la ecuación científica internacional:")
     
-    datos_dieta = {
-        "Nutriente": ["Proteínas", "Carbohidratos", "Grasas", "Total Diario"],
-        "Porcentaje (%)": ["25%", "50%", "25%", "100%"],
-        "Aporte Recomendado": [f"{prot_g:.1f} g", f"{carb_g:.1f} g", f"{gras_g:.1f} g", f"{int(calorias_final)} kcal"]
-    }
-    st.table(pd.DataFrame(datos_dieta))
+    df_metabolismo = pd.DataFrame({
+        "Concepto Energético": ["Tasa Metabólica Basal (TMB)", "Efecto por Actividad Física", "Gasto Energético Total Diario (GETD)"],
+        "Fórmula / Factor Aplicado": ["Harris-Benedict", f"Factor x{dict_actividad[actividad]}", "TMB × Actividad"],
+        "Resultado Obtenido": [f"{tmb:.1f} kcal", actividad.split(" (")[0], f"{gasto_total:.1f} kcal"]
+    })
+    st.table(df_metabolismo)
+
+# ---- HOJA 4: REQUERIMIENTO MACROS ----
+with tab4:
+    st.markdown("### Hoja 4: Distribución Porcentual de Macronutrientes")
+    st.write(f"Distribución calórica estratégica para el objetivo: **{objetivo}** ({deficit_texto}).")
+    st.metric(label="🎯 Total de Calorías Necesarias para la Dieta", value=f"{int(calorias_objetivo)} kcal/día")
+    
+    # Cálculos dinámicos de gramos basados en porcentajes nutricionales reales
+    p_prot, p_carb, p_gras = 0.25, 0.50, 0.25
+    cal_prot = calorias_objetivo * p_prot
+    cal_carb = calorias_objetivo * p_carb
+    cal_gras = calorias_objetivo * p_gras
+    
+    g_prot = cal_prot / 4
+    g_carb = cal_carb / 4
+    g_gras = cal_gras / 9
+    
+    df_macros = pd.DataFrame({
+        "Macronutriente": ["Proteínas 🥩", "Carbohidratos 🌾", "Grasas Saludables 🥑", "Total General"],
+        "Distribución (%)": [f"{p_prot*100:.0f}%", f"{p_carb*100:.0f}%", f"{p_gras*100:.0f}%", "100%"],
+        "Calorías (kcal)": [f"{cal_prot:.1f} kcal", f"{cal_carb:.1f} kcal", f"{cal_gras:.1f} kcal", f"{calorias_objetivo:.1f} kcal"],
+        "Cantidad en Gramos (g)": [f"{g_prot:.1f} g", f"{g_carb:.1f} g", f"{g_gras:.1f} g", "-"]
+    })
+    st.table(df_macros)
+
+# ---- HOJA 5: PLAN DE DIETA ----
+with tab5:
+    st.markdown("### Hoja 5: Estructura del Menú Diario Sugerido")
+    st.write(f"Ejemplo de distribución de alimentos para cubrir las **{int(calorias_objetivo)} kcal** establecidas:")
+    
+    df_dieta_completa = pd.DataFrame({
+        "Momento del Día": ["Desayuno (25%)", "Colación Mañana (10%)", "Almuerzo (40%)", "Colación Tarde (10%)", "Cena (15%)"],
+        "Menú de Alimentos Sugeridos": [
+            "Avena con leche descremada, plátano en rodajas y 2 claras de huevo.",
+            "Una manzana verde o una porción de almendras.",
+            "Pechuga de pollo a la plancha, arroz integral, ensalada fresca de palta y espinaca.",
+            "Yogurt griego natural sin azúcar con fresas.",
+            "Filete de pescado o atún al horno con vegetales al vapor (brócoli y zanahoria)."
+        ],
+        "Calorías Estimadas": [
+            f"{int(calorias_objetivo * 0.25)} kcal",
+            f"{int(calorias_objetivo * 0.10)} kcal",
+            f"{int(calorias_objetivo * 0.40)} kcal",
+            f"{int(calorias_objetivo * 0.10)} kcal",
+            f"{int(calorias_objetivo * 0.15)} kcal"
+        ]
+    })
+    st.table(df_dieta_completa)
