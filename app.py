@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 from urllib.parse import quote
+from pathlib import Path
 
 st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide", page_icon="🍎")
 
@@ -264,13 +265,20 @@ def clasif_hierro(valor, etapa, genero):
     return "Etapa no válida"
 
 def clasif_percentil(imc, edad, genero):
+    """Réplica EXACTA de la fórmula del Excel (Hoja 2, celda K17:L17):
+    =SI(K16<BUSCARV(D19;tabla;2;FALSO);"< 5";
+       SI(K16<BUSCARV(D19;tabla;4;FALSO);"50";
+          SI(K16<BUSCARV(D19;tabla;5;FALSO);"85";"95")))
+    La tabla tiene columnas [edad, P5, P50, P85, P95]; el BUSCARV usa las columnas
+    2, 4 y 5 (P5, P85 y P95) — la columna 3 (P50) NO se usa como punto de corte,
+    tal como está escrita la fórmula original en el Excel."""
     tabla = PERCENTIL_HOMBRE if genero == "Hombre" else PERCENTIL_MUJER
     if edad not in tabla:
         return None, "Edad fuera de tabla (2-20 años)"
     p5, p50, p85, p95 = tabla[edad]
     if imc < p5: percentil, cat = "< 5", "Bajo Peso"
-    elif imc < p50: percentil, cat = "50", "Peso Saludable"
-    elif imc < p85: percentil, cat = "85", "Sobrepeso"
+    elif imc < p85: percentil, cat = "50", "Peso Saludable"
+    elif imc < p95: percentil, cat = "85", "Sobrepeso"
     else: percentil, cat = "95", "Obesidad"
     return percentil, cat
 
@@ -293,6 +301,40 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
 st.caption("Una réplica interactiva del Excel oficial del proyecto, explicada paso a paso para que cualquier persona la entienda 😊")
+
+# --- NUEVO: acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
+# Busca el archivo junto al script con cualquiera de estos nombres habituales.
+_POSIBLES_NOMBRES_EXCEL = [
+    "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
+]
+_ruta_excel = None
+for _nombre in _POSIBLES_NOMBRES_EXCEL:
+    _candidata = Path(__file__).parent / _nombre
+    if _candidata.exists():
+        _ruta_excel = _candidata
+        break
+
+with st.container():
+    st.markdown("""
+    <div style="background:#E8F5E9;border-left:9px solid #43A047;border-radius:16px;
+                padding:14px 22px;margin-bottom:10px;box-shadow:0 3px 8px rgba(0,0,0,0.08);">
+    <b>📂 ¿Quieres ver el Excel original completo?</b><br>
+    Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas.
+    </div>
+    """, unsafe_allow_html=True)
+    if _ruta_excel is not None:
+        with open(_ruta_excel, "rb") as _f:
+            st.download_button(
+                "📥 Abrir / Descargar el Excel original",
+                data=_f.read(),
+                file_name="Proyecto_Sana_Alimentacion_Grupo_04.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+            )
+    else:
+        st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
+                "`Grupo_n_4_VER_2.xlsx`) en la misma carpeta que este script `app.py` antes de ejecutarlo.")
+
 try:
     st.image("https://source.unsplash.com/1200x260/?healthy,food,fruits", use_container_width=True)
 except Exception:
