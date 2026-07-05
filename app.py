@@ -25,7 +25,8 @@ COLORES = {
     10: ("10", "Gasto Energético — Clima de Chiclayo",       "🌡️", "#F9A825", "#FFF8E1"),
     11: ("Aporte 1", "TMB en Embarazo",                       "👶", "#BA68C8", "#F8ECFB"),
     12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5E35B1", "#EDE7F6"),
-    13: ("", "Sobre Nosotras",                                 "🎓", "#7A1F2B", "#FBEAEC"),
+    13: ("13", "Línea de Tiempo: Tu Progreso Estimado",       "📈", "#3949AB", "#E8EAF6"),
+    14: ("", "Sobre Nosotras",                                 "🎓", "#7A1F2B", "#FBEAEC"),
 }
 
 # =========================================================================================
@@ -358,6 +359,12 @@ def clasif_imc_adulto(imc):
     elif imc <= 39.9: return "Obesidad Clase 2"
     else: return "Obesidad Clase 3"
 
+def nombre_display(nombre):
+    """Devuelve el nombre ingresado, o un saludo genérico si aún no lo escribió."""
+    nombre = (nombre or "").strip()
+    return nombre if nombre else "amig@"
+
+
 def etapa_desde_edad(edad_valor):
     """Detecta automáticamente la etapa de vida a partir de la edad ingresada."""
     if edad_valor <= 11:
@@ -489,6 +496,13 @@ st.markdown("---")
 # SIDEBAR — HOJA 0.-DATOS (TMB)
 # =========================================================================================
 st.sidebar.header("📝 TMB — Introduce tus datos")
+
+nombre_usuario = st.sidebar.text_input("¿Cómo te llamas?", "")
+_nombre_saludo = nombre_display(nombre_usuario)
+if nombre_usuario.strip():
+    st.sidebar.success(f"¡Hola, {_nombre_saludo}! 🌟 Vamos a armar tu plan personalizado.")
+else:
+    st.sidebar.caption("✍️ Escribe tu nombre para que tu plan se sienta hecho a tu medida.")
 
 genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=1)
 
@@ -647,22 +661,22 @@ tabs = st.tabs([
     "0.-DATOS", "1.-EXAMEN MÉDICO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
     "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
     "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
-    "🎓 SOBRE NOSOTROS"
+    "13.-LÍNEA DE TIEMPO", "🎓 SOBRE NOSOTROS"
 ])
 
 # ---------------------------------------------------------------------------------------
 with tabs[0]:
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
     df0 = pd.DataFrame({
-        "Variable": ["Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
+        "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
                      "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
-        "Valor": [f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
+        "Valor": [_nombre_saludo, f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
                   objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
     })
     tabla_bonita(df0, 0)
-    caja_util("Aquí registras tus datos básicos una sola vez, y toda la app se ajusta automáticamente a ti: "
-              "desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se detecta sola apenas "
-              "escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
+    caja_util(f"¡Hola, {_nombre_saludo}! Aquí registras tus datos básicos una sola vez, y toda la app se ajusta "
+              "automáticamente a ti: desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se "
+              "detecta sola apenas escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
               emoji="📝", color="#E3F2FD", borde="#2196F3")
 
 # ---------------------------------------------------------------------------------------
@@ -815,9 +829,9 @@ with tabs[5]:
 
     st.caption("El porcentaje define la velocidad e impacto del cambio: 0% mantiene el peso, valores mayores "
                "aceleran el proceso, siempre evitando descompensaciones, fatiga crónica o alteración del crecimiento.")
-    caja_util("Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un número exacto de calorías al "
-              "día. Es el paso que conecta tu objetivo personal con la ciencia: sin este ajuste, no sabrías "
-              "cuánto comer realmente para lograr lo que quieres. 🎯",
+    caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
+              "número exacto de calorías al día. Es el paso que conecta tu objetivo personal con la ciencia: "
+              "sin este ajuste, no sabrías cuánto comer realmente para lograr lo que quieres. 🎯",
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
 
 # ---------------------------------------------------------------------------------------
@@ -999,7 +1013,47 @@ with tabs[12]:
 
 # ---------------------------------------------------------------------------------------
 with tabs[13]:
-    _, titulo13, emoji13, borde13, fondo13 = COLORES[13]
+    hoja_header(13, "Una proyección estimada de cómo cambiaría tu peso semana a semana si mantienes tu ajuste "
+                    "calórico actual. Es un cálculo matemático de referencia, no un diagnóstico médico.")
+
+    if objetivo == "Mantenerse":
+        st.info(f"Como tu objetivo es mantenerte, {_nombre_saludo}, tu peso debería mantenerse estable con el "
+                "paso de las semanas. ¡Vas por buen camino! 💚")
+        semanas = list(range(0, 13))
+        pesos_proy = [round(peso, 1)] * 13
+    else:
+        diferencia_diaria = rcd_final - rcd  # negativo = déficit, positivo = superávit
+        cambio_semanal = diferencia_diaria * 7 / 7700  # ~7700 kcal por kg de grasa corporal
+        semanas = list(range(0, 13))
+        pesos_proy = [round(peso + cambio_semanal * s, 1) for s in semanas]
+
+    df_tiempo = pd.DataFrame({"Semana": semanas, "Peso estimado (kg)": pesos_proy}).set_index("Semana")
+    st.line_chart(df_tiempo)
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Peso actual", f"{pesos_proy[0]} kg")
+    col2.metric("Estimado en 6 semanas", f"{pesos_proy[6]} kg")
+    col3.metric("Estimado en 12 semanas", f"{pesos_proy[12]} kg")
+
+    if objetivo != "Mantenerse":
+        cambio_total = pesos_proy[12] - peso
+        direccion = "bajarías" if cambio_total < 0 else "subirías"
+        st.success(f"📈 Según tus datos, en 12 semanas (~3 meses) {direccion} aproximadamente "
+                    f"{abs(cambio_total):.1f} kg, {_nombre_saludo}, si mantienes tu ajuste calórico de forma "
+                    "constante todos los días.")
+
+    st.caption("⚠️ Esta proyección usa una estimación matemática simple (~7700 kcal equivalen a 1 kg de grasa) "
+               "y asume un ajuste calórico perfectamente constante; el cuerpo real no cambia de forma tan "
+               "lineal. En menores de edad, cualquier cambio de peso debe estar acompañado por un profesional "
+               "de la salud.")
+
+    caja_util(f"Esta línea de tiempo te muestra, de forma visual, cómo avanzarías semana a semana si sigues tu "
+              f"plan calórico. Ver el progreso estimado ayuda a entender que los resultados reales toman "
+              f"semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
+              emoji="📈", color="#E8EAF6", borde="#3949AB")
+
+with tabs[14]:
+    _, titulo13, emoji13, borde13, fondo13 = COLORES[14]
     st.markdown(f"""
     <div style="background:{fondo13};border-left:10px solid {borde13};border-radius:16px;
                 padding:16px 26px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,0.10);">
