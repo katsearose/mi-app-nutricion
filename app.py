@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
 
-st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide", page_icon="🍎")
+st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
 
 # =========================================================================================
 # PALETA DE COLORES — UN COLOR DISTINTO POR CADA HOJA (inspirada en las pestañas del Excel)
@@ -66,7 +66,7 @@ a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
     font-weight: 600 !important;
 }
 
-/* ---------- NUEVO: identidad visual tipo "landing page" ---------- */
+/* ---------- identidad visual tipo "landing page" ---------- */
 .navbar {
     display: flex; align-items: center; justify-content: space-between;
     background: #ffffff; border-radius: 20px; padding: 10px 24px;
@@ -74,10 +74,10 @@ a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
     border: 1px solid #eef2ee;
 }
 .navbar-brand { display: flex; align-items: center; gap: 12px; }
-.navbar-brand img { height: 46px; border-radius: 8px; }
+.navbar-brand img { height: 78px; border-radius: 8px; }
 .navbar-brand-text { line-height: 1.05; }
-.navbar-brand-text .t1 { font-weight: 800; color: #2e7d32; font-size: 1.05rem; }
-.navbar-brand-text .t2 { font-size: 0.78rem; color: #6b7a6c; }
+.navbar-brand-text .t1 { font-weight: 800; color: #2e7d32; font-size: 1.15rem; }
+.navbar-brand-text .t2 { font-size: 0.82rem; color: #6b7a6c; }
 .navbar-pill {
     background: #E8F5E9; color: #2e7d32; font-weight: 700; font-size: 0.78rem;
     padding: 6px 14px; border-radius: 999px; border: 1px solid #c8e6c9;
@@ -112,13 +112,6 @@ a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
 .feature-card .fc-emoji { font-size: 1.8rem; }
 .feature-card .fc-title { font-weight: 800; color: #2e2e2e; margin: 6px 0 4px 0; font-size: 0.98rem; }
 .feature-card .fc-text { font-size: 0.82rem; color: #6b6b6b; line-height: 1.35; }
-
-.offline-pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: #FFF8E1; border: 1px solid #FFE082; color: #8a6d00;
-    padding: 8px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
-    margin-bottom: 14px;
-}
 
 .equipo-card {
     background: #ffffff; border-radius: 16px; padding: 14px 18px; margin-bottom: 10px;
@@ -266,6 +259,20 @@ DIETA = {
 }
 
 # =========================================================================================
+# LÍMITES BIOLÓGICOS MÁXIMOS DOCUMENTADOS (récords históricos) — usados como tope duro en los inputs
+# =========================================================================================
+PESO_MAX = {"Hombre": 635.0, "Mujer": 544.0}        # Jon Brower Minnoch / Carol Yager
+ESTATURA_MAX = {"Hombre": 272, "Mujer": 248}         # Robert Wadlow / Zeng Jinlian
+EDAD_MAX = {"Hombre": 116, "Mujer": 122}             # Jiroemon Kimura / Jeanne Calment
+
+# Límites razonables para el examen médico (para evitar valores clínicamente imposibles)
+HEMO_MAX = 25.0
+TRIGLI_MAX = 2000.0
+GLUCO_MAX = 700.0
+COLES_MAX = 500.0
+HIERRO_MAX = 500.0
+
+# =========================================================================================
 # FUNCIONES DE CLASIFICACIÓN CLÍNICA (réplica EXACTA de las fórmulas SI anidadas del Excel)
 # =========================================================================================
 
@@ -332,13 +339,7 @@ def clasif_hierro(valor, etapa, genero):
     return "Etapa no válida"
 
 def clasif_percentil(imc, edad, genero):
-    """Réplica EXACTA de la fórmula del Excel (Hoja 2, celda K17:L17):
-    =SI(K16<BUSCARV(D19;tabla;2;FALSO);"< 5";
-       SI(K16<BUSCARV(D19;tabla;4;FALSO);"50";
-          SI(K16<BUSCARV(D19;tabla;5;FALSO);"85";"95")))
-    La tabla tiene columnas [edad, P5, P50, P85, P95]; el BUSCARV usa las columnas
-    2, 4 y 5 (P5, P85 y P95) — la columna 3 (P50) NO se usa como punto de corte,
-    tal como está escrita la fórmula original en el Excel."""
+    """Réplica EXACTA de la fórmula del Excel (Hoja 2, celda K17:L17)."""
     tabla = PERCENTIL_HOMBRE if genero == "Hombre" else PERCENTIL_MUJER
     if edad not in tabla:
         return None, "Edad fuera de tabla (2-20 años)"
@@ -357,8 +358,19 @@ def clasif_imc_adulto(imc):
     elif imc <= 39.9: return "Obesidad Clase 2"
     else: return "Obesidad Clase 3"
 
+def etapa_desde_edad(edad_valor):
+    """Detecta automáticamente la etapa de vida a partir de la edad ingresada."""
+    if edad_valor <= 11:
+        return "Niñez"
+    elif edad_valor <= 17:
+        return "Adolescencia"
+    elif edad_valor <= 59:
+        return "Adultez"
+    else:
+        return "Vejez"
+
 # =========================================================================================
-# ENCABEZADO — estilo "landing page", con el logo real del colegio (funciona sin internet)
+# ENCABEZADO — estilo "landing page", con el logo real del colegio
 # =========================================================================================
 ASSETS_DIR = Path(__file__).parent / "assets"
 _LOGO_ANCHO = ASSETS_DIR / "logo_santa_maria_reina.png"     # banner con los 4 escudos
@@ -379,11 +391,10 @@ if _logo_b64:
         <div class="navbar-brand">
             <img src="data:image/png;base64,{_logo_b64}" />
             <div class="navbar-brand-text">
-                <div class="t1">🥦 Proyecto Sana Alimentación</div>
-                <div class="t2">C.E.P. "Santa María Reina" — Chiclayo</div>
+                <div class="t1">🥦 CIAM&SUNI</div>
+                <div class="t2">Tu Salud, Personalizada — C.E.P. "Santa María Reina", Chiclayo</div>
             </div>
         </div>
-        <div class="navbar-pill">📴 Funciona sin internet</div>
     </div>
     """, unsafe_allow_html=True)
 else:
@@ -391,11 +402,10 @@ else:
     <div class="navbar">
         <div class="navbar-brand">
             <div class="navbar-brand-text">
-                <div class="t1">🥦 Proyecto Sana Alimentación</div>
-                <div class="t2">C.E.P. "Santa María Reina" — Chiclayo</div>
+                <div class="t1">🥦 CIAM&SUNI</div>
+                <div class="t2">Tu Salud, Personalizada — C.E.P. "Santa María Reina", Chiclayo</div>
             </div>
         </div>
-        <div class="navbar-pill">📴 Funciona sin internet</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -403,7 +413,7 @@ else:
 st.markdown("""
 <div class="hero-card">
     <div class="hero-emoji-decor">🥗🍎</div>
-    <h1>Tu plan de alimentación,<br>calculado a tu medida</h1>
+    <h1>CIAM&SUNI: Tu Salud, Personalizada</h1>
     <p class="hero-sub">Una réplica interactiva del Excel oficial del proyecto: ingresa tus datos una sola
     vez y obtén tu IMC, tu requerimiento calórico, tus macronutrientes y un plan de dieta armado —
     todo explicado paso a paso para que cualquier persona lo entienda. 😊</p>
@@ -441,12 +451,7 @@ st.markdown("""
 
 st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
 
-st.markdown('<div class="offline-pill">📴 Esta calculadora funciona 100% sin conexión a Wi-Fi — solo los '
-            'botones de "Quiero saber más" y el buscador de FatSecret necesitan internet, ya que abren páginas '
-            'externas.</div>', unsafe_allow_html=True)
-
 # --- Acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
-# Busca el archivo junto al script con cualquiera de estos nombres habituales.
 _POSIBLES_NOMBRES_EXCEL = [
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
 ]
@@ -462,8 +467,7 @@ with st.container():
     <div style="background:#E8F5E9;border-left:9px solid #43A047;border-radius:16px;
                 padding:14px 22px;margin-bottom:10px;box-shadow:0 3px 8px rgba(0,0,0,0.08);">
     <b>📂 ¿Quieres ver el Excel original completo?</b><br>
-    Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas
-    (no necesita internet, es un archivo local).
+    Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas.
     </div>
     """, unsafe_allow_html=True)
     if _ruta_excel is not None:
@@ -482,13 +486,49 @@ with st.container():
 st.markdown("---")
 
 # =========================================================================================
-# SIDEBAR — HOJA 0.-DATOS
+# SIDEBAR — HOJA 0.-DATOS (TMB)
 # =========================================================================================
-st.sidebar.header("📝 ¡Introduce tus datos!")
-peso = st.sidebar.number_input("Peso (en kg):", min_value=1.0, value=75.0, step=0.1)
-edad = st.sidebar.number_input("Edad (en años):", min_value=1, value=9, step=1)
-estatura = st.sidebar.number_input("Estatura (en cm):", min_value=30, value=168, step=1)
+st.sidebar.header("📝 TMB — Introduce tus datos")
+
 genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=1)
+
+peso_max_actual = PESO_MAX[genero]
+peso = st.sidebar.number_input(
+    "Peso (en kg):", min_value=1.0, max_value=peso_max_actual, value=min(75.0, peso_max_actual), step=0.1,
+    help=f"Tope máximo: {peso_max_actual:.0f} kg."
+)
+st.sidebar.caption(
+    "⚠️ No se puede superar el peso corporal más alto documentado en la historia médica: "
+    f"{'Jon Brower Minnoch, ~635 kg (Hombres)' if genero=='Hombre' else 'Carol Yager, ~544 kg (Mujeres)'}. "
+    "El sistema no acepta valores mayores."
+)
+
+estatura_max_actual = ESTATURA_MAX[genero]
+estatura = st.sidebar.number_input(
+    "Estatura (en cm):", min_value=30, max_value=estatura_max_actual, value=min(168, estatura_max_actual), step=1,
+    help=f"Tope máximo: {estatura_max_actual} cm."
+)
+st.sidebar.caption(
+    "⚠️ No se puede superar la estatura más alta documentada en la historia: "
+    f"{'Robert Wadlow, 2.72 m (Hombres)' if genero=='Hombre' else 'Zeng Jinlian, 2.48 m (Mujeres)'}. "
+    "El sistema no acepta valores mayores."
+)
+
+edad_max_actual = EDAD_MAX[genero]
+edad = st.sidebar.number_input(
+    "Edad (en años):", min_value=1, max_value=edad_max_actual, value=9, step=1,
+    help=f"Tope máximo: {edad_max_actual} años."
+)
+st.sidebar.caption(
+    "⚠️ No se puede superar la edad humana más longeva documentada: "
+    f"{'Jiroemon Kimura, 116 años (Hombres)' if genero=='Hombre' else 'Jeanne Calment, 122 años (Mujeres)'}. "
+    "El sistema no acepta valores mayores."
+)
+
+# --- Etapa detectada automáticamente al ingresar la edad (ya no se elige manualmente) ---
+etapa = etapa_desde_edad(edad)
+st.sidebar.success(f"🔎 Etapa detectada automáticamente: **{etapa}**")
+
 actividad = st.sidebar.selectbox("Actividad física:", ["Sedentaria", "Ligero", "Moderada", "Intensa"], index=1)
 objetivo = st.sidebar.selectbox("Objetivo:", ["Mantenerse", "Bajar de peso", "Subir de peso"], index=1)
 
@@ -505,8 +545,6 @@ else:
     ajuste_bajar = 0.0
     ajuste_subir = 0.0
 
-etapa = st.sidebar.selectbox("Etapa:", ["Niñez", "Adolescencia", "Adultez", "Vejez"], index=1)
-
 st.sidebar.markdown("---")
 st.sidebar.info("ℹ️ **¿Cómo saber mi actividad física?**\n\n"
                  "**Sedentaria:** solo actividades de la vida diaria (estudiar, dormir).\n\n"
@@ -514,7 +552,7 @@ st.sidebar.info("ℹ️ **¿Cómo saber mi actividad física?**\n\n"
                  "**Moderada:** ejercicio 3-5 veces por semana.\n\n"
                  "**Intensa:** ejercicio diario de alta intensidad o deportista de competencia.")
 
-# --- NUEVO: indicador de "¿qué significa el ajuste calórico y el plazo?" (mismo estilo que el de arriba) ---
+# --- indicador de "¿qué significa el ajuste calórico y el plazo?" ---
 if objetivo == "Mantenerse":
     st.sidebar.info("ℹ️ **¿Qué significa el ajuste calórico y el plazo?**\n\n"
                      "Como tu objetivo es **mantenerte**, no se aplica ningún ajuste (0%): "
@@ -534,11 +572,17 @@ else:
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Datos adicionales (Hoja 1 - Examen médico)")
-hemo = st.sidebar.number_input("Hemoglobina (g/dL):", min_value=0.0, value=0.0, step=0.1)
-trigli = st.sidebar.number_input("Triglicéridos (mg/dL):", min_value=0.0, value=0.0, step=1.0)
-gluco = st.sidebar.number_input("Glucosa (mg/dL):", min_value=0.0, value=0.0, step=1.0)
-coles = st.sidebar.number_input("Colesterol (mg/dL):", min_value=0.0, value=0.0, step=1.0)
-hierro = st.sidebar.number_input("Hierro (µg/dL):", min_value=0.0, value=0.0, step=1.0)
+hemo = st.sidebar.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
+                                help=f"Tope máximo: {HEMO_MAX:.0f} g/dL (valores mayores son clínicamente imposibles).")
+trigli = st.sidebar.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
+                                  help=f"Tope máximo: {TRIGLI_MAX:.0f} mg/dL.")
+gluco = st.sidebar.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
+                                 help=f"Tope máximo: {GLUCO_MAX:.0f} mg/dL.")
+coles = st.sidebar.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
+                                 help=f"Tope máximo: {COLES_MAX:.0f} mg/dL.")
+hierro = st.sidebar.number_input("Hierro (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
+                                  help=f"Tope máximo: {HIERRO_MAX:.0f} µg/dL.")
+st.sidebar.caption("⚠️ Estos topes evitan valores clínicamente imposibles; el sistema no acepta cifras mayores.")
 
 # =========================================================================================
 # CÁLCULOS CENTRALES (siguiendo el orden y las referencias EXACTAS de las hojas del Excel)
@@ -554,7 +598,7 @@ else:
 factor = FACTOR_ACTIVIDAD[actividad][genero]
 rcd = tmb * factor  # Hoja 4: RCD = TMB x Factor de actividad
 
-# Hoja 5: ajuste según objetivo (usa el % elegido en el sidebar, igual que T22/V22 del Excel)
+# Hoja 5: ajuste según objetivo
 if objetivo == "Bajar de peso":
     ajuste_aplicado = ajuste_bajar
     rcd_final = rcd * (1 - ajuste_aplicado)
@@ -575,7 +619,7 @@ elif ajuste_bajar == 0.20 or ajuste_subir == 0.30:
 else:
     plazo = "—"
 
-# Hoja 6: Macronutrientes (sobre las calorías recomendadas del objetivo, NO sobre el RCD base)
+# Hoja 6: Macronutrientes
 cal_prot = rcd_final * 0.20
 cal_carb = rcd_final * 0.50
 cal_gras = rcd_final * 0.30
@@ -592,7 +636,7 @@ porciones = {
     "Cena":       {"pct": 0.25, "kcal": rcd_final * 0.25},
 }
 
-# Hoja 10: Gasto energético ajustado al clima de Chiclayo (independiente, usa el RCD BASE, no el ajustado por objetivo)
+# Hoja 10: Gasto energético ajustado al clima de Chiclayo
 rcd_chiclayo = rcd * 0.95
 
 # =========================================================================================
@@ -611,13 +655,14 @@ with tabs[0]:
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
     df0 = pd.DataFrame({
         "Variable": ["Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
-                     "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa"],
+                     "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
         "Valor": [f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
                   objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
     })
     tabla_bonita(df0, 0)
     caja_util("Aquí registras tus datos básicos una sola vez, y toda la app se ajusta automáticamente a ti: "
-              "desde tus calorías diarias hasta tu plan de comidas. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
+              "desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se detecta sola apenas "
+              "escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
               emoji="📝", color="#E3F2FD", borde="#2196F3")
 
 # ---------------------------------------------------------------------------------------
@@ -755,7 +800,6 @@ with tabs[5]:
     }), 5)
     st.metric("Plazo estimado del cambio", plazo)
 
-    # --- NUEVO: indicador tipo caja explicando corto/mediano/largo plazo, en el color propio de esta hoja ---
     st.markdown(f"""
     <div style="background-color:#FCE4EC;padding:16px 20px;border-radius:14px;
                 border-left:7px solid #D81B60;margin-top:10px;margin-bottom:6px;">
@@ -912,9 +956,9 @@ with tabs[11]:
     with c1:
         edad_emb = st.number_input("Edad:", min_value=10, max_value=60, value=27, step=1, key="edad_emb")
     with c2:
-        peso_emb = st.number_input("Peso (kg):", min_value=30.0, value=68.0, step=0.1, key="peso_emb")
+        peso_emb = st.number_input("Peso (kg):", min_value=30.0, max_value=PESO_MAX["Mujer"], value=68.0, step=0.1, key="peso_emb")
     with c3:
-        altura_emb = st.number_input("Altura (cm):", min_value=100, value=162, step=1, key="altura_emb")
+        altura_emb = st.number_input("Altura (cm):", min_value=100, max_value=ESTATURA_MAX["Mujer"], value=162, step=1, key="altura_emb")
     trimestre = st.selectbox("Selecciona tu trimestre:", ["Primer trimestre", "Segundo trimestre", "Tercer trimestre"])
     ajuste_trim = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 452}[trimestre]
 
@@ -966,7 +1010,7 @@ with tabs[13]:
     </div>
     """, unsafe_allow_html=True)
 
-    col_escudo, col_texto = st.columns([1, 3])
+    col_escudo, col_texto = st.columns([1, 2])
     with col_escudo:
         if _ESCUDO.exists():
             st.image(str(_ESCUDO), use_container_width=True)
@@ -996,10 +1040,6 @@ with tabs[13]:
     col_a, col_b = st.columns(2)
     col_a.metric("Grado y sección", '5° "C" Secundaria')
     col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
-
-    st.markdown('<div class="offline-pill">📴 Toda la calculadora (Hojas 0 a 12) funciona sin conexión a '
-                'internet. Solo esta pestaña y los botones "Quiero saber más" usan recursos externos '
-                'opcionales.</div>', unsafe_allow_html=True)
 
     caja_util("Este proyecto fue construido en equipo: cada integrante desarrolló y explicó una parte "
               "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
