@@ -451,10 +451,12 @@ def clasif_imc_adulto(imc):
     elif imc <= 39.9: return "Obesidad Clase 2"
     else: return "Obesidad Clase 3"
 
-def nombre_display(nombre):
-    """Devuelve el nombre ingresado, o un saludo genérico si aún no lo escribió."""
+def nombre_display(nombre, genero="Mujer"):
+    """Devuelve el nombre ingresado, o un saludo genérico según el género si aún no lo escribió."""
     nombre = (nombre or "").strip()
-    return nombre if nombre else "amig@"
+    if nombre:
+        return nombre
+    return "invitada" if genero == "Mujer" else "invitado"
 
 
 def etapa_desde_edad(edad_valor):
@@ -585,18 +587,18 @@ with st.container():
 st.markdown("---")
 
 # =========================================================================================
-# SIDEBAR — HOJA 0.-DATOS (TMB)
+# SIDEBAR — HOJA 0.-DATOS
 # =========================================================================================
-st.sidebar.header("📝 TMB — Introduce tus datos")
-
-nombre_usuario = st.sidebar.text_input("¿Cómo te llamas?", "")
-_nombre_saludo = nombre_display(nombre_usuario)
-if nombre_usuario.strip():
-    st.sidebar.success(f"¡Hola, {_nombre_saludo}! 🌟 Vamos a armar tu plan personalizado.")
-else:
-    st.sidebar.caption("✍️ Escribe tu nombre para que tu plan se sienta hecho a tu medida.")
+st.sidebar.header("📝 ¡Introduce tus datos!")
 
 genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=1)
+
+nombre_usuario = st.sidebar.text_input("¿Cómo te llamas?", "")
+_nombre_saludo = nombre_display(nombre_usuario, genero)
+if nombre_usuario.strip():
+    st.sidebar.success(f"¡Paz y bien, {_nombre_saludo}! 🌟 Vamos a armar tu plan personalizado.")
+else:
+    st.sidebar.caption("✍️ Escribe tu nombre para que tu plan se sienta hecho a tu medida.")
 
 peso_max_actual = PESO_MAX[genero]
 peso = st.sidebar.number_input(
@@ -766,7 +768,7 @@ with tabs[0]:
                   objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
     })
     tabla_bonita(df0, 0)
-    caja_util(f"¡Hola, {_nombre_saludo}! Aquí registras tus datos básicos una sola vez, y toda la app se ajusta "
+    caja_util(f"¡Paz y bien, {_nombre_saludo}! Aquí registras tus datos básicos una sola vez, y toda la app se ajusta "
               "automáticamente a ti: desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se "
               "detecta sola apenas escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
               emoji="📝", color="#E3F2FD", borde="#2196F3")
