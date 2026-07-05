@@ -339,6 +339,98 @@ def clasif_hierro(valor, etapa, genero):
             return "Género no válido"
     return "Etapa no válida"
 
+# =========================================================================================
+# SEMÁFORO CLÍNICO — protocolo de triaje digital (verde / ámbar / rojo)
+# =========================================================================================
+CATEGORIA_SEMAFORO = {
+    # Hemoglobina
+    "Normal": "verde", "Anemia leve": "ambar", "Anemia moderada": "rojo", "Anemia grave": "rojo",
+    # Triglicéridos
+    "Límite alto": "ambar", "Alto": "rojo", "Muy alto": "rojo",
+    # Glucosa
+    "Hipoglucemia": "ambar", "Prediabetes": "ambar", "Diabetes": "rojo",
+    # Colesterol
+    "Deseable": "verde",
+    # Hierro
+    "Bajo": "ambar",
+    # Estados neutros / sin dato
+    "Introducir datos": "gris", "Valor Imposible": "gris", "Revisa Datos": "gris",
+    "Género no válido": "gris", "Etapa no válida": "gris", "Edad fuera de tabla (2-20 años)": "gris",
+}
+
+SEMAFORO_ESTILO = {
+    "verde": {"hex": "#43A047", "fondo": "#E8F5E9", "emoji": "🟢", "etiqueta": "Normal"},
+    "ambar": {"hex": "#FB8C00", "fondo": "#FFF3E0", "emoji": "🟡", "etiqueta": "Alerta"},
+    "rojo":  {"hex": "#E53935", "fondo": "#FFEBEE", "emoji": "🔴", "etiqueta": "Crítico"},
+    "gris":  {"hex": "#9E9E9E", "fondo": "#F5F5F5", "emoji": "⚪", "etiqueta": "Sin dato"},
+}
+
+MENSAJES_TRIAJE = {
+    "Hemoglobina": {
+        "verde": "¡Excelente balance! Tus niveles de hemoglobina están en equilibrio. Sigue priorizando hierro y proteínas de calidad.",
+        "ambar": "Estás en una zona de atención. Prioriza alimentos ricos en hierro (carnes rojas, legumbres, espinaca) junto con vitamina C para mejorar su absorción.",
+        "rojo": "Tus valores sugieren un riesgo de anemia. Te recomendamos consultar a un especialista y priorizar hierro y proteínas en tu dieta.",
+        "gris": "Ingresa tu valor de hemoglobina para obtener una recomendación personalizada.",
+    },
+    "Triglicéridos": {
+        "verde": "¡Muy bien! Tus triglicéridos están dentro del rango deseable. Mantén tu consumo de grasas saludables y actividad física.",
+        "ambar": "Estás en una zona límite. Considera reducir azúcares y carbohidratos simples, y aumentar la fibra en tu dieta.",
+        "rojo": "Tus valores están elevados. Te recomendamos consultar a un especialista y reducir grasas saturadas, azúcares y alcohol.",
+        "gris": "Ingresa tu valor de triglicéridos para obtener una recomendación personalizada.",
+    },
+    "Glucosa": {
+        "verde": "¡Excelente! Tu glucosa está en un rango saludable. Sigue manteniendo horarios de comida regulares.",
+        "ambar": "Estás en una zona de atención. Reduce azúcares simples y controla el tamaño de tus porciones de carbohidratos.",
+        "rojo": "Tus valores sugieren riesgo metabólico. Te recomendamos consultar a un especialista cuanto antes.",
+        "gris": "Ingresa tu valor de glucosa para obtener una recomendación personalizada.",
+    },
+    "Colesterol": {
+        "verde": "¡Muy bien! Tu colesterol está en un nivel deseable. Continúa priorizando grasas saludables como el aceite de oliva y el aguacate.",
+        "ambar": "Estás en una zona límite. Considera reducir frituras y grasas saturadas, y aumentar el consumo de fibra.",
+        "rojo": "Tus valores están elevados. Te recomendamos consultar a un especialista y priorizar una dieta baja en grasas saturadas.",
+        "gris": "Ingresa tu valor de colesterol para obtener una recomendación personalizada.",
+    },
+    "Hierro": {
+        "verde": "¡Excelente! Tus reservas de hierro están equilibradas. Sigue priorizando nutrientes naturales.",
+        "ambar": "Estás en una zona de atención. Aumenta el consumo de alimentos ricos en hierro (carnes, legumbres, vegetales verdes).",
+        "rojo": "Tus valores están fuera de rango. Te recomendamos consultar a un especialista para evaluar tu estado nutricional.",
+        "gris": "Ingresa tu valor de hierro para obtener una recomendación personalizada.",
+    },
+}
+
+
+def evaluar_estado_clinico(parametro, categoria):
+    """Función de triaje digital: toma la categoría clínica ya calculada (ej. 'Anemia leve') y
+    retorna el color de semáforo, su estilo visual y un mensaje de recomendación personalizado."""
+    color = CATEGORIA_SEMAFORO.get(categoria, "gris")
+    estilo = SEMAFORO_ESTILO[color]
+    mensaje = MENSAJES_TRIAJE.get(parametro, {}).get(color, "Sin recomendación disponible.")
+    return {
+        "colorSemaforo": color,
+        "hex": estilo["hex"],
+        "fondo": estilo["fondo"],
+        "emoji": estilo["emoji"],
+        "etiqueta": estilo["etiqueta"],
+        "mensajePersonalizado": mensaje,
+    }
+
+
+def tarjeta_semaforo(parametro, valor_texto, categoria):
+    """Renderiza una tarjeta tipo 'semáforo clínico' con anillo de color, categoría y recomendación."""
+    r = evaluar_estado_clinico(parametro, categoria)
+    st.markdown(f"""
+    <div style="background:#ffffff;border-radius:20px;padding:16px 14px;text-align:center;
+                box-shadow:0 4px 14px rgba(0,0,0,0.08);border-top:6px solid {r['hex']};height:100%;">
+        <div style="width:64px;height:64px;border-radius:50%;background:{r['fondo']};
+                    border:3px solid {r['hex']};display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 10px auto;font-size:1.6rem;">{r['emoji']}</div>
+        <div style="font-weight:800;color:#2e2e2e;font-size:0.95rem;">{parametro}</div>
+        <div style="color:#777;font-size:0.8rem;margin-bottom:4px;">{valor_texto}</div>
+        <div style="font-weight:800;color:{r['hex']};font-size:0.88rem;margin-bottom:8px;">{categoria}</div>
+        <div style="font-size:0.76rem;color:#555;line-height:1.3;">{r['mensajePersonalizado']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 def clasif_percentil(imc, edad, genero):
     """Réplica EXACTA de la fórmula del Excel (Hoja 2, celda K17:L17)."""
     tabla = PERCENTIL_HOMBRE if genero == "Hombre" else PERCENTIL_MUJER
@@ -682,16 +774,27 @@ with tabs[0]:
 # ---------------------------------------------------------------------------------------
 with tabs[1]:
     hoja_header(1, "Categoriza tus datos según su nivel correspondiente, exactamente como las fórmulas SI anidadas del Excel.")
+
+    _cat_hemo = clasif_hemoglobina(hemo, etapa, genero)
+    _cat_trigli = clasif_trigliceridos(trigli)
+    _cat_gluco = clasif_glucosa(gluco)
+    _cat_coles = clasif_colesterol(coles)
+    _cat_hierro = clasif_hierro(hierro, etapa, genero)
+
+    st.markdown("#### 🚦 Semáforo Clínico — protocolo de triaje digital")
+    st.caption(f"No solo diagnostica: te sugiere una ruta de mejora inmediata, {_nombre_saludo}. 🟢 Normal · 🟡 Alerta · 🔴 Crítico")
+    sc1, sc2, sc3, sc4, sc5 = st.columns(5)
+    with sc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo)
+    with sc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli)
+    with sc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco)
+    with sc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles)
+    with sc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro)
+    st.write("")
+
     df_examen = pd.DataFrame({
         "Parámetro": ["Hemoglobina", "Triglicéridos", "Glucosa", "Colesterol", "Hierro"],
         "Valor": [f"{hemo} g/dL", f"{trigli} mg/dL", f"{gluco} mg/dL", f"{coles} mg/dL", f"{hierro} µg/dL"],
-        "Resultado obtenido": [
-            clasif_hemoglobina(hemo, etapa, genero),
-            clasif_trigliceridos(trigli),
-            clasif_glucosa(gluco),
-            clasif_colesterol(coles),
-            clasif_hierro(hierro, etapa, genero)
-        ]
+        "Resultado obtenido": [_cat_hemo, _cat_trigli, _cat_gluco, _cat_coles, _cat_hierro]
     })
     tabla_bonita(df_examen, 1)
 
@@ -1013,43 +1116,63 @@ with tabs[12]:
 
 # ---------------------------------------------------------------------------------------
 with tabs[13]:
-    hoja_header(13, "Una proyección estimada de cómo cambiaría tu peso semana a semana si mantienes tu ajuste "
-                    "calórico actual. Es un cálculo matemático de referencia, no un diagnóstico médico.")
+    hoja_header(13, "Proyección basada en el principio termodinámico de las 7,700 kcal por kilogramo de grasa "
+                    "corporal: la misma constante que usan los nutricionistas para estimar cambios de peso.")
 
-    if objetivo == "Mantenerse":
-        st.info(f"Como tu objetivo es mantenerte, {_nombre_saludo}, tu peso debería mantenerse estable con el "
-                "paso de las semanas. ¡Vas por buen camino! 💚")
-        semanas = list(range(0, 13))
-        pesos_proy = [round(peso, 1)] * 13
+    st.latex(r"PesoProyectado = \frac{Deficit Diario \times 60}{7700}")
+    st.caption("DeficitDiario = TDEE (Hoja 4, tu gasto de mantenimiento) − Calorías Consumidas (Hoja 5, tu meta calórica). "
+               "60 = número de días (2 meses). 7700 = kcal equivalentes a 1 kg de grasa corporal.")
+
+    def calcular_proyeccion(calorias_consumidas, tdee, dias=60):
+        """Función proyectiva: aplica la fórmula del déficit/superávit calórico y retorna
+        (deficit_diario, peso_proyectado_kg) para el número de días indicado."""
+        deficit_diario = tdee - calorias_consumidas
+        peso_proyectado = (deficit_diario * dias) / 7700
+        return deficit_diario, peso_proyectado
+
+    deficit_diario, peso_cambio_60 = calcular_proyeccion(rcd_final, rcd, dias=60)
+
+    # --- Tarjeta de resultado destacado (estilo "hero", coherente con la identidad visual de la app) ---
+    if objetivo == "Mantenerse" or abs(peso_cambio_60) < 0.05:
+        grad = "linear-gradient(135deg,#2e7d32 0%,#56ab2f 60%,#8bc34a 100%)"
+        mensaje_destacado = f"Como tu objetivo es mantenerte, {_nombre_saludo}, tu peso se mantendría estable durante los próximos 60 días. ¡Vas por buen camino! 💚"
+    elif peso_cambio_60 > 0:
+        grad = "linear-gradient(135deg,#1565C0 0%,#1E88E5 55%,#64B5F6 100%)"
+        mensaje_destacado = f"Si mantienes este hábito por 60 días, {_nombre_saludo}, tu proyección estimada de pérdida es de <b>{peso_cambio_60:.1f} kg</b>."
     else:
-        diferencia_diaria = rcd_final - rcd  # negativo = déficit, positivo = superávit
-        cambio_semanal = diferencia_diaria * 7 / 7700  # ~7700 kcal por kg de grasa corporal
-        semanas = list(range(0, 13))
-        pesos_proy = [round(peso + cambio_semanal * s, 1) for s in semanas]
+        grad = "linear-gradient(135deg,#EF6C00 0%,#FB8C00 55%,#FFB74D 100%)"
+        mensaje_destacado = f"⚠️ Cuidado, {_nombre_saludo}: si mantienes este hábito, podrías <b>aumentar aproximadamente {abs(peso_cambio_60):.1f} kg</b> en 2 meses."
 
-    df_tiempo = pd.DataFrame({"Semana": semanas, "Peso estimado (kg)": pesos_proy}).set_index("Semana")
+    st.markdown(f"""
+    <div style="background:{grad};border-radius:24px;padding:30px 34px;color:white;
+                box-shadow:0 10px 26px rgba(0,0,0,0.18);margin:10px 0 22px 0;">
+        <div style="font-size:0.85rem;letter-spacing:1px;opacity:0.85;text-transform:uppercase;font-weight:700;">
+            Proyección a 60 días (2 meses)</div>
+        <div style="font-size:2.2rem;font-weight:800;margin:6px 0 10px 0;">
+            {peso - peso_cambio_60:.1f} kg <span style="font-size:1rem;font-weight:500;opacity:0.85;">peso estimado</span></div>
+        <div style="font-size:1rem;line-height:1.5;">{mensaje_destacado}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- Curva de progreso día a día, para visualizar la tendencia ---
+    dias_eje = list(range(0, 61, 5))
+    pesos_dia = [round(peso - (deficit_diario * d) / 7700, 1) for d in dias_eje]
+    df_tiempo = pd.DataFrame({"Día": dias_eje, "Peso estimado (kg)": pesos_dia}).set_index("Día")
     st.line_chart(df_tiempo)
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Peso actual", f"{pesos_proy[0]} kg")
-    col2.metric("Estimado en 6 semanas", f"{pesos_proy[6]} kg")
-    col3.metric("Estimado en 12 semanas", f"{pesos_proy[12]} kg")
+    col1.metric("Peso actual", f"{peso:.1f} kg")
+    col2.metric("Estimado en 30 días", f"{pesos_dia[len(pesos_dia)//2]} kg")
+    col3.metric("Estimado en 60 días", f"{pesos_dia[-1]} kg")
 
-    if objetivo != "Mantenerse":
-        cambio_total = pesos_proy[12] - peso
-        direccion = "bajarías" if cambio_total < 0 else "subirías"
-        st.success(f"📈 Según tus datos, en 12 semanas (~3 meses) {direccion} aproximadamente "
-                    f"{abs(cambio_total):.1f} kg, {_nombre_saludo}, si mantienes tu ajuste calórico de forma "
-                    "constante todos los días.")
+    st.caption("⚠️ Esta proyección es un cálculo matemático de referencia (no un diagnóstico médico) y asume "
+               "que mantienes el mismo ajuste calórico todos los días. El cuerpo humano no cambia de forma "
+               "perfectamente lineal, y en menores de edad cualquier cambio de peso debe estar supervisado por "
+               "un profesional de la salud.")
 
-    st.caption("⚠️ Esta proyección usa una estimación matemática simple (~7700 kcal equivalen a 1 kg de grasa) "
-               "y asume un ajuste calórico perfectamente constante; el cuerpo real no cambia de forma tan "
-               "lineal. En menores de edad, cualquier cambio de peso debe estar acompañado por un profesional "
-               "de la salud.")
-
-    caja_util(f"Esta línea de tiempo te muestra, de forma visual, cómo avanzarías semana a semana si sigues tu "
-              f"plan calórico. Ver el progreso estimado ayuda a entender que los resultados reales toman "
-              f"semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
+    caja_util(f"Esta línea de tiempo te muestra, con la misma matemática que usan los nutricionistas, cómo "
+              f"avanzarías en 60 días si sigues tu plan calórico. Ver el progreso estimado ayuda a entender que "
+              f"los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
               emoji="📈", color="#E8EAF6", borde="#3949AB")
 
 with tabs[14]:
