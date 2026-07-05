@@ -1,129 +1,155 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide", page_icon="🍎")
+st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide")
 
-st.title("PROYECTO: SANA ALIMENTACIÓN")
-st.subheader("SANTA MARIA REINA 5\"C\" SECUNDARIA")
+st.title("🥦 Proyecto Sana Alimentación")
+st.markdown("¡Bienvenido al sistema de evaluación nutricional! Basado en el Excel oficial del Grupo N°4.")
 
-st.markdown("*La mejor nutrición es aquella que te hace sentir bien por dentro y por fuera a largo plazo*")
-st.write("Esta aplicación web interactiva procesa los datos en tiempo real")
-st.markdown("---")
-
-st.sidebar.header("📝 Ficha de Ingreso Digital")
-peso = st.sidebar.number_input("Peso Actual (kg):", min_value=10.0, max_value=250.0, value=58.0, step=0.1)
-estatura = st.sidebar.number_input("Estatura (cm):", min_value=50, max_value=250, value=160, step=1)
-edad = st.sidebar.number_input("Edad (años):", min_value=1, max_value=120, value=16, step=1)
-genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=0)
-actividad = st.sidebar.selectbox("Nivel de Actividad Física:", ["Sedentario", "Ligero", "Moderado", "Intenso"], index=2)
-objetivo = st.sidebar.selectbox("Objetivo Nutricional:", ["Bajar de peso", "Mantener peso", "Subir de peso"], index=0)
-
-estatura_m = estatura / 100.0
-imc = peso / (estatura_m ** 2)
-
-if imc < 18.5:
-    estado_imc = "Bajo peso"
-elif 18.5 <= imc < 25:
-    estado_imc = "Normopeso / Saludable"
-elif 25 <= imc < 30:
-    estado_imc = "Sobrepeso"
-else:
-    estado_imc = "Obesidad"
-
-if genero == "Mujer":
-    tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
-else:
-    tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
-
-dict_actividad = {
-    "Sedentario": 1.2,
-    "Ligero": 1.375,
-    "Moderado": 1.55,
-    "Intenso": 1.725
-}
-gasto_total = tmb * dict_actividad[actividad]
-
-if objetivo == "Bajar de peso":
-    calorias_objetivo = gasto_total - 400
-elif objetivo == "Subir de peso":
-    calorias_objetivo = gasto_total + 400
-else:
-    calorias_objetivo = gasto_total
-
-st.subheader("📋 Navegación por Hojas de Evaluación del Sistema")
-tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📂 0.- DATOS", 
-    "🩺 1.- EXAMEN MEDICO", 
-    "⚖️ 2.- IMC", 
-    "⚡ 3.- TASA METABÓLICA", 
-    "📊 4.- REQUERIMIENTO MACROS", 
-    "🍽️ 5.- PLAN DE DIETA"
+# Crear las "hojas" del Excel como pestañas de Streamlit
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab10 = st.tabs([
+    "0.-DATOS", "1.-EXAMEN MEDICO", "2.-IMC", "3.-TMB", 
+    "4.-RCD", "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "10.-CLIMA CHICLAYO"
 ])
 
+# --- HOJA 0: DATOS ---
 with tab0:
-    st.markdown("### Hoja 0: Variables Generales de Control")
-    df_hoja0 = pd.DataFrame({
-        "Variable": ["Peso Corporal", "Estatura Ingresada", "Edad Cronológica", "Género", "Factor de Actividad", "Meta Principal"],
-        "Valor": [f"{peso} kg", f"{estatura} cm", f"{edad} años", genero, actividad, objetivo]
-    })
-    st.table(df_hoja0)
-
-with tab1:
-    st.markdown("### Hoja 1: Ficha Clínico - Nutricional Estructurada")
-    datos_examen = {
-        "Parámetro Clínico": ["Hemoglobina", "Triglicéridos", "Glucosa", "Colesterol", "Hierro"],
-        "Rango de Referencia": ["12.0 - 16.0 g/dL", "Menor a 150 mg/dL", "70 - 100 mg/dL", "Menor a 200 mg/dL", "60 - 170 µg/dL"],
-        "Estado Ideal": ["Normal", "Normal", "Normal", "Normal", "Normal"]
-    }
-    st.table(pd.DataFrame(datos_examen))
-
-with tab2:
-    st.markdown("### Hoja 2: Diagnóstico del Índice de Masa Corporal")
-    col_imc1, col_imc2 = st.columns(2)
-    with col_imc1:
-        st.metric(label="Tu Índice de Masa Corporal (IMC)", value=f"{imc:.2f} kg/m²")
-    with col_imc2:
-        st.metric(label="Clasificación Oficial", value=estado_imc)
+    st.header("¡INTRODUCE TUS DATOS!")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        peso = st.number_input("Peso (en kg)", min_value=1.0, value=75.0, step=0.1)
+        edad = st.number_input("Edad (en años)", min_value=1, value=9, step=1)
+        estatura = st.number_input("Estatura (en cm)", min_value=50, value=168, step=1)
+        genero = st.selectbox("Género", ["Hombre", "Mujer"])
         
-    tabla_rangos_imc = pd.DataFrame({
-        "Clasificación OMS": ["Bajo Peso", "Normopeso (Saludable)", "Sobrepeso", "Obesidad"],
-        "Rango de IMC": ["Menor a 18.5", "18.5 a 24.9", "25.0 a 29.9", "Mayor a 30.0"],
-        "Tu Estado": ["⬅️" if estado_imc == "Bajo peso" else "", 
-                      "⬅️" if estado_imc == "Normopeso / Saludable" else "", 
-                      "⬅️" if estado_imc == "Sobrepeso" else "", 
-                      "⬅️" if estado_imc == "Obesidad" else ""]
-    })
-    st.table(tabla_rangos_imc)
+    with col2:
+        actividad = st.selectbox("Actividad Física", ["Sedentario", "Ligero", "Moderado", "Intensa"])
+        objetivo = st.selectbox("Objetivo", ["Bajar de peso", "Mantener peso", "Subir de peso"])
+        etapa = st.selectbox("Etapa", ["Adolescencia", "Adulto"])
+        
+    st.info("¿Cómo saber mi actividad física?\n- **Sedentario**: Solo actividades de la vida diaria.\n- **Ligero**: Ejercicio 1-3 veces/semana.\n- **Moderado**: Ejercicio 3-5 veces/semana.\n- **Intensa**: Ejercicio diario o deportista.")
 
+# --- HOJA 1: EXAMEN MEDICO ---
+with tab1:
+    st.header("EXAMEN MÉDICO DE SANGRE")
+    st.markdown("Datos opcionales para categorizar tu nivel de salud.")
+    hemo = st.number_input("Hemoglobina (g/dL)", value=0.0)
+    trigli = st.number_input("Triglicéridos (mg/dL)", value=0.0)
+    gluco = st.number_input("Glucosa (mg/dL)", value=0.0)
+    coles = st.number_input("Colesterol (mg/dL)", value=0.0)
+    hierro = st.number_input("Hierro (µg/dL)", value=0.0)
+
+# --- HOJA 2: IMC ---
+with tab2:
+    st.header("ÍNDICE DE MASA CORPORAL (IMC)")
+    altura_m = estatura / 100
+    imc = peso / (altura_m ** 2)
+    
+    st.metric("Resultado IMC", round(imc, 2))
+    st.latex(r"IMC = \frac{Peso (kg)}{Altura (m)^2}")
+    
+    if etapa == "Adolescencia":
+        st.warning(f"Como estás en la etapa de {etapa}, el IMC se evalúa mediante **Percentiles** según la edad y género. Te recomendamos revisar la tabla de la OMS para tu percentil exacto.")
+    else:
+        if imc < 18.5: categoria = "Bajo Peso"
+        elif imc < 25: categoria = "Peso Saludable"
+        elif imc < 30: categoria = "Sobrepeso"
+        elif imc < 35: categoria = "Obesidad de Clase 1"
+        elif imc < 40: categoria = "Obesidad de Clase 2"
+        else: categoria = "Obesidad de Clase 3"
+        st.success(f"Categoría para adultos: **{categoria}**")
+
+# --- HOJA 3: TMB ---
 with tab3:
-    st.markdown("### Hoja 3: Cálculo de Tasa Metabólica")
-    datos_tmb = pd.DataFrame({
-        "Concepto Energético": ["Tasa Metabólica Basal (Reposo)", "Factor de Actividad Multiplicador", "Gasto Energético Total Diario"],
-        "Cálculo (kcal)": [f"{tmb:.1f}", f"x {dict_actividad[actividad]}", f"{gasto_total:.1f}"]
-    })
-    st.table(datos_tmb)
+    st.header("TASA METABÓLICA BASAL (TMB)")
+    st.markdown("Fórmula de Mifflin-St Jeor.")
+    
+    if genero == "Hombre":
+        tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
+        st.latex(r"TMB = (10 \times Peso) + (6.25 \times Altura) - (5 \times Edad) + 5")
+    else:
+        tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
+        st.latex(r"TMB = (10 \times Peso) + (6.25 \times Altura) - (5 \times Edad) - 161")
+        
+    st.metric("Tu TMB es:", f"{round(tmb)} kcal/día")
 
+# --- HOJA 4: RCD ---
 with tab4:
-    st.markdown("### Hoja 4: Requerimiento de Macronutrientes")
-    st.metric(label="Calorías Meta Según Objetivo", value=f"{int(calorias_objetivo)} kcal")
+    st.header("REQUERIMIENTO CALÓRICO DIARIO (RCD)")
     
-    prot_g = (calorias_objetivo * 0.25) / 4
-    carb_g = (calorias_objetivo * 0.50) / 4
-    gras_g = (calorias_objetivo * 0.25) / 9
+    # Factores según Excel
+    factores = {
+        "Hombre": {"Sedentario": 1.2, "Ligero": 1.55, "Moderado": 1.8, "Intensa": 2.1},
+        "Mujer": {"Sedentario": 1.2, "Ligero": 1.56, "Moderado": 1.64, "Intensa": 1.82}
+    }
+    factor = factores[genero][actividad]
+    rcd = tmb * factor
     
-    datos_macros = pd.DataFrame({
-        "Macronutriente": ["Proteínas (25%)", "Carbohidratos (50%)", "Grasas (25%)"],
-        "Aporte en Gramos": [f"{prot_g:.1f} g", f"{carb_g:.1f} g", f"{gras_g:.1f} g"],
-        "Aporte en Kcal": [f"{calorias_objetivo * 0.25:.1f} kcal", f"{calorias_objetivo * 0.50:.1f} kcal", f"{calorias_objetivo * 0.25:.1f} kcal"]
-    })
-    st.table(datos_macros)
+    st.markdown(f"**Factor de actividad aplicado ({actividad}):** {factor}")
+    st.latex(r"RCD = TMB \times Factor\ de\ actividad")
+    st.metric("Resultado RCD:", f"{round(rcd)} kcal/día")
 
+# --- HOJA 5: OBJETIVO ---
 with tab5:
-    st.markdown("### Hoja 5: Plan de Dieta (Ejemplo de Distribución)")
-    datos_dieta = pd.DataFrame({
-        "Comida": ["Desayuno", "Almuerzo", "Cena"],
-        "Proteína": [f"{prot_g * 0.30:.1f} g", f"{prot_g * 0.40:.1f} g", f"{prot_g * 0.30:.1f} g"],
-        "Carbohidrato": [f"{carb_g * 0.30:.1f} g", f"{carb_g * 0.50:.1f} g", f"{carb_g * 0.20:.1f} g"],
-        "Grasas": [f"{gras_g * 0.33:.1f} g", f"{gras_g * 0.33:.1f} g", f"{gras_g * 0.34:.1f} g"]
-    })
-    st.table(datos_dieta)
+    st.header("CÁLCULO PARA SUBIR, MANTENER O BAJAR EL PESO")
+    
+    # Lógica de Excel: menores de edad no deben hacer ajuste drástico sin supervisión
+    if edad < 18:
+        ajuste = 0
+        rcd_final = rcd
+        st.info("A diferencia de los adultos, el cuerpo de los menores necesita energía constante para el desarrollo de órganos y huesos. El ajuste calórico debe ser controlado.")
+    else:
+        if objetivo == "Bajar de peso": ajuste = -15  # -15%
+        elif objetivo == "Subir de peso": ajuste = 15   # +15%
+        else: ajuste = 0
+        rcd_final = rcd + (rcd * (ajuste/100))
+        
+    st.markdown(f"**Objetivo:** {objetivo}")
+    if edad >= 18: st.markdown(f"**Ajuste aplicado:** {ajuste}%")
+    st.metric("Resultado Final (RCD Ajustado):", f"{round(rcd_final)} kcal/día")
+
+# --- HOJA 6: MACRONUTRIENTES ---
+with tab6:
+    st.header("CÁLCULO DE LOS MACRONUTRIENTES")
+    st.markdown("Distribución: 20% Proteínas, 50% Carbohidratos, 30% Grasas")
+    
+    cal_prot = rcd_final * 0.20
+    cal_carb = rcd_final * 0.50
+    cal_gras = rcd_final * 0.30
+    
+    gr_prot = cal_prot / 4
+    gr_carb = cal_carb / 4
+    gr_gras = cal_gras / 9
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Proteínas (20%)", f"{round(gr_prot, 1)} g", f"{round(cal_prot, 1)} kcal")
+    col2.metric("Carbohidratos (50%)", f"{round(gr_carb, 1)} g", f"{round(cal_carb, 1)} kcal")
+    col3.metric("Grasas (30%)", f"{round(gr_gras, 1)} g", f"{round(cal_gras, 1)} kcal")
+
+# --- HOJA 7: PORCIONES ---
+with tab7:
+    st.header("CÁLCULO DE LAS PORCIONES DEL DÍA")
+    porciones = {
+        "Desayuno (25%)": rcd_final * 0.25,
+        "Merienda 1 (5%)": rcd_final * 0.05,
+        "Almuerzo (40%)": rcd_final * 0.40,
+        "Merienda 2 (5%)": rcd_final * 0.05,
+        "Cena (25%)": rcd_final * 0.25
+    }
+    
+    for comida, calorias in porciones.items():
+        st.write(f"**{comida}:** {round(calorias, 1)} kcal")
+
+# --- HOJA 10: CLIMA CHICLAYO ---
+with tab10:
+    st.header("GASTO ENERGÉTICO AJUSTADO AL CLIMA DE CHICLAYO")
+    st.markdown("""
+    Según la FAO, vivir en climas cálidos y desérticos continuos como **Chiclayo** genera una adaptación biológica. 
+    El cuerpo reduce su tasa metabólica basal para evitar producir calor interno excesivo. 
+    Por ello, se aplica un factor de **0.95**, restando automáticamente un (5%) al gasto calórico diario total.
+    """)
+    
+    st.latex(r"RCD_{Chiclayo} = RCD \times 0.95")
+    rcd_chiclayo = rcd_final * 0.95
+    st.metric("Gasto energético ajustado al clima de Chiclayo:", f"{round(rcd_chiclayo, 1)} kcal/día")
