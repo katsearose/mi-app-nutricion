@@ -6,6 +6,33 @@ from urllib.parse import quote
 st.set_page_config(page_title="Proyecto Sana Alimentación", layout="wide", page_icon="🍎")
 
 # =========================================================================================
+# ESTILOS Y AYUDAS VISUALES
+# =========================================================================================
+st.markdown("""
+<style>
+.big-title {
+    background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
+    padding: 22px 28px; border-radius: 18px; color: white;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15); margin-bottom: 6px;
+}
+.frase-motivadora {
+    font-style: italic; color: #2e7d32; font-size: 1.05rem;
+    text-align: center; margin: 6px 0 18px 0;
+}
+div[data-testid="stMetricValue"] { color: #2e7d32; }
+</style>
+""", unsafe_allow_html=True)
+
+def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
+    """Caja amigable: '¿Para qué te sirve esto?' — pensada para público que no conoce las tablas técnicas."""
+    st.markdown(f"""
+    <div style="background-color:{color};padding:16px 20px;border-radius:14px;
+                border-left:7px solid {borde};margin-top:14px;margin-bottom:6px;">
+    <b>{emoji} ¿Para qué te sirve esto?</b><br>{texto}
+    </div>
+    """, unsafe_allow_html=True)
+
+# =========================================================================================
 # TABLAS Y DATOS FIJOS (extraídos EXACTAMENTE del Excel "Grupo n°4 VER.2")
 # =========================================================================================
 
@@ -164,9 +191,18 @@ def clasif_imc_adulto(imc):
 # =========================================================================================
 # ENCABEZADO
 # =========================================================================================
-st.title("🥦 PROYECTO SANA ALIMENTACIÓN")
-st.subheader("C.E.P. \"Santa María Reina\" — 5° \"C\" Secundaria — Grupo N°04")
-st.caption("Réplica funcional y fórmula por fórmula del Excel oficial del proyecto, hoja por hoja.")
+st.markdown("""
+<div class="big-title">
+<h1>🥦 Proyecto Sana Alimentación</h1>
+<p style="margin-bottom:0;">C.E.P. "Santa María Reina" — 5° "C" Secundaria — Grupo N°04 🌱</p>
+</div>
+""", unsafe_allow_html=True)
+st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
+st.caption("Una réplica interactiva del Excel oficial del proyecto, explicada paso a paso para que cualquier persona la entienda 😊")
+try:
+    st.image("https://source.unsplash.com/1200x260/?healthy,food,fruits", use_container_width=True)
+except Exception:
+    pass
 st.markdown("---")
 
 # =========================================================================================
@@ -284,6 +320,9 @@ with tabs[0]:
                   objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
     })
     st.table(df0)
+    caja_util("Aquí registras tus datos básicos una sola vez, y toda la app se ajusta automáticamente a ti: "
+              "desde tus calorías diarias hasta tu plan de comidas. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
+              emoji="📝", color="#E3F2FD", borde="#2196F3")
 
 # ---------------------------------------------------------------------------------------
 with tabs[1]:
@@ -326,6 +365,10 @@ with tabs[1]:
     st.warning("⚠️ Nota de fidelidad al Excel: la fórmula original de Hemoglobina no contempla el caso "
                "'Mujer' en etapa Adultez/Vejez, por lo que en ese caso el sistema (igual que el Excel) "
                "devuelve **'Revisa Datos'**.")
+    caja_util("Un análisis de sangre trae puros números y siglas difíciles de entender (¿12.5 g/dL es bueno o malo?). "
+              "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc. "
+              "Así sabes de un vistazo si algún valor necesita atención médica. 🩺❤️",
+              emoji="🩸", color="#FFEBEE", borde="#E53935")
 
 # ---------------------------------------------------------------------------------------
 with tabs[2]:
@@ -361,6 +404,10 @@ with tabs[2]:
         with ch:
             st.markdown("**Hombre**")
             st.dataframe(pd.DataFrame(PERCENTIL_HOMBRE, index=["P5 (Bajo Peso)", "P50 (Saludable)", "P85 (Sobrepeso)", "P95 (Obesidad)"]).T)
+    caja_util("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
+              "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
+              "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
+              emoji="⚖️", color="#F3E5F5", borde="#8E24AA")
 
 # ---------------------------------------------------------------------------------------
 with tabs[3]:
@@ -372,6 +419,10 @@ with tabs[3]:
     else:
         st.latex(r"TMB = (10 \times Peso) + (6.25 \times Altura) - (5 \times Edad) - 161")
     st.metric("Resultado TMB", f"{tmb:.0f} kcal/día")
+    caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
+              "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
+              "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
+              emoji="⚡", color="#FFF3E0", borde="#FB8C00")
 
 # ---------------------------------------------------------------------------------------
 with tabs[4]:
@@ -384,6 +435,10 @@ with tabs[4]:
     }))
     st.metric(f"Factor aplicado ({actividad}, {genero})", factor)
     st.metric("Resultado RCD", f"{rcd:.0f} kcal/día")
+    caja_util("Este es el número más importante de toda la app: son las calorías reales que gastas en un día "
+              "normal, sumando tu TMB (Hoja 3) más el movimiento que haces según tu nivel de actividad. "
+              "Es tu 'punto de equilibrio' calórico. 🏃‍♀️🔥",
+              emoji="🔥", color="#E8F5E9", borde="#43A047")
 
 # ---------------------------------------------------------------------------------------
 with tabs[5]:
@@ -400,6 +455,10 @@ with tabs[5]:
     st.metric("Plazo estimado del cambio", plazo)
     st.caption("El porcentaje define la velocidad e impacto del cambio: 0% mantiene el peso, valores mayores "
                "aceleran el proceso, siempre evitando descompensaciones, fatiga crónica o alteración del crecimiento.")
+    caja_util("Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un número exacto de calorías al "
+              "día. Es el paso que conecta tu objetivo personal con la ciencia: sin este ajuste, no sabrías "
+              "cuánto comer realmente para lograr lo que quieres. 🎯",
+              emoji="🎯", color="#FCE4EC", borde="#D81B60")
 
 # ---------------------------------------------------------------------------------------
 with tabs[6]:
@@ -413,6 +472,10 @@ with tabs[6]:
         "Resumen energético": ["Proteínas", "Carbohidratos", "Grasas", "Total"],
         "Valor (kcal)": [f"{cal_prot:.1f}", f"{cal_carb:.1f}", f"{cal_gras:.1f}", f"{cal_prot+cal_carb+cal_gras:.1f}"]
     }))
+    caja_util("No basta con contar calorías: también importa DE QUÉ están hechas. Esta hoja reparte tu meta "
+              "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
+              "órganos), en gramos concretos que puedes usar al armar tus platos. 🍗🍚🥑",
+              emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
 
 # ---------------------------------------------------------------------------------------
 with tabs[7]:
@@ -423,6 +486,10 @@ with tabs[7]:
         "Factor": [f"{v['pct']*100:.0f}%" for v in porciones.values()],
         "Calorías asignadas": [f"{v['kcal']:.1f} kcal" for v in porciones.values()]
     }))
+    caja_util("Comer todas tus calorías de una sola vez sería imposible (¡y poco saludable!). Esta hoja te dice "
+              "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
+              "llegues a tu meta sin pasar hambre ni excederte. ⏰🍴",
+              emoji="🍽️", color="#E0F7FA", borde="#00ACC1")
 
 # ---------------------------------------------------------------------------------------
 with tabs[8]:
@@ -444,6 +511,10 @@ with tabs[8]:
     if alimento.strip():
         url = f"https://www.fatsecret.es/calor%C3%ADas-nutrici%C3%B3n/search?q={quote(alimento.strip())}"
         st.markdown(f"🔍 [Ver **{alimento}** en FatSecret]({url})")
+    caja_util("Cuando no sepas cuántas calorías tiene un alimento, no tienes que adivinar: escribe su nombre "
+              "aquí y con un clic vas directo a su ficha nutricional completa en FatSecret. Así armas tu dieta "
+              "con información real, no con suposiciones. 🔍🥗",
+              emoji="🌐", color="#E8F5E9", borde="#2E7D32")
 
 # ---------------------------------------------------------------------------------------
 with tabs[9]:
@@ -492,6 +563,10 @@ with tabs[9]:
     st.metric("Comparación con calorías meta (Hoja 5)", f"{rcd_final:.1f} kcal")
     if abs(total_general - rcd_final) < 1:
         st.success("✅ La dieta armada coincide con la meta calórica del objetivo nutricional.")
+    caja_util("Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
+              "matemática por ti: ajusta las porciones para que, sin importar qué elijas, siempre termines "
+              "exactamente en tu meta de calorías y macronutrientes. ¡Comer sano también puede ser rico! 😋",
+              emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
 # ---------------------------------------------------------------------------------------
 with tabs[10]:
@@ -502,6 +577,10 @@ with tabs[10]:
     st.latex(r"RCD_{Chiclayo} = RCD \times 0.95")
     st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo), igual que en el Excel original.")
     st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo:.1f} kcal/día")
+    caja_util("Vivir en un lugar caluroso como Chiclayo también afecta cuántas calorías gasta tu cuerpo. Este "
+              "dato extra te da una versión más realista y localizada de tu gasto calórico, pensada "
+              "específicamente para nuestra región. ☀️🌴",
+              emoji="🌡️", color="#FFF8E1", borde="#F9A825")
 
 # ---------------------------------------------------------------------------------------
 with tabs[11]:
@@ -528,6 +607,10 @@ with tabs[11]:
         st.metric(f"Total TMB para {nombre_emb}", f"{tmb_emb:.0f} kcal/día")
     else:
         st.metric("Total TMB", f"{tmb_emb:.0f} kcal/día")
+    caja_util("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
+              "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
+              "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
+              emoji="👶", color="#FCE4EC", borde="#EC407A")
 
 # ---------------------------------------------------------------------------------------
 with tabs[12]:
@@ -542,6 +625,10 @@ with tabs[12]:
     st.metric("Hora límite recomendada para tomar cafeína", dt_limite.time().strftime("%H:%M"))
     st.info("Un buen descanso es fundamental en la dieta, ya que regula las hormonas del hambre y reduce la "
             "ansiedad por comer dulce al día siguiente.")
+    caja_util("¿Sabías que dormir mal te da más hambre y más ganas de comer dulce al día siguiente? Esta "
+              "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
+              "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
+              emoji="🌙", color="#EDE7F6", borde="#5E35B1")
 
 st.markdown("---")
 st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
