@@ -522,10 +522,6 @@ with tabs[2]:
             caja_titulo("Hombre", 2)
             st.dataframe(pd.DataFrame(PERCENTIL_HOMBRE, index=["P5 (Bajo Peso)", "P50 (Saludable)", "P85 (Sobrepeso)", "P95 (Obesidad)"]).T,
                          use_container_width=True)
-    recursos_externos(2, [
-        ("📏 Patrones de crecimiento (OMS)", "https://www.who.int/es/tools/child-growth-standards"),
-        ("⚖️ Obesidad y sobrepeso (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/obesity-and-overweight"),
-    ])
     caja_util("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
@@ -608,9 +604,6 @@ with tabs[6]:
         "Resumen energético": ["Proteínas", "Carbohidratos", "Grasas", "Total"],
         "Valor (kcal)": [f"{cal_prot:.1f}", f"{cal_carb:.1f}", f"{cal_gras:.1f}", f"{cal_prot+cal_carb+cal_gras:.1f}"]
     }), 6)
-    recursos_externos(6, [
-        ("🥗 Alimentación saludable (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/healthy-diet"),
-    ])
     caja_util("No basta con contar calorías: también importa DE QUÉ están hechas. Esta hoja reparte tu meta "
               "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
               "órganos), en gramos concretos que puedes usar al armar tus platos. 🍗🍚🥑",
@@ -752,9 +745,6 @@ with tabs[11]:
         st.metric(f"Total TMB para {nombre_emb}", f"{tmb_emb:.0f} kcal/día")
     else:
         st.metric("Total TMB", f"{tmb_emb:.0f} kcal/día")
-    recursos_externos(11, [
-        ("🍼 Alimentación saludable (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/healthy-diet"),
-    ])
     caja_util("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
               "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
               "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
