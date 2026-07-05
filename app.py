@@ -974,8 +974,8 @@ with tabs[13]:
         st.markdown("""
         <div style="background:#FBEAEC;border-left:7px solid #7A1F2B;border-radius:14px;
                     padding:16px 20px;">
-        <b>📖 Sobre nosotros</b><br><br>
-        Somos un grupo de estudiantes de 5to de secundaria de la I.E. Santa María Reina, apasionados
+        <b>📖 Sobre nosotras</b><br><br>
+        Somos un grupo de estudiantes de 5to de secundaria de la I.E. Santa María Reina, apasionadas
         por la tecnología y la salud. Este proyecto nace con el objetivo de fomentar hábitos saludables
         mediante herramientas digitales accesibles, aplicando conocimientos de nutrición y programación
         para mejorar el bienestar de nuestra comunidad escolar.
@@ -984,11 +984,10 @@ with tabs[13]:
 
     caja_titulo("👩‍🎓 Integrantes y puntos a cargo", 13)
     EQUIPO = [
-        ("Suarez Zulueta Sofia Alejandra", "Punto 7: Cálculo de las porciones del día · Punto 10: Gasto energético ajustado al clima de Chiclayo"),
-        ("Chavez Cobian Diana Carolina", "Punto 1: Evaluación de sangre · Punto 2: Índice de masa corporal y percentil"),
-        ("Farro Diaz Ariana Itamar", "Punto 5: Cálculo para subir, mantener o bajar de peso · Punto 6: Cálculo de los macronutrientes"),
-        ("Paz Gonzales Kathia Lizbeth", "Punto 3: Tasa metabólica basal · Punto 4: Requerimiento calórico diario"),
-        ("Cornelio Diaz Samantha Elizabeth", "Punto 8: Página FatSecret · Punto 9: Cálculo de la dieta"),
+        ("Suarez Zulueta Sofia Alejandra",
+        ("Chavez Cobian Diana Carolina",
+        ("Farro Diaz Ariana Itamar",
+        ("Paz Gonzales Kathia Lizbeth",
     ]
     for nombre, puntos in EQUIPO:
         st.markdown(f"""
@@ -1001,8 +1000,7 @@ with tabs[13]:
     col_a, col_b, col_c = st.columns(3)
     col_a.metric("Grado y sección", '5° "C" Secundaria')
     col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
-    col_c.metric("Fecha de entrega", "01/07/2026")
-
+         
     st.markdown('<div class="offline-pill">📴 Toda la calculadora (Hojas 0 a 12) funciona sin conexión a '
                 'internet. Solo esta pestaña y los botones "Quiero saber más" usan recursos externos '
                 'opcionales.</div>', unsafe_allow_html=True)
@@ -1013,5 +1011,4 @@ with tabs[13]:
               emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
 
 st.markdown("---")
-st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
-           "Alimentación) para el proyecto de tesis escolar sobre salud pública en Lambayeque, Grupo N°04.")
+st.caption("Aplicación desarrollada en Streamlit — Proyecto Sana Alimentación para el proyecto escolar sobre salud pública en Lambayeque, Grupo N°04.")
