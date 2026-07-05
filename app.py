@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import base64
 from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
@@ -24,6 +25,7 @@ COLORES = {
     10: ("10", "Gasto Energético — Clima de Chiclayo",       "🌡️", "#F9A825", "#FFF8E1"),
     11: ("Aporte 1", "TMB en Embarazo",                       "👶", "#BA68C8", "#F8ECFB"),
     12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5E35B1", "#EDE7F6"),
+    13: ("", "Sobre Nosotros",                                 "🎓", "#7A1F2B", "#FBEAEC"),
 }
 
 # =========================================================================================
@@ -62,6 +64,71 @@ section[data-testid="stSidebar"] {
 a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
     border-radius: 20px !important;
     font-weight: 600 !important;
+}
+
+/* ---------- NUEVO: identidad visual tipo "landing page" ---------- */
+.navbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #ffffff; border-radius: 20px; padding: 10px 24px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08); margin-bottom: 18px;
+    border: 1px solid #eef2ee;
+}
+.navbar-brand { display: flex; align-items: center; gap: 12px; }
+.navbar-brand img { height: 46px; border-radius: 8px; }
+.navbar-brand-text { line-height: 1.05; }
+.navbar-brand-text .t1 { font-weight: 800; color: #2e7d32; font-size: 1.05rem; }
+.navbar-brand-text .t2 { font-size: 0.78rem; color: #6b7a6c; }
+.navbar-pill {
+    background: #E8F5E9; color: #2e7d32; font-weight: 700; font-size: 0.78rem;
+    padding: 6px 14px; border-radius: 999px; border: 1px solid #c8e6c9;
+    white-space: nowrap;
+}
+
+.hero-card {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #2e7d32 0%, #56ab2f 55%, #8bc34a 100%);
+    border-radius: 26px; padding: 42px 40px; color: white;
+    box-shadow: 0 10px 30px rgba(46,125,50,0.25); margin-bottom: 22px;
+}
+.hero-card h1 { font-size: 2.1rem; font-weight: 800; margin: 0 0 10px 0; line-height: 1.15; }
+.hero-card p.hero-sub { font-size: 1.02rem; opacity: 0.95; max-width: 640px; margin: 0 0 16px 0; }
+.hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.hero-badge {
+    background: rgba(255,255,255,0.18); backdrop-filter: blur(2px);
+    border: 1px solid rgba(255,255,255,0.35); color: white;
+    padding: 7px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+}
+.hero-emoji-decor {
+    position: absolute; right: 26px; top: 50%; transform: translateY(-50%);
+    font-size: 6.5rem; opacity: 0.18; line-height: 1;
+}
+
+.feature-row { display: flex; gap: 16px; margin-bottom: 6px; }
+.feature-card {
+    flex: 1; background: #ffffff; border-radius: 18px; padding: 18px 18px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06); border: 1px solid #f0f0f0;
+    text-align: left;
+}
+.feature-card .fc-emoji { font-size: 1.8rem; }
+.feature-card .fc-title { font-weight: 800; color: #2e2e2e; margin: 6px 0 4px 0; font-size: 0.98rem; }
+.feature-card .fc-text { font-size: 0.82rem; color: #6b6b6b; line-height: 1.35; }
+
+.offline-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #FFF8E1; border: 1px solid #FFE082; color: #8a6d00;
+    padding: 8px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.equipo-card {
+    background: #ffffff; border-radius: 16px; padding: 14px 18px; margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 6px solid #7A1F2B;
+}
+.equipo-card .nombre { font-weight: 800; color: #7A1F2B; font-size: 0.98rem; }
+.equipo-card .puntos { font-size: 0.85rem; color: #555; margin-top: 2px; }
+@media (max-width: 700px) {
+    .feature-row { flex-direction: column; }
+    .hero-emoji-decor { display: none; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -291,18 +358,94 @@ def clasif_imc_adulto(imc):
     else: return "Obesidad Clase 3"
 
 # =========================================================================================
-# ENCABEZADO
+# ENCABEZADO — estilo "landing page", con el logo real del colegio (funciona sin internet)
 # =========================================================================================
+ASSETS_DIR = Path(__file__).parent / "assets"
+_LOGO_ANCHO = ASSETS_DIR / "logo_santa_maria_reina.png"     # banner con los 4 escudos
+_ESCUDO = ASSETS_DIR / "escudo_santa_maria_reina.png"        # escudo grande (para "Sobre Nosotros")
+
+def _img_b64(path):
+    try:
+        return base64.b64encode(Path(path).read_bytes()).decode()
+    except Exception:
+        return None
+
+_logo_b64 = _img_b64(_LOGO_ANCHO)
+
+# --- Barra de navegación superior, con el logo real del colegio ---
+if _logo_b64:
+    st.markdown(f"""
+    <div class="navbar">
+        <div class="navbar-brand">
+            <img src="data:image/png;base64,{_logo_b64}" />
+            <div class="navbar-brand-text">
+                <div class="t1">🥦 Proyecto Sana Alimentación</div>
+                <div class="t2">C.E.P. "Santa María Reina" — Chiclayo</div>
+            </div>
+        </div>
+        <div class="navbar-pill">📴 Funciona sin internet</div>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <div class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-brand-text">
+                <div class="t1">🥦 Proyecto Sana Alimentación</div>
+                <div class="t2">C.E.P. "Santa María Reina" — Chiclayo</div>
+            </div>
+        </div>
+        <div class="navbar-pill">📴 Funciona sin internet</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- Hero principal ---
 st.markdown("""
-<div class="big-title">
-<h1>🥦 Proyecto Sana Alimentación</h1>
-<p style="margin-bottom:0;">C.E.P. "Santa María Reina" — 5° "C" Secundaria — Grupo N°04 🌱</p>
+<div class="hero-card">
+    <div class="hero-emoji-decor">🥗🍎</div>
+    <h1>Tu plan de alimentación,<br>calculado a tu medida</h1>
+    <p class="hero-sub">Una réplica interactiva del Excel oficial del proyecto: ingresa tus datos una sola
+    vez y obtén tu IMC, tu requerimiento calórico, tus macronutrientes y un plan de dieta armado —
+    todo explicado paso a paso para que cualquier persona lo entienda. 😊</p>
+    <div class="hero-badges">
+        <span class="hero-badge">🎓 5° "C" Secundaria — Grupo N°04</span>
+        <span class="hero-badge">🔬 Fórmulas científicas (Mifflin-St Jeor)</span>
+        <span class="hero-badge">☀️ Ajustado al clima de Chiclayo</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
-st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
-st.caption("Una réplica interactiva del Excel oficial del proyecto, explicada paso a paso para que cualquier persona la entienda 😊")
 
-# --- NUEVO: acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
+# --- Tarjetas de características (estilo landing page) ---
+st.markdown("""
+<div class="feature-row">
+    <div class="feature-card">
+        <div class="fc-emoji">🧮</div>
+        <div class="fc-title">Cálculo preciso</div>
+        <div class="fc-text">IMC, percentil, TMB, RCD y macronutrientes calculados con las mismas
+        fórmulas del Excel original.</div>
+    </div>
+    <div class="feature-card">
+        <div class="fc-emoji">🍽️</div>
+        <div class="fc-title">Dieta a tu gusto</div>
+        <div class="fc-text">Arma tu menú diario eligiendo alimentos reales, ajustados automáticamente
+        a tu meta calórica.</div>
+    </div>
+    <div class="feature-card">
+        <div class="fc-emoji">🩺</div>
+        <div class="fc-title">Salud en simple</div>
+        <div class="fc-text">Tus análisis de sangre traducidos a un lenguaje claro: Normal, Anemia leve,
+        Alto, etc.</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
+
+st.markdown('<div class="offline-pill">📴 Esta calculadora funciona 100% sin conexión a Wi-Fi — solo los '
+            'botones de "Quiero saber más" y el buscador de FatSecret necesitan internet, ya que abren páginas '
+            'externas.</div>', unsafe_allow_html=True)
+
+# --- Acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
 # Busca el archivo junto al script con cualquiera de estos nombres habituales.
 _POSIBLES_NOMBRES_EXCEL = [
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
@@ -319,7 +462,8 @@ with st.container():
     <div style="background:#E8F5E9;border-left:9px solid #43A047;border-radius:16px;
                 padding:14px 22px;margin-bottom:10px;box-shadow:0 3px 8px rgba(0,0,0,0.08);">
     <b>📂 ¿Quieres ver el Excel original completo?</b><br>
-    Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas.
+    Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas
+    (no necesita internet, es un archivo local).
     </div>
     """, unsafe_allow_html=True)
     if _ruta_excel is not None:
@@ -335,10 +479,6 @@ with st.container():
         st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
                 "`Grupo_n_4_VER_2.xlsx`) en la misma carpeta que este script `app.py` antes de ejecutarlo.")
 
-try:
-    st.image("https://source.unsplash.com/1200x260/?healthy,food,fruits", use_container_width=True)
-except Exception:
-    pass
 st.markdown("---")
 
 # =========================================================================================
@@ -462,7 +602,8 @@ st.subheader("📋 Navegación por Hojas del Sistema (idéntica al Excel)")
 tabs = st.tabs([
     "0.-DATOS", "1.-EXAMEN MÉDICO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
     "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
-    "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA"
+    "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
+    "🎓 SOBRE NOSOTROS"
 ])
 
 # ---------------------------------------------------------------------------------------
@@ -811,6 +952,65 @@ with tabs[12]:
               "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
               "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
               emoji="🌙", color="#EDE7F6", borde="#5E35B1")
+
+# ---------------------------------------------------------------------------------------
+with tabs[13]:
+    _, titulo13, emoji13, borde13, fondo13 = COLORES[13]
+    st.markdown(f"""
+    <div style="background:{fondo13};border-left:10px solid {borde13};border-radius:16px;
+                padding:16px 26px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,0.10);">
+    <h2 style="margin:0;color:{borde13};font-weight:800;">{emoji13} {titulo13}</h2>
+    <p style="margin:4px 0 0 0;color:{borde13};font-size:0.95rem;font-weight:500;">
+    Conoce a las personas detrás de esta calculadora — ahora que ya la usaste, ¡es hora de conocer al equipo! 🎉
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_escudo, col_texto = st.columns([1, 3])
+    with col_escudo:
+        if _ESCUDO.exists():
+            st.image(str(_ESCUDO), use_container_width=True)
+    with col_texto:
+        st.markdown("""
+        <div style="background:#FBEAEC;border-left:7px solid #7A1F2B;border-radius:14px;
+                    padding:16px 20px;">
+        <b>📖 Sobre nosotros</b><br><br>
+        Somos un grupo de estudiantes de 5to de secundaria de la I.E. Santa María Reina, apasionados
+        por la tecnología y la salud. Este proyecto nace con el objetivo de fomentar hábitos saludables
+        mediante herramientas digitales accesibles, aplicando conocimientos de nutrición y programación
+        para mejorar el bienestar de nuestra comunidad escolar.
+        </div>
+        """, unsafe_allow_html=True)
+
+    caja_titulo("👩‍🎓 Integrantes y puntos a cargo", 13)
+    EQUIPO = [
+        ("Suarez Zulueta Sofia Alejandra", "Punto 7: Cálculo de las porciones del día · Punto 10: Gasto energético ajustado al clima de Chiclayo"),
+        ("Chavez Cobian Diana Carolina", "Punto 1: Evaluación de sangre · Punto 2: Índice de masa corporal y percentil"),
+        ("Farro Diaz Ariana Itamar", "Punto 5: Cálculo para subir, mantener o bajar de peso · Punto 6: Cálculo de los macronutrientes"),
+        ("Paz Gonzales Kathia Lizbeth", "Punto 3: Tasa metabólica basal · Punto 4: Requerimiento calórico diario"),
+        ("Cornelio Diaz Samantha Elizabeth", "Punto 8: Página FatSecret · Punto 9: Cálculo de la dieta"),
+    ]
+    for nombre, puntos in EQUIPO:
+        st.markdown(f"""
+        <div class="equipo-card">
+            <div class="nombre">👤 {nombre}</div>
+            <div class="puntos">{puntos}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    col_a, col_b, col_c = st.columns(3)
+    col_a.metric("Grado y sección", '5° "C" Secundaria')
+    col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
+    col_c.metric("Fecha de entrega", "01/07/2026")
+
+    st.markdown('<div class="offline-pill">📴 Toda la calculadora (Hojas 0 a 12) funciona sin conexión a '
+                'internet. Solo esta pestaña y los botones "Quiero saber más" usan recursos externos '
+                'opcionales.</div>', unsafe_allow_html=True)
+
+    caja_util("Este proyecto fue construido en equipo: cada integrante desarrolló y explicó una parte "
+              "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
+              "cualquier persona —sin saber de Excel ni de nutrición— pueda usarla fácilmente. 🤝🌱",
+              emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
 
 st.markdown("---")
 st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
