@@ -519,15 +519,22 @@ def _img_b64(path):
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
 
-# --- Identidad de marca: logo circular + logotipo tipográfico, centrados, lo primero que se ve ---
-_col_izq, _col_centro, _col_der = st.columns([1, 2, 1])
-with _col_centro:
-    if _LOGO_CIRCULAR.exists():
-        _c1, _c2, _c3 = st.columns([1, 2, 1])
-        with _c2:
-            st.image(str(_LOGO_CIRCULAR), width=220)
-    if _LOGO_WORDMARK.exists():
-        st.image(str(_LOGO_WORDMARK), use_container_width=True)
+# --- Identidad de marca: logo circular + logotipo tipográfico, en una sola tarjeta ordenada ---
+if _LOGO_CIRCULAR.exists() or _LOGO_WORDMARK.exists():
+    _col_izq, _col_centro, _col_der = st.columns([1, 3, 1])
+    with _col_centro:
+        st.markdown("""
+        <div style="background:#ffffff;border-radius:22px;padding:18px 28px;margin-bottom:6px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.08);border:1px solid #eef2ee;">
+        """, unsafe_allow_html=True)
+        _lc, _lw = st.columns([1, 2.4])
+        with _lc:
+            if _LOGO_CIRCULAR.exists():
+                st.image(str(_LOGO_CIRCULAR), width=110)
+        with _lw:
+            if _LOGO_WORDMARK.exists():
+                st.image(str(_LOGO_WORDMARK), use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Barra de navegación superior, con el logo real del colegio ---
 if _logo_b64:
