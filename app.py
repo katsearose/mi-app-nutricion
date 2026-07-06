@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import base64
-import requests
 from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
@@ -470,24 +469,6 @@ def etapa_desde_edad(edad_valor):
         return "Adultez"
     else:
         return "Vejez"
-
-
-@st.cache_data(ttl=600, show_spinner=False)
-def obtener_clima_chiclayo(api_key):
-    """Consulta el clima actual de Chiclayo en tiempo real usando la API gratuita de OpenWeatherMap.
-    Retorna (temperatura_c, descripcion) o (None, None) si la consulta falla (sin clave, sin
-    internet, clave inválida, etc.), para que la app nunca se rompa por falta de conexión."""
-    try:
-        url = "https://api.openweathermap.org/data/2.5/weather"
-        params = {"q": "Chiclayo,PE", "appid": api_key, "units": "metric", "lang": "es"}
-        resp = requests.get(url, params=params, timeout=6)
-        resp.raise_for_status()
-        data = resp.json()
-        temperatura = float(data["main"]["temp"])
-        descripcion = str(data["weather"][0]["description"])
-        return temperatura, descripcion
-    except Exception:
-        return None, None
 
 # =========================================================================================
 # ENCABEZADO — estilo "landing page", con el logo real del colegio
@@ -1137,71 +1118,20 @@ with tabs[10]:
         st.caption("¡El movimiento también forma parte de tu metabolismo! 🏃‍♀️")
 
     with col_clima:
-        st.markdown("#### 🌦️ Clima de Chiclayo en tiempo real")
-        api_key_clima = st.text_input(
-            "Clave de API de OpenWeatherMap (opcional):", type="password",
-            help="Consigue una clave gratuita en openweathermap.org/api. Sin clave, se usa el "
-                 "supuesto fijo de clima cálido (factor 0.95)."
-        )
-
-        temperatura_actual, descripcion_clima = (None, None)
-        if api_key_clima.strip():
-            with st.spinner("Consultando el clima actual de Chiclayo..."):
-                temperatura_actual, descripcion_clima = obtener_clima_chiclayo(api_key_clima.strip())
-
-        if temperatura_actual is not None:
-            desc_lower = descripcion_clima.lower()
-            if "lluv" in desc_lower or "llovizna" in desc_lower or "tormenta" in desc_lower:
-                icono_clima = "🌧️"
-            elif "nub" in desc_lower:
-                icono_clima = "☁️"
-            elif "despejado" in desc_lower or "claro" in desc_lower:
-                icono_clima = "☀️"
-            else:
-                icono_clima = "🌤️"
-
-            mc1, mc2 = st.columns(2)
-            mc1.metric("Temperatura actual en Chiclayo", f"{icono_clima} {temperatura_actual:.1f} °C")
-            mc2.metric("Estado del cielo", descripcion_clima.capitalize())
-
-            if temperatura_actual >= 23:
-                factor_clima = 0.95
-                st.success(f"Hoy Chiclayo está a {temperatura_actual:.1f}°C y el cielo está {descripcion_clima}. "
-                           "El clima se encuentra cálido/caluroso. 🌡️")
-                st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una "
-                        "adaptación biológica: el cuerpo reduce su tasa metabólica basal para evitar producir "
-                        "calor interno excesivo. Por ello, se aplica un factor de **0.95**, restando "
-                        "automáticamente un 5% al gasto calórico diario total.")
-            else:
-                factor_clima = 1.0
-                st.success(f"Hoy Chiclayo está a {temperatura_actual:.1f}°C y el cielo está {descripcion_clima}. "
-                           "El clima se encuentra templado/fresco. 🌥️")
-                st.info("Dado que la temperatura actual es fresca/templada, tu cuerpo no necesita reducir su "
-                        "metabolismo para disipar calor interno. Se mantienen tus calorías base originales "
-                        "(factor **1.0**, sin reducción).")
-            rcd_chiclayo_final = rcd * factor_clima
-        else:
-            factor_clima = 0.95
-            rcd_chiclayo_final = rcd_chiclayo  # supuesto fijo ya calculado en la sección de cálculos centrales
-            st.warning("🌡️ No se pudo consultar el clima en tiempo real (agrega tu clave gratuita de "
-                       "OpenWeatherMap arriba, o revisa tu conexión a internet). Mientras tanto, se usa el "
-                       "supuesto fijo de clima cálido de Chiclayo con un factor de 0.95.")
-            st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una "
-                    "adaptación biológica: el cuerpo reduce su tasa metabólica basal para evitar producir calor "
-                    "interno excesivo. Por ello, se aplica un factor de **0.95** por defecto.")
-
-        st.latex(r"RCD_{Chiclayo} = RCD \times Factor_{clima}")
-        st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo).")
-        st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo_final:.1f} kcal/día")
+        st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una adaptación "
+                "biológica: el cuerpo reduce su tasa metabólica basal para evitar producir calor interno excesivo. "
+                "Por ello, se aplica un factor de **0.95**, restando automáticamente un 5% al gasto calórico diario total.")
+        st.latex(r"RCD_{Chiclayo} = RCD \times 0.95")
+        st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo), igual que en el Excel original.")
+        st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo:.1f} kcal/día")
 
     st.divider()
     recursos_externos(10, [
         ("☀️ Clima de Chiclayo (Senamhi)", "https://www.senamhi.gob.pe/"),
-        ("🔑 Obtener clave gratuita (OpenWeatherMap)", "https://openweathermap.org/api"),
     ])
-    caja_util("Vivir en un lugar caluroso como Chiclayo también afecta cuántas calorías gasta tu cuerpo. Con tu "
-              "propia clave gratuita de OpenWeatherMap, esta hoja consulta el clima real del día y ajusta tu "
-              "gasto calórico en tiempo real — si no tienes clave a mano, usamos el supuesto típico de la región. ☀️🌴",
+    caja_util("Vivir en un lugar caluroso como Chiclayo también afecta cuántas calorías gasta tu cuerpo. Este "
+              "dato extra te da una versión más realista y localizada de tu gasto calórico, pensada "
+              "específicamente para nuestra región. ☀️🌴",
               emoji="🌡️", color="#FFF8E1", borde="#F9A825")
 
 # ---------------------------------------------------------------------------------------
