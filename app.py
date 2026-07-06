@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import base64
 import plotly.graph_objects as go
@@ -896,6 +897,26 @@ tabs = st.tabs([
     "13.-LÍNEA DE TIEMPO", "🎓 SOBRE NOSOTROS"
 ])
 
+# --- Al cambiar de pestaña, sube la página al inicio para que cada Hoja se sienta separada ---
+components.html("""
+<script>
+function activarScrollAlCambiarTab() {
+    const doc = window.parent.document;
+    const botones = doc.querySelectorAll('button[data-baseweb="tab"]');
+    botones.forEach((btn) => {
+        if (!btn.dataset.scrollFixApplied) {
+            btn.dataset.scrollFixApplied = "true";
+            btn.addEventListener('click', () => {
+                setTimeout(() => { window.parent.scrollTo({top: 0, behavior: 'smooth'}); }, 60);
+            });
+        }
+    });
+}
+activarScrollAlCambiarTab();
+new MutationObserver(activarScrollAlCambiarTab).observe(window.parent.document.body, {childList: true, subtree: true});
+</script>
+""", height=0)
+
 # ---------------------------------------------------------------------------------------
 with tabs[0]:
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
@@ -1251,9 +1272,11 @@ with tabs[8]:
 
 # ---------------------------------------------------------------------------------------
 with tabs[9]:
-    hoja_header(9, "Elige un alimento por macronutriente en cada comida. La Porción Corregida se calcula como "
-                   "round(Calorías_Totales_del_Macro × Porcentaje_del_Momento, 2), usando los porcentajes de la "
-                   "Hoja 7 (Desayuno 25%, Merienda 5%, Almuerzo 40%, Cena 25%).")
+    hoja_header(9, "Elige un alimento por macronutriente en cada comida. Misma estructura y fórmulas exactas del "
+                   "Excel: la Porción Corregida usa el % de macro (Carb 50% / Proteína 20% / Grasa 30%) sobre el "
+                   "total de calorías de cada momento, y los Gramos finales se calculan como "
+                   "ROUND((Porción Corregida / kcal del alimento) × 100, 1) — asumiendo que el kcal del alimento "
+                   "es su valor por cada 100 g.")
 
     seleccion = {}
     for comida in DIETA:
@@ -1271,33 +1294,42 @@ with tabs[9]:
             "Grasa": gras_sel,
         }
 
-    # Calorías por gramo estándar para convertir kcal -> gramos finales
-    KCAL_POR_GRAMO = {"Carbohidrato": 4, "Proteína": 4, "Grasa": 9}
-    CAL_TOTAL_MACRO = {"Carbohidrato": cal_carb, "Proteína": cal_prot, "Grasa": cal_gras}
+    # % de cada macronutriente dentro del total de calorías de CADA momento (igual que N/S/X del Excel: 50/20/30%)
+    PCT_MACRO_MOMENTO = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
 
     filas = []
-    total_general = 0
+    suma_kcal_carb = suma_kcal_prot = suma_kcal_gras = 0
+    suma_porcion_carb = suma_porcion_prot = suma_porcion_gras = 0
+
     for comida, alimentos in seleccion.items():
-        total_comida = 0
-        for macro in ["Carbohidrato", "Proteína", "Grasa"]:
-            porcentaje_momento = porciones[comida]["pct"]
-            porcion_kcal = round(CAL_TOTAL_MACRO[macro] * porcentaje_momento, 2)
-            gramos_finales = round(porcion_kcal / KCAL_POR_GRAMO[macro], 2)
-            total_comida += porcion_kcal
-            filas.append({
-                "Momento": comida,
-                "Macronutriente": macro,
-                "Alimento elegido": alimentos[macro],
-                "Porción Corregida (kcal)": porcion_kcal,
-                "Gramos": gramos_finales,
-                "Unidad": "gramos",
-            })
-        total_general += total_comida
+        fila = {"Momento": comida}
+        for macro, col_prefix in [("Carbohidrato", "Carb"), ("Proteína", "Prot"), ("Grasa", "Gras")]:
+            alimento = alimentos[macro]
+            kcal_alimento = DIETA[comida][macro][alimento]
+            porcion_kcal = round(porciones[comida]["kcal"] * PCT_MACRO_MOMENTO[macro], 2)
+            gramos = round((porcion_kcal / kcal_alimento) * 100, 1)
+            fila[macro] = alimento
+            fila[f"kcal ({col_prefix})"] = kcal_alimento
+            fila[f"Porción corregida ({col_prefix})"] = porcion_kcal
+            fila[f"Gramos ({col_prefix})"] = gramos
+            fila[f"Unidad ({col_prefix})"] = "gramos"
+        filas.append(fila)
+        suma_kcal_carb += fila["kcal (Carb)"]; suma_porcion_carb += fila["Porción corregida (Carb)"]
+        suma_kcal_prot += fila["kcal (Prot)"]; suma_porcion_prot += fila["Porción corregida (Prot)"]
+        suma_kcal_gras += fila["kcal (Gras)"]; suma_porcion_gras += fila["Porción corregida (Gras)"]
 
-    tabla_bonita(pd.DataFrame(filas), 9)
+    df_dieta = pd.DataFrame(filas)
+    fila_total = {"Momento": "TOTAL",
+                  "Carbohidrato": "", "kcal (Carb)": suma_kcal_carb, "Porción corregida (Carb)": round(suma_porcion_carb, 2), "Gramos (Carb)": "", "Unidad (Carb)": "",
+                  "Proteína": "", "kcal (Prot)": suma_kcal_prot, "Porción corregida (Prot)": round(suma_porcion_prot, 2), "Gramos (Prot)": "", "Unidad (Prot)": "",
+                  "Grasa": "", "kcal (Gras)": suma_kcal_gras, "Porción corregida (Gras)": round(suma_porcion_gras, 2), "Gramos (Gras)": "", "Unidad (Gras)": ""}
+    df_dieta = pd.concat([df_dieta, pd.DataFrame([fila_total])], ignore_index=True)
+    tabla_bonita(df_dieta, 9)
 
+    total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
     col1, col2 = st.columns(2)
-    col1.metric("Total de calorías diarias (dieta armada)", f"{total_general:.1f} kcal")
+    col1.metric("Total de calorías diarias (dieta armada)", f"{total_general:.2f} kcal",
+                help="= SUMA(Porción corregida Carb; Porción corregida Prot; Porción corregida Gras), igual que R48 del Excel.")
     col2.metric("Comparación con calorías meta (Hoja 5)", f"{rcd_final:.1f} kcal")
     if abs(total_general - rcd_final) < 1:
         st.success("✅ La dieta armada coincide con la meta calórica del objetivo nutricional.")
@@ -1305,9 +1337,9 @@ with tabs[9]:
         ("🌐 Buscar alimentos en FatSecret", "https://www.fatsecret.es/"),
     ])
     caja_util("Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
-              "matemática por ti: cada momento del día recibe su porción exacta de proteínas, carbohidratos y "
-              "grasas — sin importar qué alimento elijas, siempre terminas exactamente en tu meta de calorías y "
-              "macronutrientes. ¡Comer sano también puede ser rico! 😋",
+              "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
+              "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
+              "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
 # ---------------------------------------------------------------------------------------
