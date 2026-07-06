@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
@@ -431,6 +432,72 @@ def tarjeta_semaforo(parametro, valor_texto, categoria):
     </div>
     """, unsafe_allow_html=True)
 
+# =========================================================================================
+# IMPACTO DINÁMICO POR ÁMBITO — cómo afecta cada resultado clínico según Escolar/Laboral/Emocional
+# =========================================================================================
+EFECTOS_PARAMETRO = {
+    "Hemoglobina": {
+        "verde": "una buena oxigenación de tu cerebro y músculos",
+        "ambar": "una oxigenación algo reducida, que puede generar cansancio leve",
+        "rojo": "una oxigenación insuficiente por un posible cuadro de anemia",
+        "gris": "datos insuficientes para evaluar tu oxigenación",
+    },
+    "Triglicéridos": {
+        "verde": "un metabolismo de grasas equilibrado",
+        "ambar": "una acumulación de grasa en la sangre que empieza a ser notoria",
+        "rojo": "un riesgo cardiovascular por exceso de grasa en la sangre",
+        "gris": "datos insuficientes para evaluar tus triglicéridos",
+    },
+    "Glucosa": {
+        "verde": "niveles de energía estables durante el día",
+        "ambar": "fluctuaciones de energía que pueden causar picos y bajones de concentración",
+        "rojo": "un desbalance importante en tu energía y concentración",
+        "gris": "datos insuficientes para evaluar tu glucosa",
+    },
+    "Colesterol": {
+        "verde": "arterias limpias y una buena circulación",
+        "ambar": "un inicio de acumulación de grasa en tus arterias",
+        "rojo": "un riesgo de obstrucción arterial que afecta tu circulación",
+        "gris": "datos insuficientes para evaluar tu colesterol",
+    },
+    "Hierro": {
+        "verde": "buenas reservas de energía y defensas",
+        "ambar": "reservas de hierro bajas que pueden causar cansancio",
+        "rojo": "reservas de hierro muy comprometidas",
+        "gris": "datos insuficientes para evaluar tus reservas de hierro",
+    },
+}
+
+AMBITO_PLANTILLAS = {
+    "Escolar/Académico": {
+        "verde": "📚 En el colegio, tener {efecto} te ayuda a mantener la concentración en clase y rendir bien en tus evaluaciones. ¡Sigue así!",
+        "ambar": "📚 En el colegio, {efecto} podría hacer que te cueste un poco más concentrarte o te sientas cansad@ en las últimas horas de clase. Presta atención a tu alimentación antes de estudiar.",
+        "rojo": "📚 En el colegio, {efecto} puede afectar seriamente tu atención, memoria y rendimiento académico. Es importante que converses con un adulto responsable y consultes a un especialista.",
+        "gris": "📚 Ingresa tu valor para saber cómo podría afectar tu rendimiento escolar.",
+    },
+    "Laboral": {
+        "verde": "💼 En tu vida laboral, tener {efecto} te da la energía necesaria para cumplir tus tareas con enfoque y sin fatiga excesiva.",
+        "ambar": "💼 En un entorno laboral, {efecto} podría traducirse en menor productividad hacia el final de la jornada. Vale la pena ajustar hábitos alimenticios.",
+        "rojo": "💼 En un entorno laboral, {efecto} puede generar fatiga crónica, bajo rendimiento y mayor riesgo de errores. Se recomienda atención profesional antes de continuar con actividades exigentes.",
+        "gris": "💼 Ingresa tu valor para saber cómo podría afectar tu desempeño laboral.",
+    },
+    "Psicológico/Emocional": {
+        "verde": "💚 A nivel emocional, tener {efecto} contribuye a un estado de ánimo estable y mayor resistencia al estrés diario.",
+        "ambar": "💚 A nivel emocional, {efecto} puede relacionarse con irritabilidad, cambios de humor leves o mayor sensación de estrés.",
+        "rojo": "💚 A nivel emocional, {efecto} está asociado a mayor irritabilidad, ansiedad o desánimo. Cuidar este aspecto físico también ayuda a tu bienestar emocional — no dudes en buscar apoyo si lo necesitas.",
+        "gris": "💚 Ingresa tu valor para saber cómo podría afectar tu estado emocional.",
+    },
+}
+
+
+def generar_impacto_ambito(parametro, categoria, ambito):
+    """Genera el texto dinámico de impacto de un resultado clínico según el ámbito elegido
+    (Escolar/Académico, Laboral, Psicológico/Emocional), usando el color de semáforo ya calculado."""
+    color = CATEGORIA_SEMAFORO.get(categoria, "gris")
+    efecto = EFECTOS_PARAMETRO.get(parametro, {}).get(color, "")
+    plantilla = AMBITO_PLANTILLAS[ambito][color]
+    return plantilla.format(efecto=efecto)
+
 def clasif_percentil(imc, edad, genero):
     """Réplica EXACTA de la fórmula del Excel (Hoja 2, celda K17:L17)."""
     tabla = PERCENTIL_HOMBRE if genero == "Hombre" else PERCENTIL_MUJER
@@ -450,6 +517,42 @@ def clasif_imc_adulto(imc):
     elif imc <= 34.9: return "Obesidad Clase 1"
     elif imc <= 39.9: return "Obesidad Clase 2"
     else: return "Obesidad Clase 3"
+
+
+def grafico_percentil_peso(genero_tabla, estatura_m_usuario, edad_usuario=None, peso_usuario=None, genero_usuario=None):
+    """Construye un gráfico interactivo de Plotly con las curvas de peso-para-la-edad (P5, P50, P85, P95),
+    convirtiendo las tablas de percentil de IMC a kilogramos usando la estatura actual del usuario.
+    Si la edad y género del usuario coinciden con esta tabla, agrega un punto destacado con su posición."""
+    tabla = PERCENTIL_HOMBRE if genero_tabla == "Hombre" else PERCENTIL_MUJER
+    edades = sorted(tabla.keys())
+    p5 = [tabla[e][0] * estatura_m_usuario ** 2 for e in edades]
+    p50 = [tabla[e][1] * estatura_m_usuario ** 2 for e in edades]
+    p85 = [tabla[e][2] * estatura_m_usuario ** 2 for e in edades]
+    p95 = [tabla[e][3] * estatura_m_usuario ** 2 for e in edades]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=edades, y=p95, mode="lines", name="P95 (Obesidad)",
+                              line=dict(color="#8E24AA", dash="dot", width=2)))
+    fig.add_trace(go.Scatter(x=edades, y=p85, mode="lines", name="P85 (Sobrepeso)",
+                              line=dict(color="#FB8C00", dash="dot", width=2)))
+    fig.add_trace(go.Scatter(x=edades, y=p50, mode="lines", name="P50 (Peso Saludable)",
+                              line=dict(color="#43A047", width=3)))
+    fig.add_trace(go.Scatter(x=edades, y=p5, mode="lines", name="P5 (Bajo Peso)",
+                              line=dict(color="#E53935", dash="dot", width=2)))
+
+    if genero_usuario == genero_tabla and edad_usuario in tabla:
+        fig.add_trace(go.Scatter(x=[edad_usuario], y=[peso_usuario], mode="markers+text",
+                                  name="Tú estás aquí", text=["Tú"], textposition="top center",
+                                  marker=dict(color="#1565C0", size=16, symbol="star",
+                                              line=dict(color="white", width=1))))
+
+    fig.update_layout(
+        xaxis_title="Edad (años)", yaxis_title="Peso equivalente (kg)",
+        height=380, margin=dict(t=20, l=10, r=10, b=10),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5),
+        plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
 
 def nombre_display(nombre, genero="Mujer"):
     """Devuelve el nombre ingresado, o un saludo genérico según el género si aún no lo escribió."""
@@ -856,6 +959,28 @@ with tabs[1]:
     })
     tabla_bonita(df_examen, 1)
 
+    st.divider()
+    st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día?")
+    ambito_seleccionado = st.selectbox(
+        "Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
+        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"]
+    )
+    _resultados_ambito = [
+        ("Hemoglobina", _cat_hemo), ("Triglicéridos", _cat_trigli), ("Glucosa", _cat_gluco),
+        ("Colesterol", _cat_coles), ("Hierro", _cat_hierro),
+    ]
+    for _parametro, _categoria in _resultados_ambito:
+        _color_pt = CATEGORIA_SEMAFORO.get(_categoria, "gris")
+        _hex_pt = SEMAFORO_ESTILO[_color_pt]["hex"]
+        _fondo_pt = SEMAFORO_ESTILO[_color_pt]["fondo"]
+        _texto_impacto = generar_impacto_ambito(_parametro, _categoria, ambito_seleccionado)
+        st.markdown(f"""
+        <div style="background:{_fondo_pt};border-left:6px solid {_hex_pt};border-radius:12px;
+                    padding:10px 16px;margin-bottom:8px;">
+        <b>{_parametro}</b> ({_categoria}) — {_texto_impacto}
+        </div>
+        """, unsafe_allow_html=True)
+
     with st.expander("📊 Ver tablas de referencia clínica completas"):
         caja_titulo("Hemoglobina", 1)
         tabla_bonita(pd.DataFrame({
@@ -915,6 +1040,18 @@ with tabs[2]:
         "Clasificación": ["Bajo Peso", "Peso Saludable", "Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3 (Severa)"],
         "Rango de IMC": ["Menos de 18.5", "18.5 a 24.9", "25 a 29.9", "30 o más", "30 a 34.9", "35 a 39.9", "40 o más"]
     }), 2)
+
+    st.markdown("#### 📈 Percentiles de peso por edad (2 a 20 años)")
+    st.caption("Convertimos las curvas de percentil de IMC a kilogramos usando tu estatura actual, y marcamos "
+               "tu posición exacta (edad vs. peso) con una estrella azul, si tu edad está entre 2 y 20 años.")
+    sub_mujeres, sub_hombres = st.tabs(["👧 Mujeres", "👦 Hombres"])
+    with sub_mujeres:
+        st.plotly_chart(grafico_percentil_peso("Mujer", estatura_m, edad, peso, genero), use_container_width=True)
+    with sub_hombres:
+        st.plotly_chart(grafico_percentil_peso("Hombre", estatura_m, edad, peso, genero), use_container_width=True)
+    if edad not in PERCENTIL_MUJER:
+        st.caption("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.")
+
     with st.expander("📊 Ver tabla completa de percentiles (edad 2-20 años)"):
         cm, ch = st.columns(2)
         with cm:
@@ -1006,6 +1143,39 @@ with tabs[6]:
         "Resumen energético": ["Proteínas", "Carbohidratos", "Grasas", "Total"],
         "Valor (kcal)": [f"{cal_prot:.1f}", f"{cal_carb:.1f}", f"{cal_gras:.1f}", f"{cal_prot+cal_carb+cal_gras:.1f}"]
     }), 6)
+
+    st.divider()
+    col_recom, col_graf1, col_graf2 = st.columns([1, 1, 1])
+    with col_recom:
+        st.info("🎯 **Objetivo de esta distribución**\n\n"
+                "**20% Proteínas:** para la reparación y crecimiento de tus músculos y tejidos.\n\n"
+                "**50% Carbohidratos:** tu principal fuente de energía para el día a día.\n\n"
+                "**30% Grasas:** esenciales para tus hormonas, cerebro y absorción de vitaminas.\n\n"
+                "Esta proporción está pensada para un balance saludable y sostenible, no para dietas extremas.")
+    with col_graf1:
+        st.markdown("**🥧 Distribución de calorías**")
+        fig_pie_macros = go.Figure(data=[go.Pie(
+            labels=["Proteínas", "Carbohidratos", "Grasas"],
+            values=[cal_prot, cal_carb, cal_gras],
+            marker=dict(colors=["#E53935", "#FB8C00", "#43A047"]),
+            textinfo="label+percent", hole=0.0,
+        )])
+        fig_pie_macros.update_layout(height=300, margin=dict(t=10, l=10, r=10, b=10), showlegend=False)
+        st.plotly_chart(fig_pie_macros, use_container_width=True)
+    with col_graf2:
+        st.markdown("**🍽️ Tu Plato Nutricional**")
+        fig_plato = go.Figure(data=[go.Pie(
+            labels=["Proteínas", "Carbohidratos", "Grasas"],
+            values=[gr_prot, gr_carb, gr_gras],
+            marker=dict(colors=["#8E24AA", "#FBC02D", "#00ACC1"]),
+            textinfo="label+percent", hole=0.45,
+        )])
+        fig_plato.update_layout(
+            height=300, margin=dict(t=10, l=10, r=10, b=10), showlegend=False,
+            annotations=[dict(text="Tu Plato", x=0.5, y=0.5, font_size=16, showarrow=False)]
+        )
+        st.plotly_chart(fig_plato, use_container_width=True)
+
     caja_util("No basta con contar calorías: también importa DE QUÉ están hechas. Esta hoja reparte tu meta "
               "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
               "órganos), en gramos concretos que puedes usar al armar tus platos. 🍗🍚🥑",
@@ -1019,6 +1189,34 @@ with tabs[7]:
         "Factor": [f"{v['pct']*100:.0f}%" for v in porciones.values()],
         "Calorías asignadas": [f"{v['kcal']:.1f} kcal" for v in porciones.values()]
     }), 7)
+
+    st.divider()
+    st.markdown("#### ❓ Preguntas frecuentes sobre los momentos de comida")
+    FAQ_PORCIONES = {
+        "¿Por qué es importante el desayuno?": (
+            "El desayuno rompe el ayuno de la noche y le da a tu cerebro la glucosa que necesita para "
+            "concentrarte desde temprano. Saltarlo se asocia con menor rendimiento escolar y más antojos de "
+            "azúcar durante el día. Por eso se le asigna un 25% de tus calorías diarias."
+        ),
+        "¿Por qué es importante la merienda?": (
+            "Las meriendas (5% cada una) evitan que llegues con demasiada hambre al almuerzo o la cena, lo "
+            "que ayuda a que no comas de más de una sola vez. También mantienen estables tus niveles de "
+            "energía y glucosa entre comidas principales."
+        ),
+        "¿Por qué es importante el almuerzo?": (
+            "El almuerzo es la comida más grande del día (40%) porque coincide con el momento de mayor "
+            "actividad física y mental. Aporta la mayor parte de tu energía, proteínas y nutrientes para "
+            "sostenerte durante la tarde."
+        ),
+        "¿Por qué es importante la cena?": (
+            "La cena (25%) repone lo gastado durante el día sin sobrecargar tu digestión antes de dormir. "
+            "Una cena balanceada favorece un mejor descanso, y un mejor descanso reduce la ansiedad por "
+            "comer dulce al día siguiente."
+        ),
+    }
+    pregunta_faq = st.selectbox("Elige una pregunta:", list(FAQ_PORCIONES.keys()))
+    st.info(FAQ_PORCIONES[pregunta_faq])
+
     caja_util("Comer todas tus calorías de una sola vez sería imposible (¡y poco saludable!). Esta hoja te dice "
               "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
               "llegues a tu meta sin pasar hambre ni excederte. ⏰🍴",
@@ -1053,9 +1251,9 @@ with tabs[8]:
 
 # ---------------------------------------------------------------------------------------
 with tabs[9]:
-    hoja_header(9, "Elige un alimento por macronutriente en cada comida. El sistema redistribuye proporcionalmente "
-                   "las calorías de cada alimento elegido para que la suma coincida exactamente con tu meta de macros "
-                   "(igual que la fórmula =ROUND((valor/suma)*meta, 2) del Excel).")
+    hoja_header(9, "Elige un alimento por macronutriente en cada comida. La Porción Corregida se calcula como "
+                   "round(Calorías_Totales_del_Macro × Porcentaje_del_Momento, 2), usando los porcentajes de la "
+                   "Hoja 7 (Desayuno 25%, Merienda 5%, Almuerzo 40%, Cena 25%).")
 
     seleccion = {}
     for comida in DIETA:
@@ -1068,31 +1266,36 @@ with tabs[9]:
         with c3:
             gras_sel = st.selectbox(f"Grasa — {comida}", list(DIETA[comida]["Grasa"].keys()), key=f"g_{comida}")
         seleccion[comida] = {
-            "Carbohidrato": (carb_sel, DIETA[comida]["Carbohidrato"][carb_sel]),
-            "Proteína": (prot_sel, DIETA[comida]["Proteína"][prot_sel]),
-            "Grasa": (gras_sel, DIETA[comida]["Grasa"][gras_sel]),
+            "Carbohidrato": carb_sel,
+            "Proteína": prot_sel,
+            "Grasa": gras_sel,
         }
 
-    suma_carb = sum(v["Carbohidrato"][1] for v in seleccion.values())
-    suma_prot = sum(v["Proteína"][1] for v in seleccion.values())
-    suma_gras = sum(v["Grasa"][1] for v in seleccion.values())
+    # Calorías por gramo estándar para convertir kcal -> gramos finales
+    KCAL_POR_GRAMO = {"Carbohidrato": 4, "Proteína": 4, "Grasa": 9}
+    CAL_TOTAL_MACRO = {"Carbohidrato": cal_carb, "Proteína": cal_prot, "Grasa": cal_gras}
 
     filas = []
     total_general = 0
-    for comida, datos in seleccion.items():
-        porc_carb = round((datos["Carbohidrato"][1] / suma_carb) * cal_carb, 2) if suma_carb else 0
-        porc_prot = round((datos["Proteína"][1] / suma_prot) * cal_prot, 2) if suma_prot else 0
-        porc_gras = round((datos["Grasa"][1] / suma_gras) * cal_gras, 2) if suma_gras else 0
-        total_comida = porc_carb + porc_prot + porc_gras
+    for comida, alimentos in seleccion.items():
+        total_comida = 0
+        for macro in ["Carbohidrato", "Proteína", "Grasa"]:
+            porcentaje_momento = porciones[comida]["pct"]
+            porcion_kcal = round(CAL_TOTAL_MACRO[macro] * porcentaje_momento, 2)
+            gramos_finales = round(porcion_kcal / KCAL_POR_GRAMO[macro], 2)
+            total_comida += porcion_kcal
+            filas.append({
+                "Momento": comida,
+                "Macronutriente": macro,
+                "Alimento elegido": alimentos[macro],
+                "Porción Corregida (kcal)": porcion_kcal,
+                "Gramos": gramos_finales,
+                "Unidad": "gramos",
+            })
         total_general += total_comida
-        filas.append({
-            "Momento": comida,
-            "Carbohidrato": datos["Carbohidrato"][0], "kcal base": datos["Carbohidrato"][1], "Porción corregida": porc_carb,
-            "Proteína": datos["Proteína"][0], "kcal base ": datos["Proteína"][1], "Porción corregida ": porc_prot,
-            "Grasa": datos["Grasa"][0], "kcal base  ": datos["Grasa"][1], "Porción corregida  ": porc_gras,
-            "Total comida (kcal)": round(total_comida, 2)
-        })
+
     tabla_bonita(pd.DataFrame(filas), 9)
+
     col1, col2 = st.columns(2)
     col1.metric("Total de calorías diarias (dieta armada)", f"{total_general:.1f} kcal")
     col2.metric("Comparación con calorías meta (Hoja 5)", f"{rcd_final:.1f} kcal")
@@ -1102,8 +1305,9 @@ with tabs[9]:
         ("🌐 Buscar alimentos en FatSecret", "https://www.fatsecret.es/"),
     ])
     caja_util("Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
-              "matemática por ti: ajusta las porciones para que, sin importar qué elijas, siempre termines "
-              "exactamente en tu meta de calorías y macronutrientes. ¡Comer sano también puede ser rico! 😋",
+              "matemática por ti: cada momento del día recibe su porción exacta de proteínas, carbohidratos y "
+              "grasas — sin importar qué alimento elijas, siempre terminas exactamente en tu meta de calorías y "
+              "macronutrientes. ¡Comer sano también puede ser rico! 😋",
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
 # ---------------------------------------------------------------------------------------
