@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import requests
 from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
@@ -470,12 +471,45 @@ def etapa_desde_edad(edad_valor):
     else:
         return "Vejez"
 
+
+@st.cache_data(ttl=600, show_spinner=False)
+def obtener_clima_chiclayo(api_key):
+    """Consulta el clima actual de Chiclayo en tiempo real usando la API gratuita de OpenWeatherMap.
+    Retorna (temperatura_c, descripcion) o (None, None) si la consulta falla (sin clave, sin
+    internet, clave inválida, etc.), para que la app nunca se rompa por falta de conexión."""
+    try:
+        url = "https://api.openweathermap.org/data/2.5/weather"
+        params = {"q": "Chiclayo,PE", "appid": api_key, "units": "metric", "lang": "es"}
+        resp = requests.get(url, params=params, timeout=6)
+        resp.raise_for_status()
+        data = resp.json()
+        temperatura = float(data["main"]["temp"])
+        descripcion = str(data["weather"][0]["description"])
+        return temperatura, descripcion
+    except Exception:
+        return None, None
+
 # =========================================================================================
 # ENCABEZADO — estilo "landing page", con el logo real del colegio
 # =========================================================================================
 ASSETS_DIR = Path(__file__).parent / "assets"
 _LOGO_ANCHO = ASSETS_DIR / "logo_santa_maria_reina.png"     # banner con los 4 escudos
 _ESCUDO = ASSETS_DIR / "escudo_santa_maria_reina.png"        # escudo grande (para "Sobre Nosotros")
+
+# --- Identidad de marca CIAM&SUNI y personajes educativos (stickers) ---
+_LOGO_CIRCULAR = ASSETS_DIR / "logo_circular_ciamsuni.png"
+_LOGO_WORDMARK = ASSETS_DIR / "logo_wordmark_ciamsuni.png"
+_STICKER_NINA = ASSETS_DIR / "nina_escolar.png"
+_STICKER_NINA_ALT = ASSETS_DIR / "nina_escolar_transparente.png"
+_STICKER_MAESTRA = ASSETS_DIR / "maestra_animada_transparente.png"
+_STICKER_PROFESOR = ASSETS_DIR / "profesor_escolar_transparente_bonito.png"
+_STICKER_CORRIENDO = ASSETS_DIR / "muneca_santamaria_corriendo.png"
+
+
+def mostrar_sticker(ruta, ancho=170):
+    """Muestra un personaje/sticker si el archivo existe; no rompe la app si falta."""
+    if ruta.exists():
+        st.image(str(ruta), width=ancho)
 
 def _img_b64(path):
     try:
@@ -484,6 +518,16 @@ def _img_b64(path):
         return None
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
+
+# --- Identidad de marca: logo circular + logotipo tipográfico, centrados, lo primero que se ve ---
+_col_izq, _col_centro, _col_der = st.columns([1, 2, 1])
+with _col_centro:
+    if _LOGO_CIRCULAR.exists():
+        _c1, _c2, _c3 = st.columns([1, 2, 1])
+        with _c2:
+            st.image(str(_LOGO_CIRCULAR), width=220)
+    if _LOGO_WORDMARK.exists():
+        st.image(str(_LOGO_WORDMARK), use_container_width=True)
 
 # --- Barra de navegación superior, con el logo real del colegio ---
 if _logo_b64:
@@ -589,6 +633,9 @@ st.markdown("---")
 # =========================================================================================
 # SIDEBAR — HOJA 0.-DATOS
 # =========================================================================================
+if _ESCUDO.exists():
+    st.sidebar.image(str(_ESCUDO), width=90)
+
 st.sidebar.header("📝 ¡Introduce tus datos!")
 
 genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=1)
@@ -761,13 +808,24 @@ tabs = st.tabs([
 # ---------------------------------------------------------------------------------------
 with tabs[0]:
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
-    df0 = pd.DataFrame({
-        "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
-                     "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
-        "Valor": [_nombre_saludo, f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
-                  objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
-    })
-    tabla_bonita(df0, 0)
+
+    col_datos, col_sticker = st.columns([2, 1])
+    with col_datos:
+        df0 = pd.DataFrame({
+            "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
+                         "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
+            "Valor": [_nombre_saludo, f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
+                      objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
+        })
+        tabla_bonita(df0, 0)
+    with col_sticker:
+        if _STICKER_NINA.exists():
+            mostrar_sticker(_STICKER_NINA, ancho=190)
+        elif _STICKER_NINA_ALT.exists():
+            mostrar_sticker(_STICKER_NINA_ALT, ancho=190)
+        st.caption(f"¡Bienvenid@, {_nombre_saludo}! 👋")
+
+    st.divider()
     caja_util(f"¡Paz y bien, {_nombre_saludo}! Aquí registras tus datos básicos una sola vez, y toda la app se ajusta "
               "automáticamente a ti: desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se "
               "detecta sola apenas escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
@@ -783,15 +841,25 @@ with tabs[1]:
     _cat_coles = clasif_colesterol(coles)
     _cat_hierro = clasif_hierro(hierro, etapa, genero)
 
-    st.markdown("#### 🚦 Semáforo Clínico — protocolo de triaje digital")
-    st.caption(f"No solo diagnostica: te sugiere una ruta de mejora inmediata, {_nombre_saludo}. 🟢 Normal · 🟡 Alerta · 🔴 Crítico")
-    sc1, sc2, sc3, sc4, sc5 = st.columns(5)
-    with sc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo)
-    with sc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli)
-    with sc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco)
-    with sc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles)
-    with sc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro)
-    st.write("")
+    col_examen, col_docente = st.columns([3, 1])
+    with col_docente:
+        if _STICKER_MAESTRA.exists():
+            mostrar_sticker(_STICKER_MAESTRA, ancho=170)
+        elif _STICKER_PROFESOR.exists():
+            mostrar_sticker(_STICKER_PROFESOR, ancho=170)
+        st.caption("Tu guía experta interpreta cada resultado del semáforo por ti. 🩺")
+
+    with col_examen:
+        st.markdown("#### 🚦 Semáforo Clínico — protocolo de triaje digital")
+        st.caption(f"No solo diagnostica: te sugiere una ruta de mejora inmediata, {_nombre_saludo}. 🟢 Normal · 🟡 Alerta · 🔴 Crítico")
+        sc1, sc2, sc3, sc4, sc5 = st.columns(5)
+        with sc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo)
+        with sc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli)
+        with sc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco)
+        with sc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles)
+        with sc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro)
+
+    st.divider()
 
     df_examen = pd.DataFrame({
         "Parámetro": ["Hemoglobina", "Triglicéridos", "Glucosa", "Colesterol", "Hierro"],
@@ -1053,18 +1121,80 @@ with tabs[9]:
 # ---------------------------------------------------------------------------------------
 with tabs[10]:
     hoja_header(10)
-    st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una adaptación "
-            "biológica: el cuerpo reduce su tasa metabólica basal para evitar producir calor interno excesivo. "
-            "Por ello, se aplica un factor de **0.95**, restando automáticamente un 5% al gasto calórico diario total.")
-    st.latex(r"RCD_{Chiclayo} = RCD \times 0.95")
-    st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo), igual que en el Excel original.")
-    st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo:.1f} kcal/día")
+
+    col_clima, col_sticker_clima = st.columns([3, 1])
+
+    with col_sticker_clima:
+        if _STICKER_CORRIENDO.exists():
+            mostrar_sticker(_STICKER_CORRIENDO, ancho=170)
+        st.caption("¡El movimiento también forma parte de tu metabolismo! 🏃‍♀️")
+
+    with col_clima:
+        st.markdown("#### 🌦️ Clima de Chiclayo en tiempo real")
+        api_key_clima = st.text_input(
+            "Clave de API de OpenWeatherMap (opcional):", type="password",
+            help="Consigue una clave gratuita en openweathermap.org/api. Sin clave, se usa el "
+                 "supuesto fijo de clima cálido (factor 0.95)."
+        )
+
+        temperatura_actual, descripcion_clima = (None, None)
+        if api_key_clima.strip():
+            with st.spinner("Consultando el clima actual de Chiclayo..."):
+                temperatura_actual, descripcion_clima = obtener_clima_chiclayo(api_key_clima.strip())
+
+        if temperatura_actual is not None:
+            desc_lower = descripcion_clima.lower()
+            if "lluv" in desc_lower or "llovizna" in desc_lower or "tormenta" in desc_lower:
+                icono_clima = "🌧️"
+            elif "nub" in desc_lower:
+                icono_clima = "☁️"
+            elif "despejado" in desc_lower or "claro" in desc_lower:
+                icono_clima = "☀️"
+            else:
+                icono_clima = "🌤️"
+
+            mc1, mc2 = st.columns(2)
+            mc1.metric("Temperatura actual en Chiclayo", f"{icono_clima} {temperatura_actual:.1f} °C")
+            mc2.metric("Estado del cielo", descripcion_clima.capitalize())
+
+            if temperatura_actual >= 23:
+                factor_clima = 0.95
+                st.success(f"Hoy Chiclayo está a {temperatura_actual:.1f}°C y el cielo está {descripcion_clima}. "
+                           "El clima se encuentra cálido/caluroso. 🌡️")
+                st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una "
+                        "adaptación biológica: el cuerpo reduce su tasa metabólica basal para evitar producir "
+                        "calor interno excesivo. Por ello, se aplica un factor de **0.95**, restando "
+                        "automáticamente un 5% al gasto calórico diario total.")
+            else:
+                factor_clima = 1.0
+                st.success(f"Hoy Chiclayo está a {temperatura_actual:.1f}°C y el cielo está {descripcion_clima}. "
+                           "El clima se encuentra templado/fresco. 🌥️")
+                st.info("Dado que la temperatura actual es fresca/templada, tu cuerpo no necesita reducir su "
+                        "metabolismo para disipar calor interno. Se mantienen tus calorías base originales "
+                        "(factor **1.0**, sin reducción).")
+            rcd_chiclayo_final = rcd * factor_clima
+        else:
+            factor_clima = 0.95
+            rcd_chiclayo_final = rcd_chiclayo  # supuesto fijo ya calculado en la sección de cálculos centrales
+            st.warning("🌡️ No se pudo consultar el clima en tiempo real (agrega tu clave gratuita de "
+                       "OpenWeatherMap arriba, o revisa tu conexión a internet). Mientras tanto, se usa el "
+                       "supuesto fijo de clima cálido de Chiclayo con un factor de 0.95.")
+            st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una "
+                    "adaptación biológica: el cuerpo reduce su tasa metabólica basal para evitar producir calor "
+                    "interno excesivo. Por ello, se aplica un factor de **0.95** por defecto.")
+
+        st.latex(r"RCD_{Chiclayo} = RCD \times Factor_{clima}")
+        st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo).")
+        st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo_final:.1f} kcal/día")
+
+    st.divider()
     recursos_externos(10, [
         ("☀️ Clima de Chiclayo (Senamhi)", "https://www.senamhi.gob.pe/"),
+        ("🔑 Obtener clave gratuita (OpenWeatherMap)", "https://openweathermap.org/api"),
     ])
-    caja_util("Vivir en un lugar caluroso como Chiclayo también afecta cuántas calorías gasta tu cuerpo. Este "
-              "dato extra te da una versión más realista y localizada de tu gasto calórico, pensada "
-              "específicamente para nuestra región. ☀️🌴",
+    caja_util("Vivir en un lugar caluroso como Chiclayo también afecta cuántas calorías gasta tu cuerpo. Con tu "
+              "propia clave gratuita de OpenWeatherMap, esta hoja consulta el clima real del día y ajusta tu "
+              "gasto calórico en tiempo real — si no tienes clave a mano, usamos el supuesto típico de la región. ☀️🌴",
               emoji="🌡️", color="#FFF8E1", borde="#F9A825")
 
 # ---------------------------------------------------------------------------------------
@@ -1189,10 +1319,10 @@ with tabs[14]:
     </div>
     """, unsafe_allow_html=True)
 
-    col_escudo, col_texto = st.columns([1, 2])
+    col_escudo, col_texto = st.columns([1, 3])
     with col_escudo:
         if _ESCUDO.exists():
-            st.image(str(_ESCUDO), use_container_width=True)
+            st.image(str(_ESCUDO), width=150)
     with col_texto:
         st.markdown("""
         <div style="background:#FBEAEC;border-left:7px solid #7A1F2B;border-radius:14px;
