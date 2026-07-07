@@ -934,15 +934,28 @@ rcd_chiclayo = rcd * 0.95
 # NAVEGACIÓN
 # =========================================================================================
 st.subheader("📋 Navegación por Hojas del Sistema (idéntica al Excel)")
-tabs = st.tabs([
+
+OPCIONES_HOJAS = [
     "0.-DATOS", "1.-EXAMEN MÉDICO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
     "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
     "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
     "13.-LÍNEA DE TIEMPO", "🎓 SOBRE NOSOTROS"
-])
+]
+
+if "hoja_activa" not in st.session_state:
+    st.session_state["hoja_activa"] = OPCIONES_HOJAS[0]
+
+hoja_activa = st.radio(
+    "Navega por hoja:",
+    OPCIONES_HOJAS,
+    horizontal=True,
+    label_visibility="collapsed",
+    key="hoja_activa",
+)
+st.markdown("---")
 
 # ---------------------------------------------------------------------------------------
-with tabs[0]:
+if hoja_activa == "0.-DATOS":
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
 
     col_datos, col_sticker = st.columns([2, 1])
@@ -968,7 +981,7 @@ with tabs[0]:
               emoji="📝", color="#E3F2FD", borde="#2196F3")
 
 # ---------------------------------------------------------------------------------------
-with tabs[1]:
+elif hoja_activa == "1.-EXAMEN MÉDICO":
     hoja_header(1, "Categoriza tus datos según su nivel correspondiente, exactamente como las fórmulas SI anidadas del Excel.")
 
     _cat_hemo = clasif_hemoglobina(hemo, etapa, genero)
@@ -1061,7 +1074,7 @@ with tabs[1]:
               emoji="🩸", color="#FFEBEE", borde="#E53935")
 
 # ---------------------------------------------------------------------------------------
-with tabs[2]:
+elif hoja_activa == "2.-IMC Y PERCENTIL":
     hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
                    "En adolescentes y niños se incluye también el Percentil.")
     col1, col2 = st.columns(2)
@@ -1114,7 +1127,7 @@ with tabs[2]:
               emoji="⚖️", color="#F3E5F5", borde="#8E24AA")
 
 # ---------------------------------------------------------------------------------------
-with tabs[3]:
+elif hoja_activa == "3.-TMB":
     hoja_header(3, "Fórmula de Mifflin-St Jeor. Biológicamente, los hombres suelen tener más masa muscular y "
                    "las mujeres más porcentaje de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
     if genero == "Hombre":
@@ -1128,7 +1141,7 @@ with tabs[3]:
               emoji="⚡", color="#FFF3E0", borde="#FB8C00")
 
 # ---------------------------------------------------------------------------------------
-with tabs[4]:
+elif hoja_activa == "4.-RCD":
     hoja_header(4)
     st.latex(r"RCD = TMB \times Factor\ de\ Actividad")
     tabla_bonita(pd.DataFrame({
@@ -1145,7 +1158,7 @@ with tabs[4]:
               emoji="🔥", color="#E8F5E9", borde="#43A047")
 
 # ---------------------------------------------------------------------------------------
-with tabs[5]:
+elif hoja_activa == "5.-OBJETIVO":
     hoja_header(5)
     st.info("A diferencia de los adultos, el cuerpo de los menores necesita energía constante no solo para "
             "moverse, sino para el desarrollo de órganos y huesos. Por ello, cualquier ajuste calórico debe "
@@ -1179,7 +1192,7 @@ with tabs[5]:
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
 
 # ---------------------------------------------------------------------------------------
-with tabs[6]:
+elif hoja_activa == "6.-MACRONUTRIENTES":
     hoja_header(6, "Se usan las calorías recomendadas según el objetivo nutricional (Hoja 5), no el RCD base.")
     col1, col2, col3 = st.columns(3)
     col1.metric("Proteínas (20%)", f"{gr_prot:.1f} g", f"{cal_prot:.1f} kcal/día")
@@ -1215,7 +1228,7 @@ with tabs[6]:
               emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
 
 # ---------------------------------------------------------------------------------------
-with tabs[7]:
+elif hoja_activa == "7.-PORCIONES":
     hoja_header(7, "Se toma el RCD final (según objetivo) y se multiplica por el factor de cada comida.")
     tabla_bonita(pd.DataFrame({
         "Comida": list(porciones.keys()),
@@ -1256,7 +1269,7 @@ with tabs[7]:
               emoji="🍽️", color="#E0F7FA", borde="#00ACC1")
 
 # ---------------------------------------------------------------------------------------
-with tabs[8]:
+elif hoja_activa == "8.-FATSECRET":
     hoja_header(8)
     st.markdown("*\"Conocer la información nutricional de los alimentos permite llevar una alimentación más "
                 "equilibrada y saludable. Una buena nutrición ayuda al crecimiento, desarrollo y bienestar del organismo.\"*")
@@ -1283,7 +1296,7 @@ with tabs[8]:
               emoji="🌐", color="#E0F2F1", borde="#00796B")
 
 # ---------------------------------------------------------------------------------------
-with tabs[9]:
+elif hoja_activa == "9.-DIETA":
     hoja_header(9, "Elige un alimento por macronutriente en cada comida y arma tu menú diario personalizado.")
 
     seleccion = {}
@@ -1383,7 +1396,7 @@ with tabs[9]:
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
 # ---------------------------------------------------------------------------------------
-with tabs[10]:
+elif hoja_activa == "10.-CLIMA CHICLAYO":
     hoja_header(10)
 
     col_clima, col_sticker_clima = st.columns([3, 1])
@@ -1411,7 +1424,7 @@ with tabs[10]:
               emoji="🌡️", color="#FFF8E1", borde="#F9A825")
 
 # ---------------------------------------------------------------------------------------
-with tabs[11]:
+elif hoja_activa == "11.-APORTE 1: EMBARAZO":
     hoja_header(11, "Calculadora independiente (igual que en el Excel), no conectada a los datos generales de la Hoja 0.")
     nombre_emb = st.text_input("Nombre:", "")
     c1, c2, c3 = st.columns(3)
@@ -1440,7 +1453,7 @@ with tabs[11]:
               emoji="👶", color="#F8ECFB", borde="#BA68C8")
 
 # ---------------------------------------------------------------------------------------
-with tabs[12]:
+elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     hoja_header(12, "La cafeína tarda entre 5 y 6 horas en reducirse a la mitad en el cuerpo. Calcular de 8 a 10 horas "
                     "antes de acostarse asegura que el estimulante baje lo suficiente para no bloquear los receptores "
                     "cerebrales del sueño, protegiendo el descanso profundo.")
@@ -1460,7 +1473,7 @@ with tabs[12]:
               emoji="🌙", color="#EDE7F6", borde="#5E35B1")
 
 # ---------------------------------------------------------------------------------------
-with tabs[13]:
+elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hoja_header(13, "Proyección basada en el principio termodinámico de las 7,700 kcal por kilogramo de grasa "
                     "corporal: la misma constante que usan los nutricionistas para estimar cambios de peso.")
 
@@ -1520,7 +1533,7 @@ with tabs[13]:
               f"los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
               emoji="📈", color="#E8EAF6", borde="#3949AB")
 
-with tabs[14]:
+elif hoja_activa == "🎓 SOBRE NOSOTROS":
     _, titulo13, emoji13, borde13, fondo13 = COLORES[14]
     st.markdown(f"""
     <div style="background:{fondo13};border-left:10px solid {borde13};border-radius:16px;
