@@ -1679,22 +1679,36 @@ elif hoja_activa == "📄 MI REPORTE":
 
     _cuerpo_correo = "\n".join(_lineas_cuerpo)
     _asunto_correo = f"Mi Informe de Resultados - CIAM&SUNI ({_fecha_reporte})"
-
-    # Construimos el link mailto: (destinatario = el propio correo que la persona escribió)
-    _destinatario_mailto = correo_usuario.strip() if correo_usuario.strip() else ""
-    _mailto_url = (
-        f"mailto:{quote(_destinatario_mailto)}"
-        f"?subject={quote(_asunto_correo)}"
-        f"&body={quote(_cuerpo_correo)}"
-    )
+    _destinatario = correo_usuario.strip() if correo_usuario.strip() else ""
 
     if not correo_usuario.strip():
-        st.info("✍️ Escribe tu correo electrónico en la barra lateral (arriba del todo) para que el botón "
-                "de abajo ya venga con tu dirección lista.")
+        st.info("✍️ Escribe tu correo electrónico en la barra lateral (arriba del todo) para que los botones "
+                "de abajo ya vengan con tu dirección lista.")
 
-    st.link_button("✉️ Abrir mi correo con el reporte ya redactado", _mailto_url, use_container_width=True)
-    st.caption("Se abrirá tu aplicación de correo (Gmail, Outlook, Apple Mail, etc.) con el mensaje ya escrito. "
-               "Solo tienes que revisar el destinatario y darle clic en **Enviar**.")
+    # Enlaces de "redactar correo" que abren directo en el navegador (no dependen de tener
+    # una app de correo instalada ni configurada como predeterminada en el dispositivo).
+    _gmail_url = (
+        "https://mail.google.com/mail/?view=cm&fs=1"
+        f"&to={quote(_destinatario)}&su={quote(_asunto_correo)}&body={quote(_cuerpo_correo)}"
+    )
+    _outlook_url = (
+        "https://outlook.live.com/mail/0/deeplink/compose"
+        f"?to={quote(_destinatario)}&subject={quote(_asunto_correo)}&body={quote(_cuerpo_correo)}"
+    )
+
+    st.caption("Elige con qué correo quieres enviarlo — se abrirá una pestaña nueva con el mensaje ya redactado, "
+               "listo para que le des clic en **Enviar**:")
+    col_gm, col_out = st.columns(2)
+    with col_gm:
+        st.link_button("📮 Redactar en Gmail", _gmail_url, use_container_width=True)
+    with col_out:
+        st.link_button("📮 Redactar en Outlook", _outlook_url, use_container_width=True)
+
+    st.markdown("**¿Usas otro correo (iCloud, Yahoo, etc.)?** Copia el texto de abajo y pégalo en un correo nuevo "
+                "dirigido a tu propia dirección — dale clic al ícono de copiar en la esquina de la caja:")
+    st.code(f"Para: {_destinatario or '(escribe tu correo en la barra lateral)'}\n"
+            f"Asunto: {_asunto_correo}\n\n{_cuerpo_correo}", language=None)
+
 
     st.divider()
     st.caption("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
