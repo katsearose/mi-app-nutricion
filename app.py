@@ -1575,7 +1575,8 @@ elif hoja_activa == "📄 MI REPORTE":
     # --- Bloque 2: Examen médico, si hay datos ---
     st.markdown("#### 🩸 Examen médico")
     _valores_examen = [hemo, trigli, gluco, coles, hierro]
-    if any(v > 0 for v in _valores_examen):
+    _tiene_examen = any(v > 0 for v in _valores_examen)
+    if _tiene_examen:
         _cat_hemo_r = clasif_hemoglobina(hemo, etapa, genero)
         _cat_trigli_r = clasif_trigliceridos(trigli)
         _cat_gluco_r = clasif_glucosa(gluco)
@@ -1610,7 +1611,90 @@ elif hoja_activa == "📄 MI REPORTE":
     st.markdown("#### 📈 Proyección estimada (60 días)")
     _deficit_r = rcd - rcd_final
     _peso_cambio_r = (_deficit_r * 60) / 7700
-    st.metric("Peso estimado en 60 días", f"{peso - _peso_cambio_r:.1f} kg")
+    _peso_proyectado_r = peso - _peso_cambio_r
+    st.metric("Peso estimado en 60 días", f"{_peso_proyectado_r:.1f} kg")
+
+    # =====================================================================================
+    # NUEVO: Enviar el reporte por correo usando "mailto:" — sin SMTP, sin contraseñas.
+    # Abre el propio cliente de correo del usuario (Gmail, Outlook, etc.) con el mensaje
+    # ya redactado en el cuerpo. El usuario solo tiene que darle clic a "Enviar" desde su cuenta.
+    # =====================================================================================
+    st.divider()
+    st.markdown("#### 📧 Enviar este reporte a tu correo")
+
+    # Armamos el cuerpo del correo en texto plano con todo el resumen
+    _lineas_cuerpo = [
+        f"Informe de Resultados - CIAM&SUNI",
+        f'C.E.P. "Santa Maria Reina", Chiclayo',
+        f"Generado: {_fecha_reporte}",
+        "",
+        f"Nombre: {_nombre_saludo}",
+        f"Edad: {edad} anios ({etapa})",
+        f"Genero: {genero}",
+        "",
+        "--- Datos antropometricos ---",
+        f"Peso: {peso} kg",
+        f"Estatura: {estatura} cm",
+        f"IMC: {imc} ({_categoria_imc_usuario})",
+        "",
+        "--- Requerimiento energetico ---",
+        f"TMB: {tmb:.0f} kcal/dia",
+        f"RCD (gasto diario): {rcd:.0f} kcal/dia",
+        f"Meta calorica (objetivo): {rcd_final:.0f} kcal/dia",
+        "",
+        "--- Macronutrientes recomendados ---",
+        f"Proteinas: {gr_prot:.1f} g",
+        f"Carbohidratos: {gr_carb:.1f} g",
+        f"Grasas: {gr_gras:.1f} g",
+    ]
+
+    if _tiene_examen:
+        _lineas_cuerpo += [
+            "",
+            "--- Examen medico ---",
+            f"Hemoglobina: {hemo} g/dL -> {clasif_hemoglobina(hemo, etapa, genero)}",
+            f"Trigliceridos: {trigli} mg/dL -> {clasif_trigliceridos(trigli)}",
+            f"Glucosa: {gluco} mg/dL -> {clasif_glucosa(gluco)}",
+            f"Colesterol: {coles} mg/dL -> {clasif_colesterol(coles)}",
+            f"Hierro: {hierro} ug/dL -> {clasif_hierro(hierro, etapa, genero)}",
+        ]
+
+    if _tiene_dieta:
+        _lineas_cuerpo += ["", "--- Plan de comidas del dia ---"]
+        for comida in DIETA:
+            _c = st.session_state.get(f"c_{comida}", "—")
+            _p = st.session_state.get(f"p_{comida}", "—")
+            _g = st.session_state.get(f"g_{comida}", "—")
+            _lineas_cuerpo.append(f"{comida}: {_c} / {_p} / {_g}")
+
+    _lineas_cuerpo += [
+        "",
+        "--- Proyeccion estimada (60 dias) ---",
+        f"Peso estimado: {_peso_proyectado_r:.1f} kg",
+        "",
+        "Este informe es orientativo y educativo. No reemplaza una evaluacion medica o nutricional profesional.",
+        "",
+        "CIAM&SUNI - Tu Salud, Personalizada",
+    ]
+
+    _cuerpo_correo = "\n".join(_lineas_cuerpo)
+    _asunto_correo = f"Mi Informe de Resultados - CIAM&SUNI ({_fecha_reporte})"
+
+    # Construimos el link mailto: (destinatario = el propio correo que la persona escribió)
+    _destinatario_mailto = correo_usuario.strip() if correo_usuario.strip() else ""
+    _mailto_url = (
+        f"mailto:{quote(_destinatario_mailto)}"
+        f"?subject={quote(_asunto_correo)}"
+        f"&body={quote(_cuerpo_correo)}"
+    )
+
+    if not correo_usuario.strip():
+        st.info("✍️ Escribe tu correo electrónico en la barra lateral (arriba del todo) para que el botón "
+                "de abajo ya venga con tu dirección lista.")
+
+    st.link_button("✉️ Abrir mi correo con el reporte ya redactado", _mailto_url, use_container_width=True)
+    st.caption("Se abrirá tu aplicación de correo (Gmail, Outlook, Apple Mail, etc.) con el mensaje ya escrito. "
+               "Solo tienes que revisar el destinatario y darle clic en **Enviar**.")
 
     st.divider()
     st.caption("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
@@ -1618,7 +1702,7 @@ elif hoja_activa == "📄 MI REPORTE":
 
     caja_util(f"Este es tu resumen final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
               "las hojas anteriores, como si fuera el informe que te entregarían en un consultorio. Puedes "
-              "tomarle una captura de pantalla o imprimir la página para guardarlo. 📄✨",
+              "enviártelo a tu correo con el botón de arriba, o tomarle una captura de pantalla. 📄✨",
               emoji="📄", color="#E0F2F1", borde="#00695C")
 
 elif hoja_activa == "🎓 SOBRE NOSOTROS":
