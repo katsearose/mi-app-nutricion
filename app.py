@@ -941,26 +941,6 @@ tabs = st.tabs([
     "13.-LÍNEA DE TIEMPO", "🎓 SOBRE NOSOTROS"
 ])
 
-# --- Al cambiar de pestaña, sube la página al inicio para que cada Hoja se sienta separada ---
-components.html("""
-<script>
-function activarScrollAlCambiarTab() {
-    const doc = window.parent.document;
-    const botones = doc.querySelectorAll('button[data-baseweb="tab"]');
-    botones.forEach((btn) => {
-        if (!btn.dataset.scrollFixApplied) {
-            btn.dataset.scrollFixApplied = "true";
-            btn.addEventListener('click', () => {
-                setTimeout(() => { window.parent.scrollTo({top: 0, behavior: 'smooth'}); }, 60);
-            });
-        }
-    });
-}
-activarScrollAlCambiarTab();
-new MutationObserver(activarScrollAlCambiarTab).observe(window.parent.document.body, {childList: true, subtree: true});
-</script>
-""", height=0)
-
 # ---------------------------------------------------------------------------------------
 with tabs[0]:
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
