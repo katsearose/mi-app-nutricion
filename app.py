@@ -28,7 +28,8 @@ COLORES = {
     11: ("Aporte 1", "TMB en Embarazo",                       "👶", "#BA68C8", "#F8ECFB"),
     12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5E35B1", "#EDE7F6"),
     13: ("13", "Línea de Tiempo: Tu Progreso Estimado",       "📈", "#3949AB", "#E8EAF6"),
-    14: ("", "Sobre Nosotras",                                 "🎓", "#7A1F2B", "#FBEAEC"),
+    14: ("14", "Mi Reporte de Resultados",                    "📄", "#00695C", "#E0F2F1"),
+    15: ("", "Sobre Nosotras",                                 "🎓", "#7A1F2B", "#FBEAEC"),
 }
 
 # =========================================================================================
@@ -520,10 +521,36 @@ def clasif_imc_adulto(imc):
     else: return "Obesidad Clase 3"
 
 
+def color_categoria_imc(categoria):
+    """Asigna un color tipo semáforo a cada categoría de IMC: verde = saludable,
+    ámbar = atención, rojo = riesgo alto. Se usa para pintar la categoría en pantalla."""
+    if categoria == "Peso Saludable":
+        color = "verde"
+    elif categoria in ["Bajo Peso", "Sobrepeso"]:
+        color = "ambar"
+    elif categoria in ["Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]:
+        color = "rojo"
+    else:
+        color = "gris"
+    return SEMAFORO_ESTILO[color]
+
+
+def tarjeta_categoria_imc(titulo, categoria):
+    """Tarjeta compacta que muestra la categoría de IMC con su color de semáforo correspondiente."""
+    estilo = color_categoria_imc(categoria)
+    st.markdown(f"""
+    <div style="background:{estilo['fondo']};border-radius:16px;padding:14px 16px;text-align:center;
+                border:2px solid {estilo['hex']};height:100%;">
+        <div style="font-size:0.8rem;color:#666;font-weight:600;margin-bottom:4px;">{titulo}</div>
+        <div style="font-weight:800;font-size:1.3rem;color:{estilo['hex']};">{estilo['emoji']} {categoria}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, genero_usuario=None):
-    """Recrea el gráfico de percentiles TAL COMO aparece en el Excel original: bandas de color
-    entre cada curva (P5, P50, P85, P95), con el IMC en el eje Y (sin convertir a kilogramos),
-    etiquetas de dato en cada punto, y una estrella marcando la posición del usuario si corresponde."""
+    """Recrea el gráfico de percentiles con bandas de color entre cada curva (P5, P50, P85, P95),
+    con el IMC en el eje Y, etiquetas de dato en cada punto, y una estrella marcando la posición
+    del usuario si corresponde."""
     tabla = PERCENTIL_HOMBRE if genero_tabla == "Hombre" else PERCENTIL_MUJER
     edades = sorted(tabla.keys())
     p5 = [tabla[e][0] for e in edades]
@@ -535,7 +562,7 @@ def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, 
 
     fig = go.Figure()
 
-    # ---- Bandas de color (de abajo hacia arriba), igual que el Excel original ----
+    # ---- Bandas de color (de abajo hacia arriba) ----
     fig.add_trace(go.Scatter(x=edades, y=[y_min] * len(edades), line=dict(width=0),
                               showlegend=False, hoverinfo="skip"))
     fig.add_trace(go.Scatter(x=edades, y=p5, fill="tonexty", fillcolor="rgba(206,147,216,0.30)",
@@ -549,7 +576,7 @@ def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, 
     fig.add_trace(go.Scatter(x=edades, y=[y_max] * len(edades), fill="tonexty", fillcolor="rgba(239,83,80,0.25)",
                               line=dict(width=0), showlegend=False, hoverinfo="skip"))
 
-    # ---- Líneas con etiquetas de dato en cada punto (como en el Excel) ----
+    # ---- Líneas con etiquetas de dato en cada punto ----
     fig.add_trace(go.Scatter(x=edades, y=p5, mode="lines+markers+text", name="Percentil 5",
                               line=dict(color="#1E88E5", width=3), marker=dict(size=5),
                               text=[f"{v:.1f}" for v in p5], textposition="bottom center",
@@ -773,6 +800,9 @@ if _ESCUDO.exists():
     st.sidebar.image(str(_ESCUDO), width=130)
 
 st.sidebar.header("📝 ¡Introduce tus datos!")
+st.sidebar.caption("🔒 Tus datos son privados: solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.")
+
+correo_usuario = st.sidebar.text_input("✉️ Tu correo electrónico:", "")
 
 genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=1)
 
@@ -786,34 +816,19 @@ else:
 peso_max_actual = PESO_MAX[genero]
 peso = st.sidebar.number_input(
     "Peso (en kg):", min_value=1.0, max_value=peso_max_actual, value=min(75.0, peso_max_actual), step=0.1,
-    help=f"Tope máximo: {peso_max_actual:.0f} kg."
-)
-st.sidebar.caption(
-    "⚠️ No se puede superar el peso corporal más alto documentado en la historia médica: "
-    f"{'Jon Brower Minnoch, ~635 kg (Hombres)' if genero=='Hombre' else 'Carol Yager, ~544 kg (Mujeres)'}. "
-    "El sistema no acepta valores mayores."
+    help=f"Tope máximo: {peso_max_actual:.0f} kg (récord mundial documentado)."
 )
 
 estatura_max_actual = ESTATURA_MAX[genero]
 estatura = st.sidebar.number_input(
     "Estatura (en cm):", min_value=30, max_value=estatura_max_actual, value=min(168, estatura_max_actual), step=1,
-    help=f"Tope máximo: {estatura_max_actual} cm."
-)
-st.sidebar.caption(
-    "⚠️ No se puede superar la estatura más alta documentada en la historia: "
-    f"{'Robert Wadlow, 2.72 m (Hombres)' if genero=='Hombre' else 'Zeng Jinlian, 2.48 m (Mujeres)'}. "
-    "El sistema no acepta valores mayores."
+    help=f"Tope máximo: {estatura_max_actual} cm (récord mundial documentado)."
 )
 
 edad_max_actual = EDAD_MAX[genero]
 edad = st.sidebar.number_input(
     "Edad (en años):", min_value=1, max_value=edad_max_actual, value=9, step=1,
-    help=f"Tope máximo: {edad_max_actual} años."
-)
-st.sidebar.caption(
-    "⚠️ No se puede superar la edad humana más longeva documentada: "
-    f"{'Jiroemon Kimura, 116 años (Hombres)' if genero=='Hombre' else 'Jeanne Calment, 122 años (Mujeres)'}. "
-    "El sistema no acepta valores mayores."
+    help=f"Tope máximo: {edad_max_actual} años (récord mundial documentado)."
 )
 
 # --- Etapa detectada automáticamente al ingresar la edad (ya no se elige manualmente) ---
@@ -837,43 +852,26 @@ else:
     ajuste_subir = 0.0
 
 st.sidebar.markdown("---")
-st.sidebar.info("ℹ️ **¿Cómo saber mi actividad física?**\n\n"
-                 "**Sedentaria:** solo actividades de la vida diaria (estudiar, dormir).\n\n"
-                 "**Ligero:** ejercicio 1-3 veces por semana.\n\n"
-                 "**Moderada:** ejercicio 3-5 veces por semana.\n\n"
-                 "**Intensa:** ejercicio diario de alta intensidad o deportista de competencia.")
+with st.sidebar.expander("ℹ️ ¿Cómo saber mi actividad física?"):
+    st.caption("**Sedentaria:** poco o nada de ejercicio.\n\n"
+               "**Ligero:** ejercicio 1-3 veces/semana.\n\n"
+               "**Moderada:** ejercicio 3-5 veces/semana.\n\n"
+               "**Intensa:** ejercicio diario o deportista.")
 
-# --- indicador de "¿qué significa el ajuste calórico y el plazo?" ---
-if objetivo == "Mantenerse":
-    st.sidebar.info("ℹ️ **¿Qué significa el ajuste calórico y el plazo?**\n\n"
-                     "Como tu objetivo es **mantenerte**, no se aplica ningún ajuste (0%): "
-                     "simplemente comerás lo mismo que gastas.\n\n"
-                     "Si más adelante eliges *Bajar* o *Subir* de peso, aquí te explicaremos "
-                     "qué significa cada porcentaje y cuánto tiempo toma ver resultados.")
-else:
-    st.sidebar.info("ℹ️ **¿Qué significa el ajuste calórico y el plazo?**\n\n"
-                     "El **ajuste calórico** es cuánto le sumas o restas a tu RCD (Hoja 4) para lograr tu meta. "
-                     "Mientras más alto el porcentaje, más rápido cambia tu peso — pero también exige más disciplina.\n\n"
-                     "**Corto plazo (10%):** cambios notorios en pocas semanas. El más exigente y menos recomendado "
-                     "para menores de edad.\n\n"
-                     "**Plazo medio (15% bajar / 20% subir):** un punto intermedio entre velocidad y sostenibilidad.\n\n"
-                     "**Plazo largo (20% bajar / 30% subir):** cambios más lentos, pero más seguros, fáciles de "
-                     "mantener y adecuados para cuerpos en crecimiento.\n\n"
-                     "**0%:** no aplica ningún cambio; tu peso se mantiene igual.")
+if objetivo != "Mantenerse":
+    with st.sidebar.expander("ℹ️ ¿Qué significa el ajuste calórico?"):
+        st.caption("Es cuánto le sumas o restas a tu gasto diario (RCD) para lograr tu meta. "
+                   "A mayor porcentaje, cambios más rápidos pero más exigentes.\n\n"
+                   "**10%:** corto plazo.\n\n**15%/20%:** plazo medio.\n\n**20%/30%:** plazo largo, "
+                   "más lento y seguro — recomendado para cuerpos en crecimiento.")
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("Datos adicionales (Hoja 1 - Examen médico)")
-hemo = st.sidebar.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
-                                help=f"Tope máximo: {HEMO_MAX:.0f} g/dL (valores mayores son clínicamente imposibles).")
-trigli = st.sidebar.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
-                                  help=f"Tope máximo: {TRIGLI_MAX:.0f} mg/dL.")
-gluco = st.sidebar.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
-                                 help=f"Tope máximo: {GLUCO_MAX:.0f} mg/dL.")
-coles = st.sidebar.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
-                                 help=f"Tope máximo: {COLES_MAX:.0f} mg/dL.")
-hierro = st.sidebar.number_input("Hierro (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
-                                  help=f"Tope máximo: {HIERRO_MAX:.0f} µg/dL.")
-st.sidebar.caption("⚠️ Estos topes evitan valores clínicamente imposibles; el sistema no acepta cifras mayores.")
+st.sidebar.subheader("Examen médico (opcional)")
+hemo = st.sidebar.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1)
+trigli = st.sidebar.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0)
+gluco = st.sidebar.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0)
+coles = st.sidebar.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0)
+hierro = st.sidebar.number_input("Hierro (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0)
 
 # =========================================================================================
 # CÁLCULOS CENTRALES (siguiendo el orden y las referencias EXACTAS de las hojas del Excel)
@@ -930,6 +928,12 @@ porciones = {
 # Hoja 10: Gasto energético ajustado al clima de Chiclayo
 rcd_chiclayo = rcd * 0.95
 
+# Categoría IMC del usuario (para reutilizar en Hoja 2 y en el Reporte)
+if etapa in ["Niñez", "Adolescencia"]:
+    _percentil_usuario, _categoria_imc_usuario = clasif_percentil(imc, edad, genero)
+else:
+    _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
+
 # =========================================================================================
 # NAVEGACIÓN
 # =========================================================================================
@@ -939,7 +943,7 @@ OPCIONES_HOJAS = [
     "0.-DATOS", "1.-EXAMEN MÉDICO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
     "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
     "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
-    "13.-LÍNEA DE TIEMPO", "🎓 SOBRE NOSOTROS"
+    "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE", "🎓 SOBRE NOSOTROS"
 ]
 
 if "hoja_activa" not in st.session_state:
@@ -961,9 +965,9 @@ if hoja_activa == "0.-DATOS":
     col_datos, col_sticker = st.columns([2, 1])
     with col_datos:
         df0 = pd.DataFrame({
-            "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
+            "Variable": ["Nombre", "Correo", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
                          "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
-            "Valor": [_nombre_saludo, f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
+            "Valor": [_nombre_saludo, correo_usuario if correo_usuario.strip() else "—", f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
                       objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
         })
         tabla_bonita(df0, 0)
@@ -1080,18 +1084,15 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     col1, col2 = st.columns(2)
     with col1:
         st.metric("Resultado IMC", imc)
-        st.latex(r"IMC = \frac{Peso\ (kg)}{Altura\ (m)^2}")
     with col2:
         if etapa in ["Niñez", "Adolescencia"]:
-            percentil, categoria = clasif_percentil(imc, edad, genero)
-            if percentil is None:
-                st.error(categoria)
+            if _percentil_usuario is None:
+                st.error(_categoria_imc_usuario)
             else:
-                st.metric("Percentil", percentil)
-                st.metric("Categoría", categoria)
+                st.metric("Percentil", _percentil_usuario)
+                tarjeta_categoria_imc("Categoría", _categoria_imc_usuario)
         else:
-            categoria = clasif_imc_adulto(imc)
-            st.metric("Categoría (Adultez/Vejez, sin percentil)", categoria)
+            tarjeta_categoria_imc("Categoría (Adultez/Vejez, sin percentil)", _categoria_imc_usuario)
 
     caja_titulo("Categorías generales de IMC", 2)
     tabla_bonita(pd.DataFrame({
@@ -1100,9 +1101,10 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     }), 2)
 
     st.markdown("#### 📈 Percentiles de IMC por edad (2 a 20 años)")
-    st.caption("Este gráfico reproduce el mismo diseño del Excel original: bandas de color entre cada percentil "
-               "(P5, P50, P85, P95) y tu posición exacta (edad vs. IMC) marcada con una estrella azul, si tu edad "
-               "está entre 2 y 20 años.")
+    st.caption("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
+               "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
+               "mientras que las franjas de arriba o abajo indican bajo peso, sobrepeso u obesidad. La estrella ⭐ "
+               "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.")
     sub_mujeres, sub_hombres = st.tabs(["👧 Mujeres", "👦 Hombres"])
     with sub_mujeres:
         st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
@@ -1128,12 +1130,8 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
-    hoja_header(3, "Fórmula de Mifflin-St Jeor. Biológicamente, los hombres suelen tener más masa muscular y "
-                   "las mujeres más porcentaje de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
-    if genero == "Hombre":
-        st.latex(r"TMB = (10 \times Peso) + (6.25 \times Altura) - (5 \times Edad) + 5")
-    else:
-        st.latex(r"TMB = (10 \times Peso) + (6.25 \times Altura) - (5 \times Edad) - 161")
+    hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
+                   "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
     st.metric("Resultado TMB", f"{tmb:.0f} kcal/día")
     caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
@@ -1143,7 +1141,6 @@ elif hoja_activa == "3.-TMB":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
     hoja_header(4)
-    st.latex(r"RCD = TMB \times Factor\ de\ Actividad")
     tabla_bonita(pd.DataFrame({
         "Actividad": ["Sedentaria", "Ligero", "Moderada", "Intensa"],
         "Hombres": [1.2, 1.55, 1.8, 2.1],
@@ -1171,21 +1168,12 @@ elif hoja_activa == "5.-OBJETIVO":
     }), 5)
     st.metric("Plazo estimado del cambio", plazo)
 
-    st.markdown(f"""
-    <div style="background-color:#FCE4EC;padding:16px 20px;border-radius:14px;
-                border-left:7px solid #D81B60;margin-top:10px;margin-bottom:6px;">
-    <b>ℹ️ ¿Qué significa el plazo estimado?</b><br>
-    <b>Corto plazo (10%):</b> el ajuste más fuerte; genera cambios notorios en pocas semanas, pero exige más
-    disciplina y control médico, sobre todo en menores de edad.<br>
-    <b>Plazo medio (15% bajar / 20% subir):</b> un punto intermedio entre velocidad de resultados y facilidad
-    para mantenerlo en el día a día.<br>
-    <b>Plazo largo (20% bajar / 30% subir):</b> el cambio más lento, pero también el más seguro y sostenible,
-    ideal para cuerpos que todavía están en crecimiento.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("ℹ️ ¿Qué significa el plazo estimado?"):
+        st.caption("**Corto plazo (10%):** cambios notorios en pocas semanas, exige más disciplina.\n\n"
+                   "**Plazo medio (15% bajar / 20% subir):** equilibrio entre velocidad y sostenibilidad.\n\n"
+                   "**Plazo largo (20% bajar / 30% subir):** el cambio más lento, pero más seguro, ideal para "
+                   "cuerpos en crecimiento.")
 
-    st.caption("El porcentaje define la velocidad e impacto del cambio: 0% mantiene el peso, valores mayores "
-               "aceleran el proceso, siempre evitando descompensaciones, fatiga crónica o alteración del crecimiento.")
     caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
               "número exacto de calorías al día. Es el paso que conecta tu objetivo personal con la ciencia: "
               "sin este ajuste, no sabrías cuánto comer realmente para lograr lo que quieres. 🎯",
@@ -1410,8 +1398,7 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
         st.info("Según la FAO, vivir en climas cálidos y desérticos continuos como Chiclayo genera una adaptación "
                 "biológica: el cuerpo reduce su tasa metabólica basal para evitar producir calor interno excesivo. "
                 "Por ello, se aplica un factor de **0.95**, restando automáticamente un 5% al gasto calórico diario total.")
-        st.latex(r"RCD_{Chiclayo} = RCD \times 0.95")
-        st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo), igual que en el Excel original.")
+        st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo).")
         st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo:.1f} kcal/día")
 
     st.divider()
@@ -1425,7 +1412,7 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "11.-APORTE 1: EMBARAZO":
-    hoja_header(11, "Calculadora independiente (igual que en el Excel), no conectada a los datos generales de la Hoja 0.")
+    hoja_header(11, "Calculadora independiente, no conectada a los datos generales de la Hoja 0.")
     nombre_emb = st.text_input("Nombre:", "")
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -1442,7 +1429,6 @@ elif hoja_activa == "11.-APORTE 1: EMBARAZO":
     st.markdown("- **Tercer trimestre:** suma +452 calorías al día.")
 
     tmb_emb = (10 * peso_emb) + (6.25 * altura_emb) - (5 * edad_emb) - 161 + ajuste_trim
-    st.latex(r"TMB = (10 \times Peso) + (6.25 \times Altura) - (5 \times Edad) - 161 + Ajuste\ Trimestre")
     if nombre_emb.strip():
         st.metric(f"Total TMB para {nombre_emb}", f"{tmb_emb:.0f} kcal/día")
     else:
@@ -1460,7 +1446,6 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     hora_dormir = st.time_input("Hora de dormir:", value=datetime.strptime("22:00", "%H:%M").time())
     dt_dormir = datetime.combine(datetime.today(), hora_dormir)
     dt_limite = dt_dormir - timedelta(hours=8)
-    st.latex(r"Hora\ L\'imite = RESIDUO\left(Hora\_Dormir - \frac{8}{24}\,;\,1\right)")
     st.metric("Hora límite recomendada para tomar cafeína", dt_limite.time().strftime("%H:%M"))
     st.info("Un buen descanso es fundamental en la dieta, ya que regula las hormonas del hambre y reduce la "
             "ansiedad por comer dulce al día siguiente.")
@@ -1477,9 +1462,8 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hoja_header(13, "Proyección basada en el principio termodinámico de las 7,700 kcal por kilogramo de grasa "
                     "corporal: la misma constante que usan los nutricionistas para estimar cambios de peso.")
 
-    st.latex(r"PesoProyectado = \frac{Deficit Diario \times 60}{7700}")
-    st.caption("DeficitDiario = TDEE (Hoja 4, tu gasto de mantenimiento) − Calorías Consumidas (Hoja 5, tu meta calórica). "
-               "60 = número de días (2 meses). 7700 = kcal equivalentes a 1 kg de grasa corporal.")
+    st.caption("Se calcula comparando tu gasto de mantenimiento (Hoja 4) con tu meta calórica (Hoja 5), "
+               "proyectado a 60 días (2 meses), usando 7,700 kcal como el equivalente a 1 kg de grasa corporal.")
 
     def calcular_proyeccion(calorias_consumidas, tdee, dias=60):
         """Función proyectiva: aplica la fórmula del déficit/superávit calórico y retorna
@@ -1512,11 +1496,11 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Curva de progreso día a día, para visualizar la tendencia ---
+    # --- Curva de progreso día a día, en gráfico de área (se ve como una "montaña" que crece o baja) ---
     dias_eje = list(range(0, 61, 5))
     pesos_dia = [round(peso - (deficit_diario * d) / 7700, 1) for d in dias_eje]
     df_tiempo = pd.DataFrame({"Día": dias_eje, "Peso estimado (kg)": pesos_dia}).set_index("Día")
-    st.line_chart(df_tiempo)
+    st.area_chart(df_tiempo)
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Peso actual", f"{peso:.1f} kg")
@@ -1533,8 +1517,112 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
               f"los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
               emoji="📈", color="#E8EAF6", borde="#3949AB")
 
+# ---------------------------------------------------------------------------------------
+elif hoja_activa == "📄 MI REPORTE":
+    hoja_header(14, "Un resumen tipo 'informe de resultados' con todo lo que calculamos para ti en esta sesión.")
+
+    st.markdown(f"""
+    <div style="background:#E0F2F1;border-left:8px solid #00695C;border-radius:14px;
+                padding:14px 22px;margin-bottom:16px;">
+    🔒 <b>Privacidad:</b> este reporte se genera únicamente con la información que ingresaste en esta sesión.
+    Nada se guarda en un servidor ni queda almacenado al cerrar o recargar la página.
+    </div>
+    """, unsafe_allow_html=True)
+
+    _fecha_reporte = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    # --- Encabezado tipo "resultado médico" ---
+    st.markdown(f"""
+    <div style="background:#ffffff;border:2px solid #00695C;border-radius:18px;padding:22px 26px;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+            <div>
+                <div style="font-size:1.3rem;font-weight:800;color:#00695C;">📄 Informe de Resultados — CIAM&SUNI</div>
+                <div style="color:#555;font-size:0.9rem;">C.E.P. "Santa María Reina", Chiclayo</div>
+            </div>
+            <div style="text-align:right;color:#555;font-size:0.85rem;">Generado: {_fecha_reporte}</div>
+        </div>
+        <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+        <b>Nombre:</b> {_nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Correo:</b> {correo_usuario if correo_usuario.strip() else "No indicado"} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Edad:</b> {edad} años ({etapa}) &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Género:</b> {genero}
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- Bloque 1: Datos antropométricos ---
+    st.markdown("#### 📏 Datos antropométricos")
+    r1, r2, r3 = st.columns(3)
+    r1.metric("Peso", f"{peso} kg")
+    r2.metric("Estatura", f"{estatura} cm")
+    with r3:
+        if etapa in ["Niñez", "Adolescencia"]:
+            tarjeta_categoria_imc(f"IMC: {imc}", _categoria_imc_usuario)
+        else:
+            tarjeta_categoria_imc(f"IMC: {imc}", _categoria_imc_usuario)
+
+    st.markdown("#### 🔥 Requerimiento energético")
+    r4, r5, r6 = st.columns(3)
+    r4.metric("TMB", f"{tmb:.0f} kcal/día")
+    r5.metric("RCD (gasto diario)", f"{rcd:.0f} kcal/día")
+    r6.metric("Meta calórica (objetivo)", f"{rcd_final:.0f} kcal/día")
+
+    st.markdown("#### 🍽️ Macronutrientes recomendados")
+    r7, r8, r9 = st.columns(3)
+    r7.metric("Proteínas", f"{gr_prot:.1f} g")
+    r8.metric("Carbohidratos", f"{gr_carb:.1f} g")
+    r9.metric("Grasas", f"{gr_gras:.1f} g")
+
+    # --- Bloque 2: Examen médico, si hay datos ---
+    st.markdown("#### 🩸 Examen médico")
+    _valores_examen = [hemo, trigli, gluco, coles, hierro]
+    if any(v > 0 for v in _valores_examen):
+        _cat_hemo_r = clasif_hemoglobina(hemo, etapa, genero)
+        _cat_trigli_r = clasif_trigliceridos(trigli)
+        _cat_gluco_r = clasif_glucosa(gluco)
+        _cat_coles_r = clasif_colesterol(coles)
+        _cat_hierro_r = clasif_hierro(hierro, etapa, genero)
+        rc1, rc2, rc3, rc4, rc5 = st.columns(5)
+        with rc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo_r)
+        with rc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli_r)
+        with rc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco_r)
+        with rc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles_r)
+        with rc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro_r)
+    else:
+        st.info("Aún no ingresaste tus valores de examen médico en la barra lateral.")
+
+    # --- Bloque 3: Plan de dieta armado (si el usuario visitó la Hoja 9) ---
+    st.markdown("#### 🍱 Tu plan de comidas del día")
+    _tiene_dieta = all(f"c_{comida}" in st.session_state for comida in DIETA)
+    if _tiene_dieta:
+        filas_r = []
+        for comida in DIETA:
+            filas_r.append({
+                "Comida": comida,
+                "Carbohidrato": st.session_state.get(f"c_{comida}", "—"),
+                "Proteína": st.session_state.get(f"p_{comida}", "—"),
+                "Grasa": st.session_state.get(f"g_{comida}", "—"),
+            })
+        tabla_bonita(pd.DataFrame(filas_r), 9)
+    else:
+        st.info("Aún no armaste tu plan de comidas en la Hoja 9.-DIETA. Visítala para que aparezca aquí.")
+
+    # --- Bloque 4: Proyección a 60 días ---
+    st.markdown("#### 📈 Proyección estimada (60 días)")
+    _deficit_r = rcd - rcd_final
+    _peso_cambio_r = (_deficit_r * 60) / 7700
+    st.metric("Peso estimado en 60 días", f"{peso - _peso_cambio_r:.1f} kg")
+
+    st.divider()
+    st.caption("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
+               "profesional.")
+
+    caja_util(f"Este es tu resumen final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
+              "las hojas anteriores, como si fuera el informe que te entregarían en un consultorio. Puedes "
+              "tomarle una captura de pantalla o imprimir la página para guardarlo. 📄✨",
+              emoji="📄", color="#E0F2F1", borde="#00695C")
+
 elif hoja_activa == "🎓 SOBRE NOSOTROS":
-    _, titulo13, emoji13, borde13, fondo13 = COLORES[14]
+    _, titulo13, emoji13, borde13, fondo13 = COLORES[15]
     st.markdown(f"""
     <div style="background:{fondo13};border-left:10px solid {borde13};border-radius:16px;
                 padding:16px 26px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,0.10);">
@@ -1585,4 +1673,5 @@ elif hoja_activa == "🎓 SOBRE NOSOTROS":
 
 st.markdown("---")
 st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
-           "Alimentación) para el proyecto de tesis escolar sobre salud pública en Lambayeque, Grupo N°04.")
+           "Alimentación) para el proyecto de tesis escolar sobre salud pública en Lambayeque, Grupo N°04. "
+           "🔒 Ningún dato ingresado se almacena: toda la información vive solo en tu sesión actual.")
