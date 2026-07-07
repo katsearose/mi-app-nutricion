@@ -520,36 +520,68 @@ def clasif_imc_adulto(imc):
     else: return "Obesidad Clase 3"
 
 
-def grafico_percentil_peso(genero_tabla, estatura_m_usuario, edad_usuario=None, peso_usuario=None, genero_usuario=None):
-    """Construye un gráfico interactivo de Plotly con las curvas de peso-para-la-edad (P5, P50, P85, P95),
-    convirtiendo las tablas de percentil de IMC a kilogramos usando la estatura actual del usuario.
-    Si la edad y género del usuario coinciden con esta tabla, agrega un punto destacado con su posición."""
+def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, genero_usuario=None):
+    """Recrea el gráfico de percentiles TAL COMO aparece en el Excel original: bandas de color
+    entre cada curva (P5, P50, P85, P95), con el IMC en el eje Y (sin convertir a kilogramos),
+    etiquetas de dato en cada punto, y una estrella marcando la posición del usuario si corresponde."""
     tabla = PERCENTIL_HOMBRE if genero_tabla == "Hombre" else PERCENTIL_MUJER
     edades = sorted(tabla.keys())
-    p5 = [tabla[e][0] * estatura_m_usuario ** 2 for e in edades]
-    p50 = [tabla[e][1] * estatura_m_usuario ** 2 for e in edades]
-    p85 = [tabla[e][2] * estatura_m_usuario ** 2 for e in edades]
-    p95 = [tabla[e][3] * estatura_m_usuario ** 2 for e in edades]
+    p5 = [tabla[e][0] for e in edades]
+    p50 = [tabla[e][1] for e in edades]
+    p85 = [tabla[e][2] for e in edades]
+    p95 = [tabla[e][3] for e in edades]
+    y_max = 35
+    y_min = 0
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=edades, y=p95, mode="lines", name="P95 (Obesidad)",
-                              line=dict(color="#8E24AA", dash="dot", width=2)))
-    fig.add_trace(go.Scatter(x=edades, y=p85, mode="lines", name="P85 (Sobrepeso)",
-                              line=dict(color="#FB8C00", dash="dot", width=2)))
-    fig.add_trace(go.Scatter(x=edades, y=p50, mode="lines", name="P50 (Peso Saludable)",
-                              line=dict(color="#43A047", width=3)))
-    fig.add_trace(go.Scatter(x=edades, y=p5, mode="lines", name="P5 (Bajo Peso)",
-                              line=dict(color="#E53935", dash="dot", width=2)))
 
-    if genero_usuario == genero_tabla and edad_usuario in tabla:
-        fig.add_trace(go.Scatter(x=[edad_usuario], y=[peso_usuario], mode="markers+text",
-                                  name="Tú estás aquí", text=["Tú"], textposition="top center",
+    # ---- Bandas de color (de abajo hacia arriba), igual que el Excel original ----
+    fig.add_trace(go.Scatter(x=edades, y=[y_min] * len(edades), line=dict(width=0),
+                              showlegend=False, hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=edades, y=p5, fill="tonexty", fillcolor="rgba(206,147,216,0.30)",
+                              line=dict(width=0), showlegend=False, hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=edades, y=p50, fill="tonexty", fillcolor="rgba(100,181,246,0.30)",
+                              line=dict(width=0), showlegend=False, hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=edades, y=p85, fill="tonexty", fillcolor="rgba(129,199,132,0.30)",
+                              line=dict(width=0), showlegend=False, hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=edades, y=p95, fill="tonexty", fillcolor="rgba(255,213,79,0.30)",
+                              line=dict(width=0), showlegend=False, hoverinfo="skip"))
+    fig.add_trace(go.Scatter(x=edades, y=[y_max] * len(edades), fill="tonexty", fillcolor="rgba(239,83,80,0.25)",
+                              line=dict(width=0), showlegend=False, hoverinfo="skip"))
+
+    # ---- Líneas con etiquetas de dato en cada punto (como en el Excel) ----
+    fig.add_trace(go.Scatter(x=edades, y=p5, mode="lines+markers+text", name="Percentil 5",
+                              line=dict(color="#1E88E5", width=3), marker=dict(size=5),
+                              text=[f"{v:.1f}" for v in p5], textposition="bottom center",
+                              textfont=dict(color="#1E88E5", size=9)))
+    fig.add_trace(go.Scatter(x=edades, y=p50, mode="lines+markers+text", name="Percentil 50",
+                              line=dict(color="#43A047", width=3), marker=dict(size=5),
+                              text=[f"{v:.1f}" for v in p50], textposition="top center",
+                              textfont=dict(color="#2E7D32", size=9)))
+    fig.add_trace(go.Scatter(x=edades, y=p85, mode="lines+markers+text", name="Percentil 85",
+                              line=dict(color="#FBC02D", width=3), marker=dict(size=5),
+                              text=[f"{v:.1f}" for v in p85], textposition="top center",
+                              textfont=dict(color="#F9A825", size=9)))
+    fig.add_trace(go.Scatter(x=edades, y=p95, mode="lines+markers+text", name="Percentil 95",
+                              line=dict(color="#E53935", width=3), marker=dict(size=5),
+                              text=[f"{v:.1f}" for v in p95], textposition="top center",
+                              textfont=dict(color="#E53935", size=9)))
+
+    if genero_usuario == genero_tabla and edad_usuario in tabla and imc_usuario is not None:
+        fig.add_trace(go.Scatter(x=[edad_usuario], y=[imc_usuario], mode="markers+text",
+                                  name="Tú estás aquí", text=["Tú"], textposition="bottom center",
                                   marker=dict(color="#1565C0", size=16, symbol="star",
                                               line=dict(color="white", width=1))))
 
+    titulo_txt = "Percentil Niñas" if genero_tabla == "Mujer" else "Percentil Niños"
+    titulo_color = "#E53935" if genero_tabla == "Mujer" else "#00838F"
+
     fig.update_layout(
-        xaxis_title="Edad (años)", yaxis_title="Peso equivalente (kg)",
-        height=380, margin=dict(t=20, l=10, r=10, b=10),
+        title=dict(text=titulo_txt, font=dict(color=titulo_color, size=24, family="Arial Black"), x=0.5, xanchor="center"),
+        xaxis_title="Edad (años)", yaxis_title="IMC",
+        yaxis=dict(range=[y_min, y_max]),
+        xaxis=dict(dtick=1),
+        height=430, margin=dict(t=60, l=10, r=10, b=10),
         legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5),
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
     )
@@ -1062,14 +1094,15 @@ with tabs[2]:
         "Rango de IMC": ["Menos de 18.5", "18.5 a 24.9", "25 a 29.9", "30 o más", "30 a 34.9", "35 a 39.9", "40 o más"]
     }), 2)
 
-    st.markdown("#### 📈 Percentiles de peso por edad (2 a 20 años)")
-    st.caption("Convertimos las curvas de percentil de IMC a kilogramos usando tu estatura actual, y marcamos "
-               "tu posición exacta (edad vs. peso) con una estrella azul, si tu edad está entre 2 y 20 años.")
+    st.markdown("#### 📈 Percentiles de IMC por edad (2 a 20 años)")
+    st.caption("Este gráfico reproduce el mismo diseño del Excel original: bandas de color entre cada percentil "
+               "(P5, P50, P85, P95) y tu posición exacta (edad vs. IMC) marcada con una estrella azul, si tu edad "
+               "está entre 2 y 20 años.")
     sub_mujeres, sub_hombres = st.tabs(["👧 Mujeres", "👦 Hombres"])
     with sub_mujeres:
-        st.plotly_chart(grafico_percentil_peso("Mujer", estatura_m, edad, peso, genero), use_container_width=True)
+        st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
     with sub_hombres:
-        st.plotly_chart(grafico_percentil_peso("Hombre", estatura_m, edad, peso, genero), use_container_width=True)
+        st.plotly_chart(grafico_percentil_bandas("Hombre", edad, imc, genero), use_container_width=True)
     if edad not in PERCENTIL_MUJER:
         st.caption("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.")
 
@@ -1166,7 +1199,7 @@ with tabs[6]:
     }), 6)
 
     st.divider()
-    col_recom, col_graf1, col_graf2 = st.columns([1, 1, 1])
+    col_recom, col_graf1 = st.columns([1, 1])
     with col_recom:
         st.info("🎯 **Objetivo de esta distribución**\n\n"
                 "**20% Proteínas:** para la reparación y crecimiento de tus músculos y tejidos.\n\n"
@@ -1183,19 +1216,6 @@ with tabs[6]:
         )])
         fig_pie_macros.update_layout(height=300, margin=dict(t=10, l=10, r=10, b=10), showlegend=False)
         st.plotly_chart(fig_pie_macros, use_container_width=True)
-    with col_graf2:
-        st.markdown("**🍽️ Tu Plato Nutricional**")
-        fig_plato = go.Figure(data=[go.Pie(
-            labels=["Proteínas", "Carbohidratos", "Grasas"],
-            values=[gr_prot, gr_carb, gr_gras],
-            marker=dict(colors=["#8E24AA", "#FBC02D", "#00ACC1"]),
-            textinfo="label+percent", hole=0.45,
-        )])
-        fig_plato.update_layout(
-            height=300, margin=dict(t=10, l=10, r=10, b=10), showlegend=False,
-            annotations=[dict(text="Tu Plato", x=0.5, y=0.5, font_size=16, showarrow=False)]
-        )
-        st.plotly_chart(fig_plato, use_container_width=True)
 
     caja_util("No basta con contar calorías: también importa DE QUÉ están hechas. Esta hoja reparte tu meta "
               "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
@@ -1272,11 +1292,7 @@ with tabs[8]:
 
 # ---------------------------------------------------------------------------------------
 with tabs[9]:
-    hoja_header(9, "Elige un alimento por macronutriente en cada comida. Misma estructura y fórmulas exactas del "
-                   "Excel: la Porción Corregida usa el % de macro (Carb 50% / Proteína 20% / Grasa 30%) sobre el "
-                   "total de calorías de cada momento, y los Gramos finales se calculan como "
-                   "ROUND((Porción Corregida / kcal del alimento) × 100, 1) — asumiendo que el kcal del alimento "
-                   "es su valor por cada 100 g.")
+    hoja_header(9, "Elige un alimento por macronutriente en cada comida y arma tu menú diario personalizado.")
 
     seleccion = {}
     for comida in DIETA:
@@ -1329,10 +1345,42 @@ with tabs[9]:
     total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
     col1, col2 = st.columns(2)
     col1.metric("Total de calorías diarias (dieta armada)", f"{total_general:.2f} kcal",
-                help="= SUMA(Porción corregida Carb; Porción corregida Prot; Porción corregida Gras), igual que R48 del Excel.")
+                help="Suma de la Porción corregida de Carbohidrato + Proteína + Grasa, igual que R48 del Excel.")
     col2.metric("Comparación con calorías meta (Hoja 5)", f"{rcd_final:.1f} kcal")
     if abs(total_general - rcd_final) < 1:
         st.success("✅ La dieta armada coincide con la meta calórica del objetivo nutricional.")
+
+    st.divider()
+    st.markdown("#### ❓ Guía para entender tu tabla de dieta")
+    FAQ_DIETA = {
+        "¿Qué significa la columna 'kcal'?": (
+            "Es la cantidad de calorías que aporta ese alimento, tomando como referencia cada 100 gramos "
+            "de ese alimento (así viene definido en la base de datos nutricional del proyecto)."
+        ),
+        "¿Qué significa 'Porción corregida'?": (
+            "Es cuántas calorías del momento del día (Desayuno, Almuerzo, etc.) le corresponden a ese "
+            "macronutriente en particular. Por ejemplo, si el Almuerzo tiene 1000 kcal en total, la Porción "
+            "corregida de Carbohidrato será el 50% de esas 1000 kcal, la de Proteína el 20% y la de Grasa el 30%."
+        ),
+        "¿Qué significa 'Gramos finales a consumir'?": (
+            "Es la cantidad exacta, en gramos, que debes comer de ESE alimento específico para llegar a la "
+            "Porción corregida en calorías. Se calcula dividiendo la Porción corregida entre el kcal del "
+            "alimento y multiplicando por 100."
+        ),
+        "Entonces, ¿cuánto tengo que comer en cada comida?": (
+            "Debes preparar los tres alimentos que elegiste para ese momento del día (Carbohidrato, Proteína "
+            "y Grasa), cada uno en la cantidad de 'Gramos finales a consumir' que te muestra la tabla. Juntos, "
+            "esos tres alimentos completan las calorías que te corresponden en esa comida."
+        ),
+        "¿Por qué el total coincide con mis calorías meta?": (
+            "Porque el sistema reparte tu meta calórica diaria (Hoja 5) primero entre los 5 momentos del día "
+            "(Hoja 7) y luego, dentro de cada momento, entre los 3 macronutrientes. Al sumar todo de nuevo, "
+            "el resultado debe coincidir con tu meta calórica original."
+        ),
+    }
+    pregunta_dieta = st.selectbox("Elige una pregunta sobre tu tabla de dieta:", list(FAQ_DIETA.keys()), key="faq_dieta")
+    st.info(FAQ_DIETA[pregunta_dieta])
+
     recursos_externos(9, [
         ("🌐 Buscar alimentos en FatSecret", "https://www.fatsecret.es/"),
     ])
