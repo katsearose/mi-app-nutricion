@@ -10,119 +10,235 @@ from pathlib import Path
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
 
 # =========================================================================================
-# PALETA DE COLORES — UN COLOR DISTINTO POR CADA HOJA (inspirada en las pestañas del Excel)
+# PALETA DE COLORES — inspirada en los colores del sistema de iOS (systemBlue, systemGreen, etc.)
+# Cada hoja conserva su propio acento, ahora dentro de la paleta de iOS, con fondos "tinted"
+# muy suaves como los que usa iOS en tarjetas agrupadas (Ajustes, Salud, Recordatorios).
 # =========================================================================================
 # idx : (numero, titulo, emoji, color_borde, color_fondo)
 COLORES = {
-    0:  ("0", "¡Introduce tus datos!",                       "📝", "#2196F3", "#E3F2FD"),
-    1:  ("1", "Examen Médico de Sangre",                     "🩸", "#E53935", "#FFEBEE"),
-    2:  ("2", "Índice de Masa Corporal y Percentil",         "⚖️", "#8E24AA", "#F3E5F5"),
-    3:  ("3", "Tasa Metabólica Basal (TMB)",                 "⚡", "#FB8C00", "#FFF3E0"),
-    4:  ("4", "Requerimiento Calórico Diario (RCD)",         "🔥", "#43A047", "#E8F5E9"),
-    5:  ("5", "Subir, Mantener o Bajar el Peso",             "🎯", "#D81B60", "#FCE4EC"),
-    6:  ("6", "Cálculo de los Macronutrientes",               "🍽️", "#FBC02D", "#FFFDE7"),
-    7:  ("7", "Cálculo de las Porciones del Día",            "⏰", "#00ACC1", "#E0F7FA"),
-    8:  ("8", "Página FatSecret",                             "🌐", "#00796B", "#E0F2F1"),
-    9:  ("9", "Plan de Dieta Semanal",                        "🍱", "#FF7043", "#FBE9E7"),
-    10: ("10", "Gasto Energético — Clima de Chiclayo",       "🌡️", "#F9A825", "#FFF8E1"),
-    11: ("Aporte 1", "TMB en Embarazo",                       "👶", "#BA68C8", "#F8ECFB"),
-    12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5E35B1", "#EDE7F6"),
-    13: ("13", "Línea de Tiempo: Tu Progreso Estimado",       "📈", "#3949AB", "#E8EAF6"),
-    14: ("14", "Mi Reporte de Resultados",                    "📄", "#00695C", "#E0F2F1"),
-    15: ("", "Sobre Nosotras",                                 "🎓", "#7A1F2B", "#FBEAEC"),
+    0:  ("0", "¡Introduce tus datos!",                       "📝", "#007AFF", "#EAF3FF"),  # systemBlue
+    1:  ("1", "Examen Médico de Sangre",                     "🩸", "#FF3B30", "#FFEDEC"),  # systemRed
+    2:  ("2", "Índice de Masa Corporal y Percentil",         "⚖️", "#AF52DE", "#F6ECFC"),  # systemPurple
+    3:  ("3", "Tasa Metabólica Basal (TMB)",                 "⚡", "#FF9500", "#FFF3E5"),  # systemOrange
+    4:  ("4", "Requerimiento Calórico Diario (RCD)",         "🔥", "#34C759", "#EAFAEE"),  # systemGreen
+    5:  ("5", "Subir, Mantener o Bajar el Peso",             "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
+    6:  ("6", "Cálculo de los Macronutrientes",               "🍽️", "#FFCC00", "#FFFAE0"),  # systemYellow
+    7:  ("7", "Cálculo de las Porciones del Día",            "⏰", "#30B0C7", "#E6F7FA"),  # systemTeal
+    8:  ("8", "Página FatSecret",                             "🌐", "#00C7BE", "#E1FBF9"),  # systemMint
+    9:  ("9", "Plan de Dieta Semanal",                        "🍱", "#FF6B35", "#FFEEE6"),  # naranja cálido
+    10: ("10", "Gasto Energético — Clima de Chiclayo",       "🌡️", "#FFB300", "#FFF6E0"),  # amarillo sol
+    11: ("Aporte 1", "TMB en Embarazo",                       "👶", "#BF5AF2", "#F7ECFD"),  # púrpura claro
+    12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5856D6", "#ECEBFC"),  # systemIndigo
+    13: ("13", "Línea de Tiempo: Tu Progreso Estimado",       "📈", "#5AC8FA", "#E9F8FF"),  # celeste claro
+    14: ("14", "Mi Reporte de Resultados",                    "📄", "#32ADE6", "#E7F6FD"),  # systemCyan
+    15: ("", "Sobre Nosotras",                                 "🎓", "#FF2D55", "#FFEBF0"),  # systemPink
 }
+
+# Colores base del sistema iOS, reutilizados para mantener coherencia visual en toda la app.
+IOS_BLUE, IOS_GREEN, IOS_RED, IOS_ORANGE = "#007AFF", "#34C759", "#FF3B30", "#FF9500"
+IOS_GRAY_BG, IOS_LABEL, IOS_SECONDARY = "#F2F2F7", "#1C1C1E", "#6C6C70"
 
 # =========================================================================================
 # ESTILOS GLOBALES
 # =========================================================================================
 st.markdown("""
 <style>
+/* =========================================================================================
+   SISTEMA VISUAL ESTILO iOS — tipografía San Francisco, esquinas "continuas" muy redondeadas,
+   tarjetas sobre fondo gris agrupado (#F2F2F7), acentos de los colores del sistema de iOS,
+   y controles con la pulcritud de Ajustes / Salud / Recordatorios de Apple.
+   ========================================================================================= */
+
+:root {
+    --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-orange: #FF9500;
+    --ios-yellow: #FFCC00; --ios-purple: #AF52DE; --ios-pink: #FF2D55; --ios-teal: #30B0C7;
+    --ios-indigo: #5856D6; --ios-gray: #8E8E93; --ios-gray-bg: #F2F2F7; --ios-card: #FFFFFF;
+    --ios-label: #1C1C1E; --ios-secondary: #6C6C70;
+    --ios-radius-lg: 26px; --ios-radius-md: 20px; --ios-radius-sm: 14px;
+}
+
+html, body, [class*="css"], .stApp {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                 "Helvetica Neue", "Inter", "Segoe UI", Roboto, sans-serif !important;
+    color: var(--ios-label);
+    letter-spacing: -0.01em;
+}
+
+.stApp {
+    background: var(--ios-gray-bg);
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif !important;
+    letter-spacing: -0.02em !important;
+    font-weight: 800 !important;
+}
+
 .big-title {
-    background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
-    padding: 22px 28px; border-radius: 18px; color: white;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.15); margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--ios-blue) 0%, #5AC8FA 100%);
+    padding: 22px 28px; border-radius: var(--ios-radius-md); color: white;
+    box-shadow: 0 8px 24px rgba(0,122,255,0.22); margin-bottom: 6px;
 }
 .frase-motivadora {
-    font-style: italic; color: #2e7d32; font-size: 1.05rem;
-    text-align: center; margin: 6px 0 18px 0;
+    font-style: italic; color: var(--ios-secondary); font-size: 1.0rem;
+    text-align: center; margin: 6px 0 18px 0; font-weight: 500;
 }
-div[data-testid="stMetricValue"] { color: #2e7d32; font-weight: 800; }
+
+/* ---------- métricas tipo "tarjeta de Salud" ---------- */
+div[data-testid="stMetricValue"] { color: var(--ios-label); font-weight: 800; letter-spacing: -0.02em; }
+div[data-testid="stMetricLabel"] { color: var(--ios-secondary); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.02em; }
 div[data-testid="stMetric"] {
-    background: #FAFAFA; border-radius: 14px; padding: 10px 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid #eee;
+    background: var(--ios-card); border-radius: var(--ios-radius-sm); padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
-/* Pestañas más bonitas: negrita, más grandes, con separación */
+/* ---------- pestañas (st.tabs) como segmented control de iOS ---------- */
+div[data-baseweb="tab-list"] {
+    background: #E9E9EE !important; border-radius: 12px !important; padding: 4px !important;
+    gap: 2px !important;
+}
 button[data-baseweb="tab"] {
-    font-weight: 700 !important;
-    font-size: 0.92rem !important;
-}
-div[data-baseweb="tab-highlight"] { background-color: #56ab2f !important; height: 4px !important; }
-
-/* Sidebar decorado */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #f1f8e9 0%, #ffffff 60%);
-}
-
-/* Botones tipo link más redondeados */
-a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
-    border-radius: 20px !important;
     font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    border-radius: 9px !important;
+    color: var(--ios-secondary) !important;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: #FFFFFF !important; color: var(--ios-label) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+}
+div[data-baseweb="tab-highlight"] { display: none !important; }
+div[data-baseweb="tab-border"] { display: none !important; }
+
+/* ---------- radio horizontal (navegación por hojas) como segmented control grande ---------- */
+div[role="radiogroup"] {
+    background: #E9E9EE; border-radius: 16px; padding: 6px; gap: 4px !important;
+}
+div[role="radiogroup"] label {
+    background: transparent; border-radius: 12px !important; padding: 8px 14px !important;
+    font-weight: 600 !important; font-size: 0.85rem !important; transition: all 0.15s ease;
+}
+div[role="radiogroup"] label:has(input:checked) {
+    background: #FFFFFF !important; box-shadow: 0 1px 4px rgba(0,0,0,0.18) !important;
 }
 
-/* ---------- identidad visual tipo "landing page" ---------- */
+/* ---------- sidebar tipo "Ajustes" de iOS ---------- */
+section[data-testid="stSidebar"] {
+    background: var(--ios-gray-bg);
+    border-right: 1px solid rgba(0,0,0,0.06);
+}
+section[data-testid="stSidebar"] .stTextInput input,
+section[data-testid="stSidebar"] .stNumberInput input,
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+    background: #FFFFFF !important; border-radius: 12px !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+}
+section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 { font-weight: 800 !important; }
+
+/* ---------- inputs generales redondeados como controles de iOS ---------- */
+.stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div,
+.stTimeInput input, textarea {
+    border-radius: 12px !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    box-shadow: none !important;
+}
+.stTextInput input:focus, .stNumberInput input:focus {
+    border-color: var(--ios-blue) !important;
+    box-shadow: 0 0 0 3px rgba(0,122,255,0.15) !important;
+}
+
+/* ---------- botones estilo iOS (pill, sin sombras duras) ---------- */
+.stButton button, .stDownloadButton button {
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    background: var(--ios-blue) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.28) !important;
+    transition: transform 0.1s ease;
+}
+.stButton button:hover, .stDownloadButton button:hover { transform: scale(1.015); }
+
+a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+    border: 1px solid rgba(0,122,255,0.25) !important;
+    background: rgba(0,122,255,0.08) !important;
+    color: var(--ios-blue) !important;
+    box-shadow: none !important;
+}
+
+/* ---------- alerts (info/success/warning) redondeados como banners de iOS ---------- */
+div[data-testid="stAlert"] { border-radius: var(--ios-radius-sm) !important; border: none !important; }
+
+/* ---------- expander como celda agrupada de iOS ---------- */
+details {
+    background: var(--ios-card) !important; border-radius: var(--ios-radius-sm) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important; overflow: hidden;
+}
+
+/* ---------- dataframes con esquinas redondeadas ---------- */
+div[data-testid="stDataFrame"] { border-radius: var(--ios-radius-sm); overflow: hidden; }
+
+/* ---------- identidad visual tipo "landing page" con look iOS ---------- */
 .navbar {
     display: flex; align-items: center; justify-content: space-between;
-    background: #ffffff; border-radius: 20px; padding: 10px 24px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08); margin-bottom: 18px;
-    border: 1px solid #eef2ee;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: var(--ios-radius-md); padding: 10px 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06); margin-bottom: 18px;
+    border: 1px solid rgba(0,0,0,0.04);
 }
 .navbar-brand { display: flex; align-items: center; gap: 12px; }
-.navbar-brand img { height: 78px; border-radius: 8px; }
+.navbar-brand img { height: 78px; border-radius: 16px; }
 .navbar-brand-text { line-height: 1.05; }
-.navbar-brand-text .t1 { font-weight: 800; color: #2e7d32; font-size: 1.15rem; }
-.navbar-brand-text .t2 { font-size: 0.82rem; color: #6b7a6c; }
+.navbar-brand-text .t1 { font-weight: 800; color: var(--ios-blue); font-size: 1.15rem; letter-spacing: -0.02em; }
+.navbar-brand-text .t2 { font-size: 0.82rem; color: var(--ios-secondary); font-weight: 500; }
 .navbar-pill {
-    background: #E8F5E9; color: #2e7d32; font-weight: 700; font-size: 0.78rem;
-    padding: 6px 14px; border-radius: 999px; border: 1px solid #c8e6c9;
+    background: rgba(0,122,255,0.1); color: var(--ios-blue); font-weight: 700; font-size: 0.78rem;
+    padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(0,122,255,0.15);
     white-space: nowrap;
 }
 
 .hero-card {
     position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #2e7d32 0%, #56ab2f 55%, #8bc34a 100%);
-    border-radius: 26px; padding: 42px 40px; color: white;
-    box-shadow: 0 10px 30px rgba(46,125,50,0.25); margin-bottom: 22px;
+    background: linear-gradient(135deg, #007AFF 0%, #5856D6 55%, #AF52DE 100%);
+    border-radius: var(--ios-radius-lg); padding: 44px 42px; color: white;
+    box-shadow: 0 16px 40px rgba(88,86,214,0.28); margin-bottom: 22px;
 }
-.hero-card h1 { font-size: 2.1rem; font-weight: 800; margin: 0 0 10px 0; line-height: 1.15; }
-.hero-card p.hero-sub { font-size: 1.02rem; opacity: 0.95; max-width: 640px; margin: 0 0 16px 0; }
+.hero-card h1 { font-size: 2.15rem; font-weight: 800; margin: 0 0 10px 0; line-height: 1.15; letter-spacing: -0.03em; }
+.hero-card p.hero-sub { font-size: 1.02rem; opacity: 0.95; max-width: 640px; margin: 0 0 16px 0; font-weight: 400; }
 .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
 .hero-badge {
-    background: rgba(255,255,255,0.18); backdrop-filter: blur(2px);
-    border: 1px solid rgba(255,255,255,0.35); color: white;
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.3); color: white;
     padding: 7px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
 }
 .hero-emoji-decor {
     position: absolute; right: 26px; top: 50%; transform: translateY(-50%);
-    font-size: 6.5rem; opacity: 0.18; line-height: 1;
+    font-size: 6.5rem; opacity: 0.16; line-height: 1;
 }
 
 .feature-row { display: flex; gap: 16px; margin-bottom: 6px; }
 .feature-card {
-    flex: 1; background: #ffffff; border-radius: 18px; padding: 18px 18px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.06); border: 1px solid #f0f0f0;
+    flex: 1; background: var(--ios-card); border-radius: var(--ios-radius-md); padding: 20px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04);
     text-align: left;
 }
 .feature-card .fc-emoji { font-size: 1.8rem; }
-.feature-card .fc-title { font-weight: 800; color: #2e2e2e; margin: 6px 0 4px 0; font-size: 0.98rem; }
-.feature-card .fc-text { font-size: 0.82rem; color: #6b6b6b; line-height: 1.35; }
+.feature-card .fc-title { font-weight: 800; color: var(--ios-label); margin: 6px 0 4px 0; font-size: 0.98rem; letter-spacing: -0.01em; }
+.feature-card .fc-text { font-size: 0.83rem; color: var(--ios-secondary); line-height: 1.4; }
 
 .equipo-card {
-    background: #ffffff; border-radius: 16px; padding: 14px 18px; margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 6px solid #7A1F2B;
+    background: var(--ios-card); border-radius: var(--ios-radius-sm); padding: 14px 18px; margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04); border-left: 4px solid var(--ios-pink);
 }
-.equipo-card .nombre { font-weight: 800; color: #7A1F2B; font-size: 0.98rem; }
-.equipo-card .puntos { font-size: 0.85rem; color: #555; margin-top: 2px; }
+.equipo-card .nombre { font-weight: 800; color: var(--ios-label); font-size: 0.98rem; }
+.equipo-card .puntos { font-size: 0.85rem; color: var(--ios-secondary); margin-top: 2px; }
 @media (max-width: 700px) {
     .feature-row { flex-direction: column; }
     .hero-emoji-decor { display: none; }
@@ -132,11 +248,13 @@ a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
 
 
 def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
-    """Caja amigable: '¿Para qué te sirve esto?' — pensada para público que no conoce las tablas técnicas."""
+    """Caja amigable: '¿Para qué te sirve esto?' — estilo tarjeta iOS con acento tintado a la izquierda."""
     st.markdown(f"""
-    <div style="background-color:{color};padding:16px 20px;border-radius:14px;
-                border-left:7px solid {borde};margin-top:14px;margin-bottom:6px;">
-    <b>{emoji} ¿Para qué te sirve esto?</b><br>{texto}
+    <div style="background-color:{color};padding:18px 22px;border-radius:20px;
+                border-left:5px solid {borde};margin-top:14px;margin-bottom:6px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+    <b style="color:{borde};">{emoji} ¿Para qué te sirve esto?</b><br>
+    <span style="color:#1C1C1E;">{texto}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -144,11 +262,12 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
 def hoja_header(idx, subtitulo=None):
     """Encabezado grande, en negrita y con el color propio de cada hoja (decora TODA la sección, no solo la tabla)."""
     numero, titulo, emoji, borde, fondo = COLORES[idx]
-    sub_html = f"<p style='margin:4px 0 0 0;color:{borde};font-size:0.95rem;font-weight:500;'>{subtitulo}</p>" if subtitulo else ""
+    sub_html = f"<p style='margin:6px 0 0 0;color:#6C6C70;font-size:0.92rem;font-weight:500;'>{subtitulo}</p>" if subtitulo else ""
     st.markdown(f"""
-    <div style="background:{fondo};border-left:10px solid {borde};border-radius:16px;
-                padding:16px 26px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,0.10);">
-    <h2 style="margin:0;color:{borde};font-weight:800;">{emoji} Hoja {numero}: {titulo}</h2>
+    <div style="background:{fondo};border-left:5px solid {borde};border-radius:22px;
+                padding:18px 28px;margin-bottom:16px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);">
+    <h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">{emoji} Hoja {numero}: {titulo}</h2>
     {sub_html}
     </div>
     """, unsafe_allow_html=True)
@@ -163,10 +282,13 @@ def tabla_bonita(df, idx):
             {"selector": "thead th", "props": [
                 ("background-color", borde), ("color", "white"),
                 ("font-weight", "700"), ("text-align", "center"),
-                ("padding", "10px"), ("font-size", "0.92rem"),
+                ("padding", "12px"), ("font-size", "0.88rem"),
+                ("font-family", "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif"),
+                ("letter-spacing", "-0.01em"),
             ]},
             {"selector": "tbody td", "props": [
-                ("text-align", "center"), ("padding", "8px"), ("font-size", "0.9rem"),
+                ("text-align", "center"), ("padding", "10px"), ("font-size", "0.88rem"),
+                ("font-family", "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif"),
             ]},
             {"selector": "tbody tr:nth-child(even)", "props": [("background-color", fondo)]},
             {"selector": "tbody tr:nth-child(odd)", "props": [("background-color", "#FFFFFF")]},
@@ -362,10 +484,10 @@ CATEGORIA_SEMAFORO = {
 }
 
 SEMAFORO_ESTILO = {
-    "verde": {"hex": "#43A047", "fondo": "#E8F5E9", "emoji": "🟢", "etiqueta": "Normal"},
-    "ambar": {"hex": "#FB8C00", "fondo": "#FFF3E0", "emoji": "🟡", "etiqueta": "Alerta"},
-    "rojo":  {"hex": "#E53935", "fondo": "#FFEBEE", "emoji": "🔴", "etiqueta": "Crítico"},
-    "gris":  {"hex": "#9E9E9E", "fondo": "#F5F5F5", "emoji": "⚪", "etiqueta": "Sin dato"},
+    "verde": {"hex": "#34C759", "fondo": "#EAFAEE", "emoji": "🟢", "etiqueta": "Normal"},   # systemGreen
+    "ambar": {"hex": "#FF9500", "fondo": "#FFF3E5", "emoji": "🟡", "etiqueta": "Alerta"},   # systemOrange
+    "rojo":  {"hex": "#FF3B30", "fondo": "#FFEDEC", "emoji": "🔴", "etiqueta": "Crítico"},  # systemRed
+    "gris":  {"hex": "#8E8E93", "fondo": "#F2F2F7", "emoji": "⚪", "etiqueta": "Sin dato"},  # systemGray
 }
 
 MENSAJES_TRIAJE = {
@@ -422,15 +544,16 @@ def tarjeta_semaforo(parametro, valor_texto, categoria):
     """Renderiza una tarjeta tipo 'semáforo clínico' con anillo de color, categoría y recomendación."""
     r = evaluar_estado_clinico(parametro, categoria)
     st.markdown(f"""
-    <div style="background:#ffffff;border-radius:20px;padding:16px 14px;text-align:center;
-                box-shadow:0 4px 14px rgba(0,0,0,0.08);border-top:6px solid {r['hex']};height:100%;">
-        <div style="width:64px;height:64px;border-radius:50%;background:{r['fondo']};
-                    border:3px solid {r['hex']};display:flex;align-items:center;justify-content:center;
-                    margin:0 auto 10px auto;font-size:1.6rem;">{r['emoji']}</div>
-        <div style="font-weight:800;color:#2e2e2e;font-size:0.95rem;">{parametro}</div>
-        <div style="color:#777;font-size:0.8rem;margin-bottom:4px;">{valor_texto}</div>
-        <div style="font-weight:800;color:{r['hex']};font-size:0.88rem;margin-bottom:8px;">{categoria}</div>
-        <div style="font-size:0.76rem;color:#555;line-height:1.3;">{r['mensajePersonalizado']}</div>
+    <div style="background:#ffffff;border-radius:24px;padding:18px 14px;text-align:center;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.07);
+                border-top:4px solid {r['hex']};height:100%;">
+        <div style="width:60px;height:60px;border-radius:50%;background:{r['fondo']};
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 10px auto;font-size:1.5rem;">{r['emoji']}</div>
+        <div style="font-weight:800;color:#1C1C1E;font-size:0.93rem;letter-spacing:-0.01em;">{parametro}</div>
+        <div style="color:#8E8E93;font-size:0.78rem;margin-bottom:4px;">{valor_texto}</div>
+        <div style="font-weight:700;color:{r['hex']};font-size:0.85rem;margin-bottom:8px;">{categoria}</div>
+        <div style="font-size:0.74rem;color:#6C6C70;line-height:1.35;">{r['mensajePersonalizado']}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -539,10 +662,11 @@ def tarjeta_categoria_imc(titulo, categoria):
     """Tarjeta compacta que muestra la categoría de IMC con su color de semáforo correspondiente."""
     estilo = color_categoria_imc(categoria)
     st.markdown(f"""
-    <div style="background:{estilo['fondo']};border-radius:16px;padding:14px 16px;text-align:center;
-                border:2px solid {estilo['hex']};height:100%;">
-        <div style="font-size:0.8rem;color:#666;font-weight:600;margin-bottom:4px;">{titulo}</div>
-        <div style="font-weight:800;font-size:1.3rem;color:{estilo['hex']};">{estilo['emoji']} {categoria}</div>
+    <div style="background:{estilo['fondo']};border-radius:22px;padding:16px 16px;text-align:center;
+                border:1.5px solid {estilo['hex']}33;height:100%;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <div style="font-size:0.78rem;color:#6C6C70;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.02em;">{titulo}</div>
+        <div style="font-weight:800;font-size:1.25rem;color:{estilo['hex']};letter-spacing:-0.01em;">{estilo['emoji']} {categoria}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -723,9 +847,10 @@ st.markdown("""
 
 # --- Aviso médico: esta app es educativa y no reemplaza la consulta profesional ---
 st.markdown("""
-<div style="background:#FFF8E1;border-left:8px solid #F9A825;border-radius:14px;
-            padding:14px 22px;margin-bottom:18px;box-shadow:0 3px 8px rgba(0,0,0,0.06);">
-<b>⚕️ Aviso importante:</b> esta aplicación es una herramienta educativa y orientativa.
+<div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
+            padding:16px 24px;margin-bottom:18px;
+            box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+<b style="color:#FF9500;">⚕️ Aviso importante:</b> esta aplicación es una herramienta educativa y orientativa.
 No reemplaza la consulta con un médico, nutricionista u otro profesional de la salud.
 Ante cualquier duda o resultado fuera de lo normal, acude siempre a un especialista.
 </div>
@@ -771,9 +896,10 @@ for _nombre in _POSIBLES_NOMBRES_EXCEL:
 
 with st.container():
     st.markdown("""
-    <div style="background:#E8F5E9;border-left:9px solid #43A047;border-radius:16px;
-                padding:14px 22px;margin-bottom:10px;box-shadow:0 3px 8px rgba(0,0,0,0.08);">
-    <b>📂 ¿Quieres ver el Excel original completo?</b><br>
+    <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:20px;
+                padding:16px 24px;margin-bottom:10px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+    <b style="color:#248A3D;">📂 ¿Quieres ver el Excel original completo?</b><br>
     Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas.
     </div>
     """, unsafe_allow_html=True)
@@ -1037,9 +1163,10 @@ elif hoja_activa == "1.-EXAMEN MÉDICO":
         _fondo_pt = SEMAFORO_ESTILO[_color_pt]["fondo"]
         _texto_impacto = generar_impacto_ambito(_parametro, _categoria, ambito_seleccionado)
         st.markdown(f"""
-        <div style="background:{_fondo_pt};border-left:6px solid {_hex_pt};border-radius:12px;
-                    padding:10px 16px;margin-bottom:8px;">
-        <b>{_parametro}</b> ({_categoria}) — {_texto_impacto}
+        <div style="background:{_fondo_pt};border-left:4px solid {_hex_pt};border-radius:16px;
+                    padding:12px 18px;margin-bottom:8px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);">
+        <b style="color:{_hex_pt};">{_parametro}</b> <span style="color:#1C1C1E;">({_categoria})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1204,7 +1331,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         fig_pie_macros = go.Figure(data=[go.Pie(
             labels=["Proteínas", "Carbohidratos", "Grasas"],
             values=[cal_prot, cal_carb, cal_gras],
-            marker=dict(colors=["#E53935", "#FB8C00", "#43A047"]),
+            marker=dict(colors=["#FF3B30", "#FF9500", "#34C759"]),
             textinfo="label+percent", hole=0.0,
         )])
         fig_pie_macros.update_layout(height=300, margin=dict(t=10, l=10, r=10, b=10), showlegend=False)
@@ -1476,23 +1603,26 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
 
     # --- Tarjeta de resultado destacado (estilo "hero", coherente con la identidad visual de la app) ---
     if objetivo == "Mantenerse" or abs(peso_cambio_60) < 0.05:
-        grad = "linear-gradient(135deg,#2e7d32 0%,#56ab2f 60%,#8bc34a 100%)"
+        grad = "linear-gradient(135deg,#34C759 0%,#30D158 60%,#63E6A5 100%)"
+        sombra = "rgba(52,199,89,0.30)"
         mensaje_destacado = f"Como tu objetivo es mantenerte, {_nombre_saludo}, tu peso se mantendría estable durante los próximos 60 días. ¡Vas por buen camino! 💚"
     elif peso_cambio_60 > 0:
-        grad = "linear-gradient(135deg,#1565C0 0%,#1E88E5 55%,#64B5F6 100%)"
+        grad = "linear-gradient(135deg,#007AFF 0%,#5AC8FA 55%,#64D2FF 100%)"
+        sombra = "rgba(0,122,255,0.30)"
         mensaje_destacado = f"Si mantienes este hábito por 60 días, {_nombre_saludo}, tu proyección estimada de pérdida es de <b>{peso_cambio_60:.1f} kg</b>."
     else:
-        grad = "linear-gradient(135deg,#EF6C00 0%,#FB8C00 55%,#FFB74D 100%)"
+        grad = "linear-gradient(135deg,#FF9500 0%,#FFB300 55%,#FFCC66 100%)"
+        sombra = "rgba(255,149,0,0.30)"
         mensaje_destacado = f"⚠️ Cuidado, {_nombre_saludo}: si mantienes este hábito, podrías <b>aumentar aproximadamente {abs(peso_cambio_60):.1f} kg</b> en 2 meses."
 
     st.markdown(f"""
-    <div style="background:{grad};border-radius:24px;padding:30px 34px;color:white;
-                box-shadow:0 10px 26px rgba(0,0,0,0.18);margin:10px 0 22px 0;">
-        <div style="font-size:0.85rem;letter-spacing:1px;opacity:0.85;text-transform:uppercase;font-weight:700;">
+    <div style="background:{grad};border-radius:28px;padding:32px 36px;color:white;
+                box-shadow:0 16px 36px {sombra};margin:10px 0 22px 0;">
+        <div style="font-size:0.82rem;letter-spacing:0.03em;opacity:0.9;text-transform:uppercase;font-weight:700;">
             Proyección a 60 días (2 meses)</div>
-        <div style="font-size:2.2rem;font-weight:800;margin:6px 0 10px 0;">
-            {peso - peso_cambio_60:.1f} kg <span style="font-size:1rem;font-weight:500;opacity:0.85;">peso estimado</span></div>
-        <div style="font-size:1rem;line-height:1.5;">{mensaje_destacado}</div>
+        <div style="font-size:2.2rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.02em;">
+            {peso - peso_cambio_60:.1f} kg <span style="font-size:1rem;font-weight:500;opacity:0.9;">peso estimado</span></div>
+        <div style="font-size:1rem;line-height:1.5;font-weight:400;">{mensaje_destacado}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1522,9 +1652,10 @@ elif hoja_activa == "📄 MI REPORTE":
     hoja_header(14, "Un resumen tipo 'informe de resultados' con todo lo que calculamos para ti en esta sesión.")
 
     st.markdown(f"""
-    <div style="background:#E0F2F1;border-left:8px solid #00695C;border-radius:14px;
-                padding:14px 22px;margin-bottom:16px;">
-    🔒 <b>Privacidad:</b> este reporte se genera únicamente con la información que ingresaste en esta sesión.
+    <div style="background:#E7F6FD;border-left:5px solid #32ADE6;border-radius:20px;
+                padding:16px 24px;margin-bottom:16px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+    🔒 <b style="color:#1C7DAD;">Privacidad:</b> este reporte se genera únicamente con la información que ingresaste en esta sesión.
     Nada se guarda en un servidor ni queda almacenado al cerrar o recargar la página.
     </div>
     """, unsafe_allow_html=True)
@@ -1533,15 +1664,16 @@ elif hoja_activa == "📄 MI REPORTE":
 
     # --- Encabezado tipo "resultado médico" ---
     st.markdown(f"""
-    <div style="background:#ffffff;border:2px solid #00695C;border-radius:18px;padding:22px 26px;margin-bottom:18px;">
+    <div style="background:#ffffff;border:1px solid rgba(50,173,230,0.25);border-radius:24px;padding:24px 28px;margin-bottom:18px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 22px rgba(0,0,0,0.06);">
         <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
             <div>
-                <div style="font-size:1.3rem;font-weight:800;color:#00695C;">📄 Informe de Resultados — CIAM&SUNI</div>
-                <div style="color:#555;font-size:0.9rem;">C.E.P. "Santa María Reina", Chiclayo</div>
+                <div style="font-size:1.3rem;font-weight:800;color:#32ADE6;letter-spacing:-0.02em;">📄 Informe de Resultados — CIAM&SUNI</div>
+                <div style="color:#6C6C70;font-size:0.9rem;">C.E.P. "Santa María Reina", Chiclayo</div>
             </div>
-            <div style="text-align:right;color:#555;font-size:0.85rem;">Generado: {_fecha_reporte}</div>
+            <div style="text-align:right;color:#6C6C70;font-size:0.85rem;">Generado: {_fecha_reporte}</div>
         </div>
-        <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+        <hr style="border:none;border-top:1px solid #F2F2F7;margin:14px 0;">
         <b>Nombre:</b> {_nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
         <b>Correo:</b> {correo_usuario if correo_usuario.strip() else "No indicado"} &nbsp;&nbsp;|&nbsp;&nbsp;
         <b>Edad:</b> {edad} años ({etapa}) &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -1739,13 +1871,14 @@ elif hoja_activa == "🎓 SOBRE NOSOTROS":
             st.image(str(_ESCUDO), width=190)
     with col_texto:
         st.markdown("""
-        <div style="background:#FBEAEC;border-left:7px solid #7A1F2B;border-radius:14px;
-                    padding:16px 20px;">
-        <b>📖 Sobre nosotras</b><br><br>
-        Somos un grupo de estudiantes de 5to de secundaria de la I.E. Santa María Reina, apasionadas
+        <div style="background:#FFEBF0;border-left:5px solid #FF2D55;border-radius:20px;
+                    padding:18px 22px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <b style="color:#FF2D55;">📖 Sobre nosotras</b><br><br>
+        <span style="color:#1C1C1E;">Somos un grupo de estudiantes de 5to de secundaria de la I.E. Santa María Reina, apasionadas
         por la tecnología y la salud. Este proyecto nace con el objetivo de fomentar hábitos saludables
         mediante herramientas digitales accesibles, aplicando conocimientos de nutrición y programación
-        para mejorar el bienestar de nuestra comunidad escolar.
+        para mejorar el bienestar de nuestra comunidad escolar.</span>
         </div>
         """, unsafe_allow_html=True)
 
