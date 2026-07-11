@@ -50,11 +50,13 @@ st.markdown("""
    ========================================================================================= */
 
 :root {
-    --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-orange: #FF9500;
+    /* Paleta verde institucional (reemplaza la paleta azul de iOS por el Brand Green del proyecto) */
+    --ios-blue: #1E5631; --ios-green: #34C759; --ios-red: #C0392B; --ios-orange: #E67E22;
     --ios-yellow: #FFCC00; --ios-purple: #AF52DE; --ios-pink: #FF2D55; --ios-teal: #30B0C7;
-    --ios-indigo: #5856D6; --ios-gray: #8E8E93; --ios-gray-bg: #F2F2F7; --ios-card: #FFFFFF;
-    --ios-label: #1C1C1E; --ios-secondary: #6C6C70;
+    --ios-indigo: #5856D6; --ios-gray: #8E8E93; --ios-gray-bg: #F7F9F7; --ios-card: #FFFFFF;
+    --ios-label: #17301F; --ios-secondary: #5C6B60;
     --ios-radius-lg: 26px; --ios-radius-md: 20px; --ios-radius-sm: 14px;
+    --brand-green: #1E5631; --accent-green: #4CAF50; --tint-green: #F4F9F4;
 }
 
 html, body, [class*="css"], .stApp {
@@ -105,28 +107,33 @@ button[data-baseweb="tab"] {
     color: var(--ios-secondary) !important;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
-    background: #FFFFFF !important; color: var(--ios-label) !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+    background: var(--brand-green) !important; color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(30,86,49,0.30) !important;
 }
 div[data-baseweb="tab-highlight"] { display: none !important; }
 div[data-baseweb="tab-border"] { display: none !important; }
 
-/* ---------- radio horizontal (navegación por hojas) como segmented control grande ---------- */
+/* ---------- radio horizontal (navegación por hojas) como segmented control grande, pill verde activa ---------- */
 div[role="radiogroup"] {
-    background: #E9E9EE; border-radius: 16px; padding: 6px; gap: 4px !important;
+    background: #EAEFEA; border-radius: 16px; padding: 6px; gap: 4px !important;
 }
 div[role="radiogroup"] label {
     background: transparent; border-radius: 12px !important; padding: 8px 14px !important;
     font-weight: 600 !important; font-size: 0.85rem !important; transition: all 0.15s ease;
 }
 div[role="radiogroup"] label:has(input:checked) {
-    background: #FFFFFF !important; box-shadow: 0 1px 4px rgba(0,0,0,0.18) !important;
+    background: var(--brand-green) !important; box-shadow: 0 2px 8px rgba(30,86,49,0.30) !important;
+}
+div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p,
+div[role="radiogroup"] label:has(input:checked) span,
+div[role="radiogroup"] label:has(input:checked) p {
+    color: #FFFFFF !important;
 }
 
 /* ---------- sidebar tipo "Ajustes" de iOS ---------- */
 section[data-testid="stSidebar"] {
-    background: var(--ios-gray-bg);
-    border-right: 1px solid rgba(0,0,0,0.06);
+    background: var(--tint-green);
+    border-right: 1px solid rgba(30,86,49,0.08);
 }
 section[data-testid="stSidebar"] .stTextInput input,
 section[data-testid="stSidebar"] .stNumberInput input,
@@ -145,8 +152,8 @@ section[data-testid="stSidebar"] h3 { font-weight: 800 !important; }
     box-shadow: none !important;
 }
 .stTextInput input:focus, .stNumberInput input:focus {
-    border-color: var(--ios-blue) !important;
-    box-shadow: 0 0 0 3px rgba(0,122,255,0.15) !important;
+    border-color: var(--brand-green) !important;
+    box-shadow: 0 0 0 3px rgba(30,86,49,0.15) !important;
 }
 
 /* ---------- botones estilo iOS (pill, sin sombras duras) ---------- */
@@ -154,9 +161,9 @@ section[data-testid="stSidebar"] h3 { font-weight: 800 !important; }
     border-radius: 999px !important;
     font-weight: 600 !important;
     border: none !important;
-    background: var(--ios-blue) !important;
+    background: var(--brand-green) !important;
     color: white !important;
-    box-shadow: 0 2px 8px rgba(0,122,255,0.28) !important;
+    box-shadow: 0 4px 14px rgba(30,86,49,0.28) !important;
     transition: transform 0.1s ease;
 }
 .stButton button:hover, .stDownloadButton button:hover { transform: scale(1.015); }
@@ -164,9 +171,9 @@ section[data-testid="stSidebar"] h3 { font-weight: 800 !important; }
 a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
     border-radius: 999px !important;
     font-weight: 600 !important;
-    border: 1px solid rgba(0,122,255,0.25) !important;
-    background: rgba(0,122,255,0.08) !important;
-    color: var(--ios-blue) !important;
+    border: 1px solid rgba(30,86,49,0.22) !important;
+    background: rgba(30,86,49,0.07) !important;
+    color: var(--brand-green) !important;
     box-shadow: none !important;
 }
 
@@ -194,21 +201,21 @@ div[data-testid="stDataFrame"] { border-radius: var(--ios-radius-sm); overflow: 
 .navbar-brand { display: flex; align-items: center; gap: 12px; }
 .navbar-brand img { height: 78px; border-radius: 16px; }
 .navbar-brand-text { line-height: 1.05; }
-.navbar-brand-text .t1 { font-weight: 800; color: var(--ios-blue); font-size: 1.15rem; letter-spacing: -0.02em; }
+.navbar-brand-text .t1 { font-weight: 800; color: var(--brand-green); font-size: 1.15rem; letter-spacing: -0.02em; font-family: Georgia, "Times New Roman", serif; }
 .navbar-brand-text .t2 { font-size: 0.82rem; color: var(--ios-secondary); font-weight: 500; }
 .navbar-pill {
-    background: rgba(0,122,255,0.1); color: var(--ios-blue); font-weight: 700; font-size: 0.78rem;
-    padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(0,122,255,0.15);
+    background: rgba(30,86,49,0.09); color: var(--brand-green); font-weight: 700; font-size: 0.78rem;
+    padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(30,86,49,0.15);
     white-space: nowrap;
 }
 
 .hero-card {
     position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #007AFF 0%, #5856D6 55%, #AF52DE 100%);
+    background: linear-gradient(135deg, #1E5631 0%, #2E7D32 55%, #6BBF59 100%);
     border-radius: var(--ios-radius-lg); padding: 44px 42px; color: white;
-    box-shadow: 0 16px 40px rgba(88,86,214,0.28); margin-bottom: 22px;
+    box-shadow: 0 16px 40px rgba(30,86,49,0.30); margin-bottom: 22px;
 }
-.hero-card h1 { font-size: 2.15rem; font-weight: 800; margin: 0 0 10px 0; line-height: 1.15; letter-spacing: -0.03em; }
+.hero-card h1 { font-family: Georgia, "Times New Roman", serif !important; font-size: 2.15rem; font-weight: 800; margin: 0 0 10px 0; line-height: 1.15; letter-spacing: -0.01em; }
 .hero-card p.hero-sub { font-size: 1.02rem; opacity: 0.95; max-width: 640px; margin: 0 0 16px 0; font-weight: 400; }
 .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
 .hero-badge {
@@ -260,15 +267,24 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
 
 
 def hoja_header(idx, subtitulo=None):
-    """Encabezado grande, en negrita y con el color propio de cada hoja (decora TODA la sección, no solo la tabla)."""
+    """Encabezado tipo 'Hero Header Detallado': tarjeta blanca redondeada con sombra suave,
+    ícono dentro de un círculo tintado a la izquierda, título en verde institucional y
+    subtítulo explicativo — igual que la sección 'Encabezado de la Hoja Activa' de la maqueta."""
     numero, titulo, emoji, borde, fondo = COLORES[idx]
-    sub_html = f"<p style='margin:6px 0 0 0;color:#6C6C70;font-size:0.92rem;font-weight:500;'>{subtitulo}</p>" if subtitulo else ""
+    sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;'>{subtitulo}</p>" if subtitulo else ""
     st.markdown(f"""
-    <div style="background:{fondo};border-left:5px solid {borde};border-radius:22px;
-                padding:18px 28px;margin-bottom:16px;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);">
-    <h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">{emoji} Hoja {numero}: {titulo}</h2>
-    {sub_html}
+    <div style="background:#FFFFFF;border-radius:24px;padding:22px 28px;margin-bottom:16px;
+                display:flex;align-items:flex-start;gap:18px;
+                box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 10px 26px rgba(30,86,49,0.08);
+                border:1px solid rgba(30,86,49,0.06);">
+        <div style="min-width:56px;height:56px;border-radius:50%;background:{fondo};
+                    display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">
+            {emoji}
+        </div>
+        <div>
+            <h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">Hoja {numero}: {titulo}</h2>
+            {sub_html}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -280,17 +296,19 @@ def tabla_bonita(df, idx):
         df.style
         .set_table_styles([
             {"selector": "thead th", "props": [
-                ("background-color", borde), ("color", "white"),
-                ("font-weight", "700"), ("text-align", "center"),
-                ("padding", "12px"), ("font-size", "0.88rem"),
+                ("background-color", fondo), ("color", borde),
+                ("font-weight", "800"), ("text-align", "center"),
+                ("padding", "12px"), ("font-size", "0.85rem"),
                 ("font-family", "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif"),
-                ("letter-spacing", "-0.01em"),
+                ("letter-spacing", "0.01em"), ("text-transform", "uppercase"),
+                ("border-bottom", f"2px solid {borde}33"),
             ]},
             {"selector": "tbody td", "props": [
-                ("text-align", "center"), ("padding", "10px"), ("font-size", "0.88rem"),
+                ("text-align", "center"), ("padding", "11px"), ("font-size", "0.9rem"),
                 ("font-family", "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif"),
+                ("color", "#17301F"),
             ]},
-            {"selector": "tbody tr:nth-child(even)", "props": [("background-color", fondo)]},
+            {"selector": "tbody tr:nth-child(even)", "props": [("background-color", "#F7F9F7")]},
             {"selector": "tbody tr:nth-child(odd)", "props": [("background-color", "#FFFFFF")]},
         ])
     )
@@ -484,10 +502,10 @@ CATEGORIA_SEMAFORO = {
 }
 
 SEMAFORO_ESTILO = {
-    "verde": {"hex": "#34C759", "fondo": "#EAFAEE", "emoji": "🟢", "etiqueta": "Normal"},   # systemGreen
-    "ambar": {"hex": "#FF9500", "fondo": "#FFF3E5", "emoji": "🟡", "etiqueta": "Alerta"},   # systemOrange
-    "rojo":  {"hex": "#FF3B30", "fondo": "#FFEDEC", "emoji": "🔴", "etiqueta": "Crítico"},  # systemRed
-    "gris":  {"hex": "#8E8E93", "fondo": "#F2F2F7", "emoji": "⚪", "etiqueta": "Sin dato"},  # systemGray
+    "verde": {"hex": "#1E5631", "fondo": "#EAFAEE", "emoji": "🟢", "etiqueta": "Normal"},   # verde institucional
+    "ambar": {"hex": "#E67E22", "fondo": "#FDF1E4", "emoji": "🟡", "etiqueta": "Alerta"},   # naranja del brief
+    "rojo":  {"hex": "#C0392B", "fondo": "#FBEAE8", "emoji": "🔴", "etiqueta": "Crítico"},  # rojo del brief
+    "gris":  {"hex": "#8E8E93", "fondo": "#F2F2F7", "emoji": "⚪", "etiqueta": "Sin dato"},  # gris neutro
 }
 
 MENSAJES_TRIAJE = {
@@ -930,7 +948,8 @@ st.sidebar.caption("🔒 Tus datos son privados: solo se usan mientras tienes es
 
 correo_usuario = st.sidebar.text_input("✉️ Tu correo electrónico:", "")
 
-genero = st.sidebar.selectbox("Género:", ["Mujer", "Hombre"], index=1)
+genero = st.sidebar.radio("Género:", ["Hombre", "Mujer"], index=0, horizontal=True,
+                           format_func=lambda g: ("♂ Hombre" if g == "Hombre" else "♀ Mujer"))
 
 nombre_usuario = st.sidebar.text_input("¿Cómo te llamas?", "")
 _nombre_saludo = nombre_display(nombre_usuario, genero)
@@ -1208,18 +1227,41 @@ elif hoja_activa == "1.-EXAMEN MÉDICO":
 elif hoja_activa == "2.-IMC Y PERCENTIL":
     hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
                    "En adolescentes y niños se incluye también el Percentil.")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Resultado IMC", imc)
-    with col2:
-        if etapa in ["Niñez", "Adolescencia"]:
-            if _percentil_usuario is None:
-                st.error(_categoria_imc_usuario)
-            else:
-                st.metric("Percentil", _percentil_usuario)
-                tarjeta_categoria_imc("Categoría", _categoria_imc_usuario)
-        else:
+    def _kpi_card(titulo, valor, icono, color="#1E5631"):
+        st.markdown(f"""
+        <div style="background:#FFFFFF;border-radius:22px;padding:20px 22px;height:100%;
+                    box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 8px 20px rgba(30,86,49,0.07);
+                    border:1px solid rgba(30,86,49,0.06);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <span style="color:#5C6B60;font-size:0.85rem;font-weight:600;">{titulo}</span>
+                <span style="font-size:1.2rem;">{icono}</span>
+            </div>
+            <div style="font-size:2.3rem;font-weight:800;color:{color};letter-spacing:-0.02em;margin-top:4px;">{valor}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    if etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None:
+        kc1, kc2, kc3 = st.columns(3)
+        with kc1:
+            _kpi_card("RESULTADO IMC", imc, "📈")
+        with kc2:
+            _kpi_card("PERCENTIL", _percentil_usuario, "📊", color="#AF52DE")
+        with kc3:
+            tarjeta_categoria_imc("Categoría", _categoria_imc_usuario)
+    elif etapa in ["Niñez", "Adolescencia"]:
+        col1, col2 = st.columns(2)
+        with col1:
+            _kpi_card("RESULTADO IMC", imc, "📈")
+        with col2:
+            st.error(_categoria_imc_usuario)
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            _kpi_card("RESULTADO IMC", imc, "📈")
+        with col2:
             tarjeta_categoria_imc("Categoría (Adultez/Vejez, sin percentil)", _categoria_imc_usuario)
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
     caja_titulo("Categorías generales de IMC", 2)
     tabla_bonita(pd.DataFrame({
