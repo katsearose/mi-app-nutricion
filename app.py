@@ -17,7 +17,7 @@ st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide
 # idx : (numero, titulo, emoji, color_borde, color_fondo)
 COLORES = {
     0:  ("0", "¡Introduce tus datos!",                       "📝", "#007AFF", "#EAF3FF"),  # systemBlue
-    1:  ("1", "Examen Médico de Sangre",                     "🩸", "#FF3B30", "#FFEDEC"),  # systemRed
+    1:  ("1", "Análisis Sanguíneo",                          "🩸", "#FF3B30", "#FFEDEC"),  # systemRed
     2:  ("2", "Índice de Masa Corporal y Percentil",         "⚖️", "#AF52DE", "#F6ECFC"),  # systemPurple
     3:  ("3", "Tasa Metabólica Basal (TMB)",                 "⚡", "#FF9500", "#FFF3E5"),  # systemOrange
     4:  ("4", "Requerimiento Calórico Diario (RCD)",         "🔥", "#34C759", "#EAFAEE"),  # systemGreen
@@ -249,6 +249,17 @@ div[data-testid="stDataFrame"] { border-radius: var(--ios-radius-sm); overflow: 
 @media (max-width: 700px) {
     .feature-row { flex-direction: column; }
     .hero-emoji-decor { display: none; }
+}
+
+/* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
+@media print {
+    section[data-testid="stSidebar"], header[data-testid="stHeader"], .navbar,
+    div[role="radiogroup"], #MainMenu, footer, .stDeployButton,
+    div[data-testid="stToolbar"], .no-print {
+        display: none !important;
+    }
+    .print-only-report { box-shadow: none !important; border: 1px solid #ccc !important; }
+    .stApp { background: #FFFFFF !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1011,7 +1022,7 @@ if objetivo != "Mantenerse":
                    "más lento y seguro — recomendado para cuerpos en crecimiento.")
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("Examen médico (opcional)")
+st.sidebar.subheader("Análisis Sanguíneo")
 hemo = st.sidebar.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1)
 trigli = st.sidebar.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0)
 gluco = st.sidebar.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0)
@@ -1085,7 +1096,7 @@ else:
 st.subheader("📋 Navegación por Hojas del Sistema (idéntica al Excel)")
 
 OPCIONES_HOJAS = [
-    "0.-DATOS", "1.-EXAMEN MÉDICO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
+    "0.-DATOS", "1.-ANÁLISIS SANGUÍNEO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
     "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
     "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
     "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE", "🎓 SOBRE NOSOTROS"
@@ -1130,7 +1141,7 @@ if hoja_activa == "0.-DATOS":
               emoji="📝", color="#E3F2FD", borde="#2196F3")
 
 # ---------------------------------------------------------------------------------------
-elif hoja_activa == "1.-EXAMEN MÉDICO":
+elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
     hoja_header(1, "Categoriza tus datos según su nivel correspondiente, exactamente como las fórmulas SI anidadas del Excel.")
 
     _cat_hemo = clasif_hemoglobina(hemo, etapa, genero)
@@ -1262,6 +1273,43 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
             tarjeta_categoria_imc("Categoría (Adultez/Vejez, sin percentil)", _categoria_imc_usuario)
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    # --- Texto tipo "Resultados Detallados" + aviso "Recordar", igual al formato de referencia ---
+    _riesgo_imc = _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]
+    st.markdown(f"""
+    <div style="background:#FFFFFF;border-radius:22px;padding:20px 24px;margin-bottom:14px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);
+                border:1px solid rgba(0,0,0,0.05);">
+        <div style="color:#17301F;font-size:0.95rem;line-height:1.6;">
+        Según la información ingresada, tu Índice de Masa Corporal (IMC) es <b>{imc}</b>, lo que indica que tu
+        peso se encuentra en la categoría de <b>{_categoria_imc_usuario}</b> para tu {"edad y sexo" if etapa in ["Niñez","Adolescencia"] else "estatura"}.
+        </div>
+        <hr style="border:none;border-top:1px solid #F2F2F7;margin:14px 0;">
+        <div style="color:#5C6B60;font-size:0.88rem;line-height:1.6;">
+        Hable sobre su categoría de IMC con su proveedor de atención médica, ya que el IMC puede estar
+        relacionado con su salud y bienestar general. Su proveedor de atención médica podría determinar las
+        posibles razones de su peso actual y recomendar apoyo o tratamiento. El IMC es una medida de detección
+        y no pretende diagnosticar enfermedades o dolencias.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if _riesgo_imc:
+        st.markdown("""
+        <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
+                    padding:16px 24px;margin-bottom:16px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <b style="color:#FF9500;">Recordar</b><br>
+        <span style="color:#1C1C1E;">Tener un IMC elevado aumenta el riesgo de padecer enfermedades crónicas, como
+        presión arterial alta, diabetes tipo 2 y colesterol alto. Evalúa tu riesgo con esta prueba de riesgo de
+        prediabetes de 1 minuto (enlace abajo). También puedes leer más sobre los riesgos para la salud
+        asociados con la obesidad.</span>
+        </div>
+        """, unsafe_allow_html=True)
+        recursos_externos(2, [
+            ("🩺 Prueba de riesgo de prediabetes (CDC)", "https://www.cdc.gov/prediabetes/risktest/index.html"),
+            ("📖 Riesgos de salud por obesidad (CDC)", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html"),
+        ])
 
     caja_titulo("Categorías generales de IMC", 2)
     tabla_bonita(pd.DataFrame({
@@ -1668,16 +1716,56 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Curva de progreso día a día, en gráfico de área (se ve como una "montaña" que crece o baja) ---
-    dias_eje = list(range(0, 61, 5))
-    pesos_dia = [round(peso - (deficit_diario * d) / 7700, 1) for d in dias_eje]
-    df_tiempo = pd.DataFrame({"Día": dias_eje, "Peso estimado (kg)": pesos_dia}).set_index("Día")
-    st.area_chart(df_tiempo)
+    # --- Curva de progreso día a día: gráfico Plotly claro, con hitos marcados en 0/30/60 días ---
+    dias_eje = list(range(0, 61))
+    pesos_dia_completo = [round(peso - (deficit_diario * d) / 7700, 2) for d in dias_eje]
+
+    color_linea = "#34C759" if (objetivo == "Mantenerse" or abs(peso_cambio_60) < 0.05) else ("#007AFF" if peso_cambio_60 > 0 else "#FF9500")
+
+    fig_tiempo = go.Figure()
+    fig_tiempo.add_trace(go.Scatter(
+        x=dias_eje, y=pesos_dia_completo, mode="lines", name="Peso estimado",
+        line=dict(color=color_linea, width=4, shape="spline"),
+        fill="tozeroy", fillcolor=color_linea.replace(")", ",0.12)").replace("#", "rgba(") if False else None,
+    ))
+    # Relleno suave bajo la curva
+    fig_tiempo.update_traces(fill="tonexty")
+    fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=[0]*len(dias_eje), line=dict(width=0), showlegend=False, hoverinfo="skip"))
+
+    # Puntos de hito: hoy, 30 días, 60 días
+    hitos_x = [0, 30, 60]
+    hitos_y = [pesos_dia_completo[0], pesos_dia_completo[30], pesos_dia_completo[60]]
+    hitos_txt = ["Hoy", "En 1 mes", "En 2 meses"]
+    fig_tiempo.add_trace(go.Scatter(
+        x=hitos_x, y=hitos_y, mode="markers+text", name="Hitos",
+        marker=dict(size=14, color="#FFFFFF", line=dict(color=color_linea, width=4)),
+        text=[f"{t}<br><b>{v:.1f} kg</b>" for t, v in zip(hitos_txt, hitos_y)],
+        textposition="top center", textfont=dict(size=13, color="#17301F", family="-apple-system"),
+        showlegend=False,
+    ))
+
+    _rango_min = min(pesos_dia_completo) - 3
+    _rango_max = max(pesos_dia_completo) + 5
+    fig_tiempo.update_layout(
+        title=dict(text="¿Cómo cambiará tu peso en los próximos 60 días?", x=0.02, xanchor="left",
+                   font=dict(size=18, color="#17301F", family="-apple-system")),
+        xaxis_title="Días a partir de hoy", yaxis_title="Peso estimado (kg)",
+        xaxis=dict(dtick=10, gridcolor="#F0F0F0"), yaxis=dict(range=[_rango_min, _rango_max], gridcolor="#F0F0F0"),
+        height=430, margin=dict(t=60, l=10, r=10, b=10),
+        plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)", showlegend=False,
+    )
+    st.plotly_chart(fig_tiempo, use_container_width=True)
+    st.caption("👀 Lee el gráfico así: la línea muestra tu peso estimado día a día. Los tres círculos marcan "
+               "'Hoy', 'En 1 mes' y 'En 2 meses', con el peso exacto proyectado en cada punto. Si la línea "
+               "baja, significa que irías perdiendo peso; si sube, irías ganando peso; y si se mantiene plana, "
+               "tu peso no cambiaría.")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Peso actual", f"{peso:.1f} kg")
-    col2.metric("Estimado en 30 días", f"{pesos_dia[len(pesos_dia)//2]} kg")
-    col3.metric("Estimado en 60 días", f"{pesos_dia[-1]} kg")
+    col1.metric("Peso actual (hoy)", f"{pesos_dia_completo[0]:.1f} kg")
+    col2.metric("Estimado en 30 días", f"{pesos_dia_completo[30]:.1f} kg",
+                delta=f"{pesos_dia_completo[30]-pesos_dia_completo[0]:.1f} kg")
+    col3.metric("Estimado en 60 días", f"{pesos_dia_completo[60]:.1f} kg",
+                delta=f"{pesos_dia_completo[60]-pesos_dia_completo[0]:.1f} kg")
 
     st.caption("⚠️ Esta proyección es un cálculo matemático de referencia (no un diagnóstico médico) y asume "
                "que mantienes el mismo ajuste calórico todos los días. El cuerpo humano no cambia de forma "
@@ -1691,22 +1779,36 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
-    hoja_header(14, "Un resumen tipo 'informe de resultados' con todo lo que calculamos para ti en esta sesión.")
+    hoja_header(14, "Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.")
 
     st.markdown(f"""
     <div style="background:#E7F6FD;border-left:5px solid #32ADE6;border-radius:20px;
                 padding:16px 24px;margin-bottom:16px;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);" class="no-print">
     🔒 <b style="color:#1C7DAD;">Privacidad:</b> este reporte se genera únicamente con la información que ingresaste en esta sesión.
     Nada se guarda en un servidor ni queda almacenado al cerrar o recargar la página.
     </div>
     """, unsafe_allow_html=True)
 
+    # --- Botón de impresión: dispara el diálogo de impresión del navegador ---
+    st.markdown("""
+    <div class="no-print" style="margin-bottom:14px;">
+    <button onclick="window.print()" style="
+        background:#1E5631;color:white;border:none;border-radius:999px;
+        padding:12px 26px;font-weight:700;font-size:0.95rem;cursor:pointer;
+        box-shadow:0 4px 14px rgba(30,86,49,0.28);font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+        🖨️ Imprimir este informe
+    </button>
+    </div>
+    """, unsafe_allow_html=True)
+    st.caption("El botón abre la ventana de impresión de tu navegador (o 'Guardar como PDF'). "
+               "Al imprimir, el menú lateral y los botones de navegación se ocultan automáticamente.")
+
     _fecha_reporte = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-    # --- Encabezado tipo "resultado médico" ---
+    # --- Encabezado tipo "informe médico" ---
     st.markdown(f"""
-    <div style="background:#ffffff;border:1px solid rgba(50,173,230,0.25);border-radius:24px;padding:24px 28px;margin-bottom:18px;
+    <div class="print-only-report" style="background:#ffffff;border:1px solid rgba(50,173,230,0.25);border-radius:24px;padding:24px 28px;margin-bottom:18px;
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 22px rgba(0,0,0,0.06);">
         <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
             <div>
@@ -1746,8 +1848,8 @@ elif hoja_activa == "📄 MI REPORTE":
     r8.metric("Carbohidratos", f"{gr_carb:.1f} g")
     r9.metric("Grasas", f"{gr_gras:.1f} g")
 
-    # --- Bloque 2: Examen médico, si hay datos ---
-    st.markdown("#### 🩸 Examen médico")
+    # --- Bloque 2: Análisis sanguíneo, si hay datos ---
+    st.markdown("#### 🩸 Análisis sanguíneo")
     _valores_examen = [hemo, trigli, gluco, coles, hierro]
     _tiene_examen = any(v > 0 for v in _valores_examen)
     if _tiene_examen:
@@ -1763,7 +1865,8 @@ elif hoja_activa == "📄 MI REPORTE":
         with rc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles_r)
         with rc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro_r)
     else:
-        st.info("Aún no ingresaste tus valores de examen médico en la barra lateral.")
+        st.info("Aún no ingresaste tus valores de análisis sanguíneo en la barra lateral.")
+        _cat_hemo_r = _cat_trigli_r = _cat_gluco_r = _cat_coles_r = _cat_hierro_r = "Introducir datos"
 
     # --- Bloque 3: Plan de dieta armado (si el usuario visitó la Hoja 9) ---
     st.markdown("#### 🍱 Tu plan de comidas del día")
@@ -1789,108 +1892,74 @@ elif hoja_activa == "📄 MI REPORTE":
     st.metric("Peso estimado en 60 días", f"{_peso_proyectado_r:.1f} kg")
 
     # =====================================================================================
-    # NUEVO: Enviar el reporte por correo usando "mailto:" — sin SMTP, sin contraseñas.
-    # Abre el propio cliente de correo del usuario (Gmail, Outlook, etc.) con el mensaje
-    # ya redactado en el cuerpo. El usuario solo tiene que darle clic a "Enviar" desde su cuenta.
+    # BLOQUE 5: RESUMEN CLÍNICO Y RECOMENDACIONES — estilo informe médico profesional
     # =====================================================================================
     st.divider()
-    st.markdown("#### 📧 Enviar este reporte a tu correo")
+    st.markdown("#### 🩺 Resumen clínico y recomendaciones")
 
-    # Armamos el cuerpo del correo en texto plano con todo el resumen
-    _lineas_cuerpo = [
-        f"Informe de Resultados - CIAM&SUNI",
-        f'C.E.P. "Santa Maria Reina", Chiclayo',
-        f"Generado: {_fecha_reporte}",
-        "",
-        f"Nombre: {_nombre_saludo}",
-        f"Edad: {edad} anios ({etapa})",
-        f"Genero: {genero}",
-        "",
-        "--- Datos antropometricos ---",
-        f"Peso: {peso} kg",
-        f"Estatura: {estatura} cm",
-        f"IMC: {imc} ({_categoria_imc_usuario})",
-        "",
-        "--- Requerimiento energetico ---",
-        f"TMB: {tmb:.0f} kcal/dia",
-        f"RCD (gasto diario): {rcd:.0f} kcal/dia",
-        f"Meta calorica (objetivo): {rcd_final:.0f} kcal/dia",
-        "",
-        "--- Macronutrientes recomendados ---",
-        f"Proteinas: {gr_prot:.1f} g",
-        f"Carbohidratos: {gr_carb:.1f} g",
-        f"Grasas: {gr_gras:.1f} g",
-    ]
+    # Construimos una lista de recomendaciones según cada resultado obtenido
+    _recomendaciones = []
 
+    # IMC
+    if _categoria_imc_usuario == "Peso Saludable":
+        _recomendaciones.append("Tu IMC se encuentra en un rango saludable. Mantén tus hábitos actuales de alimentación y actividad física.")
+    elif _categoria_imc_usuario in ["Bajo Peso"]:
+        _recomendaciones.append("Tu IMC sugiere bajo peso. Conversa con tu médico o nutricionista para evaluar si necesitas aumentar tu ingesta calórica de forma segura.")
+    elif _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]:
+        _recomendaciones.append("Tu IMC sugiere un peso por encima del rango saludable, lo que puede aumentar el riesgo de enfermedades crónicas como hipertensión, diabetes tipo 2 y colesterol alto. Se recomienda evaluación con un profesional de la salud.")
+
+    # Análisis sanguíneo
     if _tiene_examen:
-        _lineas_cuerpo += [
-            "",
-            "--- Examen medico ---",
-            f"Hemoglobina: {hemo} g/dL -> {clasif_hemoglobina(hemo, etapa, genero)}",
-            f"Trigliceridos: {trigli} mg/dL -> {clasif_trigliceridos(trigli)}",
-            f"Glucosa: {gluco} mg/dL -> {clasif_glucosa(gluco)}",
-            f"Colesterol: {coles} mg/dL -> {clasif_colesterol(coles)}",
-            f"Hierro: {hierro} ug/dL -> {clasif_hierro(hierro, etapa, genero)}",
-        ]
+        for _param, _cat in [("Hemoglobina", _cat_hemo_r), ("Triglicéridos", _cat_trigli_r),
+                              ("Glucosa", _cat_gluco_r), ("Colesterol", _cat_coles_r), ("Hierro", _cat_hierro_r)]:
+            _color_r = CATEGORIA_SEMAFORO.get(_cat, "gris")
+            if _color_r in ["ambar", "rojo"]:
+                _recomendaciones.append(f"**{_param}** ({_cat}): {MENSAJES_TRIAJE.get(_param, {}).get(_color_r, '')}")
 
-    if _tiene_dieta:
-        _lineas_cuerpo += ["", "--- Plan de comidas del dia ---"]
-        for comida in DIETA:
-            _c = st.session_state.get(f"c_{comida}", "—")
-            _p = st.session_state.get(f"p_{comida}", "—")
-            _g = st.session_state.get(f"g_{comida}", "—")
-            _lineas_cuerpo.append(f"{comida}: {_c} / {_p} / {_g}")
+    if not _recomendaciones:
+        _recomendaciones.append("No se detectaron alertas con la información ingresada hasta el momento.")
 
-    _lineas_cuerpo += [
-        "",
-        "--- Proyeccion estimada (60 dias) ---",
-        f"Peso estimado: {_peso_proyectado_r:.1f} kg",
-        "",
-        "Este informe es orientativo y educativo. No reemplaza una evaluacion medica o nutricional profesional.",
-        "",
-        "CIAM&SUNI - Tu Salud, Personalizada",
-    ]
+    st.markdown(f"""
+    <div class="print-only-report" style="background:#FFFFFF;border:1px solid rgba(30,86,49,0.15);border-radius:20px;
+                padding:20px 24px;box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <ul style="margin:0;padding-left:20px;color:#17301F;line-height:1.7;font-size:0.92rem;">
+            {''.join(f"<li>{r}</li>" for r in _recomendaciones)}
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
-    _cuerpo_correo = "\n".join(_lineas_cuerpo)
-    _asunto_correo = f"Mi Informe de Resultados - CIAM&SUNI ({_fecha_reporte})"
-    _destinatario = correo_usuario.strip() if correo_usuario.strip() else ""
-
-    if not correo_usuario.strip():
-        st.info("✍️ Escribe tu correo electrónico en la barra lateral (arriba del todo) para que los botones "
-                "de abajo ya vengan con tu dirección lista.")
-
-    # Enlaces de "redactar correo" que abren directo en el navegador (no dependen de tener
-    # una app de correo instalada ni configurada como predeterminada en el dispositivo).
-    _gmail_url = (
-        "https://mail.google.com/mail/?view=cm&fs=1"
-        f"&to={quote(_destinatario)}&su={quote(_asunto_correo)}&body={quote(_cuerpo_correo)}"
-    )
-    _outlook_url = (
-        "https://outlook.live.com/mail/0/deeplink/compose"
-        f"?to={quote(_destinatario)}&subject={quote(_asunto_correo)}&body={quote(_cuerpo_correo)}"
-    )
-
-    st.caption("Elige con qué correo quieres enviarlo — se abrirá una pestaña nueva con el mensaje ya redactado, "
-               "listo para que le des clic en **Enviar**:")
-    col_gm, col_out = st.columns(2)
-    with col_gm:
-        st.link_button("📮 Redactar en Gmail", _gmail_url, use_container_width=True)
-    with col_out:
-        st.link_button("📮 Redactar en Outlook", _outlook_url, use_container_width=True)
-
-    st.markdown("**¿Usas otro correo (iCloud, Yahoo, etc.)?** Copia el texto de abajo y pégalo en un correo nuevo "
-                "dirigido a tu propia dirección — dale clic al ícono de copiar en la esquina de la caja:")
-    st.code(f"Para: {_destinatario or '(escribe tu correo en la barra lateral)'}\n"
-            f"Asunto: {_asunto_correo}\n\n{_cuerpo_correo}", language=None)
-
+    st.markdown(f"""
+    <div class="print-only-report" style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
+                padding:16px 24px;margin-top:16px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+    <b style="color:#FF9500;">Recordar:</b> hable sobre su categoría de IMC y sus resultados con su proveedor de
+    atención médica, ya que estos valores pueden estar relacionados con su salud y bienestar general. Su
+    proveedor de atención médica podría determinar las posibles razones de los resultados obtenidos y
+    recomendar apoyo o tratamiento. Este informe es una herramienta de detección orientativa y no pretende
+    diagnosticar enfermedades ni dolencias.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.divider()
     st.caption("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
                "profesional.")
 
-    caja_util(f"Este es tu resumen final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
-              "las hojas anteriores, como si fuera el informe que te entregarían en un consultorio. Puedes "
-              "enviártelo a tu correo con el botón de arriba, o tomarle una captura de pantalla. 📄✨",
+    # Segundo botón de impresión al final del informe, por comodidad
+    st.markdown("""
+    <div class="no-print" style="margin-top:6px;">
+    <button onclick="window.print()" style="
+        background:#1E5631;color:white;border:none;border-radius:999px;
+        padding:12px 26px;font-weight:700;font-size:0.95rem;cursor:pointer;
+        box-shadow:0 4px 14px rgba(30,86,49,0.28);font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+        🖨️ Imprimir este informe
+    </button>
+    </div>
+    """, unsafe_allow_html=True)
+
+    caja_util(f"Este es tu informe final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
+              "las hojas anteriores, como si fuera el informe que te entregarían en un consultorio, con "
+              "recomendaciones incluidas. Usa el botón '🖨️ Imprimir este informe' para imprimirlo o guardarlo "
+              "como PDF al instante. 📄✨",
               emoji="📄", color="#E0F2F1", borde="#00695C")
 
 elif hoja_activa == "🎓 SOBRE NOSOTROS":
