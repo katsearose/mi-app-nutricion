@@ -2,10 +2,20 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import base64
+import io
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors as rl_colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
+)
 
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
 
@@ -333,25 +343,218 @@ def caja_titulo(texto, idx):
                 unsafe_allow_html=True)
 
 
-def boton_imprimir(key):
-    """Botón de impresión que SÍ funciona: usa components.html (sin sanitizar) y llama a
-    window.parent.print() para imprimir la página completa de Streamlit (no solo el iframe)."""
-    components.html(f"""
-    <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
-      <button id="btn_imprimir_{key}" style="
-          background:#1E5631;color:white;border:none;border-radius:999px;
-          padding:12px 26px;font-weight:700;font-size:0.95rem;cursor:pointer;
-          box-shadow:0 4px 14px rgba(30,86,49,0.28);">
-          🖨️ Imprimir este informe
-      </button>
-    </div>
-    <script>
-      const btn_{key} = document.getElementById("btn_imprimir_{key}");
-      btn_{key}.addEventListener("click", function() {{
-          window.parent.print();
-      }});
-    </script>
-    """, height=60)
+def _rl_hex(hexcolor):
+    """Convierte un color '#RRGGBB' a un color de reportlab."""
+    return rl_colors.HexColor(hexcolor)
+
+
+def generar_pdf_reporte(datos):
+    """Genera el Informe de Resultados en un PDF real con estilo de informe médico/clínico
+    (encabezado tipo consultorio, tablas de valores, semáforo de resultados en colores,
+    plan de comidas y recomendaciones) — listo para imprimir o entregar al usuario.
+    `datos` es un diccionario con toda la información necesaria (ver llamada en Hoja 14)."""
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        topMargin=16 * mm, bottomMargin=16 * mm, leftMargin=16 * mm, rightMargin=16 * mm,
+        title="Informe de Resultados - CIAM&SUNI",
+    )
+
+    VERDE = "#1E5631"
+    GRIS_TXT = "#3C3C43"
+    GRIS_SUAVE = "#6C6C70"
+    LINEA = "#E3E8E3"
+
+    styles = getSampleStyleSheet()
+    estilo_titulo = ParagraphStyle("TituloInforme", parent=styles["Title"], fontName="Helvetica-Bold",
+                                    fontSize=17, textColor=_rl_hex(VERDE), spaceAfter=2, alignment=TA_LEFT)
+    estilo_subtitulo = ParagraphStyle("SubtituloInforme", parent=styles["Normal"], fontName="Helvetica",
+                                       fontSize=9, textColor=_rl_hex(GRIS_SUAVE), alignment=TA_LEFT)
+    estilo_fecha = ParagraphStyle("FechaInforme", parent=styles["Normal"], fontName="Helvetica",
+                                   fontSize=9, textColor=_rl_hex(GRIS_SUAVE), alignment=TA_RIGHT)
+    estilo_seccion = ParagraphStyle("Seccion", parent=styles["Heading2"], fontName="Helvetica-Bold",
+                                     fontSize=12.5, textColor=_rl_hex(VERDE), spaceBefore=14, spaceAfter=6)
+    estilo_texto = ParagraphStyle("Texto", parent=styles["Normal"], fontName="Helvetica",
+                                   fontSize=9.5, textColor=_rl_hex(GRIS_TXT), leading=13.5)
+    estilo_texto_bold = ParagraphStyle("TextoBold", parent=estilo_texto, fontName="Helvetica-Bold")
+    estilo_aviso = ParagraphStyle("Aviso", parent=styles["Normal"], fontName="Helvetica",
+                                   fontSize=8.5, textColor=_rl_hex("#8A5A00"), leading=12)
+    estilo_recomendacion = ParagraphStyle("Recom", parent=estilo_texto, leftIndent=8, spaceAfter=4)
+
+    story = []
+
+    # ---------------- ENCABEZADO TIPO CONSULTORIO ----------------
+    header_tbl = Table([
+        [Paragraph("📄 Informe de Resultados — CIAM&amp;SUNI", estilo_titulo),
+         Paragraph(f"Generado: {datos['fecha']}", estilo_fecha)],
+        [Paragraph('C.E.P. "Santa María Reina", Chiclayo — Programa de Salud Escolar', estilo_subtitulo), ""],
+    ], colWidths=[130 * mm, 44 * mm])
+    header_tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("SPAN", (0, 1), (1, 1)),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    story.append(header_tbl)
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1.3, color=_rl_hex(VERDE)))
+    story.append(Spacer(1, 10))
+
+    # ---------------- DATOS DEL PACIENTE ----------------
+    datos_paciente = Table([[
+        Paragraph(f"<b>Paciente:</b> {datos['nombre']}", estilo_texto),
+        Paragraph(f"<b>Edad:</b> {datos['edad']} años ({datos['etapa']})", estilo_texto),
+        Paragraph(f"<b>Género:</b> {datos['genero']}", estilo_texto),
+    ]], colWidths=[58 * mm, 58 * mm, 58 * mm])
+    datos_paciente.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex("#F4F9F4")),
+        ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex(LINEA)),
+        ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    story.append(datos_paciente)
+    story.append(Spacer(1, 4))
+
+    def _tabla_datos(filas, col_widths=(75 * mm, 99 * mm)):
+        t = Table(filas, colWidths=list(col_widths))
+        t.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9.5),
+            ("TEXTCOLOR", (0, 0), (-1, -1), _rl_hex(GRIS_TXT)),
+            ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ]))
+        return t
+
+    # ---------------- 1. DATOS ANTROPOMÉTRICOS ----------------
+    story.append(Paragraph("📏 Datos antropométricos", estilo_seccion))
+    story.append(_tabla_datos([
+        ["Peso", f"{datos['peso']} kg"],
+        ["Estatura", f"{datos['estatura']} cm"],
+        ["IMC", f"{datos['imc']}  —  {datos['categoria_imc']}" + (f"  (Percentil {datos['percentil']})" if datos.get("percentil") else "")],
+    ]))
+
+    # ---------------- 2. REQUERIMIENTO ENERGÉTICO ----------------
+    story.append(Paragraph("🔥 Requerimiento energético", estilo_seccion))
+    story.append(_tabla_datos([
+        ["TMB (Tasa Metabólica Basal)", f"{datos['tmb']:.0f} kcal/día"],
+        ["RCD (Gasto calórico diario)", f"{datos['rcd']:.0f} kcal/día"],
+        ["Meta calórica (según objetivo)", f"{datos['rcd_final']:.0f} kcal/día"],
+        ["Objetivo nutricional", f"{datos['objetivo']}"],
+    ]))
+
+    # ---------------- 3. MACRONUTRIENTES ----------------
+    story.append(Paragraph("🍽️ Macronutrientes recomendados (diarios)", estilo_seccion))
+    tabla_macros = Table([
+        ["Macronutriente", "Gramos", "Kcal/día", "% del total"],
+        ["Proteínas", f"{datos['gr_prot']:.1f} g", f"{datos['cal_prot']:.0f}", "20%"],
+        ["Carbohidratos", f"{datos['gr_carb']:.1f} g", f"{datos['cal_carb']:.0f}", "50%"],
+        ["Grasas", f"{datos['gr_gras']:.1f} g", f"{datos['cal_gras']:.0f}", "30%"],
+    ], colWidths=(58 * mm, 39 * mm, 39 * mm, 38 * mm))
+    tabla_macros.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
+        ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9.3),
+        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [rl_colors.white, _rl_hex("#F7F9F7")]),
+        ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
+        ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(tabla_macros)
+
+    # ---------------- 4. ANÁLISIS SANGUÍNEO (semáforo clínico) ----------------
+    story.append(Paragraph("🩸 Análisis sanguíneo — semáforo clínico", estilo_seccion))
+    if datos["tiene_examen"]:
+        filas_examen = [["Parámetro", "Valor", "Resultado", "Estado"]]
+        estilos_extra = []
+        for i, (parametro, valor_txt, categoria) in enumerate(datos["examen"], start=1):
+            color_sem = CATEGORIA_SEMAFORO.get(categoria, "gris")
+            estilo_sem = SEMAFORO_ESTILO[color_sem]
+            filas_examen.append([parametro, valor_txt, categoria, estilo_sem["etiqueta"]])
+            estilos_extra.append(("BACKGROUND", (3, i), (3, i), _rl_hex(estilo_sem["fondo"])))
+            estilos_extra.append(("TEXTCOLOR", (3, i), (3, i), _rl_hex(estilo_sem["hex"])))
+            estilos_extra.append(("FONTNAME", (3, i), (3, i), "Helvetica-Bold"))
+        tabla_examen = Table(filas_examen, colWidths=(46 * mm, 34 * mm, 40 * mm, 34 * mm))
+        base_style = [
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
+            ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+            ("ROWBACKGROUNDS", (0, 1), (2, -1), [rl_colors.white, _rl_hex("#F7F9F7")]),
+            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ] + estilos_extra
+        tabla_examen.setStyle(TableStyle(base_style))
+        story.append(tabla_examen)
+    else:
+        story.append(Paragraph("No se ingresaron valores de análisis sanguíneo en esta sesión.", estilo_texto))
+
+    # ---------------- 5. PLAN DE COMIDAS ----------------
+    story.append(Paragraph("🍱 Plan de comidas del día", estilo_seccion))
+    if datos["tiene_dieta"]:
+        filas_dieta = [["Comida", "Carbohidrato", "Proteína", "Grasa"]]
+        for comida, alimentos in datos["dieta"].items():
+            filas_dieta.append([comida, alimentos["Carbohidrato"], alimentos["Proteína"], alimentos["Grasa"]])
+        tabla_dieta = Table(filas_dieta, colWidths=(30 * mm, 48 * mm, 48 * mm, 28 * mm))
+        tabla_dieta.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
+            ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8.6),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [rl_colors.white, _rl_hex("#F7F9F7")]),
+            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5.5),
+        ]))
+        story.append(tabla_dieta)
+    else:
+        story.append(Paragraph("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.", estilo_texto))
+
+    # ---------------- 6. PROYECCIÓN A 60 DÍAS ----------------
+    story.append(Paragraph("📈 Proyección estimada (60 días)", estilo_seccion))
+    story.append(_tabla_datos([
+        ["Peso actual", f"{datos['peso']} kg"],
+        ["Peso estimado en 60 días", f"{datos['peso_proyectado']:.1f} kg"],
+    ]))
+
+    # ---------------- 7. RESUMEN CLÍNICO Y RECOMENDACIONES ----------------
+    story.append(Paragraph("🩺 Resumen clínico y recomendaciones", estilo_seccion))
+    for r in datos["recomendaciones"]:
+        story.append(Paragraph(f"•  {r}", estilo_recomendacion))
+
+    # ---------------- AVISO MÉDICO ----------------
+    story.append(Spacer(1, 8))
+    aviso_tbl = Table([[Paragraph(
+        "<b>Recordar:</b> hable sobre su categoría de IMC y sus resultados con su proveedor de atención "
+        "médica, ya que estos valores pueden estar relacionados con su salud y bienestar general. Este "
+        "informe es una herramienta de detección orientativa y educativa; no reemplaza una evaluación "
+        "médica o nutricional profesional y no pretende diagnosticar enfermedades ni dolencias.",
+        estilo_aviso)]], colWidths=[178 * mm])
+    aviso_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex("#FFF3E5")),
+        ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex("#FFD59E")),
+        ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    story.append(aviso_tbl)
+
+    story.append(Spacer(1, 10))
+    story.append(HRFlowable(width="100%", thickness=0.6, color=_rl_hex(LINEA)))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(
+        "Informe generado por CIAM&amp;SUNI — Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
+        "C.E.P. Santa María Reina, Chiclayo. Ningún dato se almacena en servidores externos.",
+        estilo_subtitulo))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
 
 
 def recursos_externos(idx, recursos):
@@ -1809,11 +2012,6 @@ elif hoja_activa == "📄 MI REPORTE":
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Botón de impresión: dispara el diálogo de impresión del navegador ---
-    boton_imprimir("top")
-    st.caption("El botón abre la ventana de impresión de tu navegador (o 'Guardar como PDF'). "
-               "Al imprimir, el menú lateral y los botones de navegación se ocultan automáticamente.")
-
     _fecha_reporte = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     # --- Encabezado tipo "informe médico" ---
@@ -1953,13 +2151,70 @@ elif hoja_activa == "📄 MI REPORTE":
     st.caption("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
                "profesional.")
 
-    # Segundo botón de impresión al final del informe, por comodidad
-    boton_imprimir("bottom")
+    # =====================================================================================
+    # GENERACIÓN DEL PDF — informe clínico real, listo para descargar e imprimir
+    # =====================================================================================
+    _examen_pdf = [
+        ("Hemoglobina", f"{hemo} g/dL", _cat_hemo_r),
+        ("Triglicéridos", f"{trigli} mg/dL", _cat_trigli_r),
+        ("Glucosa", f"{gluco} mg/dL", _cat_gluco_r),
+        ("Colesterol", f"{coles} mg/dL", _cat_coles_r),
+        ("Hierro", f"{hierro} µg/dL", _cat_hierro_r),
+    ]
+    _dieta_pdf = {}
+    if _tiene_dieta:
+        for comida in DIETA:
+            _dieta_pdf[comida] = {
+                "Carbohidrato": st.session_state.get(f"c_{comida}", "—"),
+                "Proteína": st.session_state.get(f"p_{comida}", "—"),
+                "Grasa": st.session_state.get(f"g_{comida}", "—"),
+            }
+
+    _datos_pdf = {
+        "fecha": _fecha_reporte,
+        "nombre": _nombre_saludo,
+        "edad": edad,
+        "etapa": etapa,
+        "genero": genero,
+        "peso": peso,
+        "estatura": estatura,
+        "imc": imc,
+        "categoria_imc": _categoria_imc_usuario,
+        "percentil": _percentil_usuario,
+        "tmb": tmb,
+        "rcd": rcd,
+        "rcd_final": rcd_final,
+        "objetivo": objetivo,
+        "gr_prot": gr_prot, "cal_prot": cal_prot,
+        "gr_carb": gr_carb, "cal_carb": cal_carb,
+        "gr_gras": gr_gras, "cal_gras": cal_gras,
+        "tiene_examen": _tiene_examen,
+        "examen": _examen_pdf,
+        "tiene_dieta": _tiene_dieta,
+        "dieta": _dieta_pdf,
+        "peso_proyectado": _peso_proyectado_r,
+        "recomendaciones": _recomendaciones,
+    }
+
+    _pdf_bytes = generar_pdf_reporte(_datos_pdf)
+    _nombre_archivo = f"Informe_CIAMSUNI_{_nombre_saludo}".replace(" ", "_") + ".pdf"
+
+    st.markdown("#### 📥 Descarga tu informe")
+    st.caption("Genera un PDF con estilo de informe clínico (no una captura de la página) que puedes "
+               "guardar, enviar o imprimir directamente desde tu lector de PDF.")
+    st.download_button(
+        "📄 Descargar Informe en PDF",
+        data=_pdf_bytes,
+        file_name=_nombre_archivo,
+        mime="application/pdf",
+        use_container_width=True,
+        type="primary",
+    )
 
     caja_util(f"Este es tu informe final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
-              "las hojas anteriores, como si fuera el informe que te entregarían en un consultorio, con "
-              "recomendaciones incluidas. Usa el botón '🖨️ Imprimir este informe' para imprimirlo o guardarlo "
-              "como PDF al instante. 📄✨",
+              "las hojas anteriores, con el formato de un informe que te entregarían en un consultorio. "
+              "Usa el botón '📄 Descargar Informe en PDF' para obtener un archivo PDF real, listo para "
+              "imprimir o compartir. 📄✨",
               emoji="📄", color="#E0F2F1", borde="#00695C")
 
 elif hoja_activa == "🎓 SOBRE NOSOTROS":
