@@ -255,7 +255,7 @@ div[data-testid="stDataFrame"] { border-radius: var(--ios-radius-sm); overflow: 
 @media print {
     section[data-testid="stSidebar"], header[data-testid="stHeader"], .navbar,
     div[role="radiogroup"], #MainMenu, footer, .stDeployButton,
-    div[data-testid="stToolbar"], .no-print {
+    div[data-testid="stToolbar"], .no-print, iframe {
         display: none !important;
     }
     .print-only-report { box-shadow: none !important; border: 1px solid #ccc !important; }
@@ -331,6 +331,27 @@ def caja_titulo(texto, idx):
     _, _, _, borde, _ = COLORES[idx]
     st.markdown(f"<p style='color:{borde};font-weight:800;font-size:1.05rem;margin-top:14px;'>{texto}</p>",
                 unsafe_allow_html=True)
+
+
+def boton_imprimir(key):
+    """Botón de impresión que SÍ funciona: usa components.html (sin sanitizar) y llama a
+    window.parent.print() para imprimir la página completa de Streamlit (no solo el iframe)."""
+    components.html(f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+      <button id="btn_imprimir_{key}" style="
+          background:#1E5631;color:white;border:none;border-radius:999px;
+          padding:12px 26px;font-weight:700;font-size:0.95rem;cursor:pointer;
+          box-shadow:0 4px 14px rgba(30,86,49,0.28);">
+          🖨️ Imprimir este informe
+      </button>
+    </div>
+    <script>
+      const btn_{key} = document.getElementById("btn_imprimir_{key}");
+      btn_{key}.addEventListener("click", function() {{
+          window.parent.print();
+      }});
+    </script>
+    """, height=60)
 
 
 def recursos_externos(idx, recursos):
@@ -957,8 +978,6 @@ if _ESCUDO.exists():
 st.sidebar.header("📝 ¡Introduce tus datos!")
 st.sidebar.caption("🔒 Tus datos son privados: solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.")
 
-correo_usuario = st.sidebar.text_input("✉️ Tu correo electrónico:", "")
-
 genero = st.sidebar.radio("Género:", ["Hombre", "Mujer"], index=0, horizontal=True,
                            format_func=lambda g: ("♂ Hombre" if g == "Hombre" else "♀ Mujer"))
 
@@ -1121,9 +1140,9 @@ if hoja_activa == "0.-DATOS":
     col_datos, col_sticker = st.columns([2, 1])
     with col_datos:
         df0 = pd.DataFrame({
-            "Variable": ["Nombre", "Correo", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
+            "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
                          "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
-            "Valor": [_nombre_saludo, correo_usuario if correo_usuario.strip() else "—", f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
+            "Valor": [_nombre_saludo, f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
                       objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
         })
         tabla_bonita(df0, 0)
@@ -1791,16 +1810,7 @@ elif hoja_activa == "📄 MI REPORTE":
     """, unsafe_allow_html=True)
 
     # --- Botón de impresión: dispara el diálogo de impresión del navegador ---
-    st.markdown("""
-    <div class="no-print" style="margin-bottom:14px;">
-    <button onclick="window.print()" style="
-        background:#1E5631;color:white;border:none;border-radius:999px;
-        padding:12px 26px;font-weight:700;font-size:0.95rem;cursor:pointer;
-        box-shadow:0 4px 14px rgba(30,86,49,0.28);font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
-        🖨️ Imprimir este informe
-    </button>
-    </div>
-    """, unsafe_allow_html=True)
+    boton_imprimir("top")
     st.caption("El botón abre la ventana de impresión de tu navegador (o 'Guardar como PDF'). "
                "Al imprimir, el menú lateral y los botones de navegación se ocultan automáticamente.")
 
@@ -1819,7 +1829,6 @@ elif hoja_activa == "📄 MI REPORTE":
         </div>
         <hr style="border:none;border-top:1px solid #F2F2F7;margin:14px 0;">
         <b>Nombre:</b> {_nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
-        <b>Correo:</b> {correo_usuario if correo_usuario.strip() else "No indicado"} &nbsp;&nbsp;|&nbsp;&nbsp;
         <b>Edad:</b> {edad} años ({etapa}) &nbsp;&nbsp;|&nbsp;&nbsp;
         <b>Género:</b> {genero}
     </div>
@@ -1945,16 +1954,7 @@ elif hoja_activa == "📄 MI REPORTE":
                "profesional.")
 
     # Segundo botón de impresión al final del informe, por comodidad
-    st.markdown("""
-    <div class="no-print" style="margin-top:6px;">
-    <button onclick="window.print()" style="
-        background:#1E5631;color:white;border:none;border-radius:999px;
-        padding:12px 26px;font-weight:700;font-size:0.95rem;cursor:pointer;
-        box-shadow:0 4px 14px rgba(30,86,49,0.28);font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
-        🖨️ Imprimir este informe
-    </button>
-    </div>
-    """, unsafe_allow_html=True)
+    boton_imprimir("bottom")
 
     caja_util(f"Este es tu informe final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
               "las hojas anteriores, como si fuera el informe que te entregarían en un consultorio, con "
