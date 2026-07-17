@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import pandas as pd
 import base64
 import io
+import textwrap
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from urllib.parse import quote
@@ -320,21 +321,18 @@ def hoja_header(idx, subtitulo=None):
     subtítulo explicativo — igual que la sección 'Encabezado de la Hoja Activa' de la maqueta."""
     numero, titulo, emoji, borde, fondo = COLORES[idx]
     sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;'>{subtitulo}</p>" if subtitulo else ""
-    st.markdown(f"""
-    <div style="background:#FFFFFF;border-radius:24px;padding:22px 28px;margin-bottom:16px;
-                display:flex;align-items:flex-start;gap:18px;
-                box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 10px 26px rgba(30,86,49,0.08);
-                border:1px solid rgba(30,86,49,0.06);">
-        <div style="min-width:56px;height:56px;border-radius:50%;background:{fondo};
-                    display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">
-            {emoji}
-        </div>
-        <div>
-            <h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">Hoja {numero}: {titulo}</h2>
-            {sub_html}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    html = f"""<div style="background:#FFFFFF;border-radius:24px;padding:22px 28px;margin-bottom:16px;
+display:flex;align-items:flex-start;gap:18px;
+box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 10px 26px rgba(30,86,49,0.08);
+border:1px solid rgba(30,86,49,0.06);">
+<div style="min-width:56px;height:56px;border-radius:50%;background:{fondo};
+display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">{emoji}</div>
+<div>
+<h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">Hoja {numero}: {titulo}</h2>
+{sub_html}
+</div>
+</div>"""
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def tabla_bonita(df, idx):
@@ -370,6 +368,22 @@ def caja_titulo(texto, idx):
                 unsafe_allow_html=True)
 
 
+def _resolver_imagen(ruta):
+    """Si `ruta` no existe tal cual, prueba variantes comunes de extensión y mayúsculas/minúsculas
+    (.jpg, .JPG, .jpeg, .png, .PNG, .webp, etc.) y devuelve la primera ruta que sí exista.
+    Devuelve None si no encuentra ninguna coincidencia."""
+    ruta = Path(ruta)
+    if ruta.exists():
+        return ruta
+    base = ruta.with_suffix("")
+    extensiones = ["jpg", "JPG", "Jpg", "jpeg", "JPEG", "png", "PNG", "Png", "webp", "WEBP"]
+    for ext in extensiones:
+        candidato = base.with_suffix(f".{ext}")
+        if candidato.exists():
+            return candidato
+    return None
+
+
 def _img_to_b64(ruta):
     """Convierte una imagen (ruta en disco) a base64. Devuelve None si no existe o falla."""
     try:
@@ -386,10 +400,11 @@ def imagen_bonita(ruta, caption=None, ancho=None):
     `ruta` puede ser una ruta en disco (str/Path) o un objeto tipo bytes/BytesIO ya cargado."""
     b64 = None
     if isinstance(ruta, (str, Path)):
-        if not Path(ruta).exists():
+        ruta_resuelta = _resolver_imagen(ruta)
+        if ruta_resuelta is None:
             return
-        b64 = _img_to_b64(ruta)
-        ext = Path(ruta).suffix.lstrip(".").lower() or "png"
+        b64 = _img_to_b64(ruta_resuelta)
+        ext = ruta_resuelta.suffix.lstrip(".").lower() or "png"
     else:
         try:
             data = ruta.getvalue() if hasattr(ruta, "getvalue") else ruta.read()
@@ -1236,6 +1251,7 @@ st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un
 
 # --- Acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
 _POSIBLES_NOMBRES_EXCEL = [
+    "Proyecto_sana_alimentacion_-_GrupoN4_CIAM_SUNI.xlsx",
     "Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx",
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
 ]
