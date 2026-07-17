@@ -546,12 +546,11 @@ def generar_pdf_reporte(datos):
 
     # ---------------- 3. MACRONUTRIENTES ----------------
     story.append(Paragraph("🍽️ Macronutrientes recomendados (diarios)", estilo_seccion))
-    _total_kcal_macros = max(datos['cal_prot'] + datos['cal_carb'] + datos['cal_gras'], 1)
     tabla_macros = Table([
         ["Macronutriente", "Gramos", "Kcal/día", "% del total"],
-        ["Proteínas", f"{datos['gr_prot']:.1f} g", f"{datos['cal_prot']:.0f}", f"{datos['cal_prot']/_total_kcal_macros*100:.0f}%"],
-        ["Carbohidratos", f"{datos['gr_carb']:.1f} g", f"{datos['cal_carb']:.0f}", f"{datos['cal_carb']/_total_kcal_macros*100:.0f}%"],
-        ["Grasas", f"{datos['gr_gras']:.1f} g", f"{datos['cal_gras']:.0f}", f"{datos['cal_gras']/_total_kcal_macros*100:.0f}%"],
+        ["Proteínas", f"{datos['gr_prot']:.1f} g", f"{datos['cal_prot']:.0f}", "20%"],
+        ["Carbohidratos", f"{datos['gr_carb']:.1f} g", f"{datos['cal_carb']:.0f}", "50%"],
+        ["Grasas", f"{datos['gr_gras']:.1f} g", f"{datos['cal_gras']:.0f}", "30%"],
     ], colWidths=(58 * mm, 39 * mm, 39 * mm, 38 * mm))
     tabla_macros.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
@@ -676,51 +675,6 @@ FACTOR_ACTIVIDAD = {
     "Moderada":   {"Hombre": 1.8, "Mujer": 1.64},
     "Intensa":    {"Hombre": 2.1, "Mujer": 1.82},
 }
-
-# =========================================================================================
-# HOJA 6 — TABLA DE MACRONUTRIENTES (idéntica a la hoja "CÁLCULO DE LOS MACRONUTRIENTES" del
-# Excel original). Los factores están en gramos por kilogramo de peso corporal (g/kg) y se
-# aplican sobre el PESO de la Hoja 0, exactamente como en las celdas M17/M18/N17/N18/O17/O18
-# de la captura del Excel.
-# =========================================================================================
-ENERGIA_POR_GRAMO = {"Proteínas": 4, "Carbohidratos": 4, "Grasas": 9}
-
-NIVELES_MACRO = ["Mínimo", "Intermedio", "Máximo"]
-FACTOR_PROTEINA_GKG = {"Mínimo": 1.8, "Intermedio": 2.1, "Máximo": 2.5}   # fila "Proteínas" del Excel
-FACTOR_GRASA_GKG = {"Mínimo": 0.5, "Intermedio": 1.0, "Máximo": 1.5}      # fila "Grasas" del Excel
-# Carbohidratos: siempre "Calorías restantes" (RCD final - kcal proteína - kcal grasa), igual que el Excel.
-
-
-def calcular_tabla_macros_gkg(peso_kg, rcd_final_kcal):
-    """Réplica exacta de la hoja 'CÁLCULO DE LOS MACRONUTRIENTES' del Excel: para cada nivel
-    (Mínimo / Intermedio / Máximo) calcula gramos y kcal de proteína y grasa a partir del
-    factor g/kg de peso corporal, y reparte el resto de las calorías meta (RCD final) en
-    carbohidratos. Devuelve un diccionario {nivel: {...}} con todos los datos intermedios,
-    tal cual aparecen en las celdas D26/D27, I26/I27, N27/N28/O27/O28 del Excel."""
-    tabla = {}
-    for nivel in NIVELES_MACRO:
-        factor_prot = FACTOR_PROTEINA_GKG[nivel]                 # =M17 / M18 / M19 (col "Mínimo/Intermedio/Máximo")
-        gr_prot_n = factor_prot * peso_kg                        # =D26*E26  -> gramos de proteína
-        cal_prot_n = gr_prot_n * ENERGIA_POR_GRAMO["Proteínas"]  # =D27*E27  -> kcal de proteína
-
-        factor_gras = FACTOR_GRASA_GKG[nivel]                     # =M18 / etc.
-        gr_gras_n = factor_gras * peso_kg                         # =I26*J26  -> gramos de grasa
-        cal_gras_n = gr_gras_n * ENERGIA_POR_GRAMO["Grasas"]      # =I27*J27  -> kcal de grasa
-
-        cal_usadas = cal_prot_n + cal_gras_n                      # =F27+K27  -> "Kcal Restantes" (usadas)
-        cal_carb_n = rcd_final_kcal - cal_usadas                  # =N27-O27  -> kcal restantes para carbohidratos
-        cal_carb_n_segura = max(cal_carb_n, 0)                    # nunca permitimos gramos negativos
-        gr_carb_n = cal_carb_n_segura / ENERGIA_POR_GRAMO["Carbohidratos"]  # =N28/O28 -> gramos de carbohidrato
-
-        tabla[nivel] = {
-            "factor_prot": factor_prot, "gr_prot": gr_prot_n, "cal_prot": cal_prot_n,
-            "factor_gras": factor_gras, "gr_gras": gr_gras_n, "cal_gras": cal_gras_n,
-            "cal_restantes_carb": cal_carb_n, "cal_restantes_carb_segura": cal_carb_n_segura,
-            "gr_carb": gr_carb_n, "cal_carb": cal_carb_n_segura,
-            "excede_meta": cal_carb_n < 0,   # True si proteína+grasa ya superan la meta calórica
-            "total_kcal": cal_prot_n + cal_gras_n + cal_carb_n_segura,
-        }
-    return tabla
 
 # Tablas de percentil IMC (Hoja 2), edad 2-20, (P5, P50, P85, P95)
 PERCENTIL_MUJER = {
@@ -1400,23 +1354,6 @@ if objetivo != "Mantenerse":
                    "más lento y seguro — recomendado para cuerpos en crecimiento.")
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("🍽️ Plan de Macronutrientes")
-nivel_macro = st.sidebar.radio(
-    "Nivel de proteína y grasa (g/kg de peso):",
-    NIVELES_MACRO, index=1, horizontal=True,
-    help="Igual que la tabla 'Mínimo / Intermedio / Máximo' del Excel: cambia cuánta proteína y "
-         "grasa por kilo de peso corporal usa tu plan. Los carbohidratos siempre completan el resto "
-         "de tu meta calórica (RCD final)."
-)
-with st.sidebar.expander("ℹ️ ¿Qué nivel elijo?"):
-    st.caption("**Mínimo (1.8 g/kg prot. · 0.5 g/kg grasa):** más carbohidratos, ideal si haces poca "
-               "fuerza/pesas.\n\n"
-               "**Intermedio (2.1 g/kg prot. · 1.0 g/kg grasa):** el equilibrio recomendado para la "
-               "mayoría de personas — es el valor por defecto.\n\n"
-               "**Máximo (2.5 g/kg prot. · 1.5 g/kg grasa):** más proteína y grasa, menos carbohidratos; "
-               "usado por personas con entrenamiento de fuerza intenso.")
-
-st.sidebar.markdown("---")
 st.sidebar.subheader("Análisis Sanguíneo")
 hemo = st.sidebar.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1)
 trigli = st.sidebar.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0)
@@ -1459,17 +1396,13 @@ elif ajuste_bajar == 0.20 or ajuste_subir == 0.30:
 else:
     plazo = "—"
 
-# Hoja 6: Macronutrientes — réplica de la hoja "CÁLCULO DE LOS MACRONUTRIENTES" del Excel:
-# la proteína y la grasa se calculan en g/kg de peso corporal (según el nivel elegido en la
-# barra lateral) y el carbohidrato completa el resto de la meta calórica (RCD final).
-tabla_macros_gkg = calcular_tabla_macros_gkg(peso, rcd_final)
-_macro_nivel_actual = tabla_macros_gkg[nivel_macro]
-gr_prot = _macro_nivel_actual["gr_prot"]
-cal_prot = _macro_nivel_actual["cal_prot"]
-gr_gras = _macro_nivel_actual["gr_gras"]
-cal_gras = _macro_nivel_actual["cal_gras"]
-gr_carb = _macro_nivel_actual["gr_carb"]
-cal_carb = _macro_nivel_actual["cal_carb"]
+# Hoja 6: Macronutrientes
+cal_prot = rcd_final * 0.20
+cal_carb = rcd_final * 0.50
+cal_gras = rcd_final * 0.30
+gr_prot = cal_prot / 4
+gr_carb = cal_carb / 4
+gr_gras = cal_gras / 9
 
 # Hoja 7: Porciones del día
 porciones = {
@@ -1861,120 +1794,29 @@ elif hoja_activa == "5.-OBJETIVO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
-    hoja_header(6, "Réplica exacta de la hoja de cálculo del Excel: la proteína y la grasa se calculan en "
-                   "gramos por kilo de tu peso corporal, y el carbohidrato completa el resto de tu meta calórica.")
-
-    # ---------------------------------------------------------------------------------
-    # PASO 1 — Tablas de referencia (idénticas a las de la esquina superior del Excel)
-    # ---------------------------------------------------------------------------------
-    caja_titulo("Paso 1 · Tablas de referencia (así empieza el Excel)", 6)
-    ref1, ref2 = st.columns([1, 1.3])
-    with ref1:
-        st.markdown("**⚡ Distribución de macronutrientes**")
-        st.caption("Cuánta energía aporta cada gramo de cada macronutriente — es un dato fijo, siempre igual.")
-        tabla_bonita(pd.DataFrame({
-            "Macronutriente": ["Proteínas", "Carbohidratos", "Grasas"],
-            "Energía por gramo": ["4 kcal/g", "4 kcal/g", "9 kcal/g"],
-        }), 6)
-    with ref2:
-        st.markdown("**⚖️ Factores según tu peso corporal (g/kg)**")
-        st.caption("Cuántos gramos de proteína o grasa te corresponden por cada kilo que pesas, según el nivel.")
-        tabla_bonita(pd.DataFrame({
-            "Macronutriente": ["Proteínas", "Grasas", "Carbohidratos"],
-            "Mínimo": [FACTOR_PROTEINA_GKG["Mínimo"], FACTOR_GRASA_GKG["Mínimo"], "Calorías restantes"],
-            "Intermedio": [FACTOR_PROTEINA_GKG["Intermedio"], FACTOR_GRASA_GKG["Intermedio"], "Calorías restantes"],
-            "Máximo": [FACTOR_PROTEINA_GKG["Máximo"], FACTOR_GRASA_GKG["Máximo"], "Calorías restantes"],
-        }), 6)
-    caja_util("En el Excel, la proteína y la grasa NO son un porcentaje fijo de tus calorías: se calculan "
-              "multiplicando un factor (gramos por cada kilo de tu peso) por tu peso real. El carbohidrato, en "
-              "cambio, simplemente 'rellena' con las calorías que sobran hasta llegar a tu meta (RCD final de "
-              "la Hoja 5). Por eso a veces se le llama 'Calorías restantes'. ⚖️🍽️",
-              emoji="🧮", color="#FFFDE7", borde="#FBC02D")
-
-    st.divider()
-
-    # ---------------------------------------------------------------------------------
-    # PASO 2 — Los tres bloques de cálculo (Mínimo / Intermedio / Máximo), paso a paso
-    # ---------------------------------------------------------------------------------
-    caja_titulo("Paso 2 · Cálculo detallado para cada nivel", 6)
-    st.caption(f"Tu peso registrado en la Hoja 0 es **{peso} kg** y tu meta calórica (Hoja 5) es "
-               f"**{rcd_final:.0f} kcal/día**. Así se calcula cada nivel, exactamente como en el Excel:")
-
-    _colores_nivel = {"Mínimo": "#30B0C7", "Intermedio": "#1E5631", "Máximo": "#FF9500"}
-    cols_niveles = st.columns(3)
-    for _col, _nivel in zip(cols_niveles, NIVELES_MACRO):
-        _d = tabla_macros_gkg[_nivel]
-        _c = _colores_nivel[_nivel]
-        _es_actual = (_nivel == nivel_macro)
-        _marca = " ✅ Plan elegido" if _es_actual else ""
-        with _col:
-            st.markdown(f"""
-            <div style="background:#FFFFFF;border-radius:20px;padding:16px 16px;height:100%;
-                        border:{'3px' if _es_actual else '1px'} solid {_c};
-                        box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);">
-                <div style="font-weight:800;color:{_c};font-size:1rem;margin-bottom:6px;">{_nivel}{_marca}</div>
-                <div style="font-size:0.78rem;color:#5C6B60;line-height:1.6;">
-                    <b>🥩 Proteína</b><br>
-                    {_d['factor_prot']} g/kg × {peso} kg = <b>{_d['gr_prot']:.1f} g</b><br>
-                    {_d['gr_prot']:.1f} g × 4 kcal/g = <b>{_d['cal_prot']:.0f} kcal</b>
-                    <hr style="border:none;border-top:1px solid #F0F0F0;margin:8px 0;">
-                    <b>🥑 Grasa</b><br>
-                    {_d['factor_gras']} g/kg × {peso} kg = <b>{_d['gr_gras']:.1f} g</b><br>
-                    {_d['gr_gras']:.1f} g × 9 kcal/g = <b>{_d['cal_gras']:.0f} kcal</b>
-                    <hr style="border:none;border-top:1px solid #F0F0F0;margin:8px 0;">
-                    <b>🍚 Carbohidrato (resto)</b><br>
-                    {rcd_final:.0f} − ({_d['cal_prot']:.0f} + {_d['cal_gras']:.0f}) = <b>{_d['cal_restantes_carb']:.0f} kcal</b><br>
-                    {_d['cal_carb']:.0f} kcal ÷ 4 kcal/g = <b>{_d['gr_carb']:.1f} g</b>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            if _d["excede_meta"]:
-                st.warning("⚠️ En este nivel, la proteína + la grasa ya superan tu meta calórica: no queda "
-                           "espacio para carbohidratos. Considera elegir un nivel más bajo.")
-
-    caja_util("Fíjate cómo cada columna repite la MISMA fórmula, cambiando solo el factor g/kg: primero se "
-              "calculan los gramos (factor × tu peso), luego se convierten a calorías (gramos × energía por "
-              "gramo), y al final el carbohidrato se calcula con lo que sobra de tu meta calórica. Así funciona "
-              "exactamente la hoja de Excel original, celda por celda. 📐",
-              emoji="🔎", color="#E0F7FA", borde="#00ACC1")
-
-    st.divider()
-
-    # ---------------------------------------------------------------------------------
-    # PASO 3 — Resumen del plan elegido (el que se usa en el resto de la app: Hoja 7 y 9)
-    # ---------------------------------------------------------------------------------
-    caja_titulo(f"Paso 3 · Tu plan final — Nivel «{nivel_macro}» (elegido en la barra lateral)", 6)
-    st.info(f"💡 Este es el nivel que se está usando en el resto de la app (Hoja 7.-Porciones y "
-            f"Hoja 9.-Dieta). Puedes cambiarlo cuando quieras desde **'🍽️ Plan de Macronutrientes'** en la "
-            f"barra lateral.")
-
+    hoja_header(6, "Se usan las calorías recomendadas según el objetivo nutricional (Hoja 5), no el RCD base.")
     col1, col2, col3 = st.columns(3)
-    _pct_prot = cal_prot / max(cal_prot + cal_carb + cal_gras, 1) * 100
-    _pct_carb = cal_carb / max(cal_prot + cal_carb + cal_gras, 1) * 100
-    _pct_gras = cal_gras / max(cal_prot + cal_carb + cal_gras, 1) * 100
-    col1.metric(f"Proteínas ({_pct_prot:.0f}%)", f"{gr_prot:.1f} g", f"{cal_prot:.1f} kcal/día")
-    col2.metric(f"Carbohidratos ({_pct_carb:.0f}%)", f"{gr_carb:.1f} g", f"{cal_carb:.1f} kcal/día")
-    col3.metric(f"Grasas ({_pct_gras:.0f}%)", f"{gr_gras:.1f} g", f"{cal_gras:.1f} kcal/día")
-
+    col1.metric("Proteínas (20%)", f"{gr_prot:.1f} g", f"{cal_prot:.1f} kcal/día")
+    col2.metric("Carbohidratos (50%)", f"{gr_carb:.1f} g", f"{cal_carb:.1f} kcal/día")
+    col3.metric("Grasas (30%)", f"{gr_gras:.1f} g", f"{cal_gras:.1f} kcal/día")
     tabla_bonita(pd.DataFrame({
-        "Resumen energético": ["Proteínas", "Carbohidratos", "Grasas", "RCD (total)"],
-        "Valor (kcal/día)": [f"{cal_prot:.1f}", f"{cal_carb:.1f}", f"{cal_gras:.1f}", f"{cal_prot+cal_carb+cal_gras:.1f}"]
+        "Resumen energético": ["Proteínas", "Carbohidratos", "Grasas", "Total"],
+        "Valor (kcal)": [f"{cal_prot:.1f}", f"{cal_carb:.1f}", f"{cal_gras:.1f}", f"{cal_prot+cal_carb+cal_gras:.1f}"]
     }), 6)
 
     st.divider()
     col_recom, col_graf1 = st.columns([1, 1])
     with col_recom:
-        st.markdown("**🎯 Recomendación nutricional**")
-        st.info(f"Según el nivel **{nivel_macro}** que elegiste, esta es la cantidad diaria recomendada de "
-                f"proteínas, carbohidratos y grasas para alcanzar tu meta.\n\n"
-                "**Proteínas:** reparan y hacen crecer tus músculos y tejidos.\n\n"
-                "**Carbohidratos:** tu principal fuente de energía para el día a día.\n\n"
-                "**Grasas:** esenciales para tus hormonas, cerebro y absorción de vitaminas.")
+        st.info("🎯 **Objetivo de esta distribución**\n\n"
+                "**20% Proteínas:** para la reparación y crecimiento de tus músculos y tejidos.\n\n"
+                "**50% Carbohidratos:** tu principal fuente de energía para el día a día.\n\n"
+                "**30% Grasas:** esenciales para tus hormonas, cerebro y absorción de vitaminas.\n\n"
+                "Esta proporción está pensada para un balance saludable y sostenible, no para dietas extremas.")
     with col_graf1:
-        st.markdown("**🥧 Distribución de los Macronutrientes**")
+        st.markdown("**🥧 Distribución de calorías**")
         fig_pie_macros = go.Figure(data=[go.Pie(
             labels=["Proteínas", "Carbohidratos", "Grasas"],
-            values=[max(cal_prot, 0), max(cal_carb, 0), max(cal_gras, 0)],
+            values=[cal_prot, cal_carb, cal_gras],
             marker=dict(colors=["#FF3B30", "#FF9500", "#34C759"]),
             textinfo="label+percent", hole=0.0,
         )])
@@ -1983,7 +1825,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
 
     caja_util("No basta con contar calorías: también importa DE QUÉ están hechas. Esta hoja reparte tu meta "
               "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
-              "órganos), en gramos concretos que se usan automáticamente al armar tu dieta en la Hoja 9. 🍗🍚🥑",
+              "órganos), en gramos concretos que puedes usar al armar tus platos. 🍗🍚🥑",
               emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
     imagen_bonita(IMAGENES_POR_HOJA[6], caption="Hoja 6 — Cálculo de los Macronutrientes")
 
