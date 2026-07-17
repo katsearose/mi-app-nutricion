@@ -369,18 +369,25 @@ def caja_titulo(texto, idx):
 
 
 def _resolver_imagen(ruta):
-    """Si `ruta` no existe tal cual, prueba variantes comunes de extensión y mayúsculas/minúsculas
-    (.jpg, .JPG, .jpeg, .png, .PNG, .webp, etc.) y devuelve la primera ruta que sí exista.
-    Devuelve None si no encuentra ninguna coincidencia."""
+    """Busca una imagen probando varias ubicaciones (la ruta indicada, directamente en /assets,
+    y en /assets/hojas) y varias extensiones/mayúsculas (.jpg, .JPG, .jpeg, .png, etc.).
+    Devuelve la primera ruta que exista, o None si no encuentra nada."""
     ruta = Path(ruta)
+    nombre_base = ruta.stem
+    carpetas_candidatas = [ruta.parent, ASSETS_DIR, ASSETS_DIR / "hojas"]
+    extensiones = ["jpg", "JPG", "Jpg", "jpeg", "JPEG", "png", "PNG", "Png", "webp", "WEBP"]
+    vistos = set()
+    # primero prueba la ruta exacta tal cual vino
     if ruta.exists():
         return ruta
-    base = ruta.with_suffix("")
-    extensiones = ["jpg", "JPG", "Jpg", "jpeg", "JPEG", "png", "PNG", "Png", "webp", "WEBP"]
-    for ext in extensiones:
-        candidato = base.with_suffix(f".{ext}")
-        if candidato.exists():
-            return candidato
+    for carpeta in carpetas_candidatas:
+        for ext in extensiones:
+            candidato = carpeta / f"{nombre_base}.{ext}"
+            if candidato in vistos:
+                continue
+            vistos.add(candidato)
+            if candidato.exists():
+                return candidato
     return None
 
 
@@ -1261,6 +1268,16 @@ for _nombre in _POSIBLES_NOMBRES_EXCEL:
     if _candidata.exists():
         _ruta_excel = _candidata
         break
+
+if _ruta_excel is None:
+    # Nombre exacto no encontrado: busca CUALQUIER .xlsx en la carpeta del proyecto y prioriza el
+    # más reciente que contenga "GrupoN4" o "CIAM" en el nombre; si no hay ninguno así, toma el
+    # .xlsx modificado más recientemente que encuentre.
+    _candidatos_xlsx = list(Path(__file__).parent.glob("*.xlsx"))
+    _prioritarios = [c for c in _candidatos_xlsx if "grupon4" in c.name.lower() or "ciam" in c.name.lower()]
+    _lista_final = _prioritarios if _prioritarios else _candidatos_xlsx
+    if _lista_final:
+        _ruta_excel = sorted(_lista_final, key=lambda p: p.stat().st_mtime, reverse=True)[0]
 
 st.markdown("---")
 
