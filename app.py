@@ -1258,6 +1258,7 @@ st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un
 
 # --- Acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
 _POSIBLES_NOMBRES_EXCEL = [
+    "Proyecto sana alimentacion - GrupoN4 CIAM&SUNI.xlsx",
     "Proyecto_sana_alimentacion_-_GrupoN4_CIAM_SUNI.xlsx",
     "Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx",
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
@@ -1495,7 +1496,7 @@ if hoja_activa == "0.-DATOS":
             st.download_button(
                 "📥 Descargar el Excel original ahora",
                 data=_f.read(),
-                file_name="Proyecto_Sana_Alimentacion_Grupo_04.xlsx",
+                file_name=_ruta_excel.name,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
                 type="primary",
