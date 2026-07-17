@@ -199,6 +199,33 @@ details {
 /* ---------- dataframes con esquinas redondeadas ---------- */
 div[data-testid="stDataFrame"] { border-radius: var(--ios-radius-sm); overflow: hidden; }
 
+/* ---------- todas las imágenes de la app (st.image) con esquinas redondeadas y sombra suave ---------- */
+div[data-testid="stImage"] img {
+    border-radius: var(--ios-radius-md) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 10px 26px rgba(0,0,0,0.10) !important;
+    border: 1px solid rgba(0,0,0,0.04) !important;
+}
+div[data-testid="stImage"] { border-radius: var(--ios-radius-md); overflow: visible; }
+div[data-testid="stImageCaption"] {
+    text-align: center !important; color: var(--ios-secondary) !important;
+    font-size: 0.82rem !important; font-weight: 500 !important; margin-top: 4px !important;
+}
+
+/* ---------- galería de imágenes propia (imagen_bonita) ---------- */
+.img-bonita-wrap {
+    background: var(--ios-card); border-radius: var(--ios-radius-lg); padding: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 14px 34px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05); margin-top: 18px; margin-bottom: 6px;
+}
+.img-bonita-wrap img {
+    width: 100%; display: block; border-radius: 18px;
+    max-height: 620px; min-height: 320px; object-fit: cover;
+}
+.img-bonita-caption {
+    text-align: center; color: var(--ios-secondary); font-size: 0.85rem;
+    font-weight: 600; margin-top: 10px;
+}
+
 /* ---------- identidad visual tipo "landing page" con look iOS ---------- */
 .navbar {
     display: flex; align-items: center; justify-content: space-between;
@@ -341,6 +368,56 @@ def caja_titulo(texto, idx):
     _, _, _, borde, _ = COLORES[idx]
     st.markdown(f"<p style='color:{borde};font-weight:800;font-size:1.05rem;margin-top:14px;'>{texto}</p>",
                 unsafe_allow_html=True)
+
+
+def _img_to_b64(ruta):
+    """Convierte una imagen (ruta en disco) a base64. Devuelve None si no existe o falla."""
+    try:
+        return base64.b64encode(Path(ruta).read_bytes()).decode()
+    except Exception:
+        return None
+
+
+def imagen_bonita(ruta, caption=None, ancho=None):
+    """Muestra UNA imagen dentro de una tarjeta blanca con esquinas redondeadas y sombra
+    suave, igual al resto de tarjetas de la app. Úsala en cualquier hoja para mostrar fotos,
+    capturas o ilustraciones relacionadas con esa sección. Si el archivo no existe, no rompe
+    la app (simplemente no muestra nada).
+    `ruta` puede ser una ruta en disco (str/Path) o un objeto tipo bytes/BytesIO ya cargado."""
+    b64 = None
+    if isinstance(ruta, (str, Path)):
+        if not Path(ruta).exists():
+            return
+        b64 = _img_to_b64(ruta)
+        ext = Path(ruta).suffix.lstrip(".").lower() or "png"
+    else:
+        try:
+            data = ruta.getvalue() if hasattr(ruta, "getvalue") else ruta.read()
+            b64 = base64.b64encode(data).decode()
+            ext = "png"
+        except Exception:
+            return
+    if not b64:
+        return
+    ancho_css = f"max-width:{ancho}px;margin:0 auto;" if ancho else ""
+    cap_html = f"<div class='img-bonita-caption'>{caption}</div>" if caption else ""
+    st.markdown(f"""
+    <div class="img-bonita-wrap" style="{ancho_css}">
+        <img src="data:image/{ext};base64,{b64}" />
+        {cap_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def galeria_bonita(rutas_con_captions, columnas=3):
+    """Muestra varias imágenes en una grilla de tarjetas redondeadas con sombra, en `columnas`
+    columnas. `rutas_con_captions` es una lista de tuplas (ruta, caption) o solo rutas."""
+    items = [(r, c) if isinstance(r, tuple) else (r, None) for r, c in
+             [(x if isinstance(x, tuple) else (x, None)) for x in rutas_con_captions]]
+    cols = st.columns(columnas)
+    for i, (ruta, cap) in enumerate(items):
+        with cols[i % columnas]:
+            imagen_bonita(ruta, caption=cap)
 
 
 def _rl_hex(hexcolor):
@@ -1026,6 +1103,28 @@ _STICKER_MAESTRA = ASSETS_DIR / "maestra_animada_transparente.png"
 _STICKER_PROFESOR = ASSETS_DIR / "profesor_escolar_transparente_bonito.png"
 _STICKER_CORRIENDO = ASSETS_DIR / "muneca_santamaria_corriendo.png"
 
+# --- Carpeta para las imágenes propias de cada hoja (que enviarás más adelante) ---
+# Coloca en /assets/hojas/ un archivo con el nombre indicado para que aparezca automáticamente
+# en la hoja correspondiente, dentro de una tarjeta con bordes redondeados y sombra.
+IMG_HOJAS_DIR = ASSETS_DIR / "hojas"
+IMAGENES_POR_HOJA = {
+    0:  IMG_HOJAS_DIR / "hoja0_datos.png",
+    1:  IMG_HOJAS_DIR / "hoja1_sangre.png",
+    2:  IMG_HOJAS_DIR / "hoja2_imc.png",
+    3:  IMG_HOJAS_DIR / "hoja3_tmb.png",
+    4:  IMG_HOJAS_DIR / "hoja4_rcd.png",
+    5:  IMG_HOJAS_DIR / "hoja5_objetivo.png",
+    6:  IMG_HOJAS_DIR / "hoja6_macros.png",
+    7:  IMG_HOJAS_DIR / "hoja7_porciones.png",
+    8:  IMG_HOJAS_DIR / "hoja8_fatsecret.png",
+    9:  IMG_HOJAS_DIR / "hoja9_dieta.png",
+    10: IMG_HOJAS_DIR / "hoja10_clima.png",
+    11: IMG_HOJAS_DIR / "hoja11_embarazo.png",
+    12: IMG_HOJAS_DIR / "hoja12_cafeina.png",
+    13: IMG_HOJAS_DIR / "hoja13_tiempo.png",
+    14: IMG_HOJAS_DIR / "hoja14_reporte.png",
+}
+
 
 def mostrar_sticker(ruta, ancho=170):
     """Muestra un personaje/sticker si el archivo existe; no rompe la app si falta."""
@@ -1146,29 +1245,6 @@ for _nombre in _POSIBLES_NOMBRES_EXCEL:
     if _candidata.exists():
         _ruta_excel = _candidata
         break
-
-with st.container():
-    st.markdown("""
-    <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:20px;
-                padding:16px 24px;margin-bottom:10px;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-    <b style="color:#248A3D;">📂 ¿Quieres ver el Excel original completo?</b><br>
-    Aquí puedes abrir o descargar el archivo de Excel tal cual, con todas sus hojas y fórmulas.
-    </div>
-    """, unsafe_allow_html=True)
-    if _ruta_excel is not None:
-        with open(_ruta_excel, "rb") as _f:
-            st.download_button(
-                "📥 Abrir / Descargar el Excel original",
-                data=_f.read(),
-                file_name="Proyecto_Sana_Alimentacion_Grupo_04.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-            )
-    else:
-        st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
-                "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
-                "`app.py` antes de ejecutarlo.")
 
 st.markdown("---")
 
@@ -1321,7 +1397,7 @@ OPCIONES_HOJAS = [
     "0.-DATOS", "1.-ANÁLISIS SANGUÍNEO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
     "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
     "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
-    "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE", "🎓 SOBRE NOSOTROS"
+    "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE", "🎓 SOBRE NOSOTRAS"
 ]
 
 if "hoja_activa" not in st.session_state:
@@ -1339,6 +1415,64 @@ st.markdown("---")
 # ---------------------------------------------------------------------------------------
 if hoja_activa == "0.-DATOS":
     hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
+
+    # --- Bloque destacado: por qué descargar el Excel original ---
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
+                padding:28px 30px;color:white;margin-bottom:18px;
+                box-shadow:0 14px 34px rgba(30,86,49,0.28);">
+        <div style="font-size:0.8rem;letter-spacing:0.03em;text-transform:uppercase;font-weight:700;opacity:0.9;">
+            📂 Antes de empezar</div>
+        <div style="font-size:1.5rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.01em;">
+            ¿Por qué deberías descargar el Excel original?</div>
+        <div style="font-size:0.98rem;line-height:1.55;opacity:0.97;max-width:760px;">
+            Esta app es una réplica bonita y fácil de usar, pero el Excel es la herramienta completa: es tuya,
+            para siempre, y puedes llevarla contigo a donde quieras.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    ra1, ra2, ra3, ra4 = st.columns(4)
+    _razones_excel = [
+        ("🎨", "Personalízalo a tu gusto", "Cambia colores, agrega tus propias comidas o ajusta las "
+         "fórmulas exactamente como tú quieras — es 100% tuyo para editar."),
+        ("📴", "Úsalo sin internet", "No necesitas conexión ni esta página abierta: el Excel funciona "
+         "perfecto en tu computadora aunque no tengas WiFi ni datos."),
+        ("🧮", "Fórmulas a la mano", "Todas las fórmulas están visibles y editables en cada celda, así "
+         "puedes revisarlas, aprenderlas o adaptarlas a otro caso."),
+        ("📋", "Con las indicaciones incluidas", "Cada hoja trae sus propias notas e instrucciones, para "
+         "que sepas exactamente cómo usarla paso a paso."),
+    ]
+    for col, (emoji_r, titulo_r, texto_r) in zip([ra1, ra2, ra3, ra4], _razones_excel):
+        with col:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border-radius:20px;padding:16px 16px;height:100%;
+                        box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);
+                        border:1px solid rgba(0,0,0,0.04);">
+                <div style="font-size:1.6rem;">{emoji_r}</div>
+                <div style="font-weight:800;color:#1E5631;font-size:0.92rem;margin:6px 0 4px 0;">{titulo_r}</div>
+                <div style="font-size:0.8rem;color:#5C6B60;line-height:1.4;">{texto_r}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    if _ruta_excel is not None:
+        with open(_ruta_excel, "rb") as _f:
+            st.download_button(
+                "📥 Descargar el Excel original ahora",
+                data=_f.read(),
+                file_name="Proyecto_Sana_Alimentacion_Grupo_04.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                type="primary",
+            )
+    else:
+        st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
+                "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
+                "`app.py` antes de ejecutarlo.")
+
+    st.divider()
 
     col_datos, col_sticker = st.columns([2, 1])
     with col_datos:
@@ -1361,6 +1495,7 @@ if hoja_activa == "0.-DATOS":
               "automáticamente a ti: desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se "
               "detecta sola apenas escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
               emoji="📝", color="#E3F2FD", borde="#2196F3")
+    imagen_bonita(IMAGENES_POR_HOJA[0], caption="Hoja 0 — Introduce tus datos")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
@@ -1455,6 +1590,7 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
               "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc. "
               "Así sabes de un vistazo si algún valor necesita atención médica. 🩺❤️",
               emoji="🩸", color="#FFEBEE", borde="#E53935")
+    imagen_bonita(IMAGENES_POR_HOJA[1], caption="Hoja 1 — Análisis Sanguíneo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "2.-IMC Y PERCENTIL":
@@ -1566,6 +1702,7 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
               emoji="⚖️", color="#F3E5F5", borde="#8E24AA")
+    imagen_bonita(IMAGENES_POR_HOJA[2], caption="Hoja 2 — IMC y Percentil")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
@@ -1576,6 +1713,7 @@ elif hoja_activa == "3.-TMB":
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
               "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
               emoji="⚡", color="#FFF3E0", borde="#FB8C00")
+    imagen_bonita(IMAGENES_POR_HOJA[3], caption="Hoja 3 — Tasa Metabólica Basal")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
@@ -1592,6 +1730,7 @@ elif hoja_activa == "4.-RCD":
               "normal, sumando tu TMB (Hoja 3) más el movimiento que haces según tu nivel de actividad. "
               "Es tu 'punto de equilibrio' calórico. 🏃‍♀️🔥",
               emoji="🔥", color="#E8F5E9", borde="#43A047")
+    imagen_bonita(IMAGENES_POR_HOJA[4], caption="Hoja 4 — Requerimiento Calórico Diario")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "5.-OBJETIVO":
@@ -1617,6 +1756,7 @@ elif hoja_activa == "5.-OBJETIVO":
               "número exacto de calorías al día. Es el paso que conecta tu objetivo personal con la ciencia: "
               "sin este ajuste, no sabrías cuánto comer realmente para lograr lo que quieres. 🎯",
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
+    imagen_bonita(IMAGENES_POR_HOJA[5], caption="Hoja 5 — Subir, Mantener o Bajar el Peso")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
@@ -1653,6 +1793,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
               "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
               "órganos), en gramos concretos que puedes usar al armar tus platos. 🍗🍚🥑",
               emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
+    imagen_bonita(IMAGENES_POR_HOJA[6], caption="Hoja 6 — Cálculo de los Macronutrientes")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "7.-PORCIONES":
@@ -1694,6 +1835,7 @@ elif hoja_activa == "7.-PORCIONES":
               "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
               "llegues a tu meta sin pasar hambre ni excederte. ⏰🍴",
               emoji="🍽️", color="#E0F7FA", borde="#00ACC1")
+    imagen_bonita(IMAGENES_POR_HOJA[7], caption="Hoja 7 — Porciones del Día")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "8.-FATSECRET":
@@ -1721,6 +1863,7 @@ elif hoja_activa == "8.-FATSECRET":
               "aquí y con un clic vas directo a su ficha nutricional completa en FatSecret. Así armas tu dieta "
               "con información real, no con suposiciones. 🔍🥗",
               emoji="🌐", color="#E0F2F1", borde="#00796B")
+    imagen_bonita(IMAGENES_POR_HOJA[8], caption="Hoja 8 — Página FatSecret")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "9.-DIETA":
@@ -1821,6 +1964,7 @@ elif hoja_activa == "9.-DIETA":
               "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
               "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
+    imagen_bonita(IMAGENES_POR_HOJA[9], caption="Hoja 9 — Plan de Dieta Semanal")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "10.-CLIMA CHICLAYO":
@@ -1848,6 +1992,7 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
               "dato extra te da una versión más realista y localizada de tu gasto calórico, pensada "
               "específicamente para nuestra región. ☀️🌴",
               emoji="🌡️", color="#FFF8E1", borde="#F9A825")
+    imagen_bonita(IMAGENES_POR_HOJA[10], caption="Hoja 10 — Gasto Energético según el Clima de Chiclayo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "11.-APORTE 1: EMBARAZO":
@@ -1876,6 +2021,7 @@ elif hoja_activa == "11.-APORTE 1: EMBARAZO":
               "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
               "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
               emoji="👶", color="#F8ECFB", borde="#BA68C8")
+    imagen_bonita(IMAGENES_POR_HOJA[11], caption="Aporte 1 — TMB en Embarazo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
@@ -1895,6 +2041,7 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
               "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
               "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
               emoji="🌙", color="#EDE7F6", borde="#5E35B1")
+    imagen_bonita(IMAGENES_POR_HOJA[12], caption="Aporte 2 — Hora Límite de Cafeína")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
@@ -1998,6 +2145,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
               f"avanzarías en 60 días si sigues tu plan calórico. Ver el progreso estimado ayuda a entender que "
               f"los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
               emoji="📈", color="#E8EAF6", borde="#3949AB")
+    imagen_bonita(IMAGENES_POR_HOJA[13], caption="Hoja 13 — Línea de Tiempo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
@@ -2216,8 +2364,9 @@ elif hoja_activa == "📄 MI REPORTE":
               "Usa el botón '📄 Descargar Informe en PDF' para obtener un archivo PDF real, listo para "
               "imprimir o compartir. 📄✨",
               emoji="📄", color="#E0F2F1", borde="#00695C")
+    imagen_bonita(IMAGENES_POR_HOJA[14], caption="Hoja 14 — Mi Reporte de Resultados")
 
-elif hoja_activa == "🎓 SOBRE NOSOTROS":
+elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     _, titulo13, emoji13, borde13, fondo13 = COLORES[15]
     st.markdown(f"""
     <div style="background:{fondo13};border-left:10px solid {borde13};border-radius:16px;
