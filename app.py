@@ -32,7 +32,7 @@ COLORES = {
     2:  ("2", "Índice de Masa Corporal y Percentil",         "⚖️", "#AF52DE", "#F6ECFC"),  # systemPurple
     3:  ("3", "Tasa Metabólica Basal (TMB)",                 "⚡", "#FF9500", "#FFF3E5"),  # systemOrange
     4:  ("4", "Requerimiento Calórico Diario (RCD)",         "🔥", "#34C759", "#EAFAEE"),  # systemGreen
-    5:  ("5", "Subir, Mantener o Bajar el Peso",             "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
+    5:  ("5", "Control de Peso",                              "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
     6:  ("6", "Cálculo de los Macronutrientes",               "🍽️", "#FFCC00", "#FFFAE0"),  # systemYellow
     7:  ("7", "Cálculo de las Porciones del Día",            "⏰", "#30B0C7", "#E6F7FA"),  # systemTeal
     8:  ("8", "Página FatSecret",                             "🌐", "#00C7BE", "#E1FBF9"),  # systemMint
@@ -1327,12 +1327,12 @@ actividad = st.sidebar.selectbox("Actividad física:", ["Sedentaria", "Ligero", 
 objetivo = st.sidebar.selectbox("Objetivo:", ["Mantenerse", "Bajar de peso", "Subir de peso"], index=1)
 
 if objetivo == "Bajar de peso":
-    ajuste_txt = st.sidebar.selectbox("Ajuste calórico aplicado:", ["0", "10%", "15%", "20%"])
-    ajuste_bajar = float(ajuste_txt.strip("%")) / 100 if "%" in ajuste_txt else 0.0
+    ajuste_txt = st.sidebar.selectbox("Ajuste calórico aplicado:", ["Conservador (-10%)", "Moderado (-20%)", "Agresivo (-30%)"], index=1)
+    ajuste_bajar = {"Conservador (-10%)": 0.10, "Moderado (-20%)": 0.20, "Agresivo (-30%)": 0.30}[ajuste_txt]
     ajuste_subir = 0.0
 elif objetivo == "Subir de peso":
-    ajuste_txt = st.sidebar.selectbox("Ajuste calórico aplicado:", ["0", "+10%", "+20%", "+30%"])
-    ajuste_subir = float(ajuste_txt.replace("+", "").strip("%")) / 100 if "%" in ajuste_txt else 0.0
+    ajuste_txt = st.sidebar.selectbox("Ajuste calórico aplicado:", ["Limpio / Magro (+10%)", "Moderado (+15%)", "Exigente (+20%)"], index=1)
+    ajuste_subir = {"Limpio / Magro (+10%)": 0.10, "Moderado (+15%)": 0.15, "Exigente (+20%)": 0.20}[ajuste_txt]
     ajuste_bajar = 0.0
 else:
     ajuste_txt = "0"
@@ -1348,10 +1348,13 @@ with st.sidebar.expander("ℹ️ ¿Cómo saber mi actividad física?"):
 
 if objetivo != "Mantenerse":
     with st.sidebar.expander("ℹ️ ¿Qué significa el ajuste calórico?"):
-        st.caption("Es cuánto le sumas o restas a tu gasto diario (RCD) para lograr tu meta. "
-                   "A mayor porcentaje, cambios más rápidos pero más exigentes.\n\n"
-                   "**10%:** corto plazo.\n\n**15%/20%:** plazo medio.\n\n**20%/30%:** plazo largo, "
-                   "más lento y seguro — recomendado para cuerpos en crecimiento.")
+        st.caption("Es cuánto le restas o sumas a tu gasto diario (RCD) para lograr tu meta, según los "
+                   "ritmos seguros recomendados (% del peso corporal por semana).\n\n"
+                   "**Pérdida de peso:** Conservador -10% (cerca del peso ideal, preserva músculo) · "
+                   "Moderado -20% (el punto óptimo para la mayoría) · Agresivo -30% (solo IMC ≥ 30 o "
+                   "periodos breves de 4-6 semanas).\n\n"
+                   "**Ganancia de peso:** Limpio/Magro +10% (minimiza la grasa) · Moderado +15% (estándar) · "
+                   "Exigente +20% (metabolismo muy acelerado).")
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Análisis Sanguíneo")
@@ -1375,10 +1378,10 @@ else:
 factor = FACTOR_ACTIVIDAD[actividad][genero]
 rcd = tmb * factor  # Hoja 4: RCD = TMB x Factor de actividad
 
-# Hoja 5: ajuste según objetivo
+# Hoja 5: ajuste según objetivo (Control de Peso) — respetando el límite fisiológico de no bajar de la TMB
 if objetivo == "Bajar de peso":
     ajuste_aplicado = ajuste_bajar
-    rcd_final = rcd * (1 - ajuste_aplicado)
+    rcd_final = max(rcd * (1 - ajuste_aplicado), tmb)
 elif objetivo == "Subir de peso":
     ajuste_aplicado = ajuste_subir
     rcd_final = rcd * (1 + ajuste_aplicado)
@@ -1386,15 +1389,34 @@ else:
     ajuste_aplicado = 0.0
     rcd_final = rcd
 
-# Plazo estimado (=S23 del Excel)
-if ajuste_bajar == 0.10 or ajuste_subir == 0.10:
-    plazo = "Corto plazo"
-elif ajuste_bajar == 0.15 or ajuste_subir == 0.20:
-    plazo = "Plazo medio"
-elif ajuste_bajar == 0.20 or ajuste_subir == 0.30:
-    plazo = "Plazo largo"
+_ico_recortada_por_tmb = (objetivo == "Bajar de peso") and (rcd * (1 - ajuste_bajar) < tmb)
+
+# Plazo estimado, según los lapsos máximos recomendados (Guía de Ritmos y Lapsos Seguros)
+if objetivo == "Bajar de peso":
+    if ajuste_bajar == 0.10:
+        plazo = "Corto plazo (hasta 12-16 semanas)"
+    elif ajuste_bajar == 0.20:
+        plazo = "Plazo medio (hasta 12-16 semanas, con pausas de mantenimiento)"
+    elif ajuste_bajar == 0.30:
+        plazo = "Plazo agresivo (máximo 4-6 semanas seguidas)"
+    else:
+        plazo = "—"
+elif objetivo == "Subir de peso":
+    if ajuste_subir == 0.10:
+        plazo = "Limpio / magro (16-24 semanas)"
+    elif ajuste_subir == 0.15:
+        plazo = "Plazo medio (16-24 semanas)"
+    elif ajuste_subir == 0.20:
+        plazo = "Plazo exigente (16-24 semanas)"
+    else:
+        plazo = "—"
 else:
-    plazo = "—"
+    plazo = "Indefinido / con pausas (variación ± 1 kg)"
+
+# Estimación de ritmo y semanas necesarias (Paso 2 de la Guía de Operación)
+_diferencia_diaria = abs(rcd - rcd_final)
+_cambio_semanal_kg = (_diferencia_diaria * 7) / 7700
+_ritmo_pct_semanal = (_cambio_semanal_kg / peso) * 100 if peso > 0 else 0
 
 # Hoja 6: Macronutrientes
 cal_prot = rcd_final * 0.20
@@ -1429,7 +1451,7 @@ st.subheader("📋 Navegación por Hojas del Sistema (idéntica al Excel)")
 
 OPCIONES_HOJAS = [
     "0.-DATOS", "1.-ANÁLISIS SANGUÍNEO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
-    "5.-OBJETIVO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
+    "5.-CONTROL DE PESO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
     "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
     "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE", "🎓 SOBRE NOSOTRAS"
 ]
@@ -1767,30 +1789,90 @@ elif hoja_activa == "4.-RCD":
     imagen_bonita(IMAGENES_POR_HOJA[4], caption="Hoja 4 — Requerimiento Calórico Diario")
 
 # ---------------------------------------------------------------------------------------
-elif hoja_activa == "5.-OBJETIVO":
-    hoja_header(5)
+elif hoja_activa == "5.-CONTROL DE PESO":
+    hoja_header(5, "Tu ritmo de cambio se mide como % de tu peso corporal por semana, para evitar adaptaciones "
+                   "fisiológicas negativas (pérdida de músculo, metabolismo 'frenado').")
     st.info("A diferencia de los adultos, el cuerpo de los menores necesita energía constante no solo para "
             "moverse, sino para el desarrollo de órganos y huesos. Por ello, cualquier ajuste calórico debe "
             "ser controlado para jamás arriesgar su correcto desarrollo biológico.")
+
+    # --- Resultado principal: Ingesta Calórica Objetivo (ICO) ---
+    r1, r2, r3 = st.columns(3)
+    r1.metric("RCD — gasto de mantenimiento", f"{rcd:.0f} kcal/día")
+    r2.metric("Ajuste calórico aplicado", f"{'-' if objetivo=='Bajar de peso' else ('+' if objetivo=='Subir de peso' else '')}{ajuste_aplicado*100:.0f}%")
+    r3.metric("Ingesta Calórica Objetivo (ICO)", f"{rcd_final:.0f} kcal/día")
+
+    if _ico_recortada_por_tmb:
+        st.warning(f"⚠️ **Límite fisiológico aplicado:** el ajuste elegido bajaría tu ingesta por debajo de tu "
+                   f"TMB ({tmb:.0f} kcal/día). Nunca se debe comer menos que la TMB, ya que pone en riesgo tus "
+                   f"funciones vitales básicas. Por seguridad, tu ICO se ajustó automáticamente a {rcd_final:.0f} kcal/día.")
+
     tabla_bonita(pd.DataFrame({
         "Objetivo nutricional": [objetivo],
-        "Ajuste calórico aplicado": [f"{ajuste_aplicado*100:.0f}%"],
+        "Ajuste calórico aplicado": [ajuste_txt if objetivo != "Mantenerse" else "0%"],
         "RCD (Hoja 4)": [f"{rcd:.0f}"],
-        "Resultado final": [f"{rcd_final:.0f} kcal/día"]
+        "TMB (límite mínimo seguro)": [f"{tmb:.0f}"],
+        "Resultado final (ICO)": [f"{rcd_final:.0f} kcal/día"]
     }), 5)
-    st.metric("Plazo estimado del cambio", plazo)
 
-    with st.expander("ℹ️ ¿Qué significa el plazo estimado?"):
-        st.caption("**Corto plazo (10%):** cambios notorios en pocas semanas, exige más disciplina.\n\n"
-                   "**Plazo medio (15% bajar / 20% subir):** equilibrio entre velocidad y sostenibilidad.\n\n"
-                   "**Plazo largo (20% bajar / 30% subir):** el cambio más lento, pero más seguro, ideal para "
-                   "cuerpos en crecimiento.")
+    # --- Ritmo y lapso estimado ---
+    c1, c2 = st.columns(2)
+    with c1:
+        st.metric("Plazo / lapso máximo recomendado", plazo)
+    with c2:
+        if objetivo != "Mantenerse":
+            st.metric("Ritmo estimado de cambio", f"{_cambio_semanal_kg:.2f} kg/semana", f"{_ritmo_pct_semanal:.2f}% del peso/semana")
+        else:
+            st.metric("Ritmo estimado de cambio", "0 kg/semana (± 1 kg)")
+
+    st.divider()
+    caja_titulo("Ritmos y lapsos recomendados", 5)
+    tabla_bonita(pd.DataFrame({
+        "Objetivo": ["Pérdida de Peso", "Ganancia de Peso", "Mantenimiento"],
+        "Ritmo semanal recomendado": ["0.5% a 1.0% del peso/semana", "0.25% a 0.5% del peso/semana", "0% (Variación ± 1 kg)"],
+        "Lapso máximo seguido": ["12 a 16 semanas", "16 a 24 semanas", "Indefinido / con pausas"]
+    }), 5)
+
+    with st.expander("ℹ️ ¿Por qué respetar estos lapsos?"):
+        st.markdown("**En Pérdida de Peso:** superar las 16 semanas seguidas en déficit, o bajar a un ritmo "
+                    "mayor al 1% semanal, dispara la pérdida de masa magra (músculo) y activa la termogénesis "
+                    "adaptativa (el metabolismo se 'frena' para ahorrar energía). Se recomiendan pausas de "
+                    "mantenimiento de 1 a 2 semanas tras cada bloque de 12–16 semanas.")
+        st.markdown("**En Ganancia de Peso:** subir más rápido del 0.5% semanal no acelera la creación de "
+                    "tejido muscular; el exceso de calorías se almacena casi en su totalidad como grasa.")
+        st.markdown("**En Mantenimiento:** intercalar periodos de mantenimiento entre fases de volumen o "
+                    "definición permite al cuerpo asimilar los cambios hormonales y estabilizar el nuevo peso.")
+
+    with st.expander("ℹ️ ¿Qué significa cada nivel de ajuste calórico?"):
+        st.markdown("**Pérdida de peso:**")
+        st.caption("- Conservador (-10%): ideal cerca del peso ideal o para preservar al máximo la masa muscular.\n"
+                   "- Moderado (-20%): el punto óptimo para la mayoría; sostenible y seguro.\n"
+                   "- Agresivo (-30%): solo para IMC ≥ 30 o periodos breves (máximo 4-6 semanas).")
+        st.markdown("**Ganancia de peso:**")
+        st.caption("- Limpio / Magro (+10%): recomendado para principiantes, minimiza la ganancia de grasa.\n"
+                   "- Moderado (+15%): estándar para fases de volumen progresivo.\n"
+                   "- Exigente (+20%): para metabolismo muy acelerado o dificultad severa para subir de peso.")
+
+    caja_titulo("Distribución de macronutrientes recomendada (guía fisiológica)", 5)
+    st.markdown(f"""
+    <div style="background:#FFFFFF;border-radius:20px;padding:16px 20px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);
+                border:1px solid rgba(0,0,0,0.04);">
+    <ul style="margin:0;padding-left:20px;color:#17301F;line-height:1.7;font-size:0.9rem;">
+        <li><b>Proteínas:</b> 1.6 a 2.2 g/kg de peso corporal — crucial subirlas durante el déficit para evitar pérdida muscular.</li>
+        <li><b>Grasas:</b> 0.8 a 1.2 g/kg — nunca bajar de 0.6 g/kg para no comprometer la producción hormonal.</li>
+        <li><b>Carbohidratos:</b> completan el resto de las calorías objetivo (ver Hoja 6).</li>
+        <li><b>Reajuste periódico:</b> a medida que el peso cambia, la TMB y el RCD se modifican; se recomienda recalcular cada 3 a 5 kg de variación de peso.</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
     caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
-              "número exacto de calorías al día. Es el paso que conecta tu objetivo personal con la ciencia: "
-              "sin este ajuste, no sabrías cuánto comer realmente para lograr lo que quieres. 🎯",
+              "número exacto de calorías al día (tu Ingesta Calórica Objetivo), respetando ritmos seguros de "
+              "cambio y sin arriesgar tu salud: nunca por debajo de tu TMB. Es el paso que conecta tu objetivo "
+              "personal con la ciencia. 🎯",
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
-    imagen_bonita(IMAGENES_POR_HOJA[5], caption="Hoja 5 — Subir, Mantener o Bajar el Peso")
+    imagen_bonita(IMAGENES_POR_HOJA[5], caption="Hoja 5 — Control de Peso")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
