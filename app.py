@@ -424,38 +424,53 @@ div[data-testid="stImageCaption"] {
 .imc-table-wrap {
     border-radius: var(--bento-radius-lg); overflow: hidden; box-shadow: var(--bento-shadow);
     border: 1px solid rgba(0,0,0,0.05); background: #FFFFFF; margin-bottom: 10px;
-}
-.imc-table-head {
-    background: linear-gradient(120deg, #6A1B9A 0%, #8E24AA 100%); color: #FFFFFF;
-    padding: 16px 22px; display: flex; align-items: center; justify-content: space-between;
     font-family: var(--font-round);
 }
-.imc-table-head-title { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+.imc-table-topbar {
+    display: flex; align-items: center; gap: 16px; padding: 18px 24px 8px 24px; position: relative;
+}
+.imc-table-icon {
+    width: 48px; height: 48px; border-radius: 14px; background: #F3EAF7; display: flex;
+    align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;
+}
+.imc-table-title { font-weight: 800; font-size: 1.35rem; color: #6A1B9A; letter-spacing: -0.01em; }
+.imc-table-sub { font-size: 0.82rem; color: #8A94A6; margin-top: 2px; max-width: 520px; }
+.imc-table-head {
+    background: #9C6FC9; color: #FFFFFF; margin-top: 14px;
+    padding: 12px 24px; display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px;
+}
+.imc-table-head span { font-weight: 800; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .imc-row {
     display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px; align-items: center;
-    padding: 14px 22px; font-family: var(--font-round);
+    padding: 14px 24px;
 }
-.imc-row:nth-child(odd) { background: #FAFAFC; }
-.imc-row-head {
-    display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px;
-    padding: 10px 22px; background: #F3EAF7; color: #6A1B9A; font-weight: 800;
-    font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em;
-    font-family: var(--font-round);
-}
+.imc-row:nth-child(even) { background: #FAFAFC; }
 .imc-clasif-avatar {
-    width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center;
-    justify-content: center; font-size: 1.1rem; margin-right: 10px; flex-shrink: 0;
+    width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center;
+    justify-content: center; font-size: 1.15rem; margin-right: 12px; flex-shrink: 0;
 }
-.imc-clasif-title { font-weight: 800; font-size: 0.92rem; color: #24262B; }
-.imc-clasif-sub { font-size: 0.78rem; color: #8A94A6; margin-top: 1px; }
+.imc-clasif-title { font-weight: 800; font-size: 0.94rem; }
+.imc-clasif-sub { font-size: 0.76rem; color: #8A94A6; margin-top: 1px; }
 .imc-range-num { font-weight: 800; font-size: 0.95rem; }
-.imc-range-track {
-    position: relative; width: 100%; height: 12px; border-radius: 10px; background: #E0E0E0;
+.imc-line-track { position: relative; width: 100%; height: 4px; border-radius: 4px; background: #E6E6EC; margin-top: 6px; }
+.imc-line-seg { position: absolute; top: 0; height: 4px; border-radius: 4px; }
+.imc-line-dot { position: absolute; top: -4px; width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 0 0 1.5px currentColor; }
+.imc-line-vals { position: relative; height: 16px; margin-top: 2px; font-size: 0.72rem; font-weight: 800; }
+.imc-line-vals span.val-mark { position: absolute; transform: translateX(-50%); }
+.imc-scale-ends { display: flex; justify-content: space-between; font-size: 0.66rem; color: #C2C6D0; font-weight: 700; margin-top: 1px; }
+.imc-footer-banner {
+    display: flex; align-items: center; gap: 16px; padding: 16px 24px; background: #F7F4FB;
+    border-top: 1px solid rgba(0,0,0,0.05); flex-wrap: wrap;
 }
-.imc-range-fill { position: absolute; top: 0; height: 100%; border-radius: 10px; }
-.imc-range-scale { display: flex; justify-content: space-between; font-size: 0.68rem; color: #B0B6C0; margin-top: 3px; font-weight: 700; }
-.imc-user-marker {
-    position: absolute; top: -5px; width: 3px; height: 22px; background: #24262B; border-radius: 2px;
+.imc-footer-avatar {
+    width: 46px; height: 46px; border-radius: 50%; background: #FFFFFF; display: flex;
+    align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.imc-footer-tip {
+    margin-left: auto; background: #FFFFFF; border-radius: 14px; padding: 10px 16px;
+    font-size: 0.78rem; font-weight: 700; color: #6A1B9A; display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 260px;
 }
 
 /* ---------- Tabla de percentiles por género (split rosa/azul) ---------- */
@@ -470,6 +485,29 @@ div[data-testid="stImageCaption"] {
 .perc-table td { padding: 8px 4px; text-align: center; font-weight: 600; color: #2A2E35; }
 .perc-table tr.zebra { background: rgba(0,0,0,0.025); }
 .perc-table tr.user-row td { box-shadow: inset 0 0 0 2px #24262B33; font-weight: 800; }
+
+/* ---------- Info de 3 columnas (¿Qué significa? / Relacionado con / Recordar) ---------- */
+.info3-card { background:#FFFFFF; border-radius: var(--bento-radius); padding: 18px 20px; height: 100%;
+              box-shadow: var(--bento-shadow); border: 1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
+.info3-title { font-weight: 800; font-size: 0.88rem; color: #24262B; margin-bottom: 8px; }
+.dominio-icono {
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; flex:1; min-width:0;
+}
+.dominio-circulo {
+    width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.15rem; flex-shrink:0;
+}
+.dominio-label { font-size: 0.68rem; font-weight: 700; color: #5C6B60; line-height: 1.2; }
+.cta-pill-card {
+    display:flex; align-items:center; gap:14px; background:#FFFFFF; border-radius:18px; padding:14px 18px;
+    box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round);
+    flex:1; min-width:240px; text-decoration:none;
+}
+.cta-pill-icon { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.cta-pill-title { font-weight:800; font-size:0.85rem; color:#24262B; margin-bottom:2px; }
+.cta-pill-desc { font-size:0.74rem; color:#8A94A6; line-height:1.3; }
+.cta-pill-btn { display:inline-block; margin-top:6px; font-size:0.74rem; font-weight:800; padding:5px 14px;
+                border-radius: var(--bento-pill); }
 
 /* ---------- Semáforo Clínico — tarjetas-gauge dinámicas (Hoja 1 y Reporte) ---------- */
 .sema-card {
@@ -520,12 +558,25 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
     """, unsafe_allow_html=True)
 
 
-def hoja_header(idx, subtitulo=None):
+def hoja_header(idx, subtitulo=None, ilustracion=None, tip=None):
     """Encabezado tipo banner: degradado pastel suave, título profesional SIN el prefijo
-    'Hoja N:', subtítulo descriptivo y un badge de color al costado (p. ej. 'Módulo Clínico')."""
+    'Hoja N:', subtítulo descriptivo y un badge de color al costado (p. ej. 'Módulo Clínico').
+    Admite opcionalmente una ilustración SVG decorativa a la derecha y una burbuja de
+    'tip' tipo chat, para las hojas con hero enriquecido (Bento Grid)."""
     numero, titulo, emoji, borde, fondo = COLORES[idx]
     badge = BADGE_HOJAS.get(idx, "Módulo")
-    sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;'>{subtitulo}</p>" if subtitulo else ""
+    sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;max-width:480px;'>{subtitulo}</p>" if subtitulo else ""
+    ilustracion_html = f'<div style="flex-shrink:0;position:relative;">{ilustracion}</div>' if ilustracion else ""
+    tip_html = (
+        f'''<div style="background:#FFFFFF;border-radius:16px;padding:8px 14px;font-size:0.78rem;
+             font-weight:700;color:{borde};box-shadow:0 4px 14px rgba(0,0,0,0.10);
+             position:relative;max-width:170px;font-family:var(--font-round);">
+             {tip}
+             <div style="position:absolute;bottom:-6px;left:22px;width:12px;height:12px;
+                  background:#FFFFFF;transform:rotate(45deg);"></div>
+             </div>'''
+        if tip else ""
+    )
     html = f"""<div style="background:linear-gradient(120deg,{fondo} 0%,#FFFFFF 70%);border-radius:24px;padding:22px 28px;margin-bottom:16px;
 display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;
 box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 10px 26px rgba(30,86,49,0.08);
@@ -538,11 +589,49 @@ display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shr
 {sub_html}
 </div>
 </div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
 <div style="background:{borde};color:#FFFFFF;padding:7px 16px;border-radius:999px;font-size:0.72rem;
-font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px {borde}55;
-align-self:flex-start;margin-top:2px;">{badge}</div>
+font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px {borde}55;">{badge}</div>
+<div style="display:flex;align-items:center;gap:14px;">
+{ilustracion_html}
+{tip_html}
+</div>
+</div>
 </div>"""
     st.markdown(html, unsafe_allow_html=True)
+
+
+def _ilustracion_imc_svg(size_h=110):
+    """Ilustración SVG decorativa (autocontenida, sin archivos externos): una niña de pie
+    sobre una balanza, con cinta métrica y una manzana — recreando la escena del hero de
+    referencia (Imagen 2) sin depender de assets externos."""
+    return f"""
+    <svg width="{size_h*1.55:.0f}" height="{size_h}" viewBox="0 0 170 110" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="85" cy="102" rx="55" ry="7" fill="#AF52DE" opacity="0.08"/>
+        <rect x="45" y="78" width="60" height="18" rx="8" fill="#FFFFFF" stroke="#D8C7EE" stroke-width="2"/>
+        <circle cx="75" cy="87" r="5" fill="#AF52DE"/>
+        <text x="75" y="90" font-size="5" fill="#FFFFFF" text-anchor="middle" font-weight="800">0</text>
+        <!-- cuerpo -->
+        <circle cx="75" cy="40" r="12" fill="#FFD9B3"/>
+        <path d="M63 50 Q75 44 87 50 L90 78 Q75 84 60 78 Z" fill="#6C63FF"/>
+        <rect x="66" y="76" width="8" height="14" rx="3" fill="#FFD9B3"/>
+        <rect x="80" y="76" width="8" height="14" rx="3" fill="#FFD9B3"/>
+        <path d="M66 33 Q75 24 84 33 Q84 26 75 25 Q66 26 66 33 Z" fill="#4A2E1A"/>
+        <!-- cinta metrica -->
+        <rect x="108" y="55" width="26" height="18" rx="4" fill="#FFCC00"/>
+        <rect x="112" y="47" width="4" height="14" fill="#FFCC00"/>
+        <!-- manzana -->
+        <circle cx="30" cy="70" r="10" fill="#FF3B30"/>
+        <path d="M30 60 Q33 55 36 58" stroke="#1E5631" stroke-width="2" fill="none"/>
+        <!-- destellos -->
+        <circle cx="140" cy="22" r="3" fill="#FF2D55" opacity="0.6"/>
+        <circle cx="18" cy="30" r="2.4" fill="#5AC8FA" opacity="0.6"/>
+        <path d="M150 40 l3 6 l6 3 l-6 3 l-3 6 l-3-6 l-6-3 l6-3 Z" fill="#FFCC00" opacity="0.75"/>
+    </svg>
+    """
+
+
+
 
 
 def tabla_bonita(df, idx):
@@ -1502,11 +1591,13 @@ def color_categoria_imc(categoria):
         color = "verde"
     elif categoria in ["Bajo Peso", "Sobrepeso"]:
         color = "ambar"
-    elif categoria in ["Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]:
+    elif categoria in ["Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Obesidad Clase 3 (Severa)"]:
         color = "rojo"
     else:
         color = "gris"
-    return SEMAFORO_ESTILO[color]
+    estilo = dict(SEMAFORO_ESTILO[color])
+    estilo["colorSemaforo"] = color
+    return estilo
 
 
 def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, genero_usuario=None):
@@ -1724,63 +1815,87 @@ def tarjeta_categoria_imc(titulo, categoria):
 # TABLA VISUAL — "Categorías Generales de IMC" con avatares, rangos y barra de posición
 # =========================================================================================
 _CATEGORIAS_IMC_DEF = [
-    ("Bajo Peso",                "Menos de 18.5", "Puede indicar desnutrición",         "🔵", "#42A5F5", None, 18.5),
-    ("Peso Saludable",           "18.5 a 24.9",   "Rango asociado a menor riesgo",       "💚", "#34C759", 18.5, 24.9),
-    ("Sobrepeso",                "25 a 29.9",     "Vigilancia de hábitos recomendada",   "🏋️", "#FF9F43", 25, 29.9),
-    ("Obesidad",                 "30 o más",      "Agrupa las 3 clases siguientes",      "⚠️", "#FF5C7C", 30, None),
-    ("Obesidad Clase 1",         "30 a 34.9",     "Riesgo moderado para la salud",       "1️⃣", "#FF5C7C", 30, 34.9),
-    ("Obesidad Clase 2",         "35 a 39.9",     "Riesgo alto para la salud",           "2️⃣", "#F0384A", 35, 39.9),
-    ("Obesidad Clase 3 (Severa)", "40 o más",     "Riesgo muy alto, atención prioritaria", "3️⃣", "#C21E37", 40, None),
+    ("Bajo Peso",                "Menos de 18.5", "Tu peso está por debajo de lo recomendado para tu altura.", "🛡️", "#34C759", None, 18.5),
+    ("Peso Saludable",           "18.5 a 24.9",   "Tu peso está dentro del rango saludable.",                   "💚", "#2E9E4A", 18.5, 24.9),
+    ("Sobrepeso",                "25 a 29.9",     "Tu peso está por encima de lo saludable.",                   "🏋️", "#1E88E5", 25, 29.9),
+    ("Obesidad",                 "30 o más",      "Tu peso está muy por encima de lo saludable.",               "⚠️", "#FF9F43", 30, None),
+    ("Obesidad Clase 1",         "30 a 34.9",     "Riesgo moderado para la salud.",                             "1️⃣", "#FF6B81", 30, 34.9),
+    ("Obesidad Clase 2",         "35 a 39.9",     "Mayor riesgo para la salud.",                                "2️⃣", "#F0384A", 35, 39.9),
+    ("Obesidad Clase 3 (Severa)", "40 o más",     "Riesgo muy alto para la salud.",                             "3️⃣", "#B71C33", 40, None),
 ]
 _ESCALA_MIN, _ESCALA_MAX = 0, 40
 
 
 def tabla_categorias_imc_visual(imc_usuario=None):
-    """Tabla de alto impacto visual (reemplaza tabla_bonita en esta sección): cabecera púrpura,
-    avatar circular + subtexto por clasificación, y una barra de rango con marcadores en vez
-    de texto plano, resaltando en qué punto de la escala global (0 a 40+) cae cada categoría."""
+    """Tabla de alto impacto visual (reemplaza tabla_bonita en esta sección): encabezado con
+    icono + subtítulo, cabecera de columnas lila, avatar circular + subtexto por clasificación,
+    y en la 3ra columna un indicador de línea con dos puntos marcando el inicio/fin de cada
+    rango sobre la escala global (0 a 40+), muy similar a la referencia de diseño."""
     filas_html = []
     for nombre, rango_txt, subtxt, icono, color, ini, fin in _CATEGORIAS_IMC_DEF:
         ini_v = _ESCALA_MIN if ini is None else ini
         fin_v = _ESCALA_MAX if fin is None else fin
         izq = max(0.0, min(100.0, (ini_v - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
-        ancho = max(1.5, min(100.0 - izq, (fin_v - ini_v) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
-        marcador = ""
+        der = max(0.0, min(100.0, (fin_v - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
+        ancho = max(1.0, der - izq)
+        etiqueta_ini = "0" if ini is None else f"{ini:g}"
+        etiqueta_fin = "40+" if fin is None else f"{fin:g}"
+
+        marcador_usuario = ""
         if imc_usuario is not None:
             en_rango = (ini is None or imc_usuario >= ini) and (fin is None or imc_usuario <= fin)
             if en_rango:
                 pos_usuario = max(0.0, min(100.0, (imc_usuario - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
-                marcador = f'<div class="imc-user-marker" style="left:{pos_usuario:.1f}%;"></div>'
+                marcador_usuario = (f'<div style="position:absolute;top:-14px;left:{pos_usuario:.1f}%;'
+                                     f'transform:translateX(-50%);font-size:0.85rem;">📍</div>')
+
         filas_html.append(f"""
         <div class="imc-row">
             <div style="display:flex;align-items:center;">
-                <span class="imc-clasif-avatar" style="background:{color}1A;">{icono}</span>
+                <span class="imc-clasif-avatar" style="background:{color}22;">{icono}</span>
                 <div>
-                    <div class="imc-clasif-title">{nombre}</div>
+                    <div class="imc-clasif-title" style="color:{color};">{nombre}</div>
                     <div class="imc-clasif-sub">{subtxt}</div>
                 </div>
             </div>
             <div class="imc-range-num" style="color:{color};">{rango_txt}</div>
-            <div>
-                <div class="imc-range-track" style="position:relative;">
-                    <div class="imc-range-fill" style="left:{izq:.1f}%;width:{ancho:.1f}%;background:{color};"></div>
-                    {marcador}
+            <div style="position:relative;padding-top:14px;">
+                {marcador_usuario}
+                <div class="imc-line-track">
+                    <div class="imc-line-seg" style="left:{izq:.1f}%;width:{ancho:.1f}%;background:{color};"></div>
+                    <div class="imc-line-dot" style="left:calc({izq:.1f}% - 6px);background:{color};color:{color};"></div>
+                    <div class="imc-line-dot" style="left:calc({der:.1f}% - 6px);background:{color};color:{color};"></div>
                 </div>
-                <div class="imc-range-scale"><span>0</span><span>10</span><span>20</span><span>30</span><span>40+</span></div>
+                <div class="imc-line-vals" style="color:{color};">
+                    <span class="val-mark" style="left:{izq:.1f}%;">{etiqueta_ini}</span>
+                    <span class="val-mark" style="left:{der:.1f}%;">{etiqueta_fin}</span>
+                </div>
+                <div class="imc-scale-ends"><span>0</span><span>40+</span></div>
             </div>
         </div>
         """)
 
     st.markdown(f"""
     <div class="imc-table-wrap">
-        <div class="imc-table-head">
-            <span class="imc-table-head-title">⚖️ Categorías Generales de IMC</span>
-            <span style="font-size:1.4rem;">📏</span>
+        <div class="imc-table-topbar">
+            <span class="imc-table-icon">⚖️</span>
+            <div>
+                <div class="imc-table-title">Categorías generales de IMC</div>
+                <div class="imc-table-sub">El Índice de Masa Corporal (IMC) es una guía que relaciona tu peso con tu altura para conocer tu estado nutricional.</div>
+            </div>
         </div>
-        <div class="imc-row-head">
-            <span>Clasificación</span><span>Rango de IMC</span><span>¿Dónde te encuentras?</span>
+        <div class="imc-table-head">
+            <span>🔖 Clasificación</span><span>📝 Rango de IMC</span><span>📊 ¿Dónde te encuentras?</span>
         </div>
         {''.join(filas_html)}
+        <div class="imc-footer-banner">
+            <span class="imc-footer-avatar">👩‍⚕️</span>
+            <div style="font-size:0.82rem;color:#5C6B60;max-width:480px;">
+                <b style="color:#6A1B9A;">💡 Importante:</b> el IMC es una referencia general.
+                Consulta siempre con un profesional de salud para una evaluación completa y recomendaciones personalizadas.
+            </div>
+            <div class="imc-footer-tip">🛡️ ¡Pequeños cambios hoy, grandes resultados mañana!</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1845,6 +1960,34 @@ def tabla_percentiles_genero_visual(edad_usuario=None, genero_usuario=None):
         _tarjeta_percentil_genero("Mujer", PERCENTIL_MUJER, edad_usuario, genero_usuario)
     with col_h:
         _tarjeta_percentil_genero("Hombre", PERCENTIL_HOMBRE, edad_usuario, genero_usuario)
+
+
+def fila_dominios_salud(dominios):
+    """Fila de iconos redondeados representando a qué ámbitos afecta un resultado
+    (Salud general, Atención médica, Apoyo y tratamiento, Detección temprana, etc.)."""
+    items = "".join(
+        f"""<div class="dominio-icono">
+                <div class="dominio-circulo" style="background:{color}1A;">{icono}</div>
+                <div class="dominio-label">{label}</div>
+            </div>"""
+        for icono, color, label in dominios
+    )
+    st.markdown(f'<div style="display:flex;gap:10px;margin-top:6px;">{items}</div>', unsafe_allow_html=True)
+
+
+def cta_pill(icono, color, titulo, desc, boton_texto, url):
+    """Tarjeta CTA tipo 'pill' con icono, título, descripción breve y botón redondeado
+    con flecha, para enlaces a recursos externos (ej. pruebas del CDC)."""
+    st.markdown(f"""
+    <a href="{url}" target="_blank" class="cta-pill-card">
+        <span class="cta-pill-icon" style="background:{color}1A;">{icono}</span>
+        <div>
+            <div class="cta-pill-title">{titulo}</div>
+            <div class="cta-pill-desc">{desc}</div>
+            <span class="cta-pill-btn" style="background:{color};color:#FFFFFF;">{boton_texto} →</span>
+        </div>
+    </a>
+    """, unsafe_allow_html=True)
 
 
 def nombre_display(nombre, genero="Mujer"):
@@ -2741,7 +2884,8 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "2.-IMC Y PERCENTIL":
     hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
-                   "En adolescentes y niños se incluye también el Percentil.")
+                   "En adolescentes y niños se incluye también el Percentil.",
+                ilustracion=_ilustracion_imc_svg(), tip="¡Conoce tu IMC y cuida tu salud! 👍")
 
     if etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None:
         kc1, kc2, kc3 = st.columns(3)
@@ -2766,45 +2910,63 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
-    # --- Texto tipo "Resultados Detallados" + aviso "Recordar", igual al formato de referencia ---
-    _riesgo_imc = _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]
-    st.markdown(f"""
-    <div style="background:#FFFFFF;border-radius:22px;padding:20px 24px;margin-bottom:14px;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);
-                border:1px solid rgba(0,0,0,0.05);">
-        <div style="color:#17301F;font-size:0.95rem;line-height:1.6;">
-        Según la información ingresada, tu Índice de Masa Corporal (IMC) es <b>{imc}</b>, lo que indica que tu
-        peso se encuentra en la categoría de <b>{_categoria_imc_usuario}</b> para tu {"edad y sexo" if etapa in ["Niñez","Adolescencia"] else "estatura"}.
-        </div>
-        <hr style="border:none;border-top:1px solid #F2F2F7;margin:14px 0;">
-        <div style="color:#5C6B60;font-size:0.88rem;line-height:1.6;">
-        Hable sobre su categoría de IMC con su proveedor de atención médica, ya que el IMC puede estar
-        relacionado con su salud y bienestar general. Su proveedor de atención médica podría determinar las
-        posibles razones de su peso actual y recomendar apoyo o tratamiento. El IMC es una medida de detección
-        y no pretende diagnosticar enfermedades o dolencias.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if _riesgo_imc:
-        st.markdown("""
-        <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
-                    padding:16px 24px;margin-bottom:16px;
-                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-        <b style="color:#FF9500;">Recordar</b><br>
-        <span style="color:#1C1C1E;">Tener un IMC elevado aumenta el riesgo de padecer enfermedades crónicas, como
-        presión arterial alta, diabetes tipo 2 y colesterol alto. Evalúa tu riesgo con esta prueba de riesgo de
-        prediabetes de 1 minuto (enlace abajo). También puedes leer más sobre los riesgos para la salud
-        asociados con la obesidad.</span>
+    # --- Bloque de 3 columnas: "¿Qué significa tu IMC?" / "Relacionado con" / "Recordar" ---
+    _riesgo_imc = _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Obesidad Clase 3 (Severa)"]
+    ic1, ic2, ic3 = st.columns(3)
+    with ic1:
+        st.markdown(f"""
+        <div class="info3-card">
+            <div class="info3-title">🔎 ¿Qué significa tu IMC?</div>
+            <div style="font-size:0.83rem;color:#5C6B60;line-height:1.55;">
+            Según la información ingresada, tu Índice de Masa Corporal (IMC) es <b style="color:#17301F;">{imc}</b>,
+            lo que indica que tu peso se encuentra en la categoría de <b style="color:#17301F;">{_categoria_imc_usuario}</b>
+            para tu {"edad y sexo" if etapa in ["Niñez", "Adolescencia"] else "estatura"}.
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        recursos_externos(2, [
-            ("🩺 Prueba de riesgo de prediabetes (CDC)", "https://www.cdc.gov/prediabetes/risktest/index.html"),
-            ("📖 Riesgos de salud por obesidad (CDC)", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html"),
+    with ic2:
+        st.markdown("""
+        <div class="info3-card">
+            <div class="info3-title">🩺 Tu IMC puede estar relacionado con:</div>
+        </div>
+        """, unsafe_allow_html=True)
+        fila_dominios_salud([
+            ("💚", "#34C759", "Salud y bienestar general"),
+            ("🩺", "#1E88E5", "Atención médica especializada"),
+            ("🤝", "#FF9F43", "Apoyo y tratamiento"),
+            ("🔍", "#AF52DE", "Detección temprana"),
         ])
+    with ic3:
+        st.markdown(f"""
+        <div class="info3-card" style="background:#FFF9E5;border:1px solid #FFE58F55;">
+            <div class="info3-title" style="color:#B8860B;">💡 Recordar</div>
+            <div style="font-size:0.82rem;color:#7A5C00;line-height:1.5;">
+            {"Tener un IMC elevado aumenta el riesgo de enfermedades crónicas, como presión alta, diabetes tipo 2 y colesterol alto."
+              if _riesgo_imc else
+              "Hable sobre su categoría de IMC con su proveedor de salud: puede determinar las posibles razones de su peso actual."}
+            El IMC es una medida de detección y no diagnostica enfermedades.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    if _riesgo_imc:
+        st.markdown("##### Quiero saber más:")
+        cta1, cta2 = st.columns(2)
+        with cta1:
+            cta_pill("🩸", "#FF3B30", "Prueba de riesgo de prediabetes (CDC)",
+                     "Responde un breve cuestionario de 1 minuto y conoce tu riesgo.",
+                     "Realizar prueba", "https://www.cdc.gov/prediabetes/risktest/index.html")
+        with cta2:
+            cta_pill("❤️", "#1E88E5", "Riesgos de salud por obesidad (CDC)",
+                     "Conoce las enfermedades y condiciones asociadas al sobrepeso y la obesidad.",
+                     "Ver más información", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html")
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     tabla_categorias_imc_visual(imc_usuario=imc)
 
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
     st.markdown("#### 📈 Percentiles de IMC por edad (2 a 20 años)")
     st.caption("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
                "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
@@ -2818,8 +2980,15 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     if edad not in PERCENTIL_MUJER:
         st.caption("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.")
 
-    with st.expander("📊 Ver tabla completa de percentiles (edad 2-20 años)"):
+    with st.expander("📊 Ver tabla completa de percentiles (edad 2-20 años)", expanded=False):
         tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero)
+        st.markdown("""
+        <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
+        💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
+        si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
+        y por encima de P95 en Obesidad.
+        </div>
+        """, unsafe_allow_html=True)
     caja_util("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
