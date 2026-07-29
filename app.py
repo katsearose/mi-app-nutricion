@@ -46,6 +46,14 @@ COLORES = {
     15: ("", "Sobre Nosotras",                                 "🎓", "#FF2D55", "#FFEBF0"),  # systemPink
 }
 
+# Etiqueta/badge corta que acompaña cada encabezado de sección (reemplaza el prefijo "Hoja N:")
+BADGE_HOJAS = {
+    0: "Configuración", 1: "Módulo Clínico", 2: "Módulo Clínico", 3: "Módulo Energético",
+    4: "Módulo Energético", 5: "Control de Peso", 6: "Módulo Nutricional", 7: "Módulo Nutricional",
+    8: "Recurso Externo", 9: "Plan Alimenticio", 10: "Módulo Ambiental", 11: "Aporte Especial",
+    12: "Aporte Especial", 13: "Proyección", 14: "Reporte Final", 15: "Equipo",
+}
+
 # Colores base del sistema iOS, reutilizados para mantener coherencia visual en toda la app.
 IOS_BLUE, IOS_GREEN, IOS_RED, IOS_ORANGE = "#007AFF", "#34C759", "#FF3B30", "#FF9500"
 IOS_GRAY_BG, IOS_LABEL, IOS_SECONDARY = "#F2F2F7", "#1C1C1E", "#6C6C70"
@@ -349,95 +357,28 @@ div[data-testid="stImageCaption"] {
 .cp5-progressbar-track { width:100%; height:22px; border-radius:999px; background:#EEF2EE; overflow:hidden; position:relative; }
 .cp5-progressbar-fill { height:100%; border-radius:999px; display:flex; align-items:center; }
 
-/* ---------- ESTILOS PARA EL SEMÁFORO CLÍNICO Y TABLAS DE REFERENCIA ---------- */
-.semaforo-tarjeta {
-    background: #ffffff;
-    border-radius: 24px;
-    padding: 18px 14px;
-    text-align: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.07);
-    height: 100%;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    position: relative;
-    overflow: hidden;
+/* ---------- Semáforo Clínico — tarjetas-gauge dinámicas (Hoja 1 y Reporte) ---------- */
+.sema-card {
+    background:#FFFFFF; border-radius:20px; padding:16px 14px; height:100%;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.07);
+    transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: help;
 }
-.semaforo-tarjeta:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-}
-.semaforo-tarjeta .icono-parametro {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 10px auto;
-    font-size: 1.5rem;
-}
-.semaforo-tarjeta .nombre-parametro {
-    font-weight: 800;
-    color: #1C1C1E;
-    font-size: 0.93rem;
-    letter-spacing: -0.01em;
-}
-.semaforo-tarjeta .valor-parametro {
-    color: #8E8E93;
-    font-size: 0.78rem;
-    margin-bottom: 4px;
-}
-.semaforo-tarjeta .categoria-parametro {
-    font-weight: 700;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-    cursor: help;
-    text-decoration: underline dotted 1px;
-    text-underline-offset: 3px;
-}
-.semaforo-tarjeta .recomendacion-parametro {
-    font-size: 0.74rem;
-    color: #6C6C70;
-    line-height: 1.35;
+.sema-card:hover { transform: translateY(-4px); box-shadow:0 4px 8px rgba(0,0,0,0.05), 0 16px 30px rgba(0,0,0,0.13); }
+.sema-gauge-track { position:relative; width:100%; height:14px; border-radius:999px; overflow:hidden; margin:8px 0 4px 0; background:#EEE; }
+.sema-gauge-seg { position:absolute; top:0; height:100%; }
+.sema-gauge-marker {
+    position:absolute; top:-4px; width:0; height:0; transform:translateX(-50%);
+    border-left:7px solid transparent; border-right:7px solid transparent; border-top:11px solid #1C1C1E;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
 }
 
-.tabla-referencia-contenedor {
-    background: #FFFFFF;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    padding: 24px;
-    margin-bottom: 20px;
-}
-.tabla-referencia-titulo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    font-weight: 800;
-    font-size: 1.2rem;
-    color: #1C1C1E;
-}
-.tarjeta-columna-estado {
-    border-radius: 8px;
-    padding: 8px 4px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-.tarjeta-interna-rango {
-    background: #FFFFFF;
-    border-radius: 8px;
-    padding: 8px 4px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #17301F;
-    margin: 2px 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    border: 1px solid rgba(0,0,0,0.04);
-}
-.indicador-gauge {
-    width: 100%;
-    margin: 10px 0;
-}
+/* ---------- Panel de tablas de referencia clínica (Hemoglobina / Hierro) ---------- */
+.ref-panel { background:#F8FAFC; border-radius:16px; padding:22px 22px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 10px 24px rgba(0,0,0,0.05); border:1px solid rgba(0,0,0,0.04); margin-bottom:14px; }
+.ref-panel-title { display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; color:#1C1C1E; margin-bottom:14px; }
+.ref-row { display:grid; align-items:center; gap:10px; padding:6px 0; }
+.ref-group-label { font-weight:700; color:#3C3C43; font-size:0.86rem; }
+.ref-chip { border-radius:8px; padding:9px 8px; text-align:center; font-weight:700; font-size:0.82rem; }
+.ref-header-chip { border-radius:8px; padding:7px 8px; text-align:center; font-weight:800; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.02em; color:#5C6B60; background:#EEF1F4; }
 
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
@@ -466,22 +407,26 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
 
 
 def hoja_header(idx, subtitulo=None):
-    """Encabezado tipo 'Hero Header Detallado': tarjeta blanca redondeada con sombra suave,
-    ícono dentro de un círculo tintado a la izquierda, título en verde institucional y
-    subtítulo explicativo — igual que la sección 'Encabezado de la Hoja Activa' de la maqueta."""
+    """Encabezado tipo banner: degradado pastel suave, título profesional SIN el prefijo
+    'Hoja N:', subtítulo descriptivo y un badge de color al costado (p. ej. 'Módulo Clínico')."""
     numero, titulo, emoji, borde, fondo = COLORES[idx]
-    # Se eliminó "Hoja" del título principal, se añadió un badge y un subtítulo descriptivo
+    badge = BADGE_HOJAS.get(idx, "Módulo")
     sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;'>{subtitulo}</p>" if subtitulo else ""
-    html = f"""<div style="background:linear-gradient(135deg, #FFF0F2 0%, #FFFFFF 100%);border-radius:24px;padding:22px 28px;margin-bottom:16px;
-display:flex;align-items:flex-start;gap:18px;
+    html = f"""<div style="background:linear-gradient(120deg,{fondo} 0%,#FFFFFF 70%);border-radius:24px;padding:22px 28px;margin-bottom:16px;
+display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;
 box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 10px 26px rgba(30,86,49,0.08);
 border:1px solid rgba(30,86,49,0.06);">
+<div style="display:flex;align-items:flex-start;gap:18px;">
 <div style="min-width:56px;height:56px;border-radius:50%;background:{fondo};
-display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">{emoji}</div>
+display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.06);">{emoji}</div>
 <div>
-<h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">{titulo} <span style="background:#FF2D55;color:white;font-size:0.65rem;padding:3px 10px;border-radius:20px;vertical-align:middle;margin-left:10px;">Módulo Clínico</span></h2>
+<h2 style="margin:0;color:{borde};font-weight:800;letter-spacing:-0.02em;">{titulo}</h2>
 {sub_html}
 </div>
+</div>
+<div style="background:{borde};color:#FFFFFF;padding:7px 16px;border-radius:999px;font-size:0.72rem;
+font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px {borde}55;
+align-self:flex-start;margin-top:2px;">{badge}</div>
 </div>"""
     st.markdown(html, unsafe_allow_html=True)
 
@@ -816,6 +761,95 @@ def recursos_externos(idx, recursos):
             st.link_button(label, url, use_container_width=True)
 
 
+# Paleta pastel exacta pedida para el panel de tablas de referencia clínica (Hemoglobina / Hierro)
+_REF_PASTEL = {
+    "normal":   ("#E6F4EA", "#137333"),
+    "leve":     ("#FEF7E0", "#B06000"),
+    "moderada": ("#FFE8D6", "#C45100"),
+    "grave":    ("#FCE8E6", "#C5221F"),
+    "bajo":     ("#E8F0FE", "#1A56DB"),
+    "alto":     ("#F3E8FF", "#7C3AED"),
+}
+
+_ICONO_GOTA = """<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 5 C16 5 6 17 6 23 a10 10 0 0 0 20 0 C26 17 16 5 16 5 Z" fill="#FCE8E6" stroke="#C5221F" stroke-width="2"/>
+</svg>"""
+_ICONO_MOLECULA = """<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="4.2" fill="#E8F0FE" stroke="#1A56DB" stroke-width="1.8"/>
+    <circle cx="22" cy="10" r="4.2" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1.8"/>
+    <circle cx="16" cy="21" r="4.2" fill="#E6F4EA" stroke="#137333" stroke-width="1.8"/>
+    <path d="M12.8 12.5 L14.5 18 M19.2 12.5 L17.5 18 M13.7 9.5 L18.3 9.5" stroke="#8E8E93" stroke-width="1.4"/>
+</svg>"""
+
+
+def _ref_chip(texto, categoria):
+    fondo, color_txt = _REF_PASTEL[categoria]
+    return f'<div class="ref-chip" style="background:{fondo};color:{color_txt};">{texto}</div>'
+
+
+def _ref_header_chip(texto, categoria=None):
+    if categoria:
+        fondo, color_txt = _REF_PASTEL[categoria]
+        return f'<div class="ref-header-chip" style="background:{fondo};color:{color_txt};">{texto}</div>'
+    return f'<div class="ref-header-chip">{texto}</div>'
+
+
+def panel_referencia_hemo_hierro():
+    """Panel de tarjetas pastel (Prompt 1) que reemplaza las tablas planas de Hemoglobina y
+    Hierro: contenedor con bordes redondeados, encabezados por columna en color y una
+    tarjeta por cada rango de dato, en tonos suaves — sin fondos oscuros ni negros."""
+    filas_hemo = [
+        ("Niños 5–11 años", "≥ 11,5 g/dL", "11,0 – 11,4", "8,0 – 10,9", "< 8,0"),
+        ("Adolescentes", "≥ 12,0 g/dL", "11,0 – 11,9", "8,0 – 10,9", "< 8,0"),
+        ("Mujeres", "≥ 12,0 g/dL", "11,0 – 11,9", "8,0 – 10,9", "< 8,0"),
+        ("Hombres", "≥ 13,0 g/dL", "12,0 – 12,9", "8,0 – 10,9", "< 8,0"),
+        ("Mujeres embarazadas", "≥ 11,0 g/dL", "10,0 – 10,9", "7,0 – 9,9", "< 7,0"),
+    ]
+    filas_hierro = [
+        ("Niños y adolescentes", "< 50", "50 – 120", "> 120"),
+        ("Mujeres", "< 50", "50 – 170", "> 170"),
+        ("Hombres", "< 65", "65 – 175", "> 175"),
+    ]
+
+    html = ['<div class="ref-panel">']
+    html.append(f'<div class="ref-panel-title">{_ICONO_GOTA} Hemoglobina (g/dL)</div>')
+    html.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;">')
+    html.append(_ref_header_chip("Grupo Poblacional"))
+    html.append(_ref_header_chip("Normal", "normal"))
+    html.append(_ref_header_chip("Anemia Leve", "leve"))
+    html.append(_ref_header_chip("Anemia Moderada", "moderada"))
+    html.append(_ref_header_chip("Anemia Grave", "grave"))
+    html.append('</div>')
+    for grupo, normal, leve, moderada, grave in filas_hemo:
+        html.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;">')
+        html.append(f'<div class="ref-group-label">{grupo}</div>')
+        html.append(_ref_chip(normal, "normal"))
+        html.append(_ref_chip(leve, "leve"))
+        html.append(_ref_chip(moderada, "moderada"))
+        html.append(_ref_chip(grave, "grave"))
+        html.append('</div>')
+    html.append('</div>')
+    st.markdown("".join(html), unsafe_allow_html=True)
+
+    html2 = ['<div class="ref-panel">']
+    html2.append(f'<div class="ref-panel-title">{_ICONO_MOLECULA} Hierro Sérico (µg/dL)</div>')
+    html2.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr;">')
+    html2.append(_ref_header_chip("Grupo Poblacional"))
+    html2.append(_ref_header_chip("Bajo", "bajo"))
+    html2.append(_ref_header_chip("Normal", "normal"))
+    html2.append(_ref_header_chip("Alto", "alto"))
+    html2.append('</div>')
+    for grupo, bajo, normal, alto in filas_hierro:
+        html2.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr;">')
+        html2.append(f'<div class="ref-group-label">{grupo}</div>')
+        html2.append(_ref_chip(bajo, "bajo"))
+        html2.append(_ref_chip(normal, "normal"))
+        html2.append(_ref_chip(alto, "alto"))
+        html2.append('</div>')
+    html2.append('</div>')
+    st.markdown("".join(html2), unsafe_allow_html=True)
+
+
 # =========================================================================================
 # TABLAS Y DATOS FIJOS (extraídos EXACTAMENTE del Excel "Grupo n°4 VER.2")
 # =========================================================================================
@@ -906,6 +940,10 @@ HIERRO_MAX = 500.0
 # =========================================================================================
 
 def clasif_hemoglobina(valor, etapa, genero):
+    """Clasifica la hemoglobina según etapa y género. CORREGIDO: antes, una mujer en
+    Adultez o Vejez (p. ej. 87 años) no encajaba en ninguna condición y el sistema
+    devolvía 'Revisa Datos' en vez de un diagnóstico. Ahora el umbral de 'Mujer' se
+    aplica a cualquier edad no-infantil, así el semáforo siempre calcula un resultado."""
     if valor is None or valor == 0:
         return "Introducir datos"
     if valor > 20:
@@ -915,7 +953,7 @@ def clasif_hemoglobina(valor, etapa, genero):
         elif valor <= 10.9: return "Anemia moderada"
         elif valor <= 11.4: return "Anemia leve"
         else: return "Normal"
-    if etapa == "Adolescencia" and genero == "Mujer":
+    if genero == "Mujer":
         if valor < 8: return "Anemia grave"
         elif valor <= 10.9: return "Anemia moderada"
         elif valor <= 11.9: return "Anemia leve"
@@ -925,7 +963,7 @@ def clasif_hemoglobina(valor, etapa, genero):
         elif valor <= 10.9: return "Anemia moderada"
         elif valor <= 12.9: return "Anemia leve"
         else: return "Normal"
-    # Réplica fiel: el Excel original NO cubre "Mujer" en Adultez/Vejez -> "Revisa Datos"
+    # Solo se alcanza si el género no es "Hombre" ni "Mujer" (no debería ocurrir desde la UI)
     return "Revisa Datos"
 
 def clasif_trigliceridos(valor):
@@ -1043,57 +1081,124 @@ def evaluar_estado_clinico(parametro, categoria):
     }
 
 
-def tarjeta_semaforo(parametro, valor_texto, categoria):
-    """Renderiza una tarjeta tipo 'semáforo clínico' con indicador de gauge, icono y tooltip."""
+# Colores pastel para el borde superior/inferior de la tarjeta y para las zonas del gauge.
+PASTEL_ESTADO = {
+    "verde": "#A8E6B5",
+    "ambar": "#FFD59E",
+    "rojo":  "#FFAFAF",
+    "gris":  "#DADFE3",
+}
+
+# Iconos SVG ilustrativos fijos por parámetro (se colorean dinámicamente según el estado actual).
+ICONOS_PARAMETRO = {
+    "Hemoglobina": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 6 C20 6 9 20 9 27 a11 11 0 0 0 22 0 C31 20 20 6 20 6 Z"
+              fill="{fondo}" stroke="{hex}" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M14 27 a6 6 0 0 0 6 6" stroke="{hex}" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </svg>""",
+    "Triglicéridos": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 9 C15 9 8 19 8 24 a7 7 0 0 0 14 0 C22 19 15 9 15 9 Z" fill="{fondo}" stroke="{hex}" stroke-width="2"/>
+        <path d="M27 15 C27 15 22 22 22 26 a5 5 0 0 0 10 0 C32 22 27 15 27 15 Z" fill="{fondo}" stroke="{hex}" stroke-width="2"/>
+    </svg>""",
+    "Glucosa": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="9" y="9" width="15" height="15" rx="2" fill="{fondo}" stroke="{hex}" stroke-width="2.2"/>
+        <circle cx="28" cy="27" r="6" fill="{fondo}" stroke="{hex}" stroke-width="2.2"/>
+        <circle cx="28" cy="27" r="1.6" fill="{hex}"/>
+    </svg>""",
+    "Colesterol": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 30 C10 23 6 17 9 12 C11.5 8 17 8 20 13 C23 8 28.5 8 31 12 C34 17 30 23 20 30 Z"
+              fill="{fondo}" stroke="{hex}" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M9 22 L14 22 L17 16 L20 26 L23 20 L27 22 L31 22" stroke="{hex}" stroke-width="1.6"
+              fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>""",
+    "Hierro": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 6 L32 11 V20 C32 27 27 32 20 34 C13 32 8 27 8 20 V11 Z"
+              fill="{fondo}" stroke="{hex}" stroke-width="2.2" stroke-linejoin="round"/>
+        <circle cx="20" cy="20" r="5" fill="none" stroke="{hex}" stroke-width="2"/>
+        <circle cx="20" cy="20" r="1.6" fill="{hex}"/>
+    </svg>""",
+}
+
+
+def _umbral_normal_hemo(etapa, genero):
+    """Réplica el umbral 'Normal ≥' de hemoglobina usado en clasif_hemoglobina, para dibujar
+    las zonas del gauge de forma coherente con el diagnóstico calculado."""
+    if etapa == "Niñez":
+        return 11.5
+    if genero == "Mujer":
+        return 12.0
+    return 13.0
+
+
+def _zonas_gauge(parametro, etapa=None, genero=None):
+    """Devuelve (min, max, segmentos) para dibujar el medidor de 3 zonas de cada parámetro.
+    Los cortes de Hemoglobina y Hierro se adaptan a la etapa/género del usuario, igual que
+    la lógica de clasificación, para que el gauge sea coherente con el diagnóstico."""
+    if parametro == "Hemoglobina":
+        normal = _umbral_normal_hemo(etapa, genero)
+        return 0, 20, [(0, 10.9, "rojo"), (10.9, normal, "ambar"), (normal, 20, "verde")]
+    if parametro == "Triglicéridos":
+        return 0, 500, [(0, 150, "verde"), (150, 200, "ambar"), (200, 500, "rojo")]
+    if parametro == "Glucosa":
+        return 0, 200, [(0, 70, "ambar"), (70, 100, "verde"), (100, 126, "ambar"), (126, 200, "rojo")]
+    if parametro == "Colesterol":
+        return 0, 400, [(0, 200, "verde"), (200, 240, "ambar"), (240, 400, "rojo")]
+    if parametro == "Hierro":
+        if etapa in ["Niñez", "Adolescencia"]:
+            bajo, alto = 50, 120
+        elif genero == "Hombre":
+            bajo, alto = 65, 175
+        else:
+            bajo, alto = 50, 170
+        tope = round(alto * 1.3)
+        return 0, tope, [(0, bajo, "ambar"), (bajo, alto, "verde"), (alto, tope, "gris")]
+    return 0, 100, [(0, 100, "gris")]
+
+
+def _gauge_track_html(valor_num, min_v, max_v, segmentos):
+    """Construye el HTML del medidor de 3 zonas con el marcador en la posición exacta del valor."""
+    rango = max(max_v - min_v, 1e-6)
+    piezas = ['<div class="sema-gauge-track">']
+    for ini, fin, color_estado in segmentos:
+        izq = max(0.0, min(100.0, (ini - min_v) / rango * 100))
+        ancho = max(0.0, min(100.0 - izq, (fin - ini) / rango * 100))
+        piezas.append(f'<div class="sema-gauge-seg" style="left:{izq:.1f}%;width:{ancho:.1f}%;background:{PASTEL_ESTADO[color_estado]};"></div>')
+    if valor_num is not None:
+        pct = max(0.0, min(100.0, (valor_num - min_v) / rango * 100))
+        piezas.append(f'<div class="sema-gauge-marker" style="left:{pct:.1f}%;"></div>')
+    piezas.append('</div>')
+    return "".join(piezas)
+
+
+def tarjeta_semaforo(parametro, valor_texto, categoria, valor_num=None, etapa=None, genero=None):
+    """Tarjeta-gauge del Semáforo Clínico: icono ilustrativo fijo por parámetro, medidor de
+    3 zonas (verde/ámbar/rojo) con marcador en el valor exacto, borde dinámico según el
+    resultado, efecto hover de elevación y tooltip con la recomendación personalizada."""
     r = evaluar_estado_clinico(parametro, categoria)
-    
-    # Determinar el valor del gauge (0 a 100) basado en la categoría
-    if r['colorSemaforo'] == 'verde':
-        gauge_val = 85
-    elif r['colorSemaforo'] == 'ambar':
-        gauge_val = 50
-    elif r['colorSemaforo'] == 'rojo':
-        gauge_val = 15
-    else:
-        gauge_val = 0
-
-    # Determinar el icono SVG para el parámetro
-    iconos_svg = {
-        "Hemoglobina": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>""",
-        "Triglicéridos": """<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M19.77,4.93l1.94-1.93c0.39-0.39,0.39-1.02,0-1.41l0,0c-0.39-0.39-1.02-0.39-1.41,0l-1.93,1.94L16.44,1.6 c-0.39-0.39-1.02-0.39-1.41,0l0,0c-0.39,0.39-0.39,1.02,0,1.41l1.93,1.93l-1.93,1.93c-0.39,0.39-0.39,1.02,0,1.41l0,0 c0.39,0.39,1.02,0.39,1.41,0l1.93-1.94l1.93,1.94c0.39,0.39,1.02,0.39,1.41,0l0,0c0.39-0.39,0.39-1.02,0-1.41L19.77,4.93z M12,2 C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.42,0-8-3.58-8-8s3.58-8,8-8s8,3.58,8,8 S16.42,20,12,20z"/></g></g></svg>""",
-        "Glucosa": """<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px"><rect fill="none" height="24" width="24"/><path d="M22,12c0,5.52-4.48,10-10,10S2,17.52,2,12S6.48,2,12,2S22,6.48,22,12z M12,4L6,12l1.41,1.41L11,9.83V20h2V9.83 l3.59,3.58L18,12L12,4z"/></svg>""",
-        "Colesterol": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px"><path d="M12,21.35l-1.45-1.32C5.4,15.36,2,12.28,2,8.5C2,5.42,4.42,3,7.5,3c1.74,0,3.41,0.81,4.5,2.09C13.09,3.81,14.76,3,16.5,3C19.58,3,22,5.42,22,8.5c0,3.78-3.4,6.86-8.55,11.54L12,21.35z"/></svg>""",
-        "Hierro": """<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px"><rect fill="none" height="24" width="24"/><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8c0-4.41,3.59-8,8-8 s8,3.59,8,8C20,16.41,16.41,20,12,20z M12,6c-3.31,0-6,2.69-6,6s2.69,6,6,6s6-2.69,6-6S15.31,6,12,6z M12,16 c-2.21,0-4-1.79-4-4s1.79-4,4-4s4,1.79,4,4S14.21,16,12,16z"/></svg>""",
-    }
-    icono_svg = iconos_svg.get(parametro, "")
-
-    # Renderizar la tarjeta con el nuevo diseño dinámico
+    borde_pastel = PASTEL_ESTADO.get(r["colorSemaforo"], "#DADFE3")
+    icono_svg = ICONOS_PARAMETRO.get(parametro, "").format(fondo=r["fondo"], hex=r["hex"])
+    min_v, max_v, segmentos = _zonas_gauge(parametro, etapa, genero)
+    gauge_html = _gauge_track_html(valor_num, min_v, max_v, segmentos)
+    tooltip = r["mensajePersonalizado"].replace('"', "'")
     st.markdown(f"""
-    <div class="semaforo-tarjeta" style="border-top: 4px solid {r['hex']}; border-bottom: 4px solid {r['hex']};">
-        <div class="icono-parametro" style="background: {r['fondo']};">{icono_svg}</div>
-        <div class="nombre-parametro">{parametro}</div>
-        <div class="valor-parametro">{valor_texto}</div>
-        <div class="indicador-gauge">
-            <svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14 60 A46 46 0 0 1 106 60" fill="none" stroke="#EDEDED" stroke-width="10" stroke-linecap="round"/>
-                <path d="M14 60 A46 46 0 0 1 106 60" fill="none" stroke="{r['hex']}" stroke-width="10"
-                      stroke-linecap="round" stroke-dasharray="{gauge_val} 145"/>
-                <!-- Aguja dinámica -->
-                <g transform="rotate({-90 + (gauge_val * 1.8)}, 60, 60)">
-                    <line x1="60" y1="14" x2="60" y2="45" stroke="#1C1C1E" stroke-width="2" stroke-linecap="round"/>
-                </g>
-                <circle cx="60" cy="60" r="4" fill="#1C1C1E"/>
-            </svg>
+    <div class="sema-card" style="border-top:5px solid {borde_pastel};border-bottom:5px solid {borde_pastel};"
+         title="{tooltip}">
+        <div style="width:52px;height:52px;border-radius:50%;background:{r['fondo']};
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 8px auto;padding:10px;box-sizing:border-box;">{icono_svg}</div>
+        <div style="text-align:center;font-weight:800;color:#1C1C1E;font-size:0.92rem;letter-spacing:-0.01em;">{parametro}</div>
+        <div style="text-align:center;color:#8E8E93;font-size:0.76rem;margin-bottom:2px;">{valor_texto}</div>
+        {gauge_html}
+        <div style="text-align:center;margin-top:6px;">
+            <span style="background:{r['fondo']};color:{r['hex']};font-weight:800;font-size:0.78rem;
+                         padding:4px 12px;border-radius:999px;">{r['emoji']} {categoria}</span>
         </div>
-        <div class="categoria-parametro" style="color: {r['hex']};" title="{r['mensajePersonalizado']}">
-            {r['emoji']} {categoria}
-        </div>
-        <div class="recomendacion-parametro">{r['mensajePersonalizado']}</div>
     </div>
     """, unsafe_allow_html=True)
 
 # =========================================================================================
 # IMPACTO DINÁMICO POR ÁMBITO — cómo afecta cada resultado clínico según Escolar/Laboral/Emocional
+
 # =========================================================================================
 EFECTOS_PARAMETRO = {
     "Hemoglobina": {
@@ -2037,13 +2142,12 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.markdown("#### 🚦 Semáforo Clínico — protocolo de triaje digital")
     st.caption(f"No solo diagnostica: te sugiere una ruta de mejora inmediata, {_nombre_saludo}. 🟢 Normal · 🟡 Alerta · 🔴 Crítico")
-    # Se eliminó la columna del sticker "guía experta" para que las 5 tarjetas ocupen todo el ancho
     sc1, sc2, sc3, sc4, sc5 = st.columns(5)
-    with sc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo)
-    with sc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli)
-    with sc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco)
-    with sc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles)
-    with sc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro)
+    with sc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo, valor_num=hemo, etapa=etapa, genero=genero)
+    with sc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli, valor_num=trigli)
+    with sc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco, valor_num=gluco)
+    with sc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles, valor_num=coles)
+    with sc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro, valor_num=hierro, etapa=etapa, genero=genero)
 
     st.divider()
 
@@ -2077,82 +2181,14 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
         </div>
         """, unsafe_allow_html=True)
 
-    # Tablas de referencia rediseñadas como tarjetas
     with st.expander("📊 Ver tablas de referencia clínica completas"):
-        # --- HEMOGLOBINA ---
-        st.markdown("""
-        <div class="tabla-referencia-contenedor">
-            <div class="tabla-referencia-titulo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#C0392B" width="28px" height="28px"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
-                <span>Hemoglobina</span>
-            </div>
-            <div style="display:flex; gap:12px;">
-                <div style="flex:1; background:#E6F4EA; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#137333;">Normal</div>
-                <div style="flex:1; background:#FEF7E0; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#B06000;">Anemia Leve</div>
-                <div style="flex:1; background:#FFE8D6; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#C45100;">Anemia Moderada</div>
-                <div style="flex:1; background:#FCE8E6; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#C5221F;">Anemia Grave</div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
-                <div style="display:flex; gap:12px;">
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">≥ 11,5 g/dL</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">11,0 – 11,4</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">8,0 – 10,9</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">< 8,0</div>
-                </div>
-                <div style="font-size:0.85rem; font-weight:600; margin-top:4px;">Niños 5–11 años</div>
-            </div>
-            <!-- Filas similares para otros grupos poblacionales se pueden agregar aquí -->
-        </div>
-        """, unsafe_allow_html=True)
-
-        # --- HIERRO ---
-        st.markdown("""
-        <div class="tabla-referencia-contenedor">
-            <div class="tabla-referencia-titulo">
-                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" fill="#8E24AA" width="28px" height="28px"><rect fill="none" height="24" width="24"/><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8c0-4.41,3.59-8,8-8 s8,3.59,8,8C20,16.41,16.41,20,12,20z M12,6c-3.31,0-6,2.69-6,6s2.69,6,6,6s6-2.69,6-6S15.31,6,12,6z M12,16 c-2.21,0-4-1.79-4-4s1.79-4,4-4s4,1.79,4,4S14.21,16,12,16z"/></svg>
-                <span>Hierro</span>
-            </div>
-            <div style="display:flex; gap:12px;">
-                <div style="flex:1; background:#E8F0FE; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#1A56DB;">Bajo</div>
-                <div style="flex:1; background:#E6F4EA; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#137333;">Normal</div>
-                <div style="flex:1; background:#F3E8FF; border-radius:8px; padding:8px; text-align:center; font-weight:600; color:#6B21A8;">Alto</div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px; margin-top:12px;">
-                <div style="display:flex; gap:12px;">
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">< 50</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">50-120</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">> 120</div>
-                </div>
-                <div style="font-size:0.85rem; font-weight:600; margin-top:4px;">Niños y adolescentes</div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px; margin-top:8px;">
-                <div style="display:flex; gap:12px;">
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">< 50</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">50-170</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">> 170</div>
-                </div>
-                <div style="font-size:0.85rem; font-weight:600; margin-top:4px;">Mujeres</div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px; margin-top:8px;">
-                <div style="display:flex; gap:12px;">
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">< 65</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">65-175</div>
-                    <div style="flex:1; background:#FFFFFF; border-radius:8px; padding:8px; text-align:center;">> 175</div>
-                </div>
-                <div style="font-size:0.85rem; font-weight:600; margin-top:4px;">Hombres</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
+        panel_referencia_hemo_hierro()
         caja_titulo("Triglicéridos / Glucosa / Colesterol", 1)
         tabla_bonita(pd.DataFrame({
             "Triglicéridos": ["Normal < 150", "Límite alto 150–199", "Alto 200–499", "Muy alto ≥ 500"],
             "Glucosa": ["Hipoglucemia < 70", "Normal 70–99", "Prediabetes 100–125", "Diabetes ≥ 126"],
             "Colesterol": ["Deseable < 200", "Límite alto 200–239", "Alto ≥ 240", ""]
         }), 1)
-    st.warning("⚠️ Nota de fidelidad al Excel: la fórmula original de Hemoglobina no contempla el caso "
-               "'Mujer' en etapa Adultez/Vejez, por lo que en ese caso el sistema (igual que el Excel) "
-               "devuelve **'Revisa Datos'**.")
     recursos_externos(1, [
         ("🩸 Anemia (MedlinePlus)", "https://medlineplus.gov/spanish/anemia.html"),
         ("🫀 Colesterol (MedlinePlus)", "https://medlineplus.gov/spanish/cholesterol.html"),
@@ -2794,11 +2830,11 @@ elif hoja_activa == "📄 MI REPORTE":
         _cat_coles_r = clasif_colesterol(coles)
         _cat_hierro_r = clasif_hierro(hierro, etapa, genero)
         rc1, rc2, rc3, rc4, rc5 = st.columns(5)
-        with rc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo_r)
-        with rc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli_r)
-        with rc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco_r)
-        with rc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles_r)
-        with rc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro_r)
+        with rc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo_r, valor_num=hemo, etapa=etapa, genero=genero)
+        with rc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli_r, valor_num=trigli)
+        with rc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco_r, valor_num=gluco)
+        with rc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles_r, valor_num=coles)
+        with rc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro_r, valor_num=hierro, etapa=etapa, genero=genero)
     else:
         st.info("Aún no ingresaste tus valores de análisis sanguíneo en la barra lateral.")
         _cat_hemo_r = _cat_trigli_r = _cat_gluco_r = _cat_coles_r = _cat_hierro_r = "Introducir datos"
