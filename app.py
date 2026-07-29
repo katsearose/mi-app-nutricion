@@ -771,14 +771,30 @@ _REF_PASTEL = {
     "alto":     ("#F3E8FF", "#7C3AED"),
 }
 
-_ICONO_GOTA = """<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+# Todos los iconos del panel de referencia llevan un tamaño FIJO (evita el bug del SVG gigante
+# cuando no se define width/height y el navegador usa su tamaño intrínseco por defecto).
+_ICONO_ESTILO = 'style="width:24px;height:24px;flex-shrink:0;display:block;"'
+
+_ICONO_GOTA = f"""<svg {_ICONO_ESTILO} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M16 5 C16 5 6 17 6 23 a10 10 0 0 0 20 0 C26 17 16 5 16 5 Z" fill="#FCE8E6" stroke="#C5221F" stroke-width="2"/>
 </svg>"""
-_ICONO_MOLECULA = """<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+_ICONO_MOLECULA = f"""<svg {_ICONO_ESTILO} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="10" cy="10" r="4.2" fill="#E8F0FE" stroke="#1A56DB" stroke-width="1.8"/>
     <circle cx="22" cy="10" r="4.2" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1.8"/>
     <circle cx="16" cy="21" r="4.2" fill="#E6F4EA" stroke="#137333" stroke-width="1.8"/>
     <path d="M12.8 12.5 L14.5 18 M19.2 12.5 L17.5 18 M13.7 9.5 L18.3 9.5" stroke="#8E8E93" stroke-width="1.4"/>
+</svg>"""
+_ICONO_LIPIDO = f"""<svg {_ICONO_ESTILO} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 6 C12 6 5 16 5 21 a7 7 0 0 0 14 0 C19 16 12 6 12 6 Z" fill="#FFE8D6" stroke="#C45100" stroke-width="1.8"/>
+    <path d="M22 12 C22 12 18 18 18 21.5 a4.5 4.5 0 0 0 9 0 C27 18 22 12 22 12 Z" fill="#FFE8D6" stroke="#C45100" stroke-width="1.8"/>
+</svg>"""
+_ICONO_AZUCAR = f"""<svg {_ICONO_ESTILO} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="7" y="7" width="12" height="12" rx="2" fill="#FEF7E0" stroke="#B06000" stroke-width="1.8"/>
+    <circle cx="23" cy="22" r="5" fill="#FEF7E0" stroke="#B06000" stroke-width="1.8"/>
+</svg>"""
+_ICONO_CORAZON = f"""<svg {_ICONO_ESTILO} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 25 C7 19 4 14 7 10 C9 7 13.5 7 16 11 C18.5 7 23 7 25 10 C28 14 25 19 16 25 Z"
+          fill="#E6F4EA" stroke="#137333" stroke-width="1.8" stroke-linejoin="round"/>
 </svg>"""
 
 
@@ -792,6 +808,26 @@ def _ref_header_chip(texto, categoria=None):
         fondo, color_txt = _REF_PASTEL[categoria]
         return f'<div class="ref-header-chip" style="background:{fondo};color:{color_txt};">{texto}</div>'
     return f'<div class="ref-header-chip">{texto}</div>'
+
+
+def _panel_referencia_una_fila(icono, titulo, categorias):
+    """Panel pastel de una sola fila de datos (sin columna de 'Grupo Poblacional'), usado
+    para Triglicéridos, Glucosa y Colesterol — cada parámetro con su propia tarjeta,
+    sin compartir tabla con los demás."""
+    n = len(categorias)
+    cols_css = " ".join(["1fr"] * n)
+    html = ['<div class="ref-panel">']
+    html.append(f'<div class="ref-panel-title">{icono} {titulo}</div>')
+    html.append(f'<div class="ref-row" style="grid-template-columns:{cols_css};">')
+    for etiqueta, _valor, color_key in categorias:
+        html.append(_ref_header_chip(etiqueta, color_key))
+    html.append('</div>')
+    html.append(f'<div class="ref-row" style="grid-template-columns:{cols_css};">')
+    for _etiqueta, valor, color_key in categorias:
+        html.append(_ref_chip(valor, color_key))
+    html.append('</div>')
+    html.append('</div>')
+    st.markdown("".join(html), unsafe_allow_html=True)
 
 
 def panel_referencia_hemo_hierro():
@@ -848,6 +884,30 @@ def panel_referencia_hemo_hierro():
         html2.append('</div>')
     html2.append('</div>')
     st.markdown("".join(html2), unsafe_allow_html=True)
+
+
+def panel_referencia_trigli_gluco_coles():
+    """Tres paneles pastel INDEPENDIENTES (uno por parámetro) para Triglicéridos, Glucosa
+    y Colesterol — mismo estilo de tarjetas que Hemoglobina/Hierro, cada uno con su propia
+    tabla, sin compartir columnas entre sí."""
+    _panel_referencia_una_fila(_ICONO_LIPIDO, "Triglicéridos (mg/dL)", [
+        ("Normal", "< 150", "normal"),
+        ("Límite Alto", "150 – 199", "leve"),
+        ("Alto", "200 – 499", "moderada"),
+        ("Muy Alto", "≥ 500", "grave"),
+    ])
+    _panel_referencia_una_fila(_ICONO_AZUCAR, "Glucosa (mg/dL)", [
+        ("Hipoglucemia", "< 70", "leve"),
+        ("Normal", "70 – 99", "normal"),
+        ("Prediabetes", "100 – 125", "moderada"),
+        ("Diabetes", "≥ 126", "grave"),
+    ])
+    _panel_referencia_una_fila(_ICONO_CORAZON, "Colesterol (mg/dL)", [
+        ("Deseable", "< 200", "normal"),
+        ("Límite Alto", "200 – 239", "leve"),
+        ("Alto", "≥ 240", "grave"),
+    ])
+
 
 
 # =========================================================================================
@@ -1091,27 +1151,27 @@ PASTEL_ESTADO = {
 
 # Iconos SVG ilustrativos fijos por parámetro (se colorean dinámicamente según el estado actual).
 ICONOS_PARAMETRO = {
-    "Hemoglobina": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "Hemoglobina": """<svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 6 C20 6 9 20 9 27 a11 11 0 0 0 22 0 C31 20 20 6 20 6 Z"
               fill="{fondo}" stroke="{hex}" stroke-width="2.2" stroke-linejoin="round"/>
         <path d="M14 27 a6 6 0 0 0 6 6" stroke="{hex}" stroke-width="1.6" stroke-linecap="round" fill="none"/>
     </svg>""",
-    "Triglicéridos": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "Triglicéridos": """<svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 9 C15 9 8 19 8 24 a7 7 0 0 0 14 0 C22 19 15 9 15 9 Z" fill="{fondo}" stroke="{hex}" stroke-width="2"/>
         <path d="M27 15 C27 15 22 22 22 26 a5 5 0 0 0 10 0 C32 22 27 15 27 15 Z" fill="{fondo}" stroke="{hex}" stroke-width="2"/>
     </svg>""",
-    "Glucosa": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "Glucosa": """<svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="9" y="9" width="15" height="15" rx="2" fill="{fondo}" stroke="{hex}" stroke-width="2.2"/>
         <circle cx="28" cy="27" r="6" fill="{fondo}" stroke="{hex}" stroke-width="2.2"/>
         <circle cx="28" cy="27" r="1.6" fill="{hex}"/>
     </svg>""",
-    "Colesterol": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "Colesterol": """<svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 30 C10 23 6 17 9 12 C11.5 8 17 8 20 13 C23 8 28.5 8 31 12 C34 17 30 23 20 30 Z"
               fill="{fondo}" stroke="{hex}" stroke-width="2.2" stroke-linejoin="round"/>
         <path d="M9 22 L14 22 L17 16 L20 26 L23 20 L27 22 L31 22" stroke="{hex}" stroke-width="1.6"
               fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>""",
-    "Hierro": """<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "Hierro": """<svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 6 L32 11 V20 C32 27 27 32 20 34 C13 32 8 27 8 20 V11 Z"
               fill="{fondo}" stroke="{hex}" stroke-width="2.2" stroke-linejoin="round"/>
         <circle cx="20" cy="20" r="5" fill="none" stroke="{hex}" stroke-width="2"/>
@@ -1195,6 +1255,43 @@ def tarjeta_semaforo(parametro, valor_texto, categoria, valor_num=None, etapa=No
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+
+# Degradados vivos para el panel de resumen visual (mucho más saturados que los pastel de las
+# tarjetas-gauge, a propósito, para que el resumen se vea como un "flujo" llamativo).
+_GRAD_RESUMEN = {
+    "verde": ("#34D399", "#059669"),
+    "ambar": ("#FBBF24", "#D97706"),
+    "rojo":  ("#F87171", "#DC2626"),
+    "gris":  ("#A5B4C3", "#64748B"),
+}
+
+
+def panel_resumen_semaforo_creativo(resultados, nombre_saludo=""):
+    """Reemplaza la tabla plana 'Parámetro | Valor | Resultado' por un panel de tarjetas
+    en degradado conectadas con flechas — un resumen visual tipo 'flujo sanguíneo' del
+    panel completo, muy colorido, con icono, valor grande y badge de resultado por tarjeta."""
+    st.markdown("#### 🌈 Resumen Visual de tu Panel Sanguíneo")
+    st.caption(f"El mismo diagnóstico de arriba, pero de un vistazo — como una línea de flujo, {nombre_saludo}. 🩸➡️🍬➡️🫀")
+    piezas = ['<div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;">']
+    for i, (parametro, valor_texto, categoria) in enumerate(resultados):
+        r = evaluar_estado_clinico(parametro, categoria)
+        c1_, c2_ = _GRAD_RESUMEN.get(r["colorSemaforo"], _GRAD_RESUMEN["gris"])
+        icono_svg = ICONOS_PARAMETRO.get(parametro, "").format(fondo="rgba(255,255,255,0.30)", hex="#FFFFFF")
+        piezas.append(f'''
+        <div class="cp5-card" style="flex:1;min-width:150px;text-align:center;
+             background:linear-gradient(155deg,{c1_} 0%,{c2_} 100%);padding:16px 12px;">
+            <div style="width:42px;height:42px;margin:0 auto 8px auto;">{icono_svg}</div>
+            <div class="cp5-title" style="font-size:0.92rem;margin-bottom:2px;">{parametro}</div>
+            <div style="font-size:0.78rem;opacity:0.92;margin-bottom:8px;">{valor_texto}</div>
+            <div style="background:rgba(255,255,255,0.28);border-radius:999px;padding:5px 10px;
+                        font-weight:800;font-size:0.78rem;display:inline-block;">{r['emoji']} {categoria}</div>
+        </div>''')
+        if i < len(resultados) - 1:
+            piezas.append('<div style="display:flex;align-items:center;font-size:1.5rem;color:#B0B8C1;padding:0 2px;">→</div>')
+    piezas.append('</div>')
+    st.markdown("".join(piezas), unsafe_allow_html=True)
+
 
 # =========================================================================================
 # IMPACTO DINÁMICO POR ÁMBITO — cómo afecta cada resultado clínico según Escolar/Laboral/Emocional
@@ -1403,20 +1500,20 @@ def etapa_desde_edad(edad_valor):
 # =========================================================================================
 
 _ICONS_SVG = {
-    "bascula": """<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "bascula": """<svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="30" width="48" height="26" rx="6" fill="rgba(255,255,255,0.18)" stroke="white" stroke-width="2.5"/>
         <circle cx="32" cy="43" r="8" fill="none" stroke="white" stroke-width="2.5"/>
         <path d="M32 43 L36 37" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
         <path d="M32 8 L32 20 M24 14 L40 14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
         <path d="M18 20 L32 20 L26 28 Z" fill="white"/>
     </svg>""",
-    "musculo": """<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "musculo": """<svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14 44 C10 34 12 22 22 16 C26 13 32 13 36 16 C34 18 33 21 34 24 C40 22 46 24 49 29
                  C52 34 51 40 47 44 C50 46 51 50 49 53 C46 57 40 56 37 53 C33 57 25 58 20 54
                  C15 51 13 47 14 44 Z" fill="rgba(255,255,255,0.20)" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
         <path d="M22 30 C26 27 32 27 36 30" stroke="white" stroke-width="2" stroke-linecap="round"/>
     </svg>""",
-    "balanza": """<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    "balanza": """<svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M32 10 L32 50" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
         <path d="M14 50 L50 50" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
         <path d="M10 16 L54 16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
@@ -2151,12 +2248,14 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.divider()
 
-    df_examen = pd.DataFrame({
-        "Parámetro": ["Hemoglobina", "Triglicéridos", "Glucosa", "Colesterol", "Hierro"],
-        "Valor": [f"{hemo} g/dL", f"{trigli} mg/dL", f"{gluco} mg/dL", f"{coles} mg/dL", f"{hierro} µg/dL"],
-        "Resultado obtenido": [_cat_hemo, _cat_trigli, _cat_gluco, _cat_coles, _cat_hierro]
-    })
-    tabla_bonita(df_examen, 1)
+    _resultados_examen = [
+        ("Hemoglobina", f"{hemo} g/dL", _cat_hemo),
+        ("Triglicéridos", f"{trigli} mg/dL", _cat_trigli),
+        ("Glucosa", f"{gluco} mg/dL", _cat_gluco),
+        ("Colesterol", f"{coles} mg/dL", _cat_coles),
+        ("Hierro", f"{hierro} µg/dL", _cat_hierro),
+    ]
+    panel_resumen_semaforo_creativo(_resultados_examen, _nombre_saludo)
 
     st.divider()
     st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día?")
@@ -2183,12 +2282,7 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     with st.expander("📊 Ver tablas de referencia clínica completas"):
         panel_referencia_hemo_hierro()
-        caja_titulo("Triglicéridos / Glucosa / Colesterol", 1)
-        tabla_bonita(pd.DataFrame({
-            "Triglicéridos": ["Normal < 150", "Límite alto 150–199", "Alto 200–499", "Muy alto ≥ 500"],
-            "Glucosa": ["Hipoglucemia < 70", "Normal 70–99", "Prediabetes 100–125", "Diabetes ≥ 126"],
-            "Colesterol": ["Deseable < 200", "Límite alto 200–239", "Alto ≥ 240", ""]
-        }), 1)
+        panel_referencia_trigli_gluco_coles()
     recursos_externos(1, [
         ("🩸 Anemia (MedlinePlus)", "https://medlineplus.gov/spanish/anemia.html"),
         ("🫀 Colesterol (MedlinePlus)", "https://medlineplus.gov/spanish/cholesterol.html"),
