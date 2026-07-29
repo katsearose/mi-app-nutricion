@@ -5,6 +5,7 @@ import base64
 import io
 import textwrap
 import plotly.graph_objects as go
+import altair as alt
 from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
@@ -288,6 +289,65 @@ div[data-testid="stImageCaption"] {
     .feature-row { flex-direction: column; }
     .hero-emoji-decor { display: none; }
 }
+
+/* ---------- Hoja 5: Control de Peso — tarjetas creativas, misión y glassmorphism ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
+
+@keyframes cp5-fadeup {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.cp5-card {
+    border-radius: 22px; padding: 20px 20px; height: 100%;
+    color: white; position: relative; overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: cp5-fadeup 0.6s ease both;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.16);
+}
+.cp5-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 18px 36px rgba(0,0,0,0.26);
+}
+.cp5-card .cp5-icon { width: 54px; height: 54px; margin-bottom: 8px; }
+.cp5-card .cp5-title { font-weight: 800; font-size: 1.08rem; margin-bottom: 6px; letter-spacing: -0.01em; }
+.cp5-card .cp5-text { font-size: 0.86rem; line-height: 1.5; opacity: 0.96; }
+.cp5-card.cp5-selected { outline: 3px solid rgba(255,255,255,0.85); box-shadow: 0 0 0 5px rgba(255,255,255,0.18), 0 18px 36px rgba(0,0,0,0.26); }
+
+.cp5-mission-wrap {
+    background: linear-gradient(180deg,#0B1220 0%,#111A2E 100%);
+    border-radius: 28px; padding: 26px 24px; margin-bottom: 6px;
+}
+.cp5-mission-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 20px; padding: 18px 22px; margin-bottom: 14px;
+    backdrop-filter: blur(10px); animation: cp5-fadeup 0.7s ease both;
+}
+.cp5-mission-card.cp5-active { border: 1.5px solid var(--mc-accent); box-shadow: 0 0 24px var(--mc-glow); }
+.cp5-mission-title {
+    font-family: 'Orbitron', sans-serif; font-weight: 800; letter-spacing: 0.02em;
+    font-size: 1.05rem; color: var(--mc-accent); margin-bottom: 10px;
+}
+.cp5-timeline-track { position: relative; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.08); margin: 14px 0 6px 0; }
+.cp5-timeline-fill { position: absolute; top:0; left:0; height:100%; border-radius: 999px; }
+.cp5-timeline-flag { position: absolute; top: -22px; font-size: 1.05rem; transform: translateX(-50%); }
+.cp5-timeline-labels { display:flex; justify-content:space-between; font-size:0.72rem; color:#8892A6; margin-top:2px; }
+
+.cp5-glass-flow {
+    display:flex; align-items:center; gap: 14px; flex-wrap: wrap;
+}
+.cp5-flow-card {
+    flex:1; min-width: 190px; border-radius: 22px; padding: 18px 20px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 8px 24px rgba(30,86,49,0.10);
+}
+.cp5-flow-arrow { font-size: 1.8rem; color: #1E5631; opacity: 0.55; }
+.cp5-flow-label { font-size: 0.78rem; color: #5C6B60; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.cp5-flow-value { font-size: 1.7rem; font-weight: 800; color: #17301F; letter-spacing: -0.02em; margin: 2px 0 4px 0; }
+.cp5-flow-legend { font-size: 0.78rem; color: #5C6B60; line-height: 1.35; }
+
+.cp5-progressbar-track { width:100%; height:22px; border-radius:999px; background:#EEF2EE; overflow:hidden; position:relative; }
+.cp5-progressbar-fill { height:100%; border-radius:999px; display:flex; align-items:center; }
 
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
@@ -1110,6 +1170,295 @@ def etapa_desde_edad(edad_valor):
         return "Vejez"
 
 # =========================================================================================
+# HOJA 5 — CONTROL DE PESO: componentes visuales creativos
+# (tarjetas de lapsos/ajuste, línea de tiempo de misión, diales de macros, panel integrado)
+# =========================================================================================
+
+_ICONS_SVG = {
+    "bascula": """<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="30" width="48" height="26" rx="6" fill="rgba(255,255,255,0.18)" stroke="white" stroke-width="2.5"/>
+        <circle cx="32" cy="43" r="8" fill="none" stroke="white" stroke-width="2.5"/>
+        <path d="M32 43 L36 37" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M32 8 L32 20 M24 14 L40 14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M18 20 L32 20 L26 28 Z" fill="white"/>
+    </svg>""",
+    "musculo": """<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 44 C10 34 12 22 22 16 C26 13 32 13 36 16 C34 18 33 21 34 24 C40 22 46 24 49 29
+                 C52 34 51 40 47 44 C50 46 51 50 49 53 C46 57 40 56 37 53 C33 57 25 58 20 54
+                 C15 51 13 47 14 44 Z" fill="rgba(255,255,255,0.20)" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M22 30 C26 27 32 27 36 30" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>""",
+    "balanza": """<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 10 L32 50" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 50 L50 50" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M10 16 L54 16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="32" cy="12" r="3" fill="white"/>
+        <path d="M10 16 L4 30 A9 9 0 0 0 16 30 Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="2"/>
+        <path d="M54 16 L48 30 A9 9 0 0 0 60 30 Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="2"/>
+    </svg>""",
+}
+
+
+def _tarjeta_creativa(icono_key, color1, color2, titulo, texto, seleccionada=False):
+    """Tarjeta con gradiente vibrante, icono SVG grande y efecto hover de zoom/brillo (Prompt 1)."""
+    clase_extra = " cp5-selected" if seleccionada else ""
+    st.markdown(f"""
+    <div class="cp5-card{clase_extra}" style="background:linear-gradient(135deg,{color1} 0%,{color2} 100%);">
+        <div class="cp5-icon">{_ICONS_SVG[icono_key]}</div>
+        <div class="cp5-title">{titulo}</div>
+        <div class="cp5-text">{texto}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def _build_tarjetas_lapsos_y_ajuste(objetivo_actual):
+    """Fila 1 'Respetar Lapsos' + Fila 2 'Ajuste Calórico', como cuadrícula de tarjetas
+    gráficas animadas con lenguaje coloquial (reemplaza los dos expanders de texto)."""
+    st.markdown("#### ⏳ ¡Respeta los Lapsos!")
+    f1, f2, f3 = st.columns(3)
+    with f1:
+        _tarjeta_creativa("bascula", "#FF3B30", "#C0392B", "¡Dale un Descanso a tu Cuerpo!",
+                           "No te pases de 16 semanas. El cuerpo se acostumbra y el cambio es lento. "
+                           "Haz paradas técnicas de una semana.",
+                           seleccionada=(objetivo_actual == "Bajar de peso"))
+    with f2:
+        _tarjeta_creativa("musculo", "#007AFF", "#0A3D91", "¡Con Calma, sin Prisa!",
+                           "Más comida no significa más músculo. ¡Significa más grasa! "
+                           "Sube de peso poco a poco.",
+                           seleccionada=(objetivo_actual == "Subir de peso"))
+    with f3:
+        _tarjeta_creativa("balanza", "#34C759", "#1E5631", "¡El Truco Maestro!",
+                           "Usa esto para estabilizar tu nuevo peso antes de cambiar de meta. "
+                           "Es el 'reset' hormonal.",
+                           seleccionada=(objetivo_actual == "Mantenerse"))
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("#### 🔥 ¡Elige tu Ajuste Calórico!")
+    if objetivo_actual == "Bajar de peso":
+        a1, a2, a3 = st.columns(3)
+        niveles = [
+            (a1, "#FFADAD", "#FF3B30", "Conservador -10%",
+             "Cerca de tu peso ideal? Este es suave y cuida al máximo tu músculo.", "bascula"),
+            (a2, "#FF6B6B", "#C0392B", "Moderado -20%",
+             "¡El punto justo! Funciona para la mayoría de personas, sin sufrir.", "bascula"),
+            (a3, "#8B1E1E", "#4A0E0E", "Agresivo -30%",
+             "Solo si tienes bastante que bajar, y por poco tiempo (4-6 semanas).", "bascula"),
+        ]
+    elif objetivo_actual == "Subir de peso":
+        a1, a2, a3 = st.columns(3)
+        niveles = [
+            (a1, "#9EC5FF", "#007AFF", "Limpio / Magro +10%",
+             "Sube poquito a poco, ganando músculo sin llenarte de grasa de más.", "musculo"),
+            (a2, "#4A90E2", "#0A3D91", "Moderado +15%",
+             "El estándar para ganar músculo de forma progresiva y pareja.", "musculo"),
+            (a3, "#1B3A6B", "#0A1F3D", "Exigente +20%",
+             "Para cuando tu metabolismo es súper rápido y cuesta mucho subir.", "musculo"),
+        ]
+    else:
+        a1, a2, a3 = st.columns([1, 1, 1])
+        niveles = [
+            (a2, "#7BE0A0", "#1E5631", "Ajuste 0%",
+             "¡Aquí no se sube ni se baja! Comes justo lo que gastas para estabilizarte.", "balanza"),
+        ]
+    for col, c1_, c2_, titulo_n, texto_n, icono_n in niveles:
+        with col:
+            _tarjeta_creativa(icono_n, c1_, c2_, titulo_n, texto_n, seleccionada=True)
+
+
+def _gauge_altair(pct, color_hex, big_text, sub_text, key):
+    """Dial tipo velocímetro/donut con Altair — usado para los diales de macronutrientes (Prompt 2)."""
+    pct = max(0.0, min(pct, 1.0))
+    df = pd.DataFrame({"cat": ["valor", "resto"], "val": [pct, 1 - pct]})
+    orden = pd.CategoricalDtype(categories=["valor", "resto"], ordered=True)
+    df["cat"] = df["cat"].astype(orden)
+    arco = alt.Chart(df).mark_arc(innerRadius=62, outerRadius=88, cornerRadius=10).encode(
+        theta=alt.Theta("val:Q", stack=True),
+        color=alt.Color("cat:N", scale=alt.Scale(domain=["valor", "resto"], range=[color_hex, "#EDEDED"]), legend=None),
+        order=alt.Order("cat", sort="ascending"),
+    ).properties(width=190, height=190)
+    texto = alt.Chart(pd.DataFrame({"t": [f"{pct*100:.0f}%"]})).mark_text(
+        fontSize=26, fontWeight="bold", color=color_hex
+    ).encode(text="t:N")
+    st.altair_chart(arco + texto, use_container_width=True)
+    st.markdown(f"""
+    <div style="text-align:center;margin-top:-10px;">
+        <div style="font-weight:800;font-size:1.05rem;color:{color_hex};">{big_text}</div>
+        <div style="font-size:0.8rem;color:#5C6B60;margin-top:2px;">{sub_text}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v):
+    """Panel de control visual de macronutrientes con diales Altair y banner de reajuste (Prompt 2)."""
+    st.markdown("#### 🎛️ Panel de Control de Macros")
+    max_prot = max(peso_v * 2.2, 1)
+    max_gras = max(peso_v * 1.2, 1)
+    pct_prot = gr_prot_v / max_prot
+    pct_gras = gr_gras_v / max_gras
+    pct_carb = 0.50  # los carbohidratos siempre representan el 50% de tu energía diaria
+
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        _gauge_altair(pct_prot, "#FF6B5B", f"Tus Ladrillos: {gr_prot_v:.0f} g/día",
+                      "Para no perder el músculo que ya tienes.", "prot")
+    with m2:
+        _gauge_altair(pct_gras, "#FFC93C", f"Tus Hormonas: {gr_gras_v:.0f} g/día",
+                      "El 'combustible' que mantiene tu cuerpo funcionando bien. ¡No lo bajes demasiado!", "gras")
+    with m3:
+        _gauge_altair(pct_carb, "#4FC3F7", f"Tu Energía: {gr_carb_v:.0f} g/día",
+                      "El resto de la energía para tu día y entrenamientos.", "carb")
+
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#FF9500 0%,#FFB300 100%);border-radius:20px;
+                padding:16px 22px;margin-top:14px;color:white;display:flex;align-items:center;gap:14px;
+                box-shadow:0 10px 24px rgba(255,149,0,0.30);">
+        <div style="font-size:2rem;">🔄</div>
+        <div style="font-size:0.95rem;font-weight:700;line-height:1.4;">
+            ⚠️ ¡Atención! Recalcula tu plan cada vez que bajes o subas entre 3 y 5 kg.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def _speedometer_svg(pct, color_hex):
+    """Mini velocímetro semicircular en SVG puro (aguja), para las tarjetas de misión (Prompt 3)."""
+    pct = max(0.0, min(pct, 1.0))
+    angulo = -90 + (pct * 180)
+    import math
+    rad = math.radians(angulo)
+    cx, cy, r = 60, 60, 46
+    x2 = cx + r * math.cos(rad)
+    y2 = cy + r * math.sin(rad)
+    return f"""<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 60 A46 46 0 0 1 106 60" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M14 60 A46 46 0 0 1 106 60" fill="none" stroke="{color_hex}" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="{pct*145} 999"/>
+        <line x1="{cx}" y1="{cy}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="{cx}" cy="{cy}" r="5" fill="white"/>
+    </svg>"""
+
+
+def _build_mission_timeline(objetivo_actual):
+    """Panel oscuro tipo 'línea de tiempo de misión' que reemplaza la tabla de Ritmos y lapsos (Prompt 3)."""
+    st.markdown("#### 🚀 Panel de Misión: Ritmos y Lapsos")
+    misiones = [
+        {"nombre": "Pérdida", "accent": "#FF3B30", "glow": "rgba(255,59,48,0.45)", "max_sem": 16, "eje_max": 24,
+         "ritmo_txt": "0.5% – 1.0% semanal", "ritmo_pct": 0.75, "activo": objetivo_actual == "Bajar de peso"},
+        {"nombre": "Ganancia", "accent": "#0A84FF", "glow": "rgba(10,132,255,0.45)", "max_sem": 24, "eje_max": 24,
+         "ritmo_txt": "0.25% – 0.5% semanal", "ritmo_pct": 0.45, "activo": objetivo_actual == "Subir de peso"},
+        {"nombre": "Mantenimiento", "accent": "#34C759", "glow": "rgba(52,199,89,0.45)", "max_sem": 0, "eje_max": 24,
+         "ritmo_txt": "0% (± 1 kg)", "ritmo_pct": 0.05, "activo": objetivo_actual == "Mantenerse"},
+    ]
+    html = ['<div class="cp5-mission-wrap">']
+    for m in misiones:
+        clase_activa = " cp5-active" if m["activo"] else ""
+        pct_barra = (m["max_sem"] / m["eje_max"]) * 100 if m["eje_max"] else 0
+        html.append(f'<div class="cp5-mission-card{clase_activa}" style="--mc-accent:{m["accent"]};--mc-glow:{m["glow"]};">')
+        html.append('<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">')
+        html.append('<div style="flex:2;min-width:260px;">')
+        etiqueta_activa = " 🟢 TU MISIÓN ACTUAL" if m["activo"] else ""
+        html.append(f'<div class="cp5-mission-title">🛰️ {m["nombre"].upper()}{etiqueta_activa}</div>')
+        html.append('<div class="cp5-timeline-track">')
+        html.append(f'<div class="cp5-timeline-fill" style="width:{pct_barra:.0f}%;background:{m["accent"]};"></div>')
+        if m["max_sem"] > 0:
+            html.append(f'<div class="cp5-timeline-flag" style="left:{pct_barra:.0f}%;">🏁</div>')
+        html.append('</div>')
+        texto_max = f'Máximo {m["max_sem"]} semanas' if m["max_sem"] > 0 else 'Sin límite fijo — usa pausas'
+        html.append(f'<div class="cp5-timeline-labels"><span>0</span><span style="color:{m["accent"]};font-weight:700;">{texto_max}</span><span>{m["eje_max"]} sem</span></div>')
+        html.append('</div>')
+        html.append(f'<div style="flex:1;min-width:150px;text-align:center;">{_speedometer_svg(m["ritmo_pct"], m["accent"])}')
+        html.append(f'<div style="color:white;font-weight:800;font-size:0.95rem;margin-top:2px;">{m["ritmo_txt"]}</div>')
+        html.append('<div style="color:#8892A6;font-size:0.72rem;">Tu Velocidad de Cambio</div></div>')
+        html.append('</div></div>')
+    html.append('</div>')
+    st.markdown("".join(html), unsafe_allow_html=True)
+
+
+def _build_panel_control_definitivo(rcd_v, tmb_v, rcd_final_v, ajuste_aplicado_v, objetivo_v,
+                                     plazo_v, cambio_semanal_kg_v, ritmo_pct_semanal_v, recortada_tmb):
+    """Panel de control integrado, con flujo visual RCD → Ajuste → ICO, gráfico de áreas de
+    Plotly (RCD/TMB/ICO), dial de ritmo estimado y barra de plazo (Prompt 4)."""
+    signo = "-" if objetivo_v == "Bajar de peso" else ("+" if objetivo_v == "Subir de peso" else "")
+
+    st.markdown("#### 🖥️ Panel de Control: de tu Gasto a tu Plato")
+    st.markdown(f"""
+    <div class="cp5-glass-flow">
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">📊 RCD</div>
+            <div class="cp5-flow-value">{rcd_v:.0f} kcal/día</div>
+            <div class="cp5-flow-legend">Esto es lo que tu cuerpo gasta sin hacer nada extra.</div>
+        </div>
+        <div class="cp5-flow-arrow">→</div>
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">🌀 Ajuste</div>
+            <div class="cp5-flow-value">{signo}{ajuste_aplicado_v*100:.0f}%</div>
+            <div class="cp5-flow-legend">Para {"bajar" if objetivo_v=="Bajar de peso" else ("subir" if objetivo_v=="Subir de peso" else "mantener")} de peso, este es el ajuste "justo".</div>
+        </div>
+        <div class="cp5-flow-arrow">→</div>
+        <div class="cp5-flow-card" style="background:rgba(30,86,49,0.10);border-color:rgba(30,86,49,0.35);">
+            <div class="cp5-flow-label">🍽️ ICO — Calorías Objetivo</div>
+            <div class="cp5-flow-value" style="color:#1E5631;">{rcd_final_v:.0f} kcal/día</div>
+            <div class="cp5-flow-legend">¡Este es tu número mágico para hoy!</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if recortada_tmb:
+        st.warning(f"⚠️ **Límite fisiológico aplicado:** el ajuste elegido bajaría tu ingesta por debajo de tu "
+                   f"TMB ({tmb_v:.0f} kcal/día). Nunca se debe comer menos que la TMB. Por seguridad, tu ICO "
+                   f"se ajustó automáticamente a {rcd_final_v:.0f} kcal/día.")
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    col_area, col_lado = st.columns([2, 1])
+
+    with col_area:
+        fig = go.Figure()
+        x_eje = [0, 1]
+        capas = [
+            ("TMB (mínimo vital)", [tmb_v, tmb_v], "#FF9500", "rgba(255,149,0,0.15)"),
+            ("RCD (mantenimiento)", [rcd_v, rcd_v], "#34C759", "rgba(52,199,89,0.15)"),
+            ("ICO (tu objetivo)", [rcd_final_v, rcd_final_v], "#1E5631", "rgba(30,86,49,0.25)"),
+        ]
+        for nombre, y_vals, color_l, color_f in capas:
+            fig.add_trace(go.Scatter(x=x_eje, y=y_vals, mode="lines", name=nombre,
+                                      line=dict(color=color_l, width=3), fill="tozeroy", fillcolor=color_f))
+        fig.update_layout(
+            title=dict(text="Relación entre TMB, RCD e ICO", font=dict(size=15, color="#17301F")),
+            xaxis=dict(showticklabels=False, showgrid=False, zeroline=False),
+            yaxis=dict(title="kcal/día", gridcolor="#F0F0F0"),
+            height=300, margin=dict(t=40, l=10, r=10, b=10),
+            plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
+            legend=dict(orientation="h", yanchor="bottom", y=-0.28, xanchor="center", x=0.5),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_lado:
+        if objetivo_v != "Mantenerse":
+            max_ritmo_pct = 1.0 if objetivo_v == "Bajar de peso" else 0.5
+            pct_ritmo = min(ritmo_pct_semanal_v / max_ritmo_pct, 1.0) if max_ritmo_pct else 0
+            color_ritmo = "#FF3B30" if objetivo_v == "Bajar de peso" else "#0A84FF"
+            _gauge_altair(pct_ritmo, color_ritmo, f"{cambio_semanal_kg_v:.2f} kg/semana",
+                          f"Estimamos que {'bajarás' if objetivo_v=='Bajar de peso' else 'subirás'} a este "
+                          "ritmo, sin perder músculo.", "ritmo")
+        else:
+            _gauge_altair(0.05, "#34C759", "0 kg/semana", "Variación esperada: ± 1 kg. ¡Estás estabilizando!", "ritmo")
+
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    _color_plazo = "#FF3B30" if objetivo_v == "Bajar de peso" else ("#0A84FF" if objetivo_v == "Subir de peso" else "#34C759")
+    st.markdown(f"""
+    <div style="background:#FFFFFF;border-radius:18px;padding:16px 20px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);
+                border:1px solid rgba(0,0,0,0.04);">
+        <div style="font-weight:800;color:{_color_plazo};font-size:0.95rem;margin-bottom:8px;">⏱️ Tu plazo recomendado</div>
+        <div class="cp5-progressbar-track">
+            <div class="cp5-progressbar-fill" style="width:100%;background:linear-gradient(90deg,{_color_plazo}55,{_color_plazo});"></div>
+        </div>
+        <div style="margin-top:8px;color:#17301F;font-size:0.9rem;">{plazo_v} ¡Haz una parada de mantenimiento después de esto!</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================================================
 # ENCABEZADO — estilo "landing page", con el logo real del colegio
 # =========================================================================================
 ASSETS_DIR = Path(__file__).parent / "assets"
@@ -1796,76 +2145,24 @@ elif hoja_activa == "5.-CONTROL DE PESO":
             "moverse, sino para el desarrollo de órganos y huesos. Por ello, cualquier ajuste calórico debe "
             "ser controlado para jamás arriesgar su correcto desarrollo biológico.")
 
-    # --- Resultado principal: Ingesta Calórica Objetivo (ICO) ---
-    r1, r2, r3 = st.columns(3)
-    r1.metric("RCD — gasto de mantenimiento", f"{rcd:.0f} kcal/día")
-    r2.metric("Ajuste calórico aplicado", f"{'-' if objetivo=='Bajar de peso' else ('+' if objetivo=='Subir de peso' else '')}{ajuste_aplicado*100:.0f}%")
-    r3.metric("Ingesta Calórica Objetivo (ICO)", f"{rcd_final:.0f} kcal/día")
-
-    if _ico_recortada_por_tmb:
-        st.warning(f"⚠️ **Límite fisiológico aplicado:** el ajuste elegido bajaría tu ingesta por debajo de tu "
-                   f"TMB ({tmb:.0f} kcal/día). Nunca se debe comer menos que la TMB, ya que pone en riesgo tus "
-                   f"funciones vitales básicas. Por seguridad, tu ICO se ajustó automáticamente a {rcd_final:.0f} kcal/día.")
-
-    tabla_bonita(pd.DataFrame({
-        "Objetivo nutricional": [objetivo],
-        "Ajuste calórico aplicado": [ajuste_txt if objetivo != "Mantenerse" else "0%"],
-        "RCD (Hoja 4)": [f"{rcd:.0f}"],
-        "TMB (límite mínimo seguro)": [f"{tmb:.0f}"],
-        "Resultado final (ICO)": [f"{rcd_final:.0f} kcal/día"]
-    }), 5)
-
-    # --- Ritmo y lapso estimado ---
-    c1, c2 = st.columns(2)
-    with c1:
-        st.metric("Plazo / lapso máximo recomendado", plazo)
-    with c2:
-        if objetivo != "Mantenerse":
-            st.metric("Ritmo estimado de cambio", f"{_cambio_semanal_kg:.2f} kg/semana", f"{_ritmo_pct_semanal:.2f}% del peso/semana")
-        else:
-            st.metric("Ritmo estimado de cambio", "0 kg/semana (± 1 kg)")
+    # ===== PROMPT 4: Panel de Control Definitivo (flujo RCD → Ajuste → ICO + área + dial + plazo) =====
+    _build_panel_control_definitivo(rcd, tmb, rcd_final, ajuste_aplicado, objetivo, plazo,
+                                     _cambio_semanal_kg, _ritmo_pct_semanal, _ico_recortada_por_tmb)
 
     st.divider()
-    caja_titulo("Ritmos y lapsos recomendados", 5)
-    tabla_bonita(pd.DataFrame({
-        "Objetivo": ["Pérdida de Peso", "Ganancia de Peso", "Mantenimiento"],
-        "Ritmo semanal recomendado": ["0.5% a 1.0% del peso/semana", "0.25% a 0.5% del peso/semana", "0% (Variación ± 1 kg)"],
-        "Lapso máximo seguido": ["12 a 16 semanas", "16 a 24 semanas", "Indefinido / con pausas"]
-    }), 5)
 
-    with st.expander("ℹ️ ¿Por qué respetar estos lapsos?"):
-        st.markdown("**En Pérdida de Peso:** superar las 16 semanas seguidas en déficit, o bajar a un ritmo "
-                    "mayor al 1% semanal, dispara la pérdida de masa magra (músculo) y activa la termogénesis "
-                    "adaptativa (el metabolismo se 'frena' para ahorrar energía). Se recomiendan pausas de "
-                    "mantenimiento de 1 a 2 semanas tras cada bloque de 12–16 semanas.")
-        st.markdown("**En Ganancia de Peso:** subir más rápido del 0.5% semanal no acelera la creación de "
-                    "tejido muscular; el exceso de calorías se almacena casi en su totalidad como grasa.")
-        st.markdown("**En Mantenimiento:** intercalar periodos de mantenimiento entre fases de volumen o "
-                    "definición permite al cuerpo asimilar los cambios hormonales y estabilizar el nuevo peso.")
+    # ===== PROMPT 3: Línea de tiempo de misión — Ritmos y lapsos =====
+    _build_mission_timeline(objetivo)
 
-    with st.expander("ℹ️ ¿Qué significa cada nivel de ajuste calórico?"):
-        st.markdown("**Pérdida de peso:**")
-        st.caption("- Conservador (-10%): ideal cerca del peso ideal o para preservar al máximo la masa muscular.\n"
-                   "- Moderado (-20%): el punto óptimo para la mayoría; sostenible y seguro.\n"
-                   "- Agresivo (-30%): solo para IMC ≥ 30 o periodos breves (máximo 4-6 semanas).")
-        st.markdown("**Ganancia de peso:**")
-        st.caption("- Limpio / Magro (+10%): recomendado para principiantes, minimiza la ganancia de grasa.\n"
-                   "- Moderado (+15%): estándar para fases de volumen progresivo.\n"
-                   "- Exigente (+20%): para metabolismo muy acelerado o dificultad severa para subir de peso.")
+    st.divider()
 
-    caja_titulo("Distribución de macronutrientes recomendada (guía fisiológica)", 5)
-    st.markdown(f"""
-    <div style="background:#FFFFFF;border-radius:20px;padding:16px 20px;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);
-                border:1px solid rgba(0,0,0,0.04);">
-    <ul style="margin:0;padding-left:20px;color:#17301F;line-height:1.7;font-size:0.9rem;">
-        <li><b>Proteínas:</b> 1.6 a 2.2 g/kg de peso corporal — crucial subirlas durante el déficit para evitar pérdida muscular.</li>
-        <li><b>Grasas:</b> 0.8 a 1.2 g/kg — nunca bajar de 0.6 g/kg para no comprometer la producción hormonal.</li>
-        <li><b>Carbohidratos:</b> completan el resto de las calorías objetivo (ver Hoja 6).</li>
-        <li><b>Reajuste periódico:</b> a medida que el peso cambia, la TMB y el RCD se modifican; se recomienda recalcular cada 3 a 5 kg de variación de peso.</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    # ===== PROMPT 1: Tarjetas creativas — Respetar Lapsos + Ajuste Calórico =====
+    _build_tarjetas_lapsos_y_ajuste(objetivo)
+
+    st.divider()
+
+    # ===== PROMPT 2: Panel de macronutrientes con diales Altair =====
+    _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso)
 
     caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
               "número exacto de calorías al día (tu Ingesta Calórica Objetivo), respetando ritmos seguros de "
