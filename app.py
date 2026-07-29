@@ -3,6 +3,8 @@ import streamlit.components.v1 as components
 import pandas as pd
 import base64
 import io
+import math
+import uuid
 import textwrap
 import plotly.graph_objects as go
 import altair as alt
@@ -63,10 +65,13 @@ IOS_GRAY_BG, IOS_LABEL, IOS_SECONDARY = "#F2F2F7", "#1C1C1E", "#6C6C70"
 # =========================================================================================
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap');
+
 /* =========================================================================================
    SISTEMA VISUAL ESTILO iOS — tipografía San Francisco, esquinas "continuas" muy redondeadas,
    tarjetas sobre fondo gris agrupado (#F2F2F7), acentos de los colores del sistema de iOS,
    y controles con la pulcritud de Ajustes / Salud / Recordatorios de Apple.
+   Tipografía redonda (Nunito/Poppins) para el sistema de "Bento Grid" de tarjetas nuevas.
    ========================================================================================= */
 
 :root {
@@ -77,6 +82,13 @@ st.markdown("""
     --ios-label: #17301F; --ios-secondary: #5C6B60;
     --ios-radius-lg: 26px; --ios-radius-md: 20px; --ios-radius-sm: 14px;
     --brand-green: #1E5631; --accent-green: #4CAF50; --tint-green: #F4F9F4;
+    --font-round: 'Nunito', 'Poppins', -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    /* Design tokens del "Bento Grid" (tarjetas pastel redondeadas) */
+    --bento-radius: 22px; --bento-radius-lg: 24px; --bento-pill: 50px;
+    --bento-shadow: 0 8px 24px -4px rgba(149,157,165,0.16);
+    --bmi-blue: #42A5F5; --bmi-green: #34C759; --bmi-orange: #FF9F43; --bmi-red: #FF5C7C;
+    --girl-pink: #FCE4EC; --girl-pink-dark: #C2185B;
+    --boy-blue: #E3F2FD; --boy-blue-dark: #1976D2;
 }
 
 html, body, [class*="css"], .stApp {
@@ -85,6 +97,9 @@ html, body, [class*="css"], .stApp {
     color: var(--ios-label);
     letter-spacing: -0.01em;
 }
+
+/* Las tarjetas nuevas tipo Bento Grid usan la tipografía redonda Nunito/Poppins */
+.bento-card, .bento-card * { font-family: var(--font-round) !important; }
 
 .stApp {
     background: var(--ios-gray-bg);
@@ -387,6 +402,74 @@ div[data-testid="stImageCaption"] {
 
 .cp5-progressbar-track { width:100%; height:22px; border-radius:999px; background:#EEF2EE; overflow:hidden; position:relative; }
 .cp5-progressbar-fill { height:100%; border-radius:999px; display:flex; align-items:center; }
+
+/* =========================================================================================
+   BENTO GRID — tarjetas KPI (gauge IMC, percentil, alerta de categoría) de la Hoja 2
+   ========================================================================================= */
+.bento-card {
+    background: #FFFFFF; border-radius: var(--bento-radius); padding: 20px 22px; height: 100%;
+    box-shadow: var(--bento-shadow); border: 1px solid rgba(0,0,0,0.04);
+}
+.bento-eyebrow {
+    color: #8A94A6; font-size: 0.76rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 2px;
+}
+.bento-pill {
+    display: inline-block; border-radius: var(--bento-pill); padding: 5px 14px;
+    font-weight: 800; font-size: 0.78rem; letter-spacing: 0.01em;
+}
+.gauge-needle-pivot { transform-box: fill-box; transform-origin: center; }
+
+/* ---------- Tabla de rangos de IMC ("Categorías Generales de IMC") ---------- */
+.imc-table-wrap {
+    border-radius: var(--bento-radius-lg); overflow: hidden; box-shadow: var(--bento-shadow);
+    border: 1px solid rgba(0,0,0,0.05); background: #FFFFFF; margin-bottom: 10px;
+}
+.imc-table-head {
+    background: linear-gradient(120deg, #6A1B9A 0%, #8E24AA 100%); color: #FFFFFF;
+    padding: 16px 22px; display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-round);
+}
+.imc-table-head-title { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+.imc-row {
+    display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px; align-items: center;
+    padding: 14px 22px; font-family: var(--font-round);
+}
+.imc-row:nth-child(odd) { background: #FAFAFC; }
+.imc-row-head {
+    display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px;
+    padding: 10px 22px; background: #F3EAF7; color: #6A1B9A; font-weight: 800;
+    font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em;
+    font-family: var(--font-round);
+}
+.imc-clasif-avatar {
+    width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; margin-right: 10px; flex-shrink: 0;
+}
+.imc-clasif-title { font-weight: 800; font-size: 0.92rem; color: #24262B; }
+.imc-clasif-sub { font-size: 0.78rem; color: #8A94A6; margin-top: 1px; }
+.imc-range-num { font-weight: 800; font-size: 0.95rem; }
+.imc-range-track {
+    position: relative; width: 100%; height: 12px; border-radius: 10px; background: #E0E0E0;
+}
+.imc-range-fill { position: absolute; top: 0; height: 100%; border-radius: 10px; }
+.imc-range-scale { display: flex; justify-content: space-between; font-size: 0.68rem; color: #B0B6C0; margin-top: 3px; font-weight: 700; }
+.imc-user-marker {
+    position: absolute; top: -5px; width: 3px; height: 22px; background: #24262B; border-radius: 2px;
+}
+
+/* ---------- Tabla de percentiles por género (split rosa/azul) ---------- */
+.perc-card { border-radius: var(--bento-radius-lg); overflow: hidden; box-shadow: var(--bento-shadow);
+             border: 1px solid rgba(0,0,0,0.05); background: #FFFFFF; font-family: var(--font-round); }
+.perc-banner { padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.perc-banner-icon { font-size: 1.6rem; }
+.perc-banner-title { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+.perc-badge { margin-left: auto; font-size: 1.1rem; opacity: 0.65; }
+.perc-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.perc-table th { padding: 9px 4px; text-align: center; font-weight: 800; font-size: 0.72rem; }
+.perc-table td { padding: 8px 4px; text-align: center; font-weight: 600; color: #2A2E35; }
+.perc-table tr.zebra { background: rgba(0,0,0,0.025); }
+.perc-table tr.user-row td { box-shadow: inset 0 0 0 2px #24262B33; font-weight: 800; }
 
 /* ---------- Semáforo Clínico — tarjetas-gauge dinámicas (Hoja 1 y Reporte) ---------- */
 .sema-card {
@@ -1426,19 +1509,6 @@ def color_categoria_imc(categoria):
     return SEMAFORO_ESTILO[color]
 
 
-def tarjeta_categoria_imc(titulo, categoria):
-    """Tarjeta compacta que muestra la categoría de IMC con su color de semáforo correspondiente."""
-    estilo = color_categoria_imc(categoria)
-    st.markdown(f"""
-    <div style="background:{estilo['fondo']};border-radius:22px;padding:16px 16px;text-align:center;
-                border:1.5px solid {estilo['hex']}33;height:100%;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-        <div style="font-size:0.78rem;color:#6C6C70;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.02em;">{titulo}</div>
-        <div style="font-weight:800;font-size:1.25rem;color:{estilo['hex']};letter-spacing:-0.01em;">{estilo['emoji']} {categoria}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
 def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, genero_usuario=None):
     """Recrea el gráfico de percentiles con bandas de color entre cada curva (P5, P50, P85, P95),
     con el IMC en el eje Y, etiquetas de dato en cada punto, y una estrella marcando la posición
@@ -1505,6 +1575,277 @@ def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, 
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
     )
     return fig
+
+# =========================================================================================
+# GAUGE SEMICIRCULAR SVG — "Resultado IMC" como velocímetro de 4 zonas con aguja dinámica
+# =========================================================================================
+def _polar(cx, cy, r, angle_deg):
+    """Punto sobre una circunferencia; angle_deg=180 -> izquierda, 270 -> arriba, 360 -> derecha."""
+    a = math.radians(angle_deg)
+    return cx + r * math.cos(a), cy + r * math.sin(a)
+
+
+def gauge_imc_svg(imc, categoria, min_v=10.0, max_v=42.0, size=230):
+    """Velocímetro semicircular (SVG) para el resultado de IMC, con 4 zonas de color
+    (Azul=Bajo peso, Verde=Saludable, Naranja=Sobrepeso, Rojo=Obesidad) y una aguja que
+    apunta al valor exacto, con una animación suave de entrada vía CSS @keyframes."""
+    zonas_val = [
+        (min_v, 18.5, "#42A5F5"),
+        (18.5, 25.0, "#34C759"),
+        (25.0, 30.0, "#FF9F43"),
+        (30.0, max_v, "#FF5C7C"),
+    ]
+    cx, cy, r = size / 2, size * 0.56, size * 0.40
+    grosor = size * 0.11
+    piezas = []
+    for ini, fin, color in zonas_val:
+        f_ini = max(0.0, min(1.0, (ini - min_v) / (max_v - min_v)))
+        f_fin = max(0.0, min(1.0, (fin - min_v) / (max_v - min_v)))
+        ang_ini, ang_fin = 180 + f_ini * 180, 180 + f_fin * 180
+        x1, y1 = _polar(cx, cy, r, ang_ini)
+        x2, y2 = _polar(cx, cy, r, ang_fin)
+        piezas.append(f'<path d="M {x1:.1f} {y1:.1f} A {r:.1f} {r:.1f} 0 0 1 {x2:.1f} {y2:.1f}" '
+                       f'stroke="{color}" stroke-width="{grosor:.1f}" fill="none" stroke-linecap="butt"/>')
+
+    valor_clamp = max(min_v, min(max_v, imc))
+    frac = (valor_clamp - min_v) / (max_v - min_v)
+    deg_final = frac * 180 - 90  # -90 = min (izquierda), 0 = centro (arriba), 90 = max (derecha)
+    largo_aguja = r * 0.86
+    anim_id = "gaugeneedle" + uuid.uuid4().hex[:8]
+
+    # colorcito del texto/badge según la categoría, coherente con las 4 zonas
+    if categoria == "Peso Saludable":
+        color_txt = "#2E9E4A"
+    elif categoria in ("Bajo Peso",):
+        color_txt = "#1E88E5"
+    elif categoria in ("Sobrepeso",):
+        color_txt = "#E67E22"
+    else:
+        color_txt = "#E0335A"
+
+    svg = f"""
+    <div style="position:relative;width:100%;max-width:{size}px;margin:0 auto;">
+    <style>
+    @keyframes {anim_id} {{ from {{ transform: rotate(-90deg); }} to {{ transform: rotate({deg_final:.1f}deg); }} }}
+    </style>
+    <svg viewBox="0 0 {size} {size*0.66:.0f}" width="100%" xmlns="http://www.w3.org/2000/svg">
+        {''.join(piezas)}
+        <g class="gauge-needle-pivot" style="transform-origin:{cx}px {cy}px;
+             animation:{anim_id} 0.9s cubic-bezier(.34,1.4,.64,1) forwards;">
+            <line x1="{cx}" y1="{cy}" x2="{cx}" y2="{cy-largo_aguja:.1f}"
+                  stroke="#24262B" stroke-width="4.5" stroke-linecap="round"/>
+        </g>
+        <circle cx="{cx}" cy="{cy}" r="8" fill="#24262B"/>
+    </svg>
+    <div style="text-align:center;margin-top:-6px;">
+        <div style="font-size:2.1rem;font-weight:800;color:{color_txt};letter-spacing:-0.02em;line-height:1;">{imc}</div>
+        <span class="bento-pill" style="background:{color_txt}1A;color:{color_txt};margin-top:6px;">⚖️ {categoria}</span>
+    </div>
+    </div>
+    """
+    return svg
+
+
+def card_gauge_imc(imc, categoria):
+    """Tarjeta Bento con el velocímetro de IMC, reemplazando el KPI de texto plano."""
+    st.markdown(f"""
+    <div class="bento-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <span class="bento-eyebrow">Resultado IMC</span>
+            <span style="font-size:1.1rem;">📈</span>
+        </div>
+        {gauge_imc_svg(imc, categoria)}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================================================
+# TARJETA DE PERCENTIL — barra vertical tipo termómetro con degradado azul
+# =========================================================================================
+_PERCENTIL_ALTURA = {"< 5": 8, "50": 50, "85": 85, "95": 96}
+
+
+def card_percentil_barra(percentil_valor, categoria=None):
+    """Tarjeta Bento con una barra vertical de progreso (degradado azul) que representa
+    de forma visual el percentil del usuario, con el número grande destacado arriba."""
+    altura_pct = _PERCENTIL_ALTURA.get(str(percentil_valor), 50)
+    st.markdown(f"""
+    <div class="bento-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <span class="bento-eyebrow">Percentil</span>
+            <span style="font-size:1.1rem;">📊</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:16px;margin-top:6px;">
+            <div style="flex-shrink:0;">
+                <div style="font-size:3rem;font-weight:800;color:#1E88E5;letter-spacing:-0.03em;line-height:1;">{percentil_valor}</div>
+                <div style="font-size:0.78rem;color:#8A94A6;font-weight:700;margin-top:4px;">de cada 100 niños{' de tu edad y sexo' if percentil_valor not in ('< 5',) else ''}</div>
+            </div>
+            <div style="flex:1;height:88px;border-radius:12px;background:#EAF2FB;position:relative;overflow:hidden;min-width:34px;max-width:44px;margin-left:auto;">
+                <div style="position:absolute;bottom:0;left:0;width:100%;height:{altura_pct}%;
+                     border-radius:12px 12px 0 0;
+                     background:linear-gradient(180deg, #42A5F5 0%, #1E88E5 100%);
+                     transition: height 0.8s ease-in-out;"></div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================================================
+# TARJETA DE CATEGORÍA / ALERTA — reemplaza tarjeta_categoria_imc con badge de alerta
+# =========================================================================================
+_ILUSTRA_CATEGORIA = {
+    "verde": "🟢", "ambar": "🟠", "rojo": "🔴", "gris": "⚪",
+}
+
+
+def tarjeta_categoria_imc(titulo, categoria):
+    """Tarjeta Bento de categoría de IMC con fondo pastel de alerta y badge de advertencia
+    cuando la categoría implica riesgo (sobrepeso u obesidad)."""
+    estilo = color_categoria_imc(categoria)
+    es_alerta = estilo["colorSemaforo"] in ("ambar", "rojo")
+    badge_alerta = (
+        f'<div class="bento-pill" style="background:{estilo["hex"]};color:#FFFFFF;margin-top:8px;">⚠️ Requiere atención</div>'
+        if es_alerta else
+        f'<div class="bento-pill" style="background:{estilo["hex"]}1A;color:{estilo["hex"]};margin-top:8px;">✅ En buen camino</div>'
+    )
+    st.markdown(f"""
+    <div class="bento-card" style="background:{estilo['fondo']};text-align:center;
+                border:1.5px solid {estilo['hex']}33;">
+        <div class="bento-eyebrow" style="text-align:center;">{titulo}</div>
+        <div style="font-size:2.2rem;margin-top:6px;">{_ILUSTRA_CATEGORIA.get(estilo['colorSemaforo'], '⚪')}</div>
+        <div style="font-weight:800;font-size:1.15rem;color:{estilo['hex']};letter-spacing:-0.01em;margin-top:2px;">{categoria}</div>
+        {badge_alerta}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================================================
+# TABLA VISUAL — "Categorías Generales de IMC" con avatares, rangos y barra de posición
+# =========================================================================================
+_CATEGORIAS_IMC_DEF = [
+    ("Bajo Peso",                "Menos de 18.5", "Puede indicar desnutrición",         "🔵", "#42A5F5", None, 18.5),
+    ("Peso Saludable",           "18.5 a 24.9",   "Rango asociado a menor riesgo",       "💚", "#34C759", 18.5, 24.9),
+    ("Sobrepeso",                "25 a 29.9",     "Vigilancia de hábitos recomendada",   "🏋️", "#FF9F43", 25, 29.9),
+    ("Obesidad",                 "30 o más",      "Agrupa las 3 clases siguientes",      "⚠️", "#FF5C7C", 30, None),
+    ("Obesidad Clase 1",         "30 a 34.9",     "Riesgo moderado para la salud",       "1️⃣", "#FF5C7C", 30, 34.9),
+    ("Obesidad Clase 2",         "35 a 39.9",     "Riesgo alto para la salud",           "2️⃣", "#F0384A", 35, 39.9),
+    ("Obesidad Clase 3 (Severa)", "40 o más",     "Riesgo muy alto, atención prioritaria", "3️⃣", "#C21E37", 40, None),
+]
+_ESCALA_MIN, _ESCALA_MAX = 0, 40
+
+
+def tabla_categorias_imc_visual(imc_usuario=None):
+    """Tabla de alto impacto visual (reemplaza tabla_bonita en esta sección): cabecera púrpura,
+    avatar circular + subtexto por clasificación, y una barra de rango con marcadores en vez
+    de texto plano, resaltando en qué punto de la escala global (0 a 40+) cae cada categoría."""
+    filas_html = []
+    for nombre, rango_txt, subtxt, icono, color, ini, fin in _CATEGORIAS_IMC_DEF:
+        ini_v = _ESCALA_MIN if ini is None else ini
+        fin_v = _ESCALA_MAX if fin is None else fin
+        izq = max(0.0, min(100.0, (ini_v - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
+        ancho = max(1.5, min(100.0 - izq, (fin_v - ini_v) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
+        marcador = ""
+        if imc_usuario is not None:
+            en_rango = (ini is None or imc_usuario >= ini) and (fin is None or imc_usuario <= fin)
+            if en_rango:
+                pos_usuario = max(0.0, min(100.0, (imc_usuario - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
+                marcador = f'<div class="imc-user-marker" style="left:{pos_usuario:.1f}%;"></div>'
+        filas_html.append(f"""
+        <div class="imc-row">
+            <div style="display:flex;align-items:center;">
+                <span class="imc-clasif-avatar" style="background:{color}1A;">{icono}</span>
+                <div>
+                    <div class="imc-clasif-title">{nombre}</div>
+                    <div class="imc-clasif-sub">{subtxt}</div>
+                </div>
+            </div>
+            <div class="imc-range-num" style="color:{color};">{rango_txt}</div>
+            <div>
+                <div class="imc-range-track" style="position:relative;">
+                    <div class="imc-range-fill" style="left:{izq:.1f}%;width:{ancho:.1f}%;background:{color};"></div>
+                    {marcador}
+                </div>
+                <div class="imc-range-scale"><span>0</span><span>10</span><span>20</span><span>30</span><span>40+</span></div>
+            </div>
+        </div>
+        """)
+
+    st.markdown(f"""
+    <div class="imc-table-wrap">
+        <div class="imc-table-head">
+            <span class="imc-table-head-title">⚖️ Categorías Generales de IMC</span>
+            <span style="font-size:1.4rem;">📏</span>
+        </div>
+        <div class="imc-row-head">
+            <span>Clasificación</span><span>Rango de IMC</span><span>¿Dónde te encuentras?</span>
+        </div>
+        {''.join(filas_html)}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================================================
+# TABLA VISUAL — Percentiles por edad y género, en dos tarjetas (rosa Mujer / azul Hombre)
+# =========================================================================================
+_PERC_COL_ESTILO = [
+    ("P5", "Bajo Peso", "#E1F5FE", "#0288D1"),
+    ("P50", "Saludable", "#E8F5E9", "#388E3C"),
+    ("P85", "Sobrepeso", "#FFF3E0", "#F57C00"),
+    ("P95", "Obesidad", "#FFEBEE", "#D32F2F"),
+]
+
+
+def _tarjeta_percentil_genero(genero_tabla, tabla, edad_usuario=None, genero_usuario=None):
+    """Construye una tarjeta de percentiles (Mujer=rosa / Hombre=azul) con cabecera ilustrada,
+    columnas P5/P50/P85/P95 con color propio, filas alternadas y la fila del usuario resaltada."""
+    if genero_tabla == "Mujer":
+        fondo_banner, color_titulo, icono, badge = "#FCE4EC", "#C2185B", "👧", "♀"
+    else:
+        fondo_banner, color_titulo, icono, badge = "#E3F2FD", "#1976D2", "👦", "♂"
+
+    filas = []
+    for i, edad in enumerate(sorted(tabla.keys())):
+        p5, p50, p85, p95 = tabla[edad]
+        es_usuario = (edad_usuario == edad and genero_usuario == genero_tabla)
+        clases = ("zebra " if i % 2 == 1 else "") + ("user-row" if es_usuario else "")
+        filas.append(f"""<tr class="{clases.strip()}">
+            <td style="font-weight:800;color:{color_titulo};">{edad}{' ⭐' if es_usuario else ''}</td>
+            <td>{p5}</td><td>{p50}</td><td>{p85}</td><td>{p95}</td>
+        </tr>""")
+
+    ths = "".join(
+        f'<th style="background:{bg};color:{fg};">{cod}<br><span style="font-weight:600;font-size:0.62rem;">{lbl}</span></th>'
+        for cod, lbl, bg, fg in _PERC_COL_ESTILO
+    )
+
+    html = f"""
+    <div class="perc-card">
+        <div class="perc-banner" style="background:{fondo_banner};">
+            <span class="perc-banner-icon">{icono}</span>
+            <span class="perc-banner-title" style="color:{color_titulo};">{genero_tabla.upper()}</span>
+            <span class="perc-badge" style="color:{color_titulo};">{badge}</span>
+        </div>
+        <div style="max-height:340px;overflow-y:auto;">
+        <table class="perc-table">
+            <thead><tr><th style="background:#F5F5F7;color:#5C6B60;">Edad<br><span style="font-weight:600;font-size:0.62rem;">(años)</span></th>{ths}</tr></thead>
+            <tbody>{''.join(filas)}</tbody>
+        </table>
+        </div>
+    </div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def tabla_percentiles_genero_visual(edad_usuario=None, genero_usuario=None):
+    """Layout split de dos columnas (grid) con las tarjetas de percentil de Mujer y Hombre,
+    reemplazando las dos tablas planas de st.dataframe."""
+    col_m, col_h = st.columns(2)
+    with col_m:
+        _tarjeta_percentil_genero("Mujer", PERCENTIL_MUJER, edad_usuario, genero_usuario)
+    with col_h:
+        _tarjeta_percentil_genero("Hombre", PERCENTIL_HOMBRE, edad_usuario, genero_usuario)
+
 
 def nombre_display(nombre, genero="Mujer"):
     """Devuelve el nombre ingresado, o un saludo genérico según el género si aún no lo escribió."""
@@ -2401,37 +2742,25 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 elif hoja_activa == "2.-IMC Y PERCENTIL":
     hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
                    "En adolescentes y niños se incluye también el Percentil.")
-    def _kpi_card(titulo, valor, icono, color="#1E5631"):
-        st.markdown(f"""
-        <div style="background:#FFFFFF;border-radius:22px;padding:20px 22px;height:100%;
-                    box-shadow:0 1px 2px rgba(30,86,49,0.04), 0 8px 20px rgba(30,86,49,0.07);
-                    border:1px solid rgba(30,86,49,0.06);">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                <span style="color:#5C6B60;font-size:0.85rem;font-weight:600;">{titulo}</span>
-                <span style="font-size:1.2rem;">{icono}</span>
-            </div>
-            <div style="font-size:2.3rem;font-weight:800;color:{color};letter-spacing:-0.02em;margin-top:4px;">{valor}</div>
-        </div>
-        """, unsafe_allow_html=True)
 
     if etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None:
         kc1, kc2, kc3 = st.columns(3)
         with kc1:
-            _kpi_card("RESULTADO IMC", imc, "📈")
+            card_gauge_imc(imc, _categoria_imc_usuario)
         with kc2:
-            _kpi_card("PERCENTIL", _percentil_usuario, "📊", color="#AF52DE")
+            card_percentil_barra(_percentil_usuario, _categoria_imc_usuario)
         with kc3:
             tarjeta_categoria_imc("Categoría", _categoria_imc_usuario)
     elif etapa in ["Niñez", "Adolescencia"]:
         col1, col2 = st.columns(2)
         with col1:
-            _kpi_card("RESULTADO IMC", imc, "📈")
+            card_gauge_imc(imc, _categoria_imc_usuario)
         with col2:
             st.error(_categoria_imc_usuario)
     else:
         col1, col2 = st.columns(2)
         with col1:
-            _kpi_card("RESULTADO IMC", imc, "📈")
+            card_gauge_imc(imc, _categoria_imc_usuario)
         with col2:
             tarjeta_categoria_imc("Categoría (Adultez/Vejez, sin percentil)", _categoria_imc_usuario)
 
@@ -2474,11 +2803,7 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
             ("📖 Riesgos de salud por obesidad (CDC)", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html"),
         ])
 
-    caja_titulo("Categorías generales de IMC", 2)
-    tabla_bonita(pd.DataFrame({
-        "Clasificación": ["Bajo Peso", "Peso Saludable", "Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3 (Severa)"],
-        "Rango de IMC": ["Menos de 18.5", "18.5 a 24.9", "25 a 29.9", "30 o más", "30 a 34.9", "35 a 39.9", "40 o más"]
-    }), 2)
+    tabla_categorias_imc_visual(imc_usuario=imc)
 
     st.markdown("#### 📈 Percentiles de IMC por edad (2 a 20 años)")
     st.caption("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
@@ -2494,15 +2819,7 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
         st.caption("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.")
 
     with st.expander("📊 Ver tabla completa de percentiles (edad 2-20 años)"):
-        cm, ch = st.columns(2)
-        with cm:
-            caja_titulo("Mujer", 2)
-            st.dataframe(pd.DataFrame(PERCENTIL_MUJER, index=["P5 (Bajo Peso)", "P50 (Saludable)", "P85 (Sobrepeso)", "P95 (Obesidad)"]).T,
-                         use_container_width=True)
-        with ch:
-            caja_titulo("Hombre", 2)
-            st.dataframe(pd.DataFrame(PERCENTIL_HOMBRE, index=["P5 (Bajo Peso)", "P50 (Saludable)", "P85 (Sobrepeso)", "P95 (Obesidad)"]).T,
-                         use_container_width=True)
+        tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero)
     caja_util("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
