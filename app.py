@@ -188,6 +188,37 @@ section[data-testid="stSidebar"] h3 { font-weight: 800 !important; }
 }
 .stButton button:hover, .stDownloadButton button:hover { transform: scale(1.015); }
 
+/* ---------- Wizard/Stepper: diferenciar botones "activos" (primary) de "inactivos" (secondary) ---------- */
+div[data-testid="stButton"] button[kind="secondary"] {
+    background: #EAEFEA !important;
+    color: var(--brand-green) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(30,86,49,0.14) !important;
+    font-weight: 600 !important;
+    transform: none !important;
+}
+div[data-testid="stButton"] button[kind="secondary"]:hover {
+    background: rgba(30,86,49,0.12) !important;
+    transform: scale(1.01) !important;
+}
+div[data-testid="stButton"] button[kind="primary"] {
+    background: var(--brand-green) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 6px 16px rgba(30,86,49,0.32) !important;
+}
+.stepper-wrap div[data-testid="stButton"] button {
+    font-size: 0.86rem !important;
+    padding: 14px 10px !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+}
+.subtabs-wrap div[data-testid="stButton"] button {
+    font-size: 0.8rem !important;
+    padding: 8px 10px !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+}
+
 a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
     border-radius: 999px !important;
     font-weight: 600 !important;
@@ -2119,27 +2150,99 @@ else:
     _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
 
 # =========================================================================================
-# NAVEGACIÓN
+# NAVEGACIÓN — WIZARD / STEPPER DE 4 PASOS
 # =========================================================================================
-st.subheader("📋 Navegación por Hojas del Sistema (idéntica al Excel)")
+st.subheader("🧭 Tu Camino hacia una Vida Más Saludable")
+st.caption("Avanza paso a paso: primero tus datos, luego tu salud, después tus métricas y plan, "
+           "y al final tu reporte. Cada paso agrupa solo las secciones que necesitas ver en ese momento.")
 
-OPCIONES_HOJAS = [
-    "0.-DATOS", "1.-ANÁLISIS SANGUÍNEO", "2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD",
-    "5.-CONTROL DE PESO", "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET",
-    "9.-DIETA", "10.-CLIMA CHICLAYO", "11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA",
-    "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE", "🎓 SOBRE NOSOTRAS"
+# ---- Agrupación en 4 etapas lógicas (en vez de 15 radio buttons sueltos) ----
+PASOS = [
+    {"id": 1, "titulo": "Entrada de Datos", "icono": "📝",
+     "hojas": ["0.-DATOS", "🎓 SOBRE NOSOTRAS"]},
+    {"id": 2, "titulo": "Evaluación Clínica & Salud", "icono": "🩺",
+     "hojas": ["1.-ANÁLISIS SANGUÍNEO", "10.-CLIMA CHICLAYO"]},
+    {"id": 3, "titulo": "Métricas & Plan Nutricional", "icono": "🍽️",
+     "hojas": ["2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD", "5.-CONTROL DE PESO",
+               "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET", "9.-DIETA"]},
+    {"id": 4, "titulo": "Reporte & Casos Especiales", "icono": "📄",
+     "hojas": ["11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA", "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE"]},
 ]
 
-if "hoja_activa" not in st.session_state:
-    st.session_state["hoja_activa"] = OPCIONES_HOJAS[0]
+# Lista plana de todas las hojas, en el orden del wizard (se sigue usando por el resto del código,
+# igual que antes, para saber a qué página renderizar)
+OPCIONES_HOJAS = [h for p in PASOS for h in p["hojas"]]
 
-hoja_activa = st.radio(
-    "Navega por hoja:",
-    OPCIONES_HOJAS,
-    horizontal=True,
-    label_visibility="collapsed",
-    key="hoja_activa",
+# Etiquetas cortas y amigables para las píldoras de sub-navegación (evitan el prefijo "N.-" plano)
+ETIQUETAS_CORTAS = {
+    "0.-DATOS": "📝 Mis Datos",
+    "🎓 SOBRE NOSOTRAS": "🎓 Sobre Nosotras",
+    "1.-ANÁLISIS SANGUÍNEO": "🩸 Análisis Sanguíneo",
+    "10.-CLIMA CHICLAYO": "🌡️ Clima Chiclayo",
+    "2.-IMC Y PERCENTIL": "⚖️ IMC y Percentil",
+    "3.-TMB": "⚡ TMB",
+    "4.-RCD": "🔥 RCD",
+    "5.-CONTROL DE PESO": "🎯 Control de Peso",
+    "6.-MACRONUTRIENTES": "🍽️ Macronutrientes",
+    "7.-PORCIONES": "⏰ Porciones",
+    "8.-FATSECRET": "🌐 FatSecret",
+    "9.-DIETA": "🍱 Dieta",
+    "11.-APORTE 1: EMBARAZO": "👶 Embarazo",
+    "12.-APORTE 2: CAFEÍNA": "🌙 Cafeína",
+    "13.-LÍNEA DE TIEMPO": "📈 Línea de Tiempo",
+    "📄 MI REPORTE": "📄 Mi Reporte",
+}
+
+# ---- Estado persistente: paso activo y hoja activa (no se reinician al navegar) ----
+if "hoja_activa" not in st.session_state:
+    st.session_state["hoja_activa"] = PASOS[0]["hojas"][0]
+if "paso_activo" not in st.session_state:
+    st.session_state["paso_activo"] = 1
+
+# El paso activo siempre queda coherente con la hoja activa actual (por si se navegó por botones
+# de "Anterior/Siguiente" hacia una hoja de otro paso)
+st.session_state["paso_activo"] = next(
+    (p["id"] for p in PASOS if st.session_state["hoja_activa"] in p["hojas"]),
+    st.session_state["paso_activo"]
 )
+
+# ---- Barra de progreso superior: 4 tarjetas/píldoras (Paso 1 → 2 → 3 → 4) ----
+st.markdown('<div class="stepper-wrap">', unsafe_allow_html=True)
+cols_paso = st.columns(4)
+for col, paso in zip(cols_paso, PASOS):
+    es_activo = paso["id"] == st.session_state["paso_activo"]
+    with col:
+        if st.button(
+            f"{paso['icono']}  Paso {paso['id']}\n{paso['titulo']}",
+            key=f"btn_paso_{paso['id']}",
+            use_container_width=True,
+            type="primary" if es_activo else "secondary",
+        ):
+            st.session_state["paso_activo"] = paso["id"]
+            st.session_state["hoja_activa"] = paso["hojas"][0]
+            st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+# ---- Sub-navegación: solo se muestran las píldoras de las hojas del paso activo ----
+_paso_actual = next(p for p in PASOS if p["id"] == st.session_state["paso_activo"])
+st.markdown('<div class="subtabs-wrap">', unsafe_allow_html=True)
+cols_sub = st.columns(len(_paso_actual["hojas"]))
+for col, h in zip(cols_sub, _paso_actual["hojas"]):
+    es_activo_sub = h == st.session_state["hoja_activa"]
+    with col:
+        if st.button(
+            ETIQUETAS_CORTAS.get(h, h),
+            key=f"btn_sub_{h}",
+            use_container_width=True,
+            type="primary" if es_activo_sub else "secondary",
+        ):
+            st.session_state["hoja_activa"] = h
+            st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
+
+hoja_activa = st.session_state["hoja_activa"]
 st.markdown("---")
 
 # ---------------------------------------------------------------------------------------
@@ -3126,6 +3229,34 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
               "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
               "cualquier persona —sin saber de Excel ni de nutrición— pueda usarla fácilmente. 🤝🌱",
               emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
+
+# =========================================================================================
+# PIE DE PÁGINA DEL WIZARD — navegación "Anterior / Siguiente" entre secciones
+# (no depende de volver a la barra superior; conserva el estado ya ingresado por el usuario)
+# =========================================================================================
+st.markdown("---")
+_idx_actual = OPCIONES_HOJAS.index(hoja_activa)
+col_prev, col_mid, col_next = st.columns([1, 2, 1])
+with col_prev:
+    if _idx_actual > 0:
+        if st.button("← Paso Anterior", use_container_width=True, key="btn_anterior_footer"):
+            _nueva_hoja = OPCIONES_HOJAS[_idx_actual - 1]
+            st.session_state["hoja_activa"] = _nueva_hoja
+            st.session_state["paso_activo"] = next(p["id"] for p in PASOS if _nueva_hoja in p["hojas"])
+            st.rerun()
+with col_mid:
+    st.markdown(
+        f"<div style='text-align:center;color:#8E8E93;font-size:0.85rem;padding-top:10px;'>"
+        f"Paso {st.session_state['paso_activo']} de 4 &nbsp;•&nbsp; Sección {_idx_actual + 1} de {len(OPCIONES_HOJAS)}"
+        f"</div>", unsafe_allow_html=True
+    )
+with col_next:
+    if _idx_actual < len(OPCIONES_HOJAS) - 1:
+        if st.button("Guardar y Continuar →", use_container_width=True, type="primary", key="btn_siguiente_footer"):
+            _nueva_hoja = OPCIONES_HOJAS[_idx_actual + 1]
+            st.session_state["hoja_activa"] = _nueva_hoja
+            st.session_state["paso_activo"] = next(p["id"] for p in PASOS if _nueva_hoja in p["hojas"])
+            st.rerun()
 
 st.markdown("---")
 st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
