@@ -566,6 +566,39 @@ div[data-testid="stImageCaption"] {
 .ref-chip { border-radius:8px; padding:9px 8px; text-align:center; font-weight:700; font-size:0.82rem; }
 .ref-header-chip { border-radius:8px; padding:7px 8px; text-align:center; font-weight:800; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.02em; color:#5C6B60; background:#EEF1F4; }
 
+/* ---------- Hoja 6: Macronutrientes — tarjetas por color y tooltips info ---------- */
+.macro-card {
+    border-radius: 20px; padding: 18px 20px; height: 100%; position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.07);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+.macro-card.prot { background: linear-gradient(150deg,#FFEDEC 0%,#FFFFFF 70%); border-left: 5px solid #FF3B30; }
+.macro-card.gras { background: linear-gradient(150deg,#FFF3E0 0%,#FFFFFF 70%); border-left: 5px solid #FF9500; }
+.macro-card.carb { background: linear-gradient(150deg,#EAFAEE 0%,#FFFFFF 70%); border-left: 5px solid #34C759; }
+.macro-card .mc-head { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.macro-card .mc-icon { font-size:1.4rem; }
+.macro-card .mc-title { font-weight:800; font-size:1rem; color:#17301F; }
+.macro-card .mc-tip {
+    margin-left:auto; cursor:help; font-size:0.85rem; color:#8A94A6;
+    border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.05);
+}
+.macro-card .mc-value { font-size:1.7rem; font-weight:800; letter-spacing:-0.02em; margin:4px 0 2px 0; }
+.macro-card.prot .mc-value { color:#C0392B; }
+.macro-card.gras .mc-value { color:#E67E22; }
+.macro-card.carb .mc-value { color:#1E5631; }
+.macro-card .mc-sub { font-size:0.78rem; color:#5C6B60; line-height:1.4; }
+.macro-niveles-table { width:100%; border-collapse:separate; border-spacing:0; font-size:0.86rem; }
+.macro-niveles-table th { background:#1E5631; color:#FFFFFF; padding:10px 12px; font-weight:800; text-align:center; }
+.macro-niveles-table th:first-child { border-top-left-radius:14px; }
+.macro-niveles-table th:last-child { border-top-right-radius:14px; }
+.macro-niveles-table td { padding:9px 12px; text-align:center; background:#FFFFFF; border-bottom:1px solid #F0F0F0; }
+.macro-niveles-table tr:nth-child(even) td { background:#F7F9F7; }
+.macro-final-table { width:100%; border-collapse:separate; border-spacing:0; font-size:0.92rem; border-radius:16px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.06); }
+.macro-final-table th { background:linear-gradient(135deg,#1E5631,#2E7D32); color:#FFFFFF; padding:12px 14px; font-weight:800; text-align:center; }
+.macro-final-table td { padding:12px 14px; text-align:center; background:#FFFFFF; border-bottom:1px solid #F0F0F0; font-weight:600; color:#17301F; }
+.macro-final-table tr.fila-total td { background:#1E5631; color:#FFFFFF; font-weight:800; font-size:1rem; }
+
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
     section[data-testid="stSidebar"], header[data-testid="stHeader"], .navbar,
@@ -3077,38 +3110,191 @@ elif hoja_activa == "5.-CONTROL DE PESO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
-    hoja_header(6, "Se usan las calorías recomendadas según el objetivo nutricional (Hoja 5), no el RCD base.")
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Proteínas (20%)", f"{gr_prot:.1f} g", f"{cal_prot:.1f} kcal/día")
-    col2.metric("Carbohidratos (50%)", f"{gr_carb:.1f} g", f"{cal_carb:.1f} kcal/día")
-    col3.metric("Grasas (30%)", f"{gr_gras:.1f} g", f"{cal_gras:.1f} kcal/día")
-    tabla_bonita(pd.DataFrame({
-        "Resumen energético": ["Proteínas", "Carbohidratos", "Grasas", "Total"],
-        "Valor (kcal)": [f"{cal_prot:.1f}", f"{cal_carb:.1f}", f"{cal_gras:.1f}", f"{cal_prot+cal_carb+cal_gras:.1f}"]
-    }), 6)
+    hoja_header(6, "Proteínas y grasas se calculan según tus gramos por kilo de peso corporal; los "
+                   "carbohidratos cubren la energía restante hasta completar tu Requerimiento Calórico Diario.")
+
+    # =====================================================================================
+    # VARIABLES DE ENTRADA (equivalentes a pesoUsuario / rcdUsuario / objetivoUsuario)
+    # Ya viven en la sesión de la app: `peso`, `rcd_final` (RCD ya ajustado a tu objetivo) y
+    # `objetivo` (Bajar de peso / Mantenerse / Subir de peso), ingresados en la barra lateral.
+    # =====================================================================================
+    peso_usuario = peso
+    rcd_usuario = rcd_final
+    objetivo_usuario = objetivo
+
+    # ---- Constantes universales: calorías que aporta 1 gramo de cada macronutriente ----
+    KCAL_POR_G_PROT = 4
+    KCAL_POR_G_CARB = 4
+    KCAL_POR_G_GRAS = 9
+
+    # ---- Factores g/kg de peso corporal para cada nivel (Mínimo / Intermedio / Máximo) ----
+    FACTORES_PROT = {"Mínimo": 1.8, "Intermedio": 2.1, "Máximo": 2.5}
+    FACTORES_GRAS = {"Mínimo": 0.5, "Intermedio": 1.0, "Máximo": 1.5}
+
+    def _calcular_nivel_macros(factor_prot, factor_gras):
+        """Fórmulas exactas de cálculo para un nivel (Mínimo/Intermedio/Máximo):
+        Proteína (g)  = peso × factor_prot   |  Proteína (kcal) = g × 4
+        Grasa (g)     = peso × factor_gras   |  Grasa (kcal)    = g × 9
+        Carbohidrato (kcal) = RCD − (kcal Proteína + kcal Grasa)   ← energía restante
+        Carbohidrato (g)    = kcal Carbohidrato / 4
+        """
+        gr_p = peso_usuario * factor_prot
+        kcal_p = gr_p * KCAL_POR_G_PROT
+        gr_g = peso_usuario * factor_gras
+        kcal_g = gr_g * KCAL_POR_G_GRAS
+        kcal_c = rcd_usuario - (kcal_p + kcal_g)
+        gr_c = kcal_c / KCAL_POR_G_CARB
+        return {"gr_prot": gr_p, "kcal_prot": kcal_p, "gr_gras": gr_g, "kcal_gras": kcal_g,
+                "kcal_carb": kcal_c, "gr_carb": gr_c}
+
+    niveles_calculados = {
+        nivel: _calcular_nivel_macros(FACTORES_PROT[nivel], FACTORES_GRAS[nivel])
+        for nivel in ["Mínimo", "Intermedio", "Máximo"]
+    }
+
+    # ---- Filtro inteligente: el objetivo del usuario define qué nivel de factor se aplica ----
+    MAPA_OBJETIVO_NIVEL = {
+        "Bajar de peso": "Mínimo",
+        "Mantenerse": "Intermedio",
+        "Subir de peso": "Máximo",
+    }
+    nivel_final = MAPA_OBJETIVO_NIVEL.get(objetivo_usuario, "Intermedio")
+    datos_final = niveles_calculados[nivel_final]
+    total_kcal_final = datos_final["kcal_prot"] + datos_final["kcal_gras"] + datos_final["kcal_carb"]
+    total_gr_final = datos_final["gr_prot"] + datos_final["gr_gras"] + datos_final["gr_carb"]
+
+    # =====================================================================================
+    # TABLA 1 — Valores Base y Factores de Conversión
+    # =====================================================================================
+    st.markdown("#### 🧮 Valores Base y Factores de Conversión")
+    st.caption("Valores universales de energía por gramo y factores aplicados según tu peso.")
+    t1c1, t1c2, t1c3 = st.columns(3)
+    with t1c1:
+        st.markdown("""
+        <div class="macro-card prot">
+            <div class="mc-head"><span class="mc-icon">🥩</span><span class="mc-title">Proteínas</span>
+                <span class="mc-tip" title="1 gramo de proteína equivale a 4 kcal. Se calcula multiplicando tu peso (kg) por un factor de 1.8 a 2.5 g/kg.">ℹ️</span></div>
+            <div class="mc-value">4 kcal/g</div>
+            <div class="mc-sub">Factores (g/kg de peso):<br>Mínimo <b>1.8</b> · Intermedio <b>2.1</b> · Máximo <b>2.5</b></div>
+        </div>
+        """, unsafe_allow_html=True)
+    with t1c2:
+        st.markdown("""
+        <div class="macro-card gras">
+            <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">Grasas</span>
+                <span class="mc-tip" title="1 gramo de grasa equivale a 9 kcal. Se calcula multiplicando tu peso (kg) por un factor de 0.5 a 1.5 g/kg.">ℹ️</span></div>
+            <div class="mc-value">9 kcal/g</div>
+            <div class="mc-sub">Factores (g/kg de peso):<br>Mínimo <b>0.5</b> · Intermedio <b>1.0</b> · Máximo <b>1.5</b></div>
+        </div>
+        """, unsafe_allow_html=True)
+    with t1c3:
+        st.markdown("""
+        <div class="macro-card carb">
+            <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">Carbohidratos</span>
+                <span class="mc-tip" title="1 gramo de carbohidrato equivale a 4 kcal. No usan un factor de peso: cubren la energía restante hasta tu RCD.">ℹ️</span></div>
+            <div class="mc-value">4 kcal/g</div>
+            <div class="mc-sub">Sin factor de peso — cubren el resto de la energía de tu RCD.</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
-    col_recom, col_graf1 = st.columns([1, 1])
-    with col_recom:
-        st.info("🎯 **Objetivo de esta distribución**\n\n"
-                "**20% Proteínas:** para la reparación y crecimiento de tus músculos y tejidos.\n\n"
-                "**50% Carbohidratos:** tu principal fuente de energía para el día a día.\n\n"
-                "**30% Grasas:** esenciales para tus hormonas, cerebro y absorción de vitaminas.\n\n"
-                "Esta proporción está pensada para un balance saludable y sostenible, no para dietas extremas.")
-    with col_graf1:
-        st.markdown("**🥧 Distribución de calorías**")
-        fig_pie_macros = go.Figure(data=[go.Pie(
-            labels=["Proteínas", "Carbohidratos", "Grasas"],
-            values=[cal_prot, cal_carb, cal_gras],
-            marker=dict(colors=["#FF3B30", "#FF9500", "#34C759"]),
-            textinfo="label+percent", hole=0.0,
-        )])
-        fig_pie_macros.update_layout(height=300, margin=dict(t=10, l=10, r=10, b=10), showlegend=False)
-        st.plotly_chart(fig_pie_macros, use_container_width=True)
 
-    caja_util("No basta con contar calorías: también importa DE QUÉ están hechas. Esta hoja reparte tu meta "
-              "calórica en proteínas (para músculos), carbohidratos (para energía) y grasas (para hormonas y "
-              "órganos), en gramos concretos que puedes usar al armar tus platos. 🍗🍚🥑",
+    # =====================================================================================
+    # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles)
+    # =====================================================================================
+    st.markdown("#### 📊 Proyección de Requerimientos")
+    st.caption("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.")
+    st.info(f"⚖️ Peso usado en los cálculos: **{peso_usuario} kg** · 🔥 RCD objetivo: **{rcd_usuario:.0f} kcal/día**")
+
+    _filas_niveles_html = ""
+    for _nivel in ["Mínimo", "Intermedio", "Máximo"]:
+        _d = niveles_calculados[_nivel]
+        _filas_niveles_html += f"""
+        <tr>
+            <td style="text-align:left;font-weight:800;">{_nivel}</td>
+            <td>{FACTORES_PROT[_nivel]:.1f} g/kg</td>
+            <td>{_d['gr_prot']:.1f} g</td>
+            <td>{_d['kcal_prot']:.0f} kcal</td>
+            <td>{FACTORES_GRAS[_nivel]:.1f} g/kg</td>
+            <td>{_d['gr_gras']:.1f} g</td>
+            <td>{_d['kcal_gras']:.0f} kcal</td>
+            <td>{_d['gr_carb']:.1f} g</td>
+            <td>{_d['kcal_carb']:.0f} kcal</td>
+        </tr>"""
+
+    st.markdown(f"""
+    <div style="overflow-x:auto;">
+    <table class="macro-niveles-table">
+        <thead>
+        <tr>
+            <th rowspan="2">Nivel</th>
+            <th colspan="3">🥩 Proteína</th>
+            <th colspan="3">🥑 Grasa</th>
+            <th colspan="2">🌾 Carbohidrato</th>
+        </tr>
+        <tr>
+            <th>Factor</th><th>Gramos</th><th>Kcal</th>
+            <th>Factor</th><th>Gramos</th><th>Kcal</th>
+            <th>Gramos</th><th>Kcal</th>
+        </tr>
+        </thead>
+        <tbody>
+        {_filas_niveles_html}
+        </tbody>
+    </table>
+    </div>
+    """, unsafe_allow_html=True)
+    st.caption("💡 **Carbohidratos:** no usan un factor de peso. Se calculan cubriendo la energía (kcal) "
+               "restante para alcanzar tu Requerimiento Calórico Diario → "
+               "`Kcal Carbohidrato = RCD − (Kcal Proteína + Kcal Grasa)` y `Gramos = Kcal / 4`.")
+
+    st.divider()
+
+    # =====================================================================================
+    # TABLA 3 — Tu Plan Nutricional Definitivo (filtro inteligente según tu objetivo)
+    # =====================================================================================
+    st.markdown("#### 🎯 Tu Plan Nutricional Definitivo")
+    st.caption("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.")
+    st.success(f"🎯 Objetivo seleccionado: **{objetivo_usuario}** → Nivel aplicado: **{nivel_final}** "
+               f"(Proteína {FACTORES_PROT[nivel_final]:.1f} g/kg · Grasa {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
+
+    st.markdown(f"""
+    <table class="macro-final-table">
+        <thead>
+        <tr><th style="text-align:left;">Macronutriente</th><th>Gramos (g)</th><th>Calorías (kcal)</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="text-align:left;">🥩 Proteína</td>
+            <td>{datos_final['gr_prot']:.1f} g</td>
+            <td>{datos_final['kcal_prot']:.0f} kcal</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">🥑 Grasa</td>
+            <td>{datos_final['gr_gras']:.1f} g</td>
+            <td>{datos_final['kcal_gras']:.0f} kcal</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">🌾 Carbohidrato</td>
+            <td>{datos_final['gr_carb']:.1f} g</td>
+            <td>{datos_final['kcal_carb']:.0f} kcal</td>
+        </tr>
+        <tr class="fila-total">
+            <td style="text-align:left;">TOTAL</td>
+            <td>{total_gr_final:.1f} g</td>
+            <td>{total_kcal_final:.0f} kcal</td>
+        </tr>
+        </tbody>
+    </table>
+    """, unsafe_allow_html=True)
+
+    if abs(total_kcal_final - rcd_usuario) < 1:
+        st.success("✅ El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).")
+
+    caja_util("Las proteínas y grasas se calculan según tu peso corporal (gramos por kilo), porque son "
+              "nutrientes estructurales que dependen de tu masa, no de cuánta energía gastas. Los "
+              "carbohidratos, en cambio, son la variable de ajuste: llenan el resto de tu energía diaria "
+              "hasta llegar exactamente a tu RCD. 🍽️",
               emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
     imagen_bonita(IMAGENES_POR_HOJA[6], caption="Hoja 6 — Cálculo de los Macronutrientes")
 
