@@ -601,13 +601,40 @@ div[data-testid="stImageCaption"] {
 
 /* ---------- Hoja 7: Distribución Calórica por Comidas ---------- */
 .rcd-hero-card {
-    background: linear-gradient(135deg,#FF9500 0%,#FFB300 55%,#FFD166 100%);
-    border-radius: 26px; padding: 28px 32px; color: white; text-align:center;
-    box-shadow: 0 14px 34px rgba(255,149,0,0.30); margin-bottom: 10px;
+    position:relative; overflow:hidden;
+    background: linear-gradient(120deg,#FF6B35 0%,#FF9500 26%,#FFCC00 52%,#34C759 80%,#30B0C7 100%);
+    border-radius: 28px; padding: 32px 34px; color: white; text-align:center;
+    box-shadow: 0 18px 40px rgba(255,111,0,0.35); margin-bottom: 12px;
 }
-.rcd-hero-card .rcd-label { font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; opacity:0.92; }
-.rcd-hero-card .rcd-value { font-size:2.5rem; font-weight:800; letter-spacing:-0.02em; margin:6px 0; }
-.rcd-hero-card .rcd-sub { font-size:0.9rem; max-width:660px; margin:6px auto 0 auto; opacity:0.96; line-height:1.55; }
+.rcd-hero-card::before {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(circle at 15% 20%, rgba(255,255,255,0.28) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(255,255,255,0.20) 0%, transparent 50%);
+}
+.rcd-hero-decor { position:absolute; font-size:5.5rem; opacity:0.16; line-height:1; pointer-events:none; }
+.rcd-hero-decor.d1 { top:-14px; left:-10px; transform:rotate(-15deg); }
+.rcd-hero-decor.d2 { bottom:-20px; right:-8px; transform:rotate(12deg); }
+.rcd-hero-card .rcd-label {
+    position:relative; font-size:0.82rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;
+    opacity:0.96; display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,0.22); padding:6px 18px; border-radius:999px; backdrop-filter:blur(4px);
+}
+@keyframes rcd-glow {
+    0%,100% { text-shadow:0 0 18px rgba(255,255,255,0.55), 0 4px 14px rgba(0,0,0,0.18); }
+    50%     { text-shadow:0 0 34px rgba(255,255,255,0.90), 0 4px 14px rgba(0,0,0,0.18); }
+}
+.rcd-hero-card .rcd-value {
+    position:relative; font-size:2.9rem; font-weight:900; letter-spacing:-0.02em; margin:14px 0 8px 0;
+    animation: rcd-glow 2.4s ease-in-out infinite;
+}
+.rcd-hero-card .rcd-sub {
+    position:relative; font-size:0.92rem; max-width:660px; margin:6px auto 18px auto; opacity:0.97; line-height:1.55;
+}
+.rcd-hero-badges { position:relative; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+.rcd-hero-badge {
+    background:rgba(255,255,255,0.24); border:1px solid rgba(255,255,255,0.38); backdrop-filter:blur(6px);
+    padding:7px 14px; border-radius:999px; font-size:0.8rem; font-weight:800; display:flex; align-items:center; gap:6px;
+}
 
 .comidas-table-wrap {
     border-radius:20px; overflow:hidden; margin-top:14px;
@@ -644,9 +671,85 @@ div[data-testid="stImageCaption"] {
 }
 @media (max-width:700px) {
     .rcd-hero-card { padding:22px 18px; }
-    .rcd-hero-card .rcd-value { font-size:1.9rem; }
+    .rcd-hero-card .rcd-value { font-size:2.1rem; }
+    .rcd-hero-decor { font-size:3.5rem; }
     .comidas-table thead th, .comidas-table tbody td { padding:9px 8px; font-size:0.78rem; }
 }
+
+/* ---------- Hoja 9: Dieta — panel resumen, selector de alimentos y menú tipo tablas de color ---------- */
+.resumen-nutri-wrap { display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; }
+.resumen-nutri-card {
+    flex:1; min-width:230px; background:#FFFFFF; border-radius:22px; padding:20px 22px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04);
+}
+.resumen-nutri-card .rn-title { font-weight:800; font-size:0.92rem; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.resumen-nutri-card.rn-tiempos { background:linear-gradient(160deg,#E6F7FA 0%,#FFFFFF 65%); }
+.resumen-nutri-card.rn-macros { background:linear-gradient(160deg,#F3EAF7 0%,#FFFFFF 65%); }
+.resumen-nutri-card.rn-rcd { background:linear-gradient(150deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%); color:#FFFFFF; text-align:center; }
+.rn-tiempos-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:0.84rem; border-bottom:1px dashed rgba(0,0,0,0.08); }
+.rn-tiempos-row:last-child { border-bottom:none; }
+.rn-tiempos-row .rn-kcal { font-weight:800; color:#0E7C86; background:#E0F7FA; padding:2px 10px; border-radius:999px; font-size:0.8rem; }
+.rn-macro-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:0.86rem; }
+.rn-macro-pill { font-weight:800; padding:3px 12px; border-radius:999px; font-size:0.8rem; }
+.rn-rcd-value { font-size:2.4rem; font-weight:900; letter-spacing:-0.02em; margin:6px 0; }
+
+.selector-menu-title {
+    text-align:center; font-weight:900; font-size:1.85rem; letter-spacing:-0.02em;
+    background:linear-gradient(120deg,#FF6B35,#FF9500,#34C759,#1E88E5);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin:26px 0 4px 0;
+}
+.selector-menu-sub { text-align:center; color:#5C6B60; font-size:0.92rem; margin-bottom:18px; }
+.comida-momento-banner {
+    display:flex; align-items:center; gap:10px; background:linear-gradient(120deg,#FFF3E0,#FFFFFF);
+    border-left:5px solid #FF9500; border-radius:16px; padding:10px 18px; margin:22px 0 10px 0;
+    font-weight:800; font-size:1.02rem; color:#B15E00;
+}
+.macro-select-label { display:flex; align-items:center; gap:6px; font-weight:800; font-size:0.82rem;
+    padding:6px 12px; border-radius:999px; margin-bottom:6px; width:fit-content; }
+.macro-select-label.carb { background:#E1F5FE; color:#0277BD; }
+.macro-select-label.prot { background:#F3E5F5; color:#8E24AA; }
+.macro-select-label.gras { background:#FFF3E0; color:#E65100; }
+
+.menu-titulo-grande {
+    text-align:center; font-weight:900; font-size:2rem; letter-spacing:-0.01em; color:#FFFFFF;
+    background:linear-gradient(120deg,#1E5631,#2E7D32,#4CAF50); border-radius:22px; padding:20px 24px;
+    margin:28px 0 18px 0; box-shadow:0 14px 30px rgba(30,86,49,0.28);
+}
+.dieta-menu-table { width:100%; border-collapse:collapse; font-family:var(--font-round); font-size:0.86rem; }
+.dieta-menu-table thead th { padding:12px 14px; text-align:center; font-weight:800; color:#FFFFFF; }
+.dieta-menu-table tbody td { padding:11px 14px; text-align:center; }
+.dieta-menu-table tbody tr:nth-child(even) td { filter:brightness(0.98); }
+.dieta-menu-table td.dm-momento { text-align:left; font-weight:800; }
+.dieta-menu-wrap { border-radius:20px; overflow:hidden; margin-bottom:24px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 8px 22px rgba(0,0,0,0.07); border:1px solid rgba(0,0,0,0.04); }
+
+.dieta-menu-wrap.carb .dieta-menu-table thead th { background:linear-gradient(135deg,#1E88E5,#4FC3F7); }
+.dieta-menu-wrap.carb .dieta-menu-table tbody tr { background:#EAF6FE; }
+.dieta-menu-wrap.carb .dieta-menu-table tbody td { color:#0D47A1; }
+.dieta-menu-wrap.carb .dieta-menu-table tr.dm-total td { background:#1565C0; color:#FFFFFF; font-weight:800; }
+
+.dieta-menu-wrap.prot .dieta-menu-table thead th { background:linear-gradient(135deg,#8E24AA,#CE93D8); }
+.dieta-menu-wrap.prot .dieta-menu-table tbody tr { background:#F6ECFA; }
+.dieta-menu-wrap.prot .dieta-menu-table tbody td { color:#6A1B9A; }
+.dieta-menu-wrap.prot .dieta-menu-table tr.dm-total td { background:#7B1FA2; color:#FFFFFF; font-weight:800; }
+
+.dieta-menu-wrap.gras .dieta-menu-table thead th { background:linear-gradient(135deg,#F9A825,#FFD54F); }
+.dieta-menu-wrap.gras .dieta-menu-table tbody tr { background:#FFF8E1; }
+.dieta-menu-wrap.gras .dieta-menu-table tbody td { color:#B15E00; }
+.dieta-menu-wrap.gras .dieta-menu-table tr.dm-total td { background:#EF6C00; color:#FFFFFF; font-weight:800; }
+
+.dieta-total-bar {
+    position:relative; overflow:hidden; margin-top:8px;
+    background:linear-gradient(120deg,#1E88E5 0%,#8E24AA 35%,#F9A825 68%,#1E5631 100%);
+    border-radius:24px; padding:26px 30px; color:#FFFFFF; text-align:center;
+    box-shadow:0 18px 40px rgba(30,86,49,0.30);
+}
+.dieta-total-bar .dt-label { font-size:0.82rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; opacity:0.92; }
+.dieta-total-bar .dt-formula { font-size:1.05rem; font-weight:700; margin:10px 0 6px 0; opacity:0.96; }
+.dieta-total-bar .dt-value { font-size:2.3rem; font-weight:900; letter-spacing:-0.02em; margin:6px 0; }
+.dieta-total-bar .dt-check { font-size:0.92rem; font-weight:700; background:rgba(255,255,255,0.22); display:inline-block;
+    padding:6px 16px; border-radius:999px; margin-top:6px; }
 
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
@@ -3380,16 +3483,26 @@ elif hoja_activa == "7.-PORCIONES":
     # =====================================================================================
     _rcd_comidas = rcd_final
 
-    st.markdown(f"""
+    _html_rcd_hero = f"""
     <div class="rcd-hero-card">
-        <div class="rcd-label">Tu Requerimiento Calórico Diario (RCD)</div>
-        <div class="rcd-value">🎯 {_rcd_comidas:.2f} kcal</div>
+        <div class="rcd-hero-decor d1">🔥</div>
+        <div class="rcd-hero-decor d2">🍎</div>
+        <div class="rcd-label">⚡ Tu Requerimiento Calórico Diario</div>
+        <div class="rcd-value">🎯 {_rcd_comidas:.2f} <span style="font-size:1.3rem;font-weight:700;">kcal</span></div>
         <div class="rcd-sub">Para mantener tu metabolismo activo y evitar la ansiedad, hemos distribuido tus
         calorías totales a lo largo del día. Cada comida representa un porcentaje ideal de tu RCD. Los
         valores que ves en la tabla resultan de multiplicar tu RCD total por el porcentaje correspondiente
         a cada comida.</div>
+        <div class="rcd-hero-badges">
+            <span class="rcd-hero-badge">🌅 Desayuno 25%</span>
+            <span class="rcd-hero-badge">🍎 Merienda 1 · 5%</span>
+            <span class="rcd-hero-badge">🍽️ Almuerzo 40%</span>
+            <span class="rcd-hero-badge">🥪 Merienda 2 · 5%</span>
+            <span class="rcd-hero-badge">🌙 Cena 25%</span>
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_rcd_hero), unsafe_allow_html=True)
 
     # =====================================================================================
     # Distribución por comida: Energía (kcal) = RCD × Porcentaje de esa comida
@@ -3520,16 +3633,72 @@ elif hoja_activa == "8.-FATSECRET":
 elif hoja_activa == "9.-DIETA":
     hoja_header(9, "Elige un alimento por macronutriente en cada comida y arma tu menú diario personalizado.")
 
+    # =====================================================================================
+    # SECCIÓN 1 — Panel de Resumen de Datos Nutricionales
+    # =====================================================================================
+    st.markdown("""
+    <p style="text-align:center;color:#5C6B60;font-size:0.94rem;max-width:720px;margin:0 auto 14px auto;">
+    Estos valores han sido calculados previamente en base a tu perfil. A continuación, te presentamos el
+    resumen de tus requerimientos calóricos diarios y cómo se distribuyen en tu día a día.
+    </p>
+    """, unsafe_allow_html=True)
+
+    _ICONOS_COMIDA_D9 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _filas_tiempos_html = "".join(
+        f"""<div class="rn-tiempos-row"><span>{_ICONOS_COMIDA_D9[_c]} {_c}</span>
+            <span class="rn-kcal">{porciones[_c]['kcal']:.0f} kcal</span></div>"""
+        for _c in porciones
+    )
+
+    _html_resumen_nutri = f"""
+    <div class="resumen-nutri-wrap">
+        <div class="resumen-nutri-card rn-tiempos">
+            <div class="rn-title">⏰ Distribución por Tiempos del Día</div>
+            {_filas_tiempos_html}
+        </div>
+        <div class="resumen-nutri-card rn-macros">
+            <div class="rn-title">🍽️ Distribución de Macronutrientes</div>
+            <div class="rn-macro-row">🥩 Proteínas
+                <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.0f} g</span></div>
+            <div class="rn-macro-row">🌾 Carbohidratos
+                <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.0f} g</span></div>
+            <div class="rn-macro-row">🥑 Grasas
+                <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.0f} g</span></div>
+        </div>
+        <div class="resumen-nutri-card rn-rcd">
+            <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 Requerimiento Calórico Diario</div>
+            <div class="rn-rcd-value">{rcd_final:.0f}</div>
+            <div style="font-size:0.85rem;opacity:0.9;">kcal / día</div>
+        </div>
+    </div>
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_resumen_nutri), unsafe_allow_html=True)
+
+    # =====================================================================================
+    # SECCIÓN 2 — Interfaz de Selección de Alimentos
+    # =====================================================================================
+    st.markdown('<div class="selector-menu-title">🍱 ¡Personaliza tu Menú! Selecciona tus Alimentos</div>',
+                unsafe_allow_html=True)
+    st.markdown('<p class="selector-menu-sub">Elige una fuente de carbohidrato, proteína y grasa para cada '
+                'momento del día.</p>', unsafe_allow_html=True)
+
     seleccion = {}
     for comida in DIETA:
-        caja_titulo(comida.upper(), 9)
+        st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {comida.upper()}</div>',
+                    unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
         with c1:
-            carb_sel = st.selectbox(f"Carbohidrato — {comida}", list(DIETA[comida]["Carbohidrato"].keys()), key=f"c_{comida}")
+            st.markdown('<div class="macro-select-label carb">🌾 Carbohidrato</div>', unsafe_allow_html=True)
+            carb_sel = st.selectbox(f"Carbohidrato — {comida}", list(DIETA[comida]["Carbohidrato"].keys()),
+                                     key=f"c_{comida}", label_visibility="collapsed")
         with c2:
-            prot_sel = st.selectbox(f"Proteína — {comida}", list(DIETA[comida]["Proteína"].keys()), key=f"p_{comida}")
+            st.markdown('<div class="macro-select-label prot">🥩 Proteína</div>', unsafe_allow_html=True)
+            prot_sel = st.selectbox(f"Proteína — {comida}", list(DIETA[comida]["Proteína"].keys()),
+                                     key=f"p_{comida}", label_visibility="collapsed")
         with c3:
-            gras_sel = st.selectbox(f"Grasa — {comida}", list(DIETA[comida]["Grasa"].keys()), key=f"g_{comida}")
+            st.markdown('<div class="macro-select-label gras">🥑 Grasa</div>', unsafe_allow_html=True)
+            gras_sel = st.selectbox(f"Grasa — {comida}", list(DIETA[comida]["Grasa"].keys()),
+                                     key=f"g_{comida}", label_visibility="collapsed")
         seleccion[comida] = {
             "Carbohidrato": carb_sel,
             "Proteína": prot_sel,
@@ -3554,27 +3723,71 @@ elif hoja_activa == "9.-DIETA":
             fila[f"kcal ({col_prefix})"] = kcal_alimento
             fila[f"Porción corregida ({col_prefix})"] = porcion_kcal
             fila[f"Gramos ({col_prefix})"] = gramos
-            fila[f"Unidad ({col_prefix})"] = "gramos"
         filas.append(fila)
         suma_kcal_carb += fila["kcal (Carb)"]; suma_porcion_carb += fila["Porción corregida (Carb)"]
         suma_kcal_prot += fila["kcal (Prot)"]; suma_porcion_prot += fila["Porción corregida (Prot)"]
         suma_kcal_gras += fila["kcal (Gras)"]; suma_porcion_gras += fila["Porción corregida (Gras)"]
 
-    df_dieta = pd.DataFrame(filas)
-    fila_total = {"Momento": "TOTAL",
-                  "Carbohidrato": "", "kcal (Carb)": suma_kcal_carb, "Porción corregida (Carb)": round(suma_porcion_carb, 2), "Gramos (Carb)": "", "Unidad (Carb)": "",
-                  "Proteína": "", "kcal (Prot)": suma_kcal_prot, "Porción corregida (Prot)": round(suma_porcion_prot, 2), "Gramos (Prot)": "", "Unidad (Prot)": "",
-                  "Grasa": "", "kcal (Gras)": suma_kcal_gras, "Porción corregida (Gras)": round(suma_porcion_gras, 2), "Gramos (Gras)": "", "Unidad (Gras)": ""}
-    df_dieta = pd.concat([df_dieta, pd.DataFrame([fila_total])], ignore_index=True)
-    tabla_bonita(df_dieta, 9)
-
     total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
-    col1, col2 = st.columns(2)
-    col1.metric("Total de calorías diarias (dieta armada)", f"{total_general:.2f} kcal",
-                help="Suma de la Porción corregida de Carbohidrato + Proteína + Grasa, igual que R48 del Excel.")
-    col2.metric("Comparación con calorías meta (Hoja 5)", f"{rcd_final:.1f} kcal")
-    if abs(total_general - rcd_final) < 1:
-        st.success("✅ La dieta armada coincide con la meta calórica del objetivo nutricional.")
+
+    # =====================================================================================
+    # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
+    # =====================================================================================
+    st.markdown('<div class="menu-titulo-grande">🍽️ MUESTRA DE TU DIETA TIPO MENÚ</div>', unsafe_allow_html=True)
+
+    def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion):
+        """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
+        _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
+        filas_html = ""
+        for f in filas:
+            filas_html += f"""
+            <tr>
+                <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {f['Momento']}</td>
+                <td>{f[macro_key]}</td>
+                <td>{f[f'kcal ({_prefijo})']} kcal</td>
+                <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
+                <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
+            </tr>"""
+        filas_html += f"""
+            <tr class="dm-total">
+                <td class="dm-momento" colspan="2">TOTAL</td>
+                <td>{suma_kcal:.0f} kcal</td>
+                <td>{suma_porcion:.1f} kcal</td>
+                <td>—</td>
+            </tr>"""
+        html = f"""
+        <div class="dieta-menu-wrap {clase_css}">
+        <table class="dieta-menu-table">
+            <thead>
+            <tr><th style="text-align:left;">Momento</th><th>{icono} Alimento ({titulo})</th>
+                <th>Kcal</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
+            </thead>
+            <tbody>
+            {filas_html}
+            </tbody>
+        </table>
+        </div>
+        """
+        st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
+
+    _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb)
+    _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot)
+    _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras)
+
+    # ---- Barra final destacada: suma total = RCD ----
+    _diferencia_total = abs(total_general - rcd_final)
+    _check_txt = ("✅ ¡Coincide exactamente con tu RCD!" if _diferencia_total < 1
+                  else f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD")
+    _html_barra_total = f"""
+    <div class="dieta-total-bar">
+        <div class="dt-label">🌾 Carbohidratos + 🥩 Proteínas + 🥑 Grasas</div>
+        <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
+        <div class="dt-value">= {total_general:.1f} kcal</div>
+        <div style="font-size:0.9rem;opacity:0.92;">Este total equivale a tu <b>TOTAL DE CALORÍAS DIARIAS (RCD)</b></div>
+        <div class="dt-check">{_check_txt}</div>
+    </div>
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
 
     st.divider()
     st.markdown("#### ❓ Guía para entender tu tabla de dieta")
