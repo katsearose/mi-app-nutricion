@@ -734,6 +734,17 @@ def caja_titulo(texto, idx):
                 unsafe_allow_html=True)
 
 
+def _html_sin_lineas_vacias(html):
+    """Elimina líneas vacías (o con solo espacios) dentro de un bloque de HTML antes de
+    renderizarlo con st.markdown. Es NECESARIO cuando el HTML se arma concatenando varios
+    f-strings multilínea (por ejemplo, una fila por cada elemento de una lista): si entre dos
+    fragmentos queda una línea en blanco, Streamlit/CommonMark interpreta que el bloque de HTML
+    "crudo" terminó ahí, y todo el contenido indentado que sigue se muestra como texto plano
+    (bloque de código) en vez de renderizarse como HTML. Al quitar esas líneas en blanco, el
+    bloque de HTML se mantiene continuo y se renderiza correctamente de principio a fin."""
+    return "\n".join(linea for linea in html.split("\n") if linea.strip() != "")
+
+
 def _resolver_imagen(ruta):
     """Busca una imagen probando varias ubicaciones (la ruta indicada, directamente en /assets,
     y en /assets/hojas) y varias extensiones/mayúsculas (.jpg, .JPG, .jpeg, .png, etc.).
@@ -1942,7 +1953,7 @@ def tabla_categorias_imc_visual(imc_usuario=None):
         </div>
         """)
 
-    st.markdown(f"""
+    _html_tabla_imc = f"""
     <div class="imc-table-wrap">
         <div class="imc-table-topbar">
             <span class="imc-table-icon">⚖️</span>
@@ -1964,7 +1975,8 @@ def tabla_categorias_imc_visual(imc_usuario=None):
             <div class="imc-footer-tip">🛡️ ¡Pequeños cambios hoy, grandes resultados mañana!</div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_tabla_imc), unsafe_allow_html=True)
 
 
 # =========================================================================================
@@ -3222,7 +3234,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
             <td>{_d['kcal_carb']:.0f} kcal</td>
         </tr>"""
 
-    st.markdown(f"""
+    _html_tabla_niveles = f"""
     <div style="overflow-x:auto;">
     <table class="macro-niveles-table">
         <thead>
@@ -3243,7 +3255,8 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         </tbody>
     </table>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_tabla_niveles), unsafe_allow_html=True)
     st.caption("💡 **Carbohidratos:** no usan un factor de peso. Se calculan cubriendo la energía (kcal) "
                "restante para alcanzar tu Requerimiento Calórico Diario → "
                "`Kcal Carbohidrato = RCD − (Kcal Proteína + Kcal Grasa)` y `Gramos = Kcal / 4`.")
@@ -3258,7 +3271,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     st.success(f"🎯 Objetivo seleccionado: **{objetivo_usuario}** → Nivel aplicado: **{nivel_final}** "
                f"(Proteína {FACTORES_PROT[nivel_final]:.1f} g/kg · Grasa {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
 
-    st.markdown(f"""
+    _html_tabla_final = f"""
     <table class="macro-final-table">
         <thead>
         <tr><th style="text-align:left;">Macronutriente</th><th>Gramos (g)</th><th>Calorías (kcal)</th></tr>
@@ -3286,7 +3299,8 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         </tr>
         </tbody>
     </table>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_tabla_final), unsafe_allow_html=True)
 
     if abs(total_kcal_final - rcd_usuario) < 1:
         st.success("✅ El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).")
