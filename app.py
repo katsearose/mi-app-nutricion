@@ -3143,24 +3143,30 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     FACTORES_PROT = {"Mínimo": 1.8, "Intermedio": 2.1, "Máximo": 2.5}
     FACTORES_GRAS = {"Mínimo": 0.5, "Intermedio": 1.0, "Máximo": 1.5}
 
-    def _calcular_nivel_macros(factor_prot, factor_gras):
+    # ---- Excepción de conversión de Grasa: en el nivel Máximo se usa 4 kcal/g (no 9) ----
+    KCAL_POR_G_GRAS_POR_NIVEL = {"Mínimo": KCAL_POR_G_GRAS, "Intermedio": KCAL_POR_G_GRAS, "Máximo": 4}
+
+    def _calcular_nivel_macros(nivel, factor_prot, factor_gras):
         """Fórmulas exactas de cálculo para un nivel (Mínimo/Intermedio/Máximo):
-        Proteína (g)  = peso × factor_prot   |  Proteína (kcal) = g × 4
-        Grasa (g)     = peso × factor_gras   |  Grasa (kcal)    = g × 9
-        Carbohidrato (kcal) = RCD − (kcal Proteína + kcal Grasa)   ← energía restante
-        Carbohidrato (g)    = kcal Carbohidrato / 4
+        Proteína (g)  = peso × factor_prot   |  Proteína (kcal/día) = g × 4
+        Grasa (g)     = peso × factor_gras   |  Grasa (kcal/día)    = g × 9
+            (EXCEPCIÓN: en el nivel Máximo, la grasa se convierte con 4 kcal/g, no 9)
+        Kcal Restantes = Kcal Proteína (de ese nivel) + Kcal Grasa (de ese nivel)
+        Carbohidrato (kcal/día) = RCD − Kcal Restantes   ← energía restante de ese nivel
+        Carbohidrato (g)        = Kcal Carbohidrato/día / 4
         """
         gr_p = peso_usuario * factor_prot
         kcal_p = gr_p * KCAL_POR_G_PROT
         gr_g = peso_usuario * factor_gras
-        kcal_g = gr_g * KCAL_POR_G_GRAS
-        kcal_c = rcd_usuario - (kcal_p + kcal_g)
+        kcal_g = gr_g * KCAL_POR_G_GRAS_POR_NIVEL[nivel]
+        kcal_restantes = kcal_p + kcal_g
+        kcal_c = rcd_usuario - kcal_restantes
         gr_c = kcal_c / KCAL_POR_G_CARB
         return {"gr_prot": gr_p, "kcal_prot": kcal_p, "gr_gras": gr_g, "kcal_gras": kcal_g,
-                "kcal_carb": kcal_c, "gr_carb": gr_c}
+                "kcal_restantes": kcal_restantes, "kcal_carb": kcal_c, "gr_carb": gr_c}
 
     niveles_calculados = {
-        nivel: _calcular_nivel_macros(FACTORES_PROT[nivel], FACTORES_GRAS[nivel])
+        nivel: _calcular_nivel_macros(nivel, FACTORES_PROT[nivel], FACTORES_GRAS[nivel])
         for nivel in ["Mínimo", "Intermedio", "Máximo"]
     }
 
@@ -3226,12 +3232,13 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
             <td style="text-align:left;font-weight:800;">{_nivel}</td>
             <td>{FACTORES_PROT[_nivel]:.1f} g/kg</td>
             <td>{_d['gr_prot']:.1f} g</td>
-            <td>{_d['kcal_prot']:.0f} kcal</td>
+            <td>{_d['kcal_prot']:.0f} kcal/día</td>
             <td>{FACTORES_GRAS[_nivel]:.1f} g/kg</td>
             <td>{_d['gr_gras']:.1f} g</td>
-            <td>{_d['kcal_gras']:.0f} kcal</td>
+            <td>{_d['kcal_gras']:.0f} kcal/día</td>
+            <td>{_d['kcal_restantes']:.0f} kcal/día</td>
             <td>{_d['gr_carb']:.1f} g</td>
-            <td>{_d['kcal_carb']:.0f} kcal</td>
+            <td>{_d['kcal_carb']:.0f} kcal/día</td>
         </tr>"""
 
     _html_tabla_niveles = f"""
@@ -3242,12 +3249,12 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
             <th rowspan="2">Nivel</th>
             <th colspan="3">🥩 Proteína</th>
             <th colspan="3">🥑 Grasa</th>
-            <th colspan="2">🌾 Carbohidrato</th>
+            <th colspan="3">🌾 Carbohidrato</th>
         </tr>
         <tr>
-            <th>Factor</th><th>Gramos</th><th>Kcal</th>
-            <th>Factor</th><th>Gramos</th><th>Kcal</th>
-            <th>Gramos</th><th>Kcal</th>
+            <th>Factor</th><th>Gramos</th><th>Kcal/día</th>
+            <th>Factor</th><th>Gramos</th><th>Kcal/día</th>
+            <th>Kcal Restantes</th><th>Gramos</th><th>Kcal/día</th>
         </tr>
         </thead>
         <tbody>
@@ -3257,9 +3264,11 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     </div>
     """
     st.markdown(_html_sin_lineas_vacias(_html_tabla_niveles), unsafe_allow_html=True)
-    st.caption("💡 **Carbohidratos:** no usan un factor de peso. Se calculan cubriendo la energía (kcal) "
-               "restante para alcanzar tu Requerimiento Calórico Diario → "
-               "`Kcal Carbohidrato = RCD − (Kcal Proteína + Kcal Grasa)` y `Gramos = Kcal / 4`.")
+    st.caption("💡 **Kcal Restantes:** es la suma de la Kcal/día de Proteína + la Kcal/día de Grasa de "
+               "ESE mismo nivel (Mínimo, Intermedio o Máximo) — por eso cambia en cada fila. "
+               "**Carbohidratos:** no usan un factor de peso; se calculan cubriendo la energía "
+               "restante hasta tu Requerimiento Calórico Diario → "
+               "`Kcal/día Carbohidrato = RCD − Kcal Restantes` y `Gramos = Kcal/día ÷ 4`.")
 
     st.divider()
 
@@ -3274,28 +3283,28 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     _html_tabla_final = f"""
     <table class="macro-final-table">
         <thead>
-        <tr><th style="text-align:left;">Macronutriente</th><th>Gramos (g)</th><th>Calorías (kcal)</th></tr>
+        <tr><th style="text-align:left;">Macronutriente</th><th>Gramos (g)</th><th>Kcal/día</th></tr>
         </thead>
         <tbody>
         <tr>
             <td style="text-align:left;">🥩 Proteína</td>
             <td>{datos_final['gr_prot']:.1f} g</td>
-            <td>{datos_final['kcal_prot']:.0f} kcal</td>
+            <td>{datos_final['kcal_prot']:.0f} kcal/día</td>
         </tr>
         <tr>
             <td style="text-align:left;">🥑 Grasa</td>
             <td>{datos_final['gr_gras']:.1f} g</td>
-            <td>{datos_final['kcal_gras']:.0f} kcal</td>
+            <td>{datos_final['kcal_gras']:.0f} kcal/día</td>
         </tr>
         <tr>
             <td style="text-align:left;">🌾 Carbohidrato</td>
             <td>{datos_final['gr_carb']:.1f} g</td>
-            <td>{datos_final['kcal_carb']:.0f} kcal</td>
+            <td>{datos_final['kcal_carb']:.0f} kcal/día</td>
         </tr>
         <tr class="fila-total">
             <td style="text-align:left;">TOTAL</td>
             <td>{total_gr_final:.1f} g</td>
-            <td>{total_kcal_final:.0f} kcal</td>
+            <td>{total_kcal_final:.0f} kcal/día</td>
         </tr>
         </tbody>
     </table>
