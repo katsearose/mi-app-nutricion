@@ -234,6 +234,40 @@ div[data-testid="stButton"] button[kind="primary"] {
     line-height: 1.2 !important;
 }
 
+/* ---------- Navegación lateral tipo "Pills" (sidebar, 16 secciones siempre visibles) ---------- */
+.sidebar-nav-title {
+    font-weight: 800; color: var(--brand-green); font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.06em; margin: 2px 0 6px 4px; display:flex; align-items:center; gap:6px;
+}
+section[data-testid="stSidebar"] div[data-testid="stButton"] button {
+    text-align: left !important;
+    justify-content: flex-start !important;
+    border-radius: 14px !important;
+    font-size: 0.83rem !important;
+    padding: 9px 14px !important;
+    margin-bottom: 3px !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+}
+section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"] {
+    background: #FFFFFF !important;
+    color: var(--ios-label) !important;
+    border: 1px solid rgba(30,86,49,0.10) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+}
+section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"]:hover {
+    background: rgba(30,86,49,0.08) !important;
+    border-color: rgba(30,86,49,0.22) !important;
+}
+section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"] {
+    background: linear-gradient(135deg, var(--brand-green) 0%, #2E7D32 100%) !important;
+    color: #FFFFFF !important;
+    font-weight: 800 !important;
+    box-shadow: 0 4px 12px rgba(30,86,49,0.35) !important;
+    border: 1px solid transparent !important;
+}
+
 a[data-testid="stLinkButton"] button, div[data-testid="stLinkButton"] button {
     border-radius: 999px !important;
     font-weight: 600 !important;
@@ -2472,6 +2506,71 @@ if _ruta_excel is None:
 st.markdown("---")
 
 # =========================================================================================
+# NAVEGACIÓN — 16 secciones en un panel lateral fijo (Sidebar Pill Navigation)
+# Todas las secciones existen simultáneamente en la app; el sidebar decide cuál se pinta.
+# =========================================================================================
+OPCIONES_HOJAS = [
+    "0.-DATOS",
+    "1.-ANÁLISIS SANGUÍNEO",
+    "2.-IMC Y PERCENTIL",
+    "3.-TMB",
+    "4.-RCD",
+    "5.-CONTROL DE PESO",
+    "6.-MACRONUTRIENTES",
+    "7.-PORCIONES",
+    "8.-FATSECRET",
+    "9.-DIETA",
+    "10.-CLIMA CHICLAYO",
+    "11.-APORTE 1: EMBARAZO",
+    "12.-APORTE 2: CAFEÍNA",
+    "13.-LÍNEA DE TIEMPO",
+    "📄 MI REPORTE",
+    "🎓 SOBRE NOSOTRAS",
+]
+
+# Ícono + etiqueta corta para cada píldora del sidebar (16 secciones, siempre visibles)
+ETIQUETAS_NAV = {
+    "0.-DATOS":                    ("⚙️", "Mis Datos"),
+    "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Análisis Sanguíneo"),
+    "2.-IMC Y PERCENTIL":          ("⚖️", "IMC y Percentil"),
+    "3.-TMB":                      ("🔥", "TMB"),
+    "4.-RCD":                      ("⚡", "RCD"),
+    "5.-CONTROL DE PESO":          ("📈", "Control de Peso"),
+    "6.-MACRONUTRIENTES":          ("🥗", "Macronutrientes"),
+    "7.-PORCIONES":                ("🍎", "Porciones del Día"),
+    "8.-FATSECRET":                ("🥑", "FatSecret"),
+    "9.-DIETA":                    ("📝", "Dieta"),
+    "10.-CLIMA CHICLAYO":          ("🌤️", "Clima Chiclayo"),
+    "11.-APORTE 1: EMBARAZO":      ("🤰", "TMB en Embarazo"),
+    "12.-APORTE 2: CAFEÍNA":       ("☕", "Límite de Cafeína"),
+    "13.-LÍNEA DE TIEMPO":         ("⏳", "Mi Proyección"),
+    "📄 MI REPORTE":               ("📄", "Mi Reporte"),
+    "🎓 SOBRE NOSOTRAS":           ("👥", "Sobre Nosotros"),
+}
+
+if "hoja_activa" not in st.session_state:
+    st.session_state["hoja_activa"] = OPCIONES_HOJAS[0]
+
+# ---- Sidebar: navegación tipo píldoras verticales, con las 16 secciones siempre visibles ----
+st.sidebar.markdown(
+    '<div class="sidebar-nav-title">🧭 Navegación · 16 secciones</div>',
+    unsafe_allow_html=True,
+)
+for _hoja_nav in OPCIONES_HOJAS:
+    _icono_nav, _titulo_nav = ETIQUETAS_NAV[_hoja_nav]
+    _es_activo_nav = (_hoja_nav == st.session_state["hoja_activa"])
+    if st.sidebar.button(
+        f"{_icono_nav}  {_titulo_nav}",
+        key=f"nav_{_hoja_nav}",
+        use_container_width=True,
+        type="primary" if _es_activo_nav else "secondary",
+    ):
+        st.session_state["hoja_activa"] = _hoja_nav
+        st.rerun()
+
+st.sidebar.markdown("---")
+
+# =========================================================================================
 # SIDEBAR — HOJA 0.-DATOS
 # =========================================================================================
 if _ESCUDO.exists():
@@ -2634,99 +2733,18 @@ else:
     _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
 
 # =========================================================================================
-# NAVEGACIÓN — WIZARD / STEPPER DE 4 PASOS
+# CONTENIDO PRINCIPAL — la navegación vive en el sidebar (pills verticales); aquí solo se
+# pinta la sección actualmente seleccionada.
 # =========================================================================================
-st.subheader("🧭 Tu Camino hacia una Vida Más Saludable")
-st.caption("Avanza paso a paso: primero tus datos, luego tu salud, después tus métricas y plan, "
-           "y al final tu reporte. Cada paso agrupa solo las secciones que necesitas ver en ese momento.")
-
-# ---- Agrupación en 4 etapas lógicas (en vez de 15 radio buttons sueltos) ----
-PASOS = [
-    {"id": 1, "titulo": "Entrada de Datos", "icono": "📝",
-     "hojas": ["0.-DATOS", "🎓 SOBRE NOSOTRAS"]},
-    {"id": 2, "titulo": "Evaluación Clínica & Salud", "icono": "🩺",
-     "hojas": ["1.-ANÁLISIS SANGUÍNEO", "10.-CLIMA CHICLAYO"]},
-    {"id": 3, "titulo": "Métricas & Plan Nutricional", "icono": "🍽️",
-     "hojas": ["2.-IMC Y PERCENTIL", "3.-TMB", "4.-RCD", "5.-CONTROL DE PESO",
-               "6.-MACRONUTRIENTES", "7.-PORCIONES", "8.-FATSECRET", "9.-DIETA"]},
-    {"id": 4, "titulo": "Reporte & Casos Especiales", "icono": "📄",
-     "hojas": ["11.-APORTE 1: EMBARAZO", "12.-APORTE 2: CAFEÍNA", "13.-LÍNEA DE TIEMPO", "📄 MI REPORTE"]},
-]
-
-# Lista plana de todas las hojas, en el orden del wizard (se sigue usando por el resto del código,
-# igual que antes, para saber a qué página renderizar)
-OPCIONES_HOJAS = [h for p in PASOS for h in p["hojas"]]
-
-# Etiquetas cortas y amigables para las píldoras de sub-navegación (evitan el prefijo "N.-" plano)
-ETIQUETAS_CORTAS = {
-    "0.-DATOS": "📝 Mis Datos",
-    "🎓 SOBRE NOSOTRAS": "🎓 Sobre Nosotras",
-    "1.-ANÁLISIS SANGUÍNEO": "🩸 Análisis Sanguíneo",
-    "10.-CLIMA CHICLAYO": "🌡️ Clima Chiclayo",
-    "2.-IMC Y PERCENTIL": "⚖️ IMC y Percentil",
-    "3.-TMB": "⚡ TMB",
-    "4.-RCD": "🔥 RCD",
-    "5.-CONTROL DE PESO": "🎯 Control de Peso",
-    "6.-MACRONUTRIENTES": "🍽️ Macronutrientes",
-    "7.-PORCIONES": "⏰ Porciones",
-    "8.-FATSECRET": "🌐 FatSecret",
-    "9.-DIETA": "🍱 Dieta",
-    "11.-APORTE 1: EMBARAZO": "👶 Embarazo",
-    "12.-APORTE 2: CAFEÍNA": "🌙 Cafeína",
-    "13.-LÍNEA DE TIEMPO": "📈 Línea de Tiempo",
-    "📄 MI REPORTE": "📄 Mi Reporte",
-}
-
-# ---- Estado persistente: paso activo y hoja activa (no se reinician al navegar) ----
-if "hoja_activa" not in st.session_state:
-    st.session_state["hoja_activa"] = PASOS[0]["hojas"][0]
-if "paso_activo" not in st.session_state:
-    st.session_state["paso_activo"] = 1
-
-# El paso activo siempre queda coherente con la hoja activa actual (por si se navegó por botones
-# de "Anterior/Siguiente" hacia una hoja de otro paso)
-st.session_state["paso_activo"] = next(
-    (p["id"] for p in PASOS if st.session_state["hoja_activa"] in p["hojas"]),
-    st.session_state["paso_activo"]
-)
-
-# ---- Barra de progreso superior: 4 tarjetas/píldoras (Paso 1 → 2 → 3 → 4) ----
-st.markdown('<div class="stepper-wrap">', unsafe_allow_html=True)
-cols_paso = st.columns(4)
-for col, paso in zip(cols_paso, PASOS):
-    es_activo = paso["id"] == st.session_state["paso_activo"]
-    with col:
-        if st.button(
-            f"{paso['icono']}  Paso {paso['id']}\n{paso['titulo']}",
-            key=f"btn_paso_{paso['id']}",
-            use_container_width=True,
-            type="primary" if es_activo else "secondary",
-        ):
-            st.session_state["paso_activo"] = paso["id"]
-            st.session_state["hoja_activa"] = paso["hojas"][0]
-            st.rerun()
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-
-# ---- Sub-navegación: solo se muestran las píldoras de las hojas del paso activo ----
-_paso_actual = next(p for p in PASOS if p["id"] == st.session_state["paso_activo"])
-st.markdown('<div class="subtabs-wrap">', unsafe_allow_html=True)
-cols_sub = st.columns(len(_paso_actual["hojas"]))
-for col, h in zip(cols_sub, _paso_actual["hojas"]):
-    es_activo_sub = h == st.session_state["hoja_activa"]
-    with col:
-        if st.button(
-            ETIQUETAS_CORTAS.get(h, h),
-            key=f"btn_sub_{h}",
-            use_container_width=True,
-            type="primary" if es_activo_sub else "secondary",
-        ):
-            st.session_state["hoja_activa"] = h
-            st.rerun()
-st.markdown('</div>', unsafe_allow_html=True)
-
 hoja_activa = st.session_state["hoja_activa"]
+_icono_actual, _titulo_actual = ETIQUETAS_NAV[hoja_activa]
+st.markdown(f"""
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+    <span style="font-size:1.4rem;">{_icono_actual}</span>
+    <span style="font-size:0.82rem;color:#8A94A6;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">
+        Sección {OPCIONES_HOJAS.index(hoja_activa)+1} de {len(OPCIONES_HOJAS)} &nbsp;•&nbsp; {_titulo_actual}</span>
+</div>
+""", unsafe_allow_html=True)
 st.markdown("---")
 
 # ---------------------------------------------------------------------------------------
@@ -3717,31 +3735,27 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
               emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
 
 # =========================================================================================
-# PIE DE PÁGINA DEL WIZARD — navegación "Anterior / Siguiente" entre secciones
-# (no depende de volver a la barra superior; conserva el estado ya ingresado por el usuario)
+# PIE DE PÁGINA — navegación "Anterior / Siguiente" entre secciones
+# (complementa a las píldoras del sidebar; conserva el estado ya ingresado por el usuario)
 # =========================================================================================
 st.markdown("---")
 _idx_actual = OPCIONES_HOJAS.index(hoja_activa)
 col_prev, col_mid, col_next = st.columns([1, 2, 1])
 with col_prev:
     if _idx_actual > 0:
-        if st.button("← Paso Anterior", use_container_width=True, key="btn_anterior_footer"):
-            _nueva_hoja = OPCIONES_HOJAS[_idx_actual - 1]
-            st.session_state["hoja_activa"] = _nueva_hoja
-            st.session_state["paso_activo"] = next(p["id"] for p in PASOS if _nueva_hoja in p["hojas"])
+        if st.button("← Sección Anterior", use_container_width=True, key="btn_anterior_footer"):
+            st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual - 1]
             st.rerun()
 with col_mid:
     st.markdown(
         f"<div style='text-align:center;color:#8E8E93;font-size:0.85rem;padding-top:10px;'>"
-        f"Paso {st.session_state['paso_activo']} de 4 &nbsp;•&nbsp; Sección {_idx_actual + 1} de {len(OPCIONES_HOJAS)}"
+        f"Sección {_idx_actual + 1} de {len(OPCIONES_HOJAS)}"
         f"</div>", unsafe_allow_html=True
     )
 with col_next:
     if _idx_actual < len(OPCIONES_HOJAS) - 1:
-        if st.button("Guardar y Continuar →", use_container_width=True, type="primary", key="btn_siguiente_footer"):
-            _nueva_hoja = OPCIONES_HOJAS[_idx_actual + 1]
-            st.session_state["hoja_activa"] = _nueva_hoja
-            st.session_state["paso_activo"] = next(p["id"] for p in PASOS if _nueva_hoja in p["hojas"])
+        if st.button("Siguiente Sección →", use_container_width=True, type="primary", key="btn_siguiente_footer"):
+            st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual + 1]
             st.rerun()
 
 st.markdown("---")
