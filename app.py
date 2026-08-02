@@ -599,6 +599,55 @@ div[data-testid="stImageCaption"] {
 .macro-final-table td { padding:12px 14px; text-align:center; background:#FFFFFF; border-bottom:1px solid #F0F0F0; font-weight:600; color:#17301F; }
 .macro-final-table tr.fila-total td { background:#1E5631; color:#FFFFFF; font-weight:800; font-size:1rem; }
 
+/* ---------- Hoja 7: Distribución Calórica por Comidas ---------- */
+.rcd-hero-card {
+    background: linear-gradient(135deg,#FF9500 0%,#FFB300 55%,#FFD166 100%);
+    border-radius: 26px; padding: 28px 32px; color: white; text-align:center;
+    box-shadow: 0 14px 34px rgba(255,149,0,0.30); margin-bottom: 10px;
+}
+.rcd-hero-card .rcd-label { font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; opacity:0.92; }
+.rcd-hero-card .rcd-value { font-size:2.5rem; font-weight:800; letter-spacing:-0.02em; margin:6px 0; }
+.rcd-hero-card .rcd-sub { font-size:0.9rem; max-width:660px; margin:6px auto 0 auto; opacity:0.96; line-height:1.55; }
+
+.comidas-table-wrap {
+    border-radius:20px; overflow:hidden; margin-top:14px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 8px 22px rgba(0,0,0,0.07);
+    border:1px solid rgba(0,0,0,0.04);
+}
+.comidas-table { width:100%; border-collapse:collapse; font-family:var(--font-round); }
+.comidas-table thead th {
+    background: linear-gradient(135deg,#FFB300,#FF9500); color:#FFFFFF; padding:12px 16px;
+    font-weight:800; text-align:center; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.03em;
+}
+.comidas-table tbody td { padding:12px 16px; text-align:center; font-weight:600; color:#5A3E1B; }
+.comidas-table tbody tr { background:#FFF8EE; }
+.comidas-table tbody tr:nth-child(even) { background:#FFF1DC; }
+.comidas-table td.comida-nombre { text-align:left; font-weight:800; color:#B15E00; }
+.comidas-table tr.fila-total-comidas td { background:#FF9500; color:#FFFFFF; font-weight:800; font-size:1rem; }
+
+@keyframes validacion-fadein {
+    from { opacity:0; transform: translateY(10px); }
+    to   { opacity:1; transform: translateY(0); }
+}
+.validacion-ok {
+    margin-top:14px; border-radius:18px; padding:16px 20px;
+    background:#EAFAEE; border:1.5px solid #34C759; color:#1E5631; font-weight:700;
+    display:flex; align-items:center; gap:10px; font-size:0.94rem;
+    animation: validacion-fadein 0.5s ease both;
+    box-shadow: 0 6px 18px rgba(52,199,89,0.18);
+}
+.validacion-error {
+    margin-top:14px; border-radius:18px; padding:16px 20px;
+    background:#FBEAE8; border:1.5px solid #C0392B; color:#8A1F13; font-weight:700;
+    display:flex; align-items:center; gap:10px; font-size:0.94rem;
+    animation: validacion-fadein 0.5s ease both;
+}
+@media (max-width:700px) {
+    .rcd-hero-card { padding:22px 18px; }
+    .rcd-hero-card .rcd-value { font-size:1.9rem; }
+    .comidas-table thead th, .comidas-table tbody td { padding:9px 8px; font-size:0.78rem; }
+}
+
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
     section[data-testid="stSidebar"], header[data-testid="stHeader"], .navbar,
@@ -3323,12 +3372,88 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "7.-PORCIONES":
-    hoja_header(7, "Se toma el RCD final (según objetivo) y se multiplica por el factor de cada comida.")
-    tabla_bonita(pd.DataFrame({
-        "Comida": list(porciones.keys()),
-        "Factor": [f"{v['pct']*100:.0f}%" for v in porciones.values()],
-        "Calorías asignadas": [f"{v['kcal']:.1f} kcal" for v in porciones.values()]
-    }), 7)
+    hoja_header(7, "Tu Requerimiento Calórico Diario se reparte en 5 momentos del día usando porcentajes "
+                   "preestablecidos, para mantener tu metabolismo activo y evitar la ansiedad.")
+
+    # =====================================================================================
+    # RCD del usuario (ya calculado y ajustado a su objetivo en la Hoja 5)
+    # =====================================================================================
+    _rcd_comidas = rcd_final
+
+    st.markdown(f"""
+    <div class="rcd-hero-card">
+        <div class="rcd-label">Tu Requerimiento Calórico Diario (RCD)</div>
+        <div class="rcd-value">🎯 {_rcd_comidas:.2f} kcal</div>
+        <div class="rcd-sub">Para mantener tu metabolismo activo y evitar la ansiedad, hemos distribuido tus
+        calorías totales a lo largo del día. Cada comida representa un porcentaje ideal de tu RCD. Los
+        valores que ves en la tabla resultan de multiplicar tu RCD total por el porcentaje correspondiente
+        a cada comida.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # =====================================================================================
+    # Distribución por comida: Energía (kcal) = RCD × Porcentaje de esa comida
+    # =====================================================================================
+    _ICONOS_COMIDA = {
+        "Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙",
+    }
+    _PORCENTAJES_COMIDA = {
+        "Desayuno": 0.25, "Merienda 1": 0.05, "Almuerzo": 0.40, "Merienda 2": 0.05, "Cena": 0.25,
+    }
+
+    _filas_comidas_html = ""
+    _suma_kcal_comidas = 0.0
+    for _comida, _pct in _PORCENTAJES_COMIDA.items():
+        _kcal_comida = _rcd_comidas * _pct
+        _suma_kcal_comidas += _kcal_comida
+        _filas_comidas_html += f"""
+        <tr>
+            <td class="comida-nombre">{_ICONOS_COMIDA[_comida]} {_comida}</td>
+            <td>{_pct*100:.0f}%</td>
+            <td>{_kcal_comida:.2f} kcal</td>
+        </tr>"""
+
+    _filas_comidas_html += f"""
+        <tr class="fila-total-comidas">
+            <td class="comida-nombre" style="color:#FFFFFF;">🔢 TOTAL (RCD)</td>
+            <td>100%</td>
+            <td>{_suma_kcal_comidas:.2f} kcal</td>
+        </tr>"""
+
+    _html_tabla_comidas = f"""
+    <div class="comidas-table-wrap">
+    <table class="comidas-table">
+        <thead>
+        <tr><th style="text-align:left;">Comida</th><th>Porcentaje (%)</th><th>Energía (kcal)</th></tr>
+        </thead>
+        <tbody>
+        {_filas_comidas_html}
+        </tbody>
+    </table>
+    </div>
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_tabla_comidas), unsafe_allow_html=True)
+
+    # =====================================================================================
+    # Validación creativa: la suma de las 5 comidas debe coincidir con el RCD
+    # (margen de error mínimo permitido por decimales de redondeo)
+    # =====================================================================================
+    _diferencia_validacion = abs(_suma_kcal_comidas - _rcd_comidas)
+    if _diferencia_validacion < 0.5:
+        st.markdown("""
+        <div class="validacion-ok">
+            <span style="font-size:1.4rem;">✨</span>
+            <span>¡Equilibrio Perfecto! Las calorías de tus comidas coinciden exactamente con tu RCD.
+            ✅ ¡Matemática exacta! Tu día está planificado al 100%.</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div class="validacion-error">
+            <span style="font-size:1.4rem;">⚠️</span>
+            <span>Hay una diferencia de {_diferencia_validacion:.2f} kcal entre la suma de tus comidas y tu RCD.</span>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
     st.markdown("#### ❓ Preguntas frecuentes sobre los momentos de comida")
