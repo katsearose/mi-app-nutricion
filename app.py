@@ -2985,6 +2985,64 @@ st.markdown("---")
 
 # ---------------------------------------------------------------------------------------
 if hoja_activa == "0.-DATOS":
+    # --- Bloque destacado: por qué descargar el Excel original (va antes del formulario) ---
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
+                padding:28px 30px;color:white;margin-bottom:18px;
+                box-shadow:0 14px 34px rgba(30,86,49,0.28);">
+        <div style="font-size:0.8rem;letter-spacing:0.03em;text-transform:uppercase;font-weight:700;opacity:0.9;">
+            📂 Antes de empezar</div>
+        <div style="font-size:1.5rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.01em;">
+            ¿Por qué deberías descargar el Excel original?</div>
+        <div style="font-size:0.98rem;line-height:1.55;opacity:0.97;max-width:760px;">
+            Esta app es una réplica bonita y fácil de usar, pero el Excel es la herramienta completa: es tuya,
+            para siempre, y puedes llevarla contigo a donde quieras.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    ra1, ra2, ra3, ra4 = st.columns(4)
+    _razones_excel = [
+        ("🎨", "Personalízalo a tu gusto", "Cambia colores, agrega tus propias comidas o ajusta las "
+         "fórmulas exactamente como tú quieras — es 100% tuyo para editar."),
+        ("📴", "Úsalo sin internet", "No necesitas conexión ni esta página abierta: el Excel funciona "
+         "perfecto en tu computadora aunque no tengas WiFi ni datos."),
+        ("🧮", "Fórmulas a la mano", "Todas las fórmulas están visibles y editables en cada celda, así "
+         "puedes revisarlas, aprenderlas o adaptarlas a otro caso."),
+        ("📋", "Con las indicaciones incluidas", "Cada hoja trae sus propias notas e instrucciones, para "
+         "que sepas exactamente cómo usarla paso a paso."),
+    ]
+    for col, (emoji_r, titulo_r, texto_r) in zip([ra1, ra2, ra3, ra4], _razones_excel):
+        with col:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border-radius:20px;padding:16px 16px;height:100%;
+                        box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);
+                        border:1px solid rgba(0,0,0,0.04);">
+                <div style="font-size:1.6rem;">{emoji_r}</div>
+                <div style="font-weight:800;color:#1E5631;font-size:0.92rem;margin:6px 0 4px 0;">{titulo_r}</div>
+                <div style="font-size:0.8rem;color:#5C6B60;line-height:1.4;">{texto_r}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    if _ruta_excel is not None:
+        with open(_ruta_excel, "rb") as _f:
+            st.download_button(
+                "📥 Descargar el Excel original ahora",
+                data=_f.read(),
+                file_name=_ruta_excel.name,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                type="primary",
+            )
+    else:
+        st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
+                "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
+                "`app.py` antes de ejecutarlo.")
+
+    st.divider()
+
     st.markdown("""
     <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#007AFF 0%,#5AC8FA 45%,#34C759 100%);
                 border-radius:28px;padding:30px 34px;color:#FFFFFF;margin-bottom:18px;
@@ -3017,7 +3075,9 @@ if hoja_activa == "0.-DATOS":
     # ===== BLOQUE 1: Perfil Básico =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAF3FF 0%,#D6EBFF 100%);border-radius:20px;'
                 'padding:18px 22px;margin-bottom:14px;border:1px solid #007AFF22;">'
-                '<h4 style="margin:0 0 10px 0;color:#007AFF;">👤 Bloque 1 · Tu Perfil Básico</h4></div>',
+                '<h4 style="margin:0 0 8px 0;color:#007AFF;">👤 Bloque 1 · Tu Perfil Básico</h4>'
+                '<p style="margin:0;color:#3C6E9E;font-size:0.82rem;">Con tu peso, estatura, edad y género '
+                'calculamos tu metabolismo (TMB) y detectamos tu etapa de vida — la base de todo tu plan.</p></div>',
                 unsafe_allow_html=True)
     b1c1, b1c2 = st.columns(2)
     with b1c1:
@@ -3061,7 +3121,9 @@ if hoja_activa == "0.-DATOS":
     # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #1E563122;">'
-                '<h4 style="margin:0 0 10px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4></div>',
+                '<h4 style="margin:0 0 8px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4>'
+                '<p style="margin:0;color:#3E7050;font-size:0.82rem;">Tu nivel de actividad y tu meta definen '
+                'cuántas calorías gastas al día (RCD) y a qué ritmo ajustamos tu alimentación.</p></div>',
                 unsafe_allow_html=True)
     st.caption("🏃 Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
     actividad = st.radio(
@@ -3164,25 +3226,32 @@ if hoja_activa == "0.-DATOS":
     # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
     st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #C0392B22;">'
-                '<h4 style="margin:0 0 10px 0;color:#C0392B;">💓 Bloque 3 · Monitoreo de Signos Vitales</h4>'
-                '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Campos opcionales — puedes dejarlos en 0 '
-                'si no tienes un examen a la mano.</p></div>', unsafe_allow_html=True)
+                '<h4 style="margin:0 0 8px 0;color:#C0392B;">💓 Bloque 3 · Monitoreo de Signos Vitales</h4>'
+                '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Estos indicadores muestran cómo está '
+                'funcionando tu cuerpo en este momento, y ayudan a detectar señales de alerta a tiempo.</p></div>',
+                unsafe_allow_html=True)
     b3c1, b3c2, b3c3, b3c4 = st.columns(4)
     with b3c1:
         spo2 = st.number_input("Oxigenación SpO2 (%):", min_value=0.0, max_value=100.0, value=0.0, step=1.0,
                                 key="spo2", help="Normal: 95% a 100%.")
+        st.markdown(_gauge_track_html(spo2 if spo2 > 0 else None, 0, 100,
+                    [(0, 90, "rojo"), (90, 95, "ambar"), (95, 100, "verde")]), unsafe_allow_html=True)
         if spo2 > 0:
             _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
             _badge_vital(spo2, "%", _c, "Normal" if _c == "verde" else ("Bajo" if _c == "rojo" else "Atención"))
     with b3c2:
         pulso = st.number_input("Pulso (lpm):", min_value=0, max_value=220, value=0, step=1,
                                  key="pulso", help="Ideal en reposo: 60 a 100 lpm.")
+        st.markdown(_gauge_track_html(pulso if pulso > 0 else None, 0, 220,
+                    [(0, 60, "ambar"), (60, 100, "verde"), (100, 220, "rojo")]), unsafe_allow_html=True)
         if pulso > 0:
             _c = "verde" if 60 <= pulso <= 100 else "ambar"
             _badge_vital(pulso, " lpm", _c, "Normal" if _c == "verde" else "Atención")
     with b3c3:
         temp_corp = st.number_input("Temperatura (°C):", min_value=34.0, max_value=42.0, value=34.0, step=0.1,
                                      key="temp_corp", help="Normal: 36.5°C a 37.5°C.")
+        st.markdown(_gauge_track_html(temp_corp if temp_corp > 34.0 else None, 34.0, 42.0,
+                    [(34.0, 36.5, "ambar"), (36.5, 37.5, "verde"), (37.5, 42.0, "rojo")]), unsafe_allow_html=True)
         if temp_corp > 34.0:
             _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
             _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
@@ -3190,6 +3259,8 @@ if hoja_activa == "0.-DATOS":
         st.caption("Presión Arterial (mmHg):")
         pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
         pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
+        st.markdown(_gauge_track_html(pas if pas > 0 else None, 0, 250,
+                    [(0, 90, "ambar"), (90, 130, "verde"), (130, 250, "rojo")]), unsafe_allow_html=True)
         if pas > 0 and pad > 0:
             _c = "verde" if (90 <= pas <= 129 and 60 <= pad <= 84) else "ambar"
             _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
@@ -3198,95 +3269,70 @@ if hoja_activa == "0.-DATOS":
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
     st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #7B1FA222;">'
-                '<h4 style="margin:0 0 10px 0;color:#7B1FA2;">🩸 Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)</h4>'
-                '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Si tienes análisis recientes (3-6 meses), '
-                'ingrésalos aquí. Campos opcionales.</p></div>', unsafe_allow_html=True)
+                '<h4 style="margin:0 0 8px 0;color:#7B1FA2;">🩸 Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)</h4>'
+                '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Con tus valores de sangre identificamos '
+                'riesgos como anemia, colesterol alto o glucosa elevada, para darte recomendaciones más precisas.</p></div>',
+                unsafe_allow_html=True)
     b4c1, b4c2, b4c3, b4c4, b4c5 = st.columns(5)
     with b4c1:
         hemo = st.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
                                 key="hemo", help="Normal: 12-17 g/dL, varía por género.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Hemoglobina", etapa, genero)
+        st.markdown(_gauge_track_html(hemo if hemo > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
     with b4c2:
         gluco = st.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
                                  key="gluco", help="Normal en ayunas: 70-100 mg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Glucosa")
+        st.markdown(_gauge_track_html(gluco if gluco > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
     with b4c3:
         coles = st.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
                                  key="coles", help="Ideal: menor a 200 mg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Colesterol")
+        st.markdown(_gauge_track_html(coles if coles > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
     with b4c4:
         trigli = st.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
                                   key="trigli", help="Ideal: menor a 150 mg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Triglicéridos")
+        st.markdown(_gauge_track_html(trigli if trigli > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
     with b4c5:
         hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
                                   key="hierro", help="Normal: 60-170 µg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Hierro", etapa, genero)
+        st.markdown(_gauge_track_html(hierro if hierro > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
 
     st.divider()
-
-    # --- Bloque destacado: por qué descargar el Excel original ---
-    st.markdown("""
-    <div style="background:linear-gradient(135deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
-                padding:28px 30px;color:white;margin-bottom:18px;
-                box-shadow:0 14px 34px rgba(30,86,49,0.28);">
-        <div style="font-size:0.8rem;letter-spacing:0.03em;text-transform:uppercase;font-weight:700;opacity:0.9;">
-            📂 Antes de empezar</div>
-        <div style="font-size:1.5rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.01em;">
-            ¿Por qué deberías descargar el Excel original?</div>
-        <div style="font-size:0.98rem;line-height:1.55;opacity:0.97;max-width:760px;">
-            Esta app es una réplica bonita y fácil de usar, pero el Excel es la herramienta completa: es tuya,
-            para siempre, y puedes llevarla contigo a donde quieras.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    ra1, ra2, ra3, ra4 = st.columns(4)
-    _razones_excel = [
-        ("🎨", "Personalízalo a tu gusto", "Cambia colores, agrega tus propias comidas o ajusta las "
-         "fórmulas exactamente como tú quieras — es 100% tuyo para editar."),
-        ("📴", "Úsalo sin internet", "No necesitas conexión ni esta página abierta: el Excel funciona "
-         "perfecto en tu computadora aunque no tengas WiFi ni datos."),
-        ("🧮", "Fórmulas a la mano", "Todas las fórmulas están visibles y editables en cada celda, así "
-         "puedes revisarlas, aprenderlas o adaptarlas a otro caso."),
-        ("📋", "Con las indicaciones incluidas", "Cada hoja trae sus propias notas e instrucciones, para "
-         "que sepas exactamente cómo usarla paso a paso."),
-    ]
-    for col, (emoji_r, titulo_r, texto_r) in zip([ra1, ra2, ra3, ra4], _razones_excel):
-        with col:
-            st.markdown(f"""
-            <div style="background:#FFFFFF;border-radius:20px;padding:16px 16px;height:100%;
-                        box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);
-                        border:1px solid rgba(0,0,0,0.04);">
-                <div style="font-size:1.6rem;">{emoji_r}</div>
-                <div style="font-weight:800;color:#1E5631;font-size:0.92rem;margin:6px 0 4px 0;">{titulo_r}</div>
-                <div style="font-size:0.8rem;color:#5C6B60;line-height:1.4;">{texto_r}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-
-    if _ruta_excel is not None:
-        with open(_ruta_excel, "rb") as _f:
-            st.download_button(
-                "📥 Descargar el Excel original ahora",
-                data=_f.read(),
-                file_name=_ruta_excel.name,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-                type="primary",
-            )
-    else:
-        st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
-                "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
-                "`app.py` antes de ejecutarlo.")
-
-    st.divider()
+    st.markdown("#### 📋 Resumen de tus datos ingresados")
 
     col_datos, col_sticker = st.columns([2, 1])
     with col_datos:
-        df0 = pd.DataFrame({
-            "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
-                         "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
-            "Valor": [_nombre_saludo, f"{peso:.2f} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m:.2f}", genero, actividad,
-                      objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
-        })
-        tabla_bonita(df0, 0)
+        _tablas_resumen = [
+            (0, "👤 Bloque 1 · Perfil Básico", [
+                ("Nombre", _nombre_saludo), ("Género", genero), ("Peso", f"{peso:.2f} kg"),
+                ("Estatura", f"{estatura} cm ({estatura_m:.2f} m)"), ("Edad", f"{edad} años"),
+                ("Etapa detectada", etapa),
+            ]),
+            (4, "🏃 Bloque 2 · Estilo de Vida y Objetivos", [
+                ("Actividad física", actividad), ("Objetivo", objetivo),
+                ("Ajuste (bajar)", f"{ajuste_bajar*100:.0f}%"), ("Ajuste (subir)", f"{ajuste_subir*100:.0f}%"),
+            ]),
+            (1, "💓 Bloque 3 · Signos Vitales", [
+                ("SpO2", f"{spo2:.2f}%" if spo2 > 0 else "Sin dato"),
+                ("Pulso", f"{pulso} lpm" if pulso > 0 else "Sin dato"),
+                ("Temperatura", f"{temp_corp:.2f}°C" if temp_corp > 34.0 else "Sin dato"),
+                ("Presión arterial", f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "Sin dato"),
+            ]),
+            (1, "🩸 Bloque 4 · Perfil Bioquímico", [
+                ("Hemoglobina", f"{hemo:.2f} g/dL" if hemo > 0 else "Sin dato"),
+                ("Glucosa", f"{gluco:.2f} mg/dL" if gluco > 0 else "Sin dato"),
+                ("Colesterol", f"{coles:.2f} mg/dL" if coles > 0 else "Sin dato"),
+                ("Triglicéridos", f"{trigli:.2f} mg/dL" if trigli > 0 else "Sin dato"),
+                ("Hierro", f"{hierro:.2f} µg/dL" if hierro > 0 else "Sin dato"),
+            ]),
+        ]
+        for _idx_col, _titulo_tabla, _filas_tabla in _tablas_resumen:
+            caja_titulo(_titulo_tabla, _idx_col)
+            tabla_bonita(pd.DataFrame({"Variable": [f[0] for f in _filas_tabla],
+                                        "Valor": [f[1] for f in _filas_tabla]}), _idx_col)
     with col_sticker:
         if _STICKER_NINA.exists():
             mostrar_sticker(_STICKER_NINA, ancho=190)
