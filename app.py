@@ -3027,7 +3027,10 @@ if hoja_activa == "0.-DATOS":
         genero = st.radio("Género:", ["Hombre", "Mujer"], horizontal=True, key="genero",
                            format_func=lambda g: ("♂ Hombre" if g == "Hombre" else "♀ Mujer"))
     _nombre_saludo = nombre_display(nombre_usuario, genero)
-    st.success(f"¡Paz y bien, {_nombre_saludo}! 🌟") if nombre_usuario.strip() else st.caption("✍️ Escribe tu nombre.")
+    if nombre_usuario.strip():
+        st.success(f"¡Paz y bien, {_nombre_saludo}! 🌟")
+    else:
+        st.caption("✍️ Escribe tu nombre.")
 
     peso_max_actual = PESO_MAX[genero]
     estatura_max_actual = ESTATURA_MAX[genero]
