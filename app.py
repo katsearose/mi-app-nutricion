@@ -2998,10 +2998,9 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
            (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
             st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
 
-    with st.expander("ℹ️ ¿Qué significa este ajuste?"):
-        st.caption("Define qué tan rápido deseas alcanzar tu objetivo, adaptando tus calorías diarias a partir "
-                   "de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado suele ser la opción "
-                   "recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
+    st.caption("ℹ️ **¿Qué significa este ajuste?** Define qué tan rápido deseas alcanzar tu objetivo, adaptando "
+               "tus calorías diarias a partir de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado "
+               "suele ser la opción recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
 
     # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
     st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
@@ -3080,11 +3079,32 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
         _min_g, _max_g, _seg_g = _zonas_gauge("Hierro", etapa, genero)
         st.markdown(_gauge_track_html(hierro if hierro > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
 
-# ---- Sidebar: navegación tipo píldoras verticales, con las 16 secciones siempre visibles ----
+# ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 16 secciones siempre visibles ----
 st.sidebar.markdown(
     '<div class="sidebar-nav-title">🧭 Navegación · 16 secciones</div>',
     unsafe_allow_html=True,
 )
+
+_nav_colores_css = "<style>\n"
+for _i_nav, _hoja_nav_css in enumerate(OPCIONES_HOJAS, start=1):
+    _idx_color_css = list(COLORES.keys())[_i_nav - 1]
+    _, _, _, _borde_css, _fondo_css = COLORES[_idx_color_css]
+    _nav_colores_css += f'''
+section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="secondary"] {{
+    background:{_fondo_css} !important; color:{_borde_css} !important;
+    border:1.5px solid {_borde_css}55 !important; font-weight:700 !important;
+}}
+section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="secondary"]:hover {{
+    border-color:{_borde_css} !important; transform:translateX(2px);
+}}
+section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="primary"] {{
+    background:linear-gradient(135deg,{_borde_css} 0%,{_borde_css}CC 100%) !important; color:#FFFFFF !important;
+    box-shadow:0 4px 14px {_borde_css}66 !important; border:1.5px solid {_borde_css} !important;
+}}
+'''
+_nav_colores_css += "</style>"
+st.sidebar.markdown(_nav_colores_css, unsafe_allow_html=True)
+
 for _hoja_nav in OPCIONES_HOJAS:
     _icono_nav, _titulo_nav = ETIQUETAS_NAV[_hoja_nav]
     _es_activo_nav = (_hoja_nav == st.session_state["hoja_activa"])
