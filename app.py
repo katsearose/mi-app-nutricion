@@ -3063,35 +3063,99 @@ if hoja_activa == "0.-DATOS":
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #1E563122;">'
                 '<h4 style="margin:0 0 10px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4></div>',
                 unsafe_allow_html=True)
-    st.caption("Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
+    st.caption("🏃 Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
     actividad = st.radio(
-        "Actividad:",
-        ["Sedentaria", "Ligero", "Moderada", "Intensa"],
+        "Actividad:", ["Sedentaria", "Ligero", "Moderada", "Intensa"],
         index=1, key="actividad", label_visibility="collapsed",
         format_func=lambda a: {
-            "Sedentaria": "🪑 Sedentario o Poco Activo (Factor 1.2) — modo reposo, casi sin movilidad.",
-            "Ligero": "🚶 Ligeramente Activo (Factor 1.375-1.55) — movimiento cotidiano acumulado.",
-            "Moderada": "🏃 Moderadamente Activo (Factor 1.55-1.75) — cuerpo en acción la mitad del día.",
-            "Intensa": "🔥 Muy Activo / Intenso (Factor 1.8-2.1) — alto esfuerzo físico diario.",
+            "Sedentaria": "🪑 Sedentario o Poco Activo (Factor 1.2)",
+            "Ligero": "🚶 Ligeramente Activo (Factor 1.375-1.55)",
+            "Moderada": "🏃 Moderadamente Activo (Factor 1.55-1.75)",
+            "Intensa": "🔥 Muy Activo / Intenso (Factor 1.8-2.1)",
         }[a],
     )
+    _DESC_ACTIVIDAD = [
+        ("Sedentaria", "🪑", "#8E8E93", "#F2F2F7", "Sedentario o Poco Activo (Factor 1.2)",
+         "Días en 'modo reposo'. Pasas la mayor parte del día sentado (oficina, estudio, manejo) y tu "
+         "movilidad fuera de estar sentado es mínima o nula."),
+        ("Ligero", "🚶", "#34C759", "#EAFAEE", "Ligeramente Activo (Factor 1.375 - 1.55)",
+         "Movimiento cotidiano acumulado. Trabajas sentado, pero caminas distancias razonables a diario, "
+         "usas transporte público activo, haces compras a pie o labores del hogar de forma constante."),
+        ("Moderada", "🏃", "#007AFF", "#EAF3FF", "Moderadamente Activo (Factor 1.55 - 1.75)",
+         "Cuerpo en acción la mitad del día. Tienes un trabajo de pie o con desplazamiento constante "
+         "(maestro, vendedor, salud) O tu trabajo es sentado pero realizas actividades físicas dinámicas "
+         "de forma regular."),
+        ("Intensa", "🔥", "#FF3B30", "#FFEDEC", "Muy Activo / Intenso (Factor 1.8 - 2.1)",
+         "Alto esfuerzo físico diario. Entrenamientos intensos diarios o trabajos de alta exigencia física "
+         "(construcción, agricultura, atletas)."),
+    ]
+    for _clave, _ic, _col, _fon, _tit, _desc in _DESC_ACTIVIDAD:
+        _sel = (_clave == actividad)
+        _estilo = (f"border:2.5px solid {_col};box-shadow:0 8px 20px {_col}40;transform:translateX(4px);"
+                   if _sel else "border:1px solid rgba(0,0,0,0.06);")
+        st.markdown(f"""
+        <div style="background:{_fon};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo}
+                    transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
+            <div style="font-size:1.4rem;">{_ic}</div>
+            <div><b style="color:{_col};">{_tit}</b>{' ✓' if _sel else ''}<br>
+            <span style="font-size:0.84rem;color:#3C3C43;">{_desc}</span></div>
+        </div>
+        """, unsafe_allow_html=True)
+
     b2c1, b2c2 = st.columns(2)
     with b2c1:
         objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
                                  key="objetivo")
     with b2c2:
+        st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
         if objetivo == "Bajar de peso":
-            ajuste_txt = st.selectbox("Ajuste del Ritmo:",
-                ["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
-            if ajuste_txt == "Intensivo (-30%)":
-                st.warning("🟨 Ritmo Intensivo: cambios más rápidos, recomendado solo en obesidad o periodos cortos con seguimiento.")
+            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+                options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
         elif objetivo == "Subir de peso":
-            ajuste_txt = st.selectbox("Ajuste del Ritmo:",
-                ["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
-            if ajuste_txt == "Acelerado (+20%)":
-                st.warning("🟨 Ritmo Acelerado: cambios más rápidos; requiere alimentación bien planificada.")
+            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+                options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
         else:
+            ajuste_txt = None
             st.caption("Sin ajuste calórico: se mantiene tu RCD.")
+
+    if objetivo in ("Bajar de peso", "Subir de peso"):
+        _DESC_AJUSTE = {
+            "Bajar de peso": [
+                ("Gradual (-10%)", "🌱", "#34C759", "#EAFAEE",
+                 "Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles."),
+                ("Equilibrado (-20%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
+                 "La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables."),
+                ("Intensivo (-30%)", "🚀", "#FF3B30", "#FFEDEC",
+                 "Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
+                 "periodos cortos y con seguimiento."),
+            ],
+            "Subir de peso": [
+                ("Gradual (+10%)", "🌱", "#34C759", "#EAFAEE",
+                 "Aumenta las calorías de forma moderada para favorecer una ganancia progresiva."),
+                ("Equilibrado (+15%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
+                 "La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa."),
+                ("Acelerado (+20%)", "🚀", "#FF3B30", "#FFEDEC",
+                 "Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
+                 "Requiere una alimentación bien planificada."),
+            ],
+        }[objetivo]
+        _cols_ajuste = st.columns(3)
+        for _col_w, (_tit_a, _ic_a, _col_a, _fon_a, _desc_a) in zip(_cols_ajuste, _DESC_AJUSTE):
+            _sel_a = (_tit_a == ajuste_txt)
+            with _col_w:
+                _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateY(-3px);"
+                             if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
+                st.markdown(f"""
+                <div style="background:{_fon_a};border-radius:16px;padding:14px 14px;height:100%;{_estilo_a}transition:all 0.2s ease;">
+                    <div style="font-size:1.3rem;">{_ic_a}</div>
+                    <div style="font-weight:800;color:{_col_a};font-size:0.86rem;margin:4px 0 4px 0;">{_tit_a}{' ✓' if _sel_a else ''}</div>
+                    <div style="font-size:0.78rem;color:#3C3C43;">{_desc_a}</div>
+                </div>
+                """, unsafe_allow_html=True)
+        if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
+           (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
+            st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
+
     with st.expander("ℹ️ ¿Qué significa este ajuste?"):
         st.caption("Define qué tan rápido deseas alcanzar tu objetivo, adaptando tus calorías diarias a partir "
                    "de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado suele ser la opción "
