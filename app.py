@@ -2840,9 +2840,6 @@ st.sidebar.markdown("---")
 # los cálculos centrales funcionen sin importar en qué hoja esté el usuario.
 # =========================================================================================
 st.sidebar.caption("🔒 Tus datos son privados y no se guardan en ningún servidor.")
-if _ESCUDO.exists():
-    st.sidebar.image(str(_ESCUDO), width=110)
-st.sidebar.info("📝 Ingresa o edita tus datos en la hoja **'Mis Datos'** (primera sección).")
 
 genero = st.session_state.get("genero", "Hombre")
 nombre_usuario = st.session_state.get("nombre_usuario", "")
@@ -2988,13 +2985,27 @@ st.markdown("---")
 
 # ---------------------------------------------------------------------------------------
 if hoja_activa == "0.-DATOS":
-    hoja_header(0, "El punto de partida: aquí registras todo lo que la app necesita saber de ti.")
-
     st.markdown("""
-    <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:12px 20px;margin-bottom:16px;">
-    🔒 <b style="color:#007AFF;">Tus datos son privados:</b> solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.
+    <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#007AFF 0%,#5AC8FA 45%,#34C759 100%);
+                border-radius:28px;padding:30px 34px;color:#FFFFFF;margin-bottom:18px;
+                box-shadow:0 18px 40px rgba(0,122,255,0.28);">
+        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:5.5rem;opacity:0.18;">📝✨</div>
+        <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">Paso 1 de tu plan</div>
+        <h1 style="margin:6px 0 6px 0;font-weight:900;letter-spacing:-0.02em;">📝 ¡Introduce tus datos!</h1>
+        <p style="margin:0;font-size:1rem;opacity:0.96;max-width:600px;">El punto de partida: aquí registras todo lo que la app necesita saber de ti para armar tu plan personalizado. 🌈</p>
     </div>
     """, unsafe_allow_html=True)
+
+    col_priv, col_escudo = st.columns([3, 1])
+    with col_priv:
+        st.markdown("""
+        <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:12px 20px;height:100%;">
+        🔒 <b style="color:#007AFF;">Tus datos son privados:</b> solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.
+        </div>
+        """, unsafe_allow_html=True)
+    with col_escudo:
+        if _ESCUDO.exists():
+            st.image(str(_ESCUDO), width=90)
 
     def _badge_vital(valor, unidad, color_key, etiqueta):
         est = SEMAFORO_ESTILO[color_key]
@@ -3004,7 +3015,8 @@ if hoja_activa == "0.-DATOS":
                     unsafe_allow_html=True)
 
     # ===== BLOQUE 1: Perfil Básico =====
-    st.markdown('<div style="background:#EAF3FF;border-radius:20px;padding:18px 22px;margin-bottom:14px;">'
+    st.markdown('<div style="background:linear-gradient(120deg,#EAF3FF 0%,#D6EBFF 100%);border-radius:20px;'
+                'padding:18px 22px;margin-bottom:14px;border:1px solid #007AFF22;">'
                 '<h4 style="margin:0 0 10px 0;color:#007AFF;">👤 Bloque 1 · Tu Perfil Básico</h4></div>',
                 unsafe_allow_html=True)
     b1c1, b1c2 = st.columns(2)
@@ -3020,6 +3032,14 @@ if hoja_activa == "0.-DATOS":
     peso_max_actual = PESO_MAX[genero]
     estatura_max_actual = ESTATURA_MAX[genero]
     edad_max_actual = EDAD_MAX[genero]
+    # --- Ajusta valores previos que puedan exceder el nuevo tope al cambiar de género (evita error) ---
+    if st.session_state.get("estatura", 0) and st.session_state["estatura"] > min(250, estatura_max_actual):
+        st.session_state["estatura"] = min(250, estatura_max_actual)
+    if st.session_state.get("edad", 0) and st.session_state["edad"] > min(120, edad_max_actual):
+        st.session_state["edad"] = min(120, edad_max_actual)
+    if st.session_state.get("peso", 0) and st.session_state["peso"] > min(300.0, peso_max_actual):
+        st.session_state["peso"] = min(300.0, peso_max_actual)
+
     b1c3, b1c4, b1c5 = st.columns(3)
     with b1c3:
         peso = st.number_input("Peso (kg):", min_value=20.0, max_value=min(300.0, peso_max_actual),
@@ -3036,7 +3056,8 @@ if hoja_activa == "0.-DATOS":
     st.info(f"🔎 Etapa detectada automáticamente: **{etapa}**")
 
     # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
-    st.markdown('<div style="background:#EAFAEE;border-radius:20px;padding:18px 22px;margin:18px 0 14px 0;">'
+    st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
+                'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #1E563122;">'
                 '<h4 style="margin:0 0 10px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4></div>',
                 unsafe_allow_html=True)
     st.caption("Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
@@ -3074,7 +3095,8 @@ if hoja_activa == "0.-DATOS":
                    "recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
 
     # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
-    st.markdown('<div style="background:#FFEBEE;border-radius:20px;padding:18px 22px;margin:18px 0 14px 0;">'
+    st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
+                'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #C0392B22;">'
                 '<h4 style="margin:0 0 10px 0;color:#C0392B;">💓 Bloque 3 · Monitoreo de Signos Vitales</h4>'
                 '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Campos opcionales — puedes dejarlos en 0 '
                 'si no tienes un examen a la mano.</p></div>', unsafe_allow_html=True)
@@ -3107,7 +3129,8 @@ if hoja_activa == "0.-DATOS":
     st.caption("ℹ️ Un valor estándar y saludable de presión ronda los 120/80 mmHg.")
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
-    st.markdown('<div style="background:#F3E5F5;border-radius:20px;padding:18px 22px;margin:18px 0 14px 0;">'
+    st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
+                'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #7B1FA222;">'
                 '<h4 style="margin:0 0 10px 0;color:#7B1FA2;">🩸 Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)</h4>'
                 '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Si tienes análisis recientes (3-6 meses), '
                 'ingrésalos aquí. Campos opcionales.</p></div>', unsafe_allow_html=True)
