@@ -964,6 +964,7 @@ def formula_badge(formula, autor="", referencia="", icono="ℹ️", texto="Ver f
             f'<span class="formula-badge-txt">{texto}</span></span>')
 
 
+@st.cache_data(show_spinner=False)
 def _resolver_imagen(ruta):
     """Busca una imagen probando varias ubicaciones (la ruta indicada, directamente en /assets,
     y en /assets/hojas) y varias extensiones/mayúsculas (.jpg, .JPG, .jpeg, .png, etc.).
@@ -987,6 +988,7 @@ def _resolver_imagen(ruta):
     return None
 
 
+@st.cache_data(show_spinner=False)
 def _img_to_b64(ruta):
     """Convierte una imagen (ruta en disco) a base64. Devuelve None si no existe o falla."""
     try:
@@ -1043,6 +1045,7 @@ def _rl_hex(hexcolor):
     return rl_colors.HexColor(hexcolor)
 
 
+@st.cache_data(show_spinner=False)
 def generar_pdf_reporte(datos):
     """Genera el Informe de Resultados en un PDF real con estilo de informe médico/clínico
     (encabezado tipo consultorio, tablas de valores, semáforo de resultados en colores,
@@ -1897,6 +1900,7 @@ def color_categoria_imc(categoria):
     return estilo
 
 
+@st.cache_data(show_spinner=False)
 def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, genero_usuario=None):
     """Recrea el gráfico de percentiles con bandas de color entre cada curva (P5, P50, P85, P95),
     con el IMC en el eje Y, etiquetas de dato en cada punto, y una estrella marcando la posición
@@ -2640,6 +2644,7 @@ def mostrar_sticker(ruta, ancho=170):
     if ruta.exists():
         st.image(str(ruta), width=ancho)
 
+@st.cache_data(show_spinner=False)
 def _img_b64(path):
     try:
         return base64.b64encode(Path(path).read_bytes()).decode()
@@ -2750,22 +2755,20 @@ _POSIBLES_NOMBRES_EXCEL = [
     "Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx",
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
 ]
-_ruta_excel = None
-for _nombre in _POSIBLES_NOMBRES_EXCEL:
-    _candidata = Path(__file__).parent / _nombre
-    if _candidata.exists():
-        _ruta_excel = _candidata
-        break
-
-if _ruta_excel is None:
-    # Nombre exacto no encontrado: busca CUALQUIER .xlsx en la carpeta del proyecto y prioriza el
-    # más reciente que contenga "GrupoN4" o "CIAM" en el nombre; si no hay ninguno así, toma el
-    # .xlsx modificado más recientemente que encuentre.
+@st.cache_data(show_spinner=False)
+def _buscar_excel_original():
+    for _nombre in _POSIBLES_NOMBRES_EXCEL:
+        _candidata = Path(__file__).parent / _nombre
+        if _candidata.exists():
+            return _candidata
     _candidatos_xlsx = list(Path(__file__).parent.glob("*.xlsx"))
     _prioritarios = [c for c in _candidatos_xlsx if "grupon4" in c.name.lower() or "ciam" in c.name.lower()]
     _lista_final = _prioritarios if _prioritarios else _candidatos_xlsx
     if _lista_final:
-        _ruta_excel = sorted(_lista_final, key=lambda p: p.stat().st_mtime, reverse=True)[0]
+        return sorted(_lista_final, key=lambda p: p.stat().st_mtime, reverse=True)[0]
+    return None
+
+_ruta_excel = _buscar_excel_original()
 
 st.markdown("---")
 
@@ -3385,10 +3388,6 @@ if hoja_activa == "0.-DATOS":
             tabla_bonita(pd.DataFrame({"Variable": [f[0] for f in _filas_tabla],
                                         "Valor": [f[1] for f in _filas_tabla]}), _idx_col)
     with col_sticker:
-        if _STICKER_NINA.exists():
-            mostrar_sticker(_STICKER_NINA, ancho=190)
-        elif _STICKER_NINA_ALT.exists():
-            mostrar_sticker(_STICKER_NINA_ALT, ancho=190)
         st.caption(f"¡Bienvenid@, {_nombre_saludo}! 👋")
 
     st.divider()
@@ -3396,7 +3395,6 @@ if hoja_activa == "0.-DATOS":
               "automáticamente a ti: desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se "
               "detecta sola apenas escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
               emoji="📝", color="#E3F2FD", borde="#2196F3")
-    imagen_bonita(IMAGENES_POR_HOJA[0], caption="Hoja 0 — Introduce tus datos")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
@@ -3596,7 +3594,6 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
               "qué significan, por qué ocurren y qué podrías hacer. Así sabes de un vistazo si algún valor necesita "
               "atención médica. 🩺❤️",
               emoji="🩸", color="#FFEBEE", borde="#E53935")
-    imagen_bonita(IMAGENES_POR_HOJA[1], caption="Hoja 1 — Análisis Sanguíneo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "2.-IMC Y PERCENTIL":
@@ -3713,7 +3710,6 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
               emoji="⚖️", color="#F3E5F5", borde="#8E24AA")
-    imagen_bonita(IMAGENES_POR_HOJA[2], caption="Hoja 2 — IMC y Percentil")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
@@ -3729,7 +3725,6 @@ elif hoja_activa == "3.-TMB":
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
               "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
               emoji="⚡", color="#FFF3E0", borde="#FB8C00")
-    imagen_bonita(IMAGENES_POR_HOJA[3], caption="Hoja 3 — Tasa Metabólica Basal")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
@@ -3916,7 +3911,6 @@ elif hoja_activa == "4.-RCD":
               "normal, sumando tu TMB (Hoja 3) más el movimiento que haces según tu nivel de actividad. "
               "Es tu 'punto de equilibrio' calórico. 🏃‍♀️🔥",
               emoji="🔥", color="#E8F5E9", borde="#43A047")
-    imagen_bonita(IMAGENES_POR_HOJA[4], caption="Hoja 4 — Requerimiento Calórico Diario")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "5.-CONTROL DE PESO":
@@ -4075,7 +4069,6 @@ elif hoja_activa == "5.-CONTROL DE PESO":
               "número exacto de calorías al día (tu RCD Objetivo), sin arriesgar tu salud: nunca por debajo de "
               "tu TMB. Revisa la hoja 'Línea de Tiempo' para ver cómo evolucionaría tu peso con este plan. 🎯",
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
-    imagen_bonita(IMAGENES_POR_HOJA[5], caption="Hoja 5 — Control de Peso")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
@@ -4308,7 +4301,6 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
               "carbohidratos, en cambio, son la variable de ajuste: llenan el resto de tu energía diaria "
               "hasta llegar exactamente a tu RCD. 🍽️",
               emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
-    imagen_bonita(IMAGENES_POR_HOJA[6], caption="Hoja 6 — Cálculo de los Macronutrientes")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "7.-PORCIONES":
@@ -4466,7 +4458,6 @@ elif hoja_activa == "7.-PORCIONES":
               "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
               "llegues a tu meta sin pasar hambre ni excederte. ⏰🍴",
               emoji="🍽️", color="#E0F7FA", borde="#00ACC1")
-    imagen_bonita(IMAGENES_POR_HOJA[7], caption="Hoja 7 — Porciones del Día")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "8.-FATSECRET":
@@ -4494,7 +4485,6 @@ elif hoja_activa == "8.-FATSECRET":
               "aquí y con un clic vas directo a su ficha nutricional completa en FatSecret. Así armas tu dieta "
               "con información real, no con suposiciones. 🔍🥗",
               emoji="🌐", color="#E0F2F1", borde="#00796B")
-    imagen_bonita(IMAGENES_POR_HOJA[8], caption="Hoja 8 — Página FatSecret")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "9.-DIETA":
@@ -4695,7 +4685,6 @@ elif hoja_activa == "9.-DIETA":
               "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
               "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
-    imagen_bonita(IMAGENES_POR_HOJA[9], caption="Hoja 9 — Plan de Dieta Semanal")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "10.-CLIMA CHICLAYO":
@@ -4708,8 +4697,6 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
     col_clima, col_sticker_clima = st.columns([3, 1])
 
     with col_sticker_clima:
-        if _STICKER_CORRIENDO.exists():
-            mostrar_sticker(_STICKER_CORRIENDO, ancho=170)
         st.caption("¡El movimiento también forma parte de tu metabolismo! 🏃‍♀️")
 
     with col_clima:
@@ -4727,7 +4714,6 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
               "dato extra te da una versión más realista y localizada de tu gasto calórico, pensada "
               "específicamente para nuestra región. ☀️🌴",
               emoji="🌡️", color="#FFF8E1", borde="#F9A825")
-    imagen_bonita(IMAGENES_POR_HOJA[10], caption="Hoja 10 — Gasto Energético según el Clima de Chiclayo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "11.-APORTE 1: EMBARAZO":
@@ -4760,7 +4746,6 @@ elif hoja_activa == "11.-APORTE 1: EMBARAZO":
               "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
               "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
               emoji="👶", color="#F8ECFB", borde="#BA68C8")
-    imagen_bonita(IMAGENES_POR_HOJA[11], caption="Aporte 1 — TMB en Embarazo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
@@ -4783,7 +4768,6 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
               "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
               "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
               emoji="🌙", color="#EDE7F6", borde="#5E35B1")
-    imagen_bonita(IMAGENES_POR_HOJA[12], caption="Aporte 2 — Hora Límite de Cafeína")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
@@ -4887,7 +4871,6 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
               f"avanzarías en 60 días si sigues tu plan calórico. Ver el progreso estimado ayuda a entender que "
               f"los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
               emoji="📈", color="#E8EAF6", borde="#3949AB")
-    imagen_bonita(IMAGENES_POR_HOJA[13], caption="Hoja 13 — Línea de Tiempo")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
@@ -5106,7 +5089,6 @@ elif hoja_activa == "📄 MI REPORTE":
               "Usa el botón '📄 Descargar Informe en PDF' para obtener un archivo PDF real, listo para "
               "imprimir o compartir. 📄✨",
               emoji="📄", color="#E0F2F1", borde="#00695C")
-    imagen_bonita(IMAGENES_POR_HOJA[14], caption="Hoja 14 — Mi Reporte de Resultados")
 
 elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     _, titulo13, emoji13, borde13, fondo13 = COLORES[15]
