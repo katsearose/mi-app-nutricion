@@ -2812,6 +2812,18 @@ ETIQUETAS_NAV = {
     "🎓 SOBRE NOSOTRAS":           ("👥", "Sobre Nosotros"),
 }
 
+_DEFAULTS_SESION = {
+    "nombre_usuario": "", "genero": "Hombre", "peso": 75.0, "estatura": 168, "edad": 9,
+    "actividad": "Ligero", "objetivo": "Bajar de peso",
+    "ajuste_bajar_sel": "Equilibrado (-20%) ⭐ Recomendado",
+    "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
+    "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
+    "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
+}
+for _clave, _valor_defecto in _DEFAULTS_SESION.items():
+    if _clave not in st.session_state:
+        st.session_state[_clave] = _valor_defecto
+
 if "hoja_activa" not in st.session_state:
     st.session_state["hoja_activa"] = OPCIONES_HOJAS[0]
 
@@ -2841,31 +2853,31 @@ st.sidebar.markdown("---")
 # =========================================================================================
 st.sidebar.caption("🔒 Tus datos son privados y no se guardan en ningún servidor.")
 
-genero = st.session_state.get("genero", "Hombre")
-nombre_usuario = st.session_state.get("nombre_usuario", "")
+genero = st.session_state["genero"]
+nombre_usuario = st.session_state["nombre_usuario"]
 _nombre_saludo = nombre_display(nombre_usuario, genero)
 
 peso_max_actual = PESO_MAX[genero]
-peso = st.session_state.get("peso", min(75.0, peso_max_actual))
+peso = st.session_state["peso"]
 
 estatura_max_actual = ESTATURA_MAX[genero]
-estatura = st.session_state.get("estatura", min(168, estatura_max_actual))
+estatura = st.session_state["estatura"]
 
 edad_max_actual = EDAD_MAX[genero]
-edad = st.session_state.get("edad", 9)
+edad = st.session_state["edad"]
 
 etapa = etapa_desde_edad(edad)
 
-actividad = st.session_state.get("actividad", "Ligero")
-objetivo = st.session_state.get("objetivo", "Bajar de peso")
+actividad = st.session_state["actividad"]
+objetivo = st.session_state["objetivo"]
 
 if objetivo == "Bajar de peso":
-    ajuste_txt = st.session_state.get("ajuste_bajar_sel", "Equilibrado (-20%) ⭐ Recomendado")
+    ajuste_txt = st.session_state["ajuste_bajar_sel"]
     _MAPA_BAJAR = {"Gradual (-10%)": 0.10, "Equilibrado (-20%) ⭐ Recomendado": 0.20, "Intensivo (-30%)": 0.30}
     ajuste_bajar = _MAPA_BAJAR.get(ajuste_txt, 0.20)
     ajuste_subir = 0.0
 elif objetivo == "Subir de peso":
-    ajuste_txt = st.session_state.get("ajuste_subir_sel", "Equilibrado (+15%) ⭐ Recomendado")
+    ajuste_txt = st.session_state["ajuste_subir_sel"]
     _MAPA_SUBIR = {"Gradual (+10%)": 0.10, "Equilibrado (+15%) ⭐ Recomendado": 0.15, "Acelerado (+20%)": 0.20}
     ajuste_subir = _MAPA_SUBIR.get(ajuste_txt, 0.15)
     ajuste_bajar = 0.0
@@ -2874,19 +2886,19 @@ else:
     ajuste_bajar = 0.0
     ajuste_subir = 0.0
 
-# --- Signos vitales (Bloque 3, nuevo) ---
-spo2 = st.session_state.get("spo2", 0.0)
-pulso = st.session_state.get("pulso", 0)
-temp_corp = st.session_state.get("temp_corp", 0.0)
-pas = st.session_state.get("pas", 0)
-pad = st.session_state.get("pad", 0)
+# --- Signos vitales (Bloque 3, persistente) ---
+spo2 = st.session_state["spo2"]
+pulso = st.session_state["pulso"]
+temp_corp = st.session_state["temp_corp"]
+pas = st.session_state["pas"]
+pad = st.session_state["pad"]
 
-# --- Perfil bioquímico (Bloque 4) ---
-hemo = st.session_state.get("hemo", 0.0)
-trigli = st.session_state.get("trigli", 0.0)
-gluco = st.session_state.get("gluco", 0.0)
-coles = st.session_state.get("coles", 0.0)
-hierro = st.session_state.get("hierro", 0.0)
+# --- Perfil bioquímico (Bloque 4, persistente) ---
+hemo = st.session_state["hemo"]
+trigli = st.session_state["trigli"]
+gluco = st.session_state["gluco"]
+coles = st.session_state["coles"]
+hierro = st.session_state["hierro"]
 
 # =========================================================================================
 # CÁLCULOS CENTRALES (siguiendo el orden y las referencias EXACTAS de las hojas del Excel)
