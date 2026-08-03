@@ -3084,258 +3084,236 @@ if hoja_activa == "0.-DATOS":
                     {est['emoji']} {etiqueta}{f' · {valor}{unidad}' if valor not in (0, 0.0) else ''}</div>""",
                     unsafe_allow_html=True)
 
-    if st.session_state.get("_datos_guardados_ok"):
-        st.success("✅ ¡Tus datos se guardaron correctamente! Ya puedes navegar a cualquier otra hoja: se quedarán tal cual los dejaste.")
-        st.session_state["_datos_guardados_ok"] = False
+    # ===== BLOQUE 1: Perfil Básico =====
+    st.markdown('<div style="background:linear-gradient(120deg,#EAF3FF 0%,#D6EBFF 100%);border-radius:20px;'
+                'padding:18px 22px;margin-bottom:14px;border:1px solid #007AFF22;">'
+                '<h4 style="margin:0 0 8px 0;color:#007AFF;">👤 Bloque 1 · Tu Perfil Básico</h4>'
+                '<p style="margin:0;color:#3C6E9E;font-size:0.82rem;">Con tu peso, estatura, edad y género '
+                'calculamos tu metabolismo (TMB) y detectamos tu etapa de vida — la base de todo tu plan.</p></div>',
+                unsafe_allow_html=True)
+    b1c1, b1c2 = st.columns(2)
+    with b1c1:
+        nombre_usuario = st.text_input("¿Cómo te llamas?", value=st.session_state.get("nombre_usuario", ""),
+                                        key="nombre_usuario", help="Tu plan se sentirá hecho a tu medida.")
+    with b1c2:
+        genero = st.radio("Género:", ["Hombre", "Mujer"], horizontal=True, key="genero",
+                           format_func=lambda g: ("♂ Hombre" if g == "Hombre" else "♀ Mujer"))
+    _nombre_saludo = nombre_display(nombre_usuario, genero)
+    if nombre_usuario.strip():
+        st.success(f"¡Paz y bien, {_nombre_saludo}! 🌟")
+    else:
+        st.caption("✍️ Escribe tu nombre.")
 
-    st.markdown("""
-    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:14px;padding:10px 18px;margin-bottom:10px;font-size:0.85rem;color:#7A4A00;">
-    ✍️ Llena los campos que necesites y, al final del formulario, presiona <b>💾 Guardar Cambios</b>.
-    Mientras no presiones ese botón, tus datos no se aplicarán al resto de la app — así evitamos que se pierda algo a medio llenar.
-    </div>
-    """, unsafe_allow_html=True)
+    peso_max_actual = PESO_MAX[genero]
+    estatura_max_actual = ESTATURA_MAX[genero]
+    edad_max_actual = EDAD_MAX[genero]
+    # --- Ajusta valores previos que puedan exceder el nuevo tope al cambiar de género (evita error) ---
+    if st.session_state.get("estatura", 0) and st.session_state["estatura"] > min(250, estatura_max_actual):
+        st.session_state["estatura"] = min(250, estatura_max_actual)
+    if st.session_state.get("edad", 0) and st.session_state["edad"] > min(120, edad_max_actual):
+        st.session_state["edad"] = min(120, edad_max_actual)
+    if st.session_state.get("peso", 0) and st.session_state["peso"] > min(300.0, peso_max_actual):
+        st.session_state["peso"] = min(300.0, peso_max_actual)
 
-    _form_datos = st.form("form_mis_datos", clear_on_submit=False)
-    with _form_datos:
-        # ===== BLOQUE 1: Perfil Básico =====
-        st.markdown('<div style="background:linear-gradient(120deg,#EAF3FF 0%,#D6EBFF 100%);border-radius:20px;'
-                    'padding:18px 22px;margin-bottom:14px;border:1px solid #007AFF22;">'
-                    '<h4 style="margin:0 0 8px 0;color:#007AFF;">👤 Bloque 1 · Tu Perfil Básico</h4>'
-                    '<p style="margin:0;color:#3C6E9E;font-size:0.82rem;">Con tu peso, estatura, edad y género '
-                    'calculamos tu metabolismo (TMB) y detectamos tu etapa de vida — la base de todo tu plan.</p></div>',
-                    unsafe_allow_html=True)
-        b1c1, b1c2 = st.columns(2)
-        with b1c1:
-            nombre_usuario = st.text_input("¿Cómo te llamas?", value=st.session_state.get("nombre_usuario", ""),
-                                            key="nombre_usuario", help="Tu plan se sentirá hecho a tu medida.")
-        with b1c2:
-            genero = st.radio("Género:", ["Hombre", "Mujer"], horizontal=True, key="genero",
-                               format_func=lambda g: ("♂ Hombre" if g == "Hombre" else "♀ Mujer"))
-        _nombre_saludo = nombre_display(nombre_usuario, genero)
-        if nombre_usuario.strip():
-            st.success(f"¡Paz y bien, {_nombre_saludo}! 🌟")
+    b1c3, b1c4, b1c5 = st.columns(3)
+    with b1c3:
+        peso = st.number_input("Peso (kg):", min_value=20.0, max_value=min(300.0, peso_max_actual),
+                                value=min(75.0, peso_max_actual), step=0.1, key="peso",
+                                help="Rango válido: 20 a 300 kg.")
+    with b1c4:
+        estatura = st.number_input("Estatura (cm):", min_value=50, max_value=min(250, estatura_max_actual),
+                                    value=min(168, estatura_max_actual), step=1, key="estatura",
+                                    help="Rango válido: 50 a 250 cm.")
+    with b1c5:
+        edad = st.number_input("Edad (años):", min_value=1, max_value=min(120, edad_max_actual),
+                                value=9, step=1, key="edad", help="Rango válido: 1 a 120 años.")
+    etapa = etapa_desde_edad(edad)
+    st.info(f"🔎 Etapa detectada automáticamente: **{etapa}**")
+
+    # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
+    st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
+                'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #1E563122;">'
+                '<h4 style="margin:0 0 8px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4>'
+                '<p style="margin:0;color:#3E7050;font-size:0.82rem;">Tu nivel de actividad y tu meta definen '
+                'cuántas calorías gastas al día (RCD) y a qué ritmo ajustamos tu alimentación.</p></div>',
+                unsafe_allow_html=True)
+    st.caption("🏃 Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
+    actividad = st.radio(
+        "Actividad:", ["Sedentaria", "Ligero", "Moderada", "Intensa"],
+        index=1, key="actividad", label_visibility="collapsed",
+        format_func=lambda a: {
+            "Sedentaria": "🪑 Sedentario o Poco Activo (Factor 1.2)",
+            "Ligero": "🚶 Ligeramente Activo (Factor 1.375-1.55)",
+            "Moderada": "🏃 Moderadamente Activo (Factor 1.55-1.75)",
+            "Intensa": "🔥 Muy Activo / Intenso (Factor 1.8-2.1)",
+        }[a],
+    )
+    _DESC_ACTIVIDAD = [
+        ("Sedentaria", "🪑", "#8E8E93", "#F2F2F7", "Sedentario o Poco Activo (Factor 1.2)",
+         "Días en 'modo reposo'. Pasas la mayor parte del día sentado (oficina, estudio, manejo) y tu "
+         "movilidad fuera de estar sentado es mínima o nula."),
+        ("Ligero", "🚶", "#34C759", "#EAFAEE", "Ligeramente Activo (Factor 1.375 - 1.55)",
+         "Movimiento cotidiano acumulado. Trabajas sentado, pero caminas distancias razonables a diario, "
+         "usas transporte público activo, haces compras a pie o labores del hogar de forma constante."),
+        ("Moderada", "🏃", "#007AFF", "#EAF3FF", "Moderadamente Activo (Factor 1.55 - 1.75)",
+         "Cuerpo en acción la mitad del día. Tienes un trabajo de pie o con desplazamiento constante "
+         "(maestro, vendedor, salud) O tu trabajo es sentado pero realizas actividades físicas dinámicas "
+         "de forma regular."),
+        ("Intensa", "🔥", "#FF3B30", "#FFEDEC", "Muy Activo / Intenso (Factor 1.8 - 2.1)",
+         "Alto esfuerzo físico diario. Entrenamientos intensos diarios o trabajos de alta exigencia física "
+         "(construcción, agricultura, atletas)."),
+    ]
+    for _clave, _ic, _col, _fon, _tit, _desc in _DESC_ACTIVIDAD:
+        _sel = (_clave == actividad)
+        _estilo = (f"border:2.5px solid {_col};box-shadow:0 8px 20px {_col}40;transform:translateX(4px);"
+                   if _sel else "border:1px solid rgba(0,0,0,0.06);")
+        st.markdown(f"""
+        <div style="background:{_fon};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo}
+                    transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
+            <div style="font-size:1.4rem;">{_ic}</div>
+            <div><b style="color:{_col};">{_tit}</b>{' ✓' if _sel else ''}<br>
+            <span style="font-size:0.84rem;color:#3C3C43;">{_desc}</span></div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    b2c1, b2c2 = st.columns(2)
+    with b2c1:
+        objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
+                                 key="objetivo")
+    with b2c2:
+        st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
+        if objetivo == "Bajar de peso":
+            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+                options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
+        elif objetivo == "Subir de peso":
+            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+                options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
         else:
-            st.caption("✍️ Escribe tu nombre.")
+            ajuste_txt = None
+            st.caption("Sin ajuste calórico: se mantiene tu RCD.")
 
-        peso_max_actual = PESO_MAX[genero]
-        estatura_max_actual = ESTATURA_MAX[genero]
-        edad_max_actual = EDAD_MAX[genero]
-        # --- Ajusta valores previos que puedan exceder el nuevo tope al cambiar de género (evita error) ---
-        if st.session_state.get("estatura", 0) and st.session_state["estatura"] > min(250, estatura_max_actual):
-            st.session_state["estatura"] = min(250, estatura_max_actual)
-        if st.session_state.get("edad", 0) and st.session_state["edad"] > min(120, edad_max_actual):
-            st.session_state["edad"] = min(120, edad_max_actual)
-        if st.session_state.get("peso", 0) and st.session_state["peso"] > min(300.0, peso_max_actual):
-            st.session_state["peso"] = min(300.0, peso_max_actual)
+    if objetivo in ("Bajar de peso", "Subir de peso"):
+        _DESC_AJUSTE = {
+            "Bajar de peso": [
+                ("Gradual (-10%)", "🌱", "#34C759", "#EAFAEE",
+                 "Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles."),
+                ("Equilibrado (-20%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
+                 "La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables."),
+                ("Intensivo (-30%)", "🚀", "#FF3B30", "#FFEDEC",
+                 "Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
+                 "periodos cortos y con seguimiento."),
+            ],
+            "Subir de peso": [
+                ("Gradual (+10%)", "🌱", "#34C759", "#EAFAEE",
+                 "Aumenta las calorías de forma moderada para favorecer una ganancia progresiva."),
+                ("Equilibrado (+15%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
+                 "La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa."),
+                ("Acelerado (+20%)", "🚀", "#FF3B30", "#FFEDEC",
+                 "Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
+                 "Requiere una alimentación bien planificada."),
+            ],
+        }[objetivo]
+        _cols_ajuste = st.columns(3)
+        for _col_w, (_tit_a, _ic_a, _col_a, _fon_a, _desc_a) in zip(_cols_ajuste, _DESC_AJUSTE):
+            _sel_a = (_tit_a == ajuste_txt)
+            with _col_w:
+                _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateY(-3px);"
+                             if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
+                st.markdown(f"""
+                <div style="background:{_fon_a};border-radius:16px;padding:14px 14px;height:100%;{_estilo_a}transition:all 0.2s ease;">
+                    <div style="font-size:1.3rem;">{_ic_a}</div>
+                    <div style="font-weight:800;color:{_col_a};font-size:0.86rem;margin:4px 0 4px 0;">{_tit_a}{' ✓' if _sel_a else ''}</div>
+                    <div style="font-size:0.78rem;color:#3C3C43;">{_desc_a}</div>
+                </div>
+                """, unsafe_allow_html=True)
+        if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
+           (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
+            st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
 
-        b1c3, b1c4, b1c5 = st.columns(3)
-        with b1c3:
-            peso = st.number_input("Peso (kg):", min_value=20.0, max_value=min(300.0, peso_max_actual),
-                                    value=min(75.0, peso_max_actual), step=0.1, key="peso",
-                                    help="Rango válido: 20 a 300 kg.")
-        with b1c4:
-            estatura = st.number_input("Estatura (cm):", min_value=50, max_value=min(250, estatura_max_actual),
-                                        value=min(168, estatura_max_actual), step=1, key="estatura",
-                                        help="Rango válido: 50 a 250 cm.")
-        with b1c5:
-            edad = st.number_input("Edad (años):", min_value=1, max_value=min(120, edad_max_actual),
-                                    value=9, step=1, key="edad", help="Rango válido: 1 a 120 años.")
-        etapa = etapa_desde_edad(edad)
-        st.info(f"🔎 Etapa detectada automáticamente: **{etapa}**")
+    with st.expander("ℹ️ ¿Qué significa este ajuste?"):
+        st.caption("Define qué tan rápido deseas alcanzar tu objetivo, adaptando tus calorías diarias a partir "
+                   "de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado suele ser la opción "
+                   "recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
 
-        # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
-        st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
-                    'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #1E563122;">'
-                    '<h4 style="margin:0 0 8px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4>'
-                    '<p style="margin:0;color:#3E7050;font-size:0.82rem;">Tu nivel de actividad y tu meta definen '
-                    'cuántas calorías gastas al día (RCD) y a qué ritmo ajustamos tu alimentación.</p></div>',
-                    unsafe_allow_html=True)
-        st.caption("🏃 Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
-        actividad = st.radio(
-            "Actividad:", ["Sedentaria", "Ligero", "Moderada", "Intensa"],
-            index=1, key="actividad", label_visibility="collapsed",
-            format_func=lambda a: {
-                "Sedentaria": "🪑 Sedentario o Poco Activo (Factor 1.2)",
-                "Ligero": "🚶 Ligeramente Activo (Factor 1.375-1.55)",
-                "Moderada": "🏃 Moderadamente Activo (Factor 1.55-1.75)",
-                "Intensa": "🔥 Muy Activo / Intenso (Factor 1.8-2.1)",
-            }[a],
-        )
-        _DESC_ACTIVIDAD = [
-            ("Sedentaria", "🪑", "#8E8E93", "#F2F2F7", "Sedentario o Poco Activo (Factor 1.2)",
-             "Días en 'modo reposo'. Pasas la mayor parte del día sentado (oficina, estudio, manejo) y tu "
-             "movilidad fuera de estar sentado es mínima o nula."),
-            ("Ligero", "🚶", "#34C759", "#EAFAEE", "Ligeramente Activo (Factor 1.375 - 1.55)",
-             "Movimiento cotidiano acumulado. Trabajas sentado, pero caminas distancias razonables a diario, "
-             "usas transporte público activo, haces compras a pie o labores del hogar de forma constante."),
-            ("Moderada", "🏃", "#007AFF", "#EAF3FF", "Moderadamente Activo (Factor 1.55 - 1.75)",
-             "Cuerpo en acción la mitad del día. Tienes un trabajo de pie o con desplazamiento constante "
-             "(maestro, vendedor, salud) O tu trabajo es sentado pero realizas actividades físicas dinámicas "
-             "de forma regular."),
-            ("Intensa", "🔥", "#FF3B30", "#FFEDEC", "Muy Activo / Intenso (Factor 1.8 - 2.1)",
-             "Alto esfuerzo físico diario. Entrenamientos intensos diarios o trabajos de alta exigencia física "
-             "(construcción, agricultura, atletas)."),
-        ]
-        for _clave, _ic, _col, _fon, _tit, _desc in _DESC_ACTIVIDAD:
-            _sel = (_clave == actividad)
-            _estilo = (f"border:2.5px solid {_col};box-shadow:0 8px 20px {_col}40;transform:translateX(4px);"
-                       if _sel else "border:1px solid rgba(0,0,0,0.06);")
-            st.markdown(f"""
-            <div style="background:{_fon};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo}
-                        transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
-                <div style="font-size:1.4rem;">{_ic}</div>
-                <div><b style="color:{_col};">{_tit}</b>{' ✓' if _sel else ''}<br>
-                <span style="font-size:0.84rem;color:#3C3C43;">{_desc}</span></div>
-            </div>
-            """, unsafe_allow_html=True)
+    # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
+    st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
+                'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #C0392B22;">'
+                '<h4 style="margin:0 0 8px 0;color:#C0392B;">💓 Bloque 3 · Monitoreo de Signos Vitales</h4>'
+                '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Estos indicadores muestran cómo está '
+                'funcionando tu cuerpo en este momento, y ayudan a detectar señales de alerta a tiempo.</p></div>',
+                unsafe_allow_html=True)
+    b3c1, b3c2, b3c3, b3c4 = st.columns(4)
+    with b3c1:
+        spo2 = st.number_input("Oxigenación SpO2 (%):", min_value=0.0, max_value=100.0, value=0.0, step=1.0,
+                                key="spo2", help="Normal: 95% a 100%.")
+        st.markdown(_gauge_track_html(spo2 if spo2 > 0 else None, 0, 100,
+                    [(0, 90, "rojo"), (90, 95, "ambar"), (95, 100, "verde")]), unsafe_allow_html=True)
+        if spo2 > 0:
+            _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
+            _badge_vital(spo2, "%", _c, "Normal" if _c == "verde" else ("Bajo" if _c == "rojo" else "Atención"))
+    with b3c2:
+        pulso = st.number_input("Pulso (lpm):", min_value=0, max_value=220, value=0, step=1,
+                                 key="pulso", help="Ideal en reposo: 60 a 100 lpm.")
+        st.markdown(_gauge_track_html(pulso if pulso > 0 else None, 0, 220,
+                    [(0, 60, "ambar"), (60, 100, "verde"), (100, 220, "rojo")]), unsafe_allow_html=True)
+        if pulso > 0:
+            _c = "verde" if 60 <= pulso <= 100 else "ambar"
+            _badge_vital(pulso, " lpm", _c, "Normal" if _c == "verde" else "Atención")
+    with b3c3:
+        temp_corp = st.number_input("Temperatura (°C):", min_value=34.0, max_value=42.0, value=34.0, step=0.1,
+                                     key="temp_corp", help="Normal: 36.5°C a 37.5°C.")
+        st.markdown(_gauge_track_html(temp_corp if temp_corp > 34.0 else None, 34.0, 42.0,
+                    [(34.0, 36.5, "ambar"), (36.5, 37.5, "verde"), (37.5, 42.0, "rojo")]), unsafe_allow_html=True)
+        if temp_corp > 34.0:
+            _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
+            _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
+    with b3c4:
+        st.caption("Presión Arterial (mmHg):")
+        pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
+        pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
+        st.markdown(_gauge_track_html(pas if pas > 0 else None, 0, 250,
+                    [(0, 90, "ambar"), (90, 130, "verde"), (130, 250, "rojo")]), unsafe_allow_html=True)
+        if pas > 0 and pad > 0:
+            _c = "verde" if (90 <= pas <= 129 and 60 <= pad <= 84) else "ambar"
+            _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
+    st.caption("ℹ️ Un valor estándar y saludable de presión ronda los 120/80 mmHg.")
 
-        b2c1, b2c2 = st.columns(2)
-        with b2c1:
-            objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
-                                     key="objetivo")
-        with b2c2:
-            st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
-            if objetivo == "Bajar de peso":
-                ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-                    options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
-            elif objetivo == "Subir de peso":
-                ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-                    options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
-            else:
-                ajuste_txt = None
-                st.caption("Sin ajuste calórico: se mantiene tu RCD.")
-
-        if objetivo in ("Bajar de peso", "Subir de peso"):
-            _DESC_AJUSTE = {
-                "Bajar de peso": [
-                    ("Gradual (-10%)", "🌱", "#34C759", "#EAFAEE",
-                     "Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles."),
-                    ("Equilibrado (-20%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
-                     "La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables."),
-                    ("Intensivo (-30%)", "🚀", "#FF3B30", "#FFEDEC",
-                     "Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
-                     "periodos cortos y con seguimiento."),
-                ],
-                "Subir de peso": [
-                    ("Gradual (+10%)", "🌱", "#34C759", "#EAFAEE",
-                     "Aumenta las calorías de forma moderada para favorecer una ganancia progresiva."),
-                    ("Equilibrado (+15%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
-                     "La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa."),
-                    ("Acelerado (+20%)", "🚀", "#FF3B30", "#FFEDEC",
-                     "Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
-                     "Requiere una alimentación bien planificada."),
-                ],
-            }[objetivo]
-            _cols_ajuste = st.columns(3)
-            for _col_w, (_tit_a, _ic_a, _col_a, _fon_a, _desc_a) in zip(_cols_ajuste, _DESC_AJUSTE):
-                _sel_a = (_tit_a == ajuste_txt)
-                with _col_w:
-                    _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateY(-3px);"
-                                 if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
-                    st.markdown(f"""
-                    <div style="background:{_fon_a};border-radius:16px;padding:14px 14px;height:100%;{_estilo_a}transition:all 0.2s ease;">
-                        <div style="font-size:1.3rem;">{_ic_a}</div>
-                        <div style="font-weight:800;color:{_col_a};font-size:0.86rem;margin:4px 0 4px 0;">{_tit_a}{' ✓' if _sel_a else ''}</div>
-                        <div style="font-size:0.78rem;color:#3C3C43;">{_desc_a}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
-               (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
-                st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
-
-        with st.expander("ℹ️ ¿Qué significa este ajuste?"):
-            st.caption("Define qué tan rápido deseas alcanzar tu objetivo, adaptando tus calorías diarias a partir "
-                       "de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado suele ser la opción "
-                       "recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
-
-        # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
-        st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
-                    'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #C0392B22;">'
-                    '<h4 style="margin:0 0 8px 0;color:#C0392B;">💓 Bloque 3 · Monitoreo de Signos Vitales</h4>'
-                    '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Estos indicadores muestran cómo está '
-                    'funcionando tu cuerpo en este momento, y ayudan a detectar señales de alerta a tiempo.</p></div>',
-                    unsafe_allow_html=True)
-        b3c1, b3c2, b3c3, b3c4 = st.columns(4)
-        with b3c1:
-            spo2 = st.number_input("Oxigenación SpO2 (%):", min_value=0.0, max_value=100.0, value=0.0, step=1.0,
-                                    key="spo2", help="Normal: 95% a 100%.")
-            st.markdown(_gauge_track_html(spo2 if spo2 > 0 else None, 0, 100,
-                        [(0, 90, "rojo"), (90, 95, "ambar"), (95, 100, "verde")]), unsafe_allow_html=True)
-            if spo2 > 0:
-                _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
-                _badge_vital(spo2, "%", _c, "Normal" if _c == "verde" else ("Bajo" if _c == "rojo" else "Atención"))
-        with b3c2:
-            pulso = st.number_input("Pulso (lpm):", min_value=0, max_value=220, value=0, step=1,
-                                     key="pulso", help="Ideal en reposo: 60 a 100 lpm.")
-            st.markdown(_gauge_track_html(pulso if pulso > 0 else None, 0, 220,
-                        [(0, 60, "ambar"), (60, 100, "verde"), (100, 220, "rojo")]), unsafe_allow_html=True)
-            if pulso > 0:
-                _c = "verde" if 60 <= pulso <= 100 else "ambar"
-                _badge_vital(pulso, " lpm", _c, "Normal" if _c == "verde" else "Atención")
-        with b3c3:
-            temp_corp = st.number_input("Temperatura (°C):", min_value=34.0, max_value=42.0, value=34.0, step=0.1,
-                                         key="temp_corp", help="Normal: 36.5°C a 37.5°C.")
-            st.markdown(_gauge_track_html(temp_corp if temp_corp > 34.0 else None, 34.0, 42.0,
-                        [(34.0, 36.5, "ambar"), (36.5, 37.5, "verde"), (37.5, 42.0, "rojo")]), unsafe_allow_html=True)
-            if temp_corp > 34.0:
-                _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
-                _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
-        with b3c4:
-            st.caption("Presión Arterial (mmHg):")
-            pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
-            pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
-            st.markdown(_gauge_track_html(pas if pas > 0 else None, 0, 250,
-                        [(0, 90, "ambar"), (90, 130, "verde"), (130, 250, "rojo")]), unsafe_allow_html=True)
-            if pas > 0 and pad > 0:
-                _c = "verde" if (90 <= pas <= 129 and 60 <= pad <= 84) else "ambar"
-                _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
-        st.caption("ℹ️ Un valor estándar y saludable de presión ronda los 120/80 mmHg.")
-
-        # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
-        st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
-                    'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #7B1FA222;">'
-                    '<h4 style="margin:0 0 8px 0;color:#7B1FA2;">🩸 Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)</h4>'
-                    '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Con tus valores de sangre identificamos '
-                    'riesgos como anemia, colesterol alto o glucosa elevada, para darte recomendaciones más precisas.</p></div>',
-                    unsafe_allow_html=True)
-        b4c1, b4c2, b4c3, b4c4, b4c5 = st.columns(5)
-        with b4c1:
-            hemo = st.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
-                                    key="hemo", help="Normal: 12-17 g/dL, varía por género.")
-            _min_g, _max_g, _seg_g = _zonas_gauge("Hemoglobina", etapa, genero)
-            st.markdown(_gauge_track_html(hemo if hemo > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-        with b4c2:
-            gluco = st.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
-                                     key="gluco", help="Normal en ayunas: 70-100 mg/dL.")
-            _min_g, _max_g, _seg_g = _zonas_gauge("Glucosa")
-            st.markdown(_gauge_track_html(gluco if gluco > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-        with b4c3:
-            coles = st.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
-                                     key="coles", help="Ideal: menor a 200 mg/dL.")
-            _min_g, _max_g, _seg_g = _zonas_gauge("Colesterol")
-            st.markdown(_gauge_track_html(coles if coles > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-        with b4c4:
-            trigli = st.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
-                                      key="trigli", help="Ideal: menor a 150 mg/dL.")
-            _min_g, _max_g, _seg_g = _zonas_gauge("Triglicéridos")
-            st.markdown(_gauge_track_html(trigli if trigli > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-        with b4c5:
-            hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
-                                      key="hierro", help="Normal: 60-170 µg/dL.")
-            _min_g, _max_g, _seg_g = _zonas_gauge("Hierro", etapa, genero)
-            st.markdown(_gauge_track_html(hierro if hierro > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-
-        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-        _guardar = st.form_submit_button("💾 Guardar Cambios", use_container_width=True, type="primary")
-
-    if _guardar:
-        st.session_state["_datos_guardados_ok"] = True
-        st.rerun()
+    # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
+    st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
+                'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #7B1FA222;">'
+                '<h4 style="margin:0 0 8px 0;color:#7B1FA2;">🩸 Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)</h4>'
+                '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Con tus valores de sangre identificamos '
+                'riesgos como anemia, colesterol alto o glucosa elevada, para darte recomendaciones más precisas.</p></div>',
+                unsafe_allow_html=True)
+    b4c1, b4c2, b4c3, b4c4, b4c5 = st.columns(5)
+    with b4c1:
+        hemo = st.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
+                                key="hemo", help="Normal: 12-17 g/dL, varía por género.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Hemoglobina", etapa, genero)
+        st.markdown(_gauge_track_html(hemo if hemo > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
+    with b4c2:
+        gluco = st.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
+                                 key="gluco", help="Normal en ayunas: 70-100 mg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Glucosa")
+        st.markdown(_gauge_track_html(gluco if gluco > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
+    with b4c3:
+        coles = st.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
+                                 key="coles", help="Ideal: menor a 200 mg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Colesterol")
+        st.markdown(_gauge_track_html(coles if coles > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
+    with b4c4:
+        trigli = st.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
+                                  key="trigli", help="Ideal: menor a 150 mg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Triglicéridos")
+        st.markdown(_gauge_track_html(trigli if trigli > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
+    with b4c5:
+        hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
+                                  key="hierro", help="Normal: 60-170 µg/dL.")
+        _min_g, _max_g, _seg_g = _zonas_gauge("Hierro", etapa, genero)
+        st.markdown(_gauge_track_html(hierro if hierro > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
 
     st.divider()
-    st.markdown("#### 📋 Resumen de tus datos guardados")
-    st.caption("Este resumen refleja lo último que guardaste con el botón 💾 Guardar Cambios. "
-               "Si acabas de editar algo y no lo ves aquí, presiona el botón para confirmarlo.")
+    st.markdown("#### 📋 Resumen de tus datos ingresados")
 
     col_datos, col_sticker = st.columns([2, 1])
     with col_datos:
