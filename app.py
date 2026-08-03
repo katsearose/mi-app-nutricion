@@ -2827,6 +2827,87 @@ for _clave, _valor_defecto in _DEFAULTS_SESION.items():
 if "hoja_activa" not in st.session_state:
     st.session_state["hoja_activa"] = OPCIONES_HOJAS[0]
 
+# =========================================================================================
+# SIDEBAR — CENTRO DE CONTROL DEL USUARIO
+# Insignia superior (con elementos decorativos a los lados) + resumen persistente de los
+# datos principales ya ingresados, y debajo la navegación completa de las 16 secciones.
+# =========================================================================================
+_cc_genero = st.session_state.get("genero", "Hombre")
+_cc_nombre = nombre_display(st.session_state.get("nombre_usuario", ""), _cc_genero)
+_cc_peso = st.session_state.get("peso", 0.0)
+_cc_estatura = st.session_state.get("estatura", 0)
+_cc_edad = st.session_state.get("edad", 0)
+_cc_actividad = st.session_state.get("actividad", "Ligero")
+_cc_objetivo = st.session_state.get("objetivo", "Bajar de peso")
+_cc_hay_datos = bool(_cc_peso) and bool(_cc_estatura) and bool(_cc_edad)
+
+_cc_tmb = _cc_rcd = None
+if _cc_hay_datos:
+    _cc_etapa = etapa_desde_edad(_cc_edad)
+    if _cc_genero == "Hombre":
+        _cc_tmb = (10 * _cc_peso) + (6.25 * _cc_estatura) - (5 * _cc_edad) + 5
+    else:
+        _cc_tmb = (10 * _cc_peso) + (6.25 * _cc_estatura) - (5 * _cc_edad) - 161
+    _cc_rcd = _cc_tmb * FACTOR_ACTIVIDAD[_cc_actividad][_cc_genero]
+
+st.sidebar.markdown(f"""
+<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 12px 0;">
+    <span style="font-size:1.3rem;opacity:0.55;">🍏</span>
+    <div style="background:linear-gradient(135deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:999px;
+                padding:8px 20px;box-shadow:0 6px 16px rgba(30,86,49,0.30);text-align:center;">
+        <span style="color:#FFFFFF;font-weight:800;font-size:0.92rem;letter-spacing:0.02em;white-space:nowrap;">
+            🥦 CIAM&amp;SUNI — Centro de Control</span>
+    </div>
+    <span style="font-size:1.3rem;opacity:0.55;">🥗</span>
+</div>
+""", unsafe_allow_html=True)
+
+if _cc_hay_datos:
+    st.sidebar.markdown(f"""
+    <div style="background:#FFFFFF;border-radius:18px;padding:14px 16px;margin-bottom:12px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.06);
+                border:1px solid rgba(30,86,49,0.08);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:#EAFAEE;display:flex;
+                        align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
+                {"♂" if _cc_genero == "Hombre" else "♀"}
+            </div>
+            <div style="min-width:0;">
+                <div style="font-weight:800;color:#17301F;font-size:0.9rem;line-height:1.2;
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{_cc_nombre}</div>
+                <div style="font-size:0.72rem;color:#8A94A6;">{_cc_etapa} · {_cc_genero}</div>
+            </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="background:#EAF3FF;color:#007AFF;font-weight:700;font-size:0.72rem;
+                         padding:4px 10px;border-radius:999px;">⚖️ {_cc_peso:.1f} kg</span>
+            <span style="background:#F3E5F5;color:#8E24AA;font-weight:700;font-size:0.72rem;
+                         padding:4px 10px;border-radius:999px;">📏 {_cc_estatura} cm</span>
+            <span style="background:#FFF3E0;color:#E67E22;font-weight:700;font-size:0.72rem;
+                         padding:4px 10px;border-radius:999px;">🎂 {_cc_edad} años</span>
+            <span style="background:#EAFAEE;color:#1E5631;font-weight:700;font-size:0.72rem;
+                         padding:4px 10px;border-radius:999px;">🎯 {_cc_objetivo}</span>
+        </div>
+        {f'''<div style="margin-top:10px;display:flex;gap:8px;">
+            <div style="flex:1;background:#FFF3E5;border-radius:12px;padding:6px 8px;text-align:center;">
+                <div style="font-size:0.66rem;color:#B8860B;font-weight:800;text-transform:uppercase;">TMB</div>
+                <div style="font-size:0.86rem;font-weight:800;color:#B8860B;">{_cc_tmb:.0f}</div>
+            </div>
+            <div style="flex:1;background:#EAFAEE;border-radius:12px;padding:6px 8px;text-align:center;">
+                <div style="font-size:0.66rem;color:#1E5631;font-weight:800;text-transform:uppercase;">RCD</div>
+                <div style="font-size:0.86rem;font-weight:800;color:#1E5631;">{_cc_rcd:.0f}</div>
+            </div>
+        </div>''' if _cc_tmb else ''}
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.sidebar.markdown("""
+    <div style="background:#FFF3E5;border-left:4px solid #FF9500;border-radius:14px;
+                padding:12px 14px;margin-bottom:12px;font-size:0.78rem;color:#7A4A00;">
+        ✍️ Aún no has llenado tus datos. Ve a <b>⚙️ Mis Datos</b> para empezar.
+    </div>
+    """, unsafe_allow_html=True)
+
 # ---- Sidebar: navegación tipo píldoras verticales, con las 16 secciones siempre visibles ----
 st.sidebar.markdown(
     '<div class="sidebar-nav-title">🧭 Navegación · 16 secciones</div>',
