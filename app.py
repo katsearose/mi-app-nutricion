@@ -3349,7 +3349,7 @@ if hoja_activa == "0.-DATOS":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
-    hoja_header(1, "Categoriza tus datos según su nivel correspondiente, exactamente como las fórmulas SI anidadas del Excel.")
+    hoja_header(1, "No solo mostramos tus números: te explicamos qué significan, por qué ocurren y qué podrías hacer.")
 
     _cat_hemo = clasif_hemoglobina(hemo, etapa, genero)
     _cat_trigli = clasif_trigliceridos(trigli)
@@ -3368,14 +3368,135 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.divider()
 
-    _resultados_examen = [
-        ("Hemoglobina", f"{hemo} g/dL", _cat_hemo),
-        ("Triglicéridos", f"{trigli} mg/dL", _cat_trigli),
-        ("Glucosa", f"{gluco} mg/dL", _cat_gluco),
-        ("Colesterol", f"{coles} mg/dL", _cat_coles),
-        ("Hierro", f"{hierro} µg/dL", _cat_hierro),
-    ]
-    panel_resumen_semaforo_creativo(_resultados_examen, _nombre_saludo)
+    # ===== 1. Tarjetas informativas por parámetro: qué mide, qué significa, recomendaciones, dato curioso =====
+    _INFO_PARAM = {
+        "Hemoglobina": {
+            "icono": "🩸", "unidad": " g/dL", "valor": hemo, "categoria": _cat_hemo,
+            "que_mide": "Proteína de los glóbulos rojos que transporta el oxígeno desde los pulmones hacia todo el cuerpo.",
+            "recomendaciones": [("🥩", "Alimentos ricos en hierro"), ("🍊", "Vitamina C (mejora la absorción)"), ("🩺", "Evaluación médica si hay síntomas")],
+            "riesgo": ["🍖 Baja ingesta de hierro", "🤰 Embarazo", "🩸 Sangrados", "🫘 Déficit nutricional"],
+            "curioso": "La hemoglobina puede disminuir durante el embarazo debido al aumento del volumen sanguíneo.",
+        },
+        "Triglicéridos": {
+            "icono": "🫒", "unidad": " mg/dL", "valor": trigli, "categoria": _cat_trigli,
+            "que_mide": "Tipo de grasa en la sangre que el cuerpo usa como reserva de energía.",
+            "recomendaciones": [("🥑", "Priorizar grasas saludables"), ("🚶", "Actividad física regular"), ("🍬", "Reducir azúcares simples")],
+            "riesgo": ["🍩 Exceso de azúcares", "🍺 Consumo de alcohol", "⚖️ Sobrepeso", "🧬 Factores genéticos"],
+            "curioso": "Los triglicéridos suben temporalmente después de comer; por eso muchas pruebas piden ayuno.",
+        },
+        "Glucosa": {
+            "icono": "🍬", "unidad": " mg/dL", "valor": gluco, "categoria": _cat_gluco,
+            "que_mide": "Nivel de azúcar disponible en la sangre, la principal fuente de energía del cuerpo.",
+            "recomendaciones": [("🥗", "Más fibra, menos azúcar simple"), ("🚶", "Actividad física"), ("⏰", "Horarios de comida regulares")],
+            "riesgo": ["🍭 Dieta alta en azúcares", "⚖️ Sobrepeso", "🧬 Antecedentes familiares", "😴 Mal descanso"],
+            "curioso": "La glucosa aumenta naturalmente después de comer; por eso muchas pruebas se hacen en ayunas.",
+        },
+        "Colesterol": {
+            "icono": "🫀", "unidad": " mg/dL", "valor": coles, "categoria": _cat_coles,
+            "que_mide": "Grasa esencial para producir hormonas y formar membranas celulares, en exceso puede obstruir arterias.",
+            "recomendaciones": [("🥑", "Priorizar grasas saludables"), ("🚶", "Actividad física"), ("🥗", "Más fibra"), ("🚭", "Evitar tabaco")],
+            "riesgo": ["🍟 Grasas saturadas/trans", "🚬 Tabaco", "🧬 Factores genéticos", "⚖️ Sobrepeso"],
+            "curioso": "El colesterol no siempre es perjudicial: el organismo lo necesita para producir hormonas.",
+        },
+        "Hierro": {
+            "icono": "⚙️", "unidad": " µg/dL", "valor": hierro, "categoria": _cat_hierro,
+            "que_mide": "Mineral esencial para fabricar hemoglobina y transportar oxígeno en el cuerpo.",
+            "recomendaciones": [("🥩", "Carnes rojas y legumbres"), ("🍊", "Vitamina C junto a las comidas"), ("☕", "Evitar café/té con las comidas")],
+            "riesgo": ["🍖 Baja ingesta de hierro", "🩸 Pérdidas de sangre", "🤰 Embarazo", "🫘 Mala absorción intestinal"],
+            "curioso": "El té y el café pueden reducir la absorción de hierro si se toman junto a las comidas.",
+        },
+    }
+    st.markdown("#### 🔎 ¿Qué significa cada resultado?")
+    for _param, _info in _INFO_PARAM.items():
+        _r = evaluar_estado_clinico(_param, _info["categoria"])
+        with st.expander(f"{_info['icono']} {_param} — {_info['valor']}{_info['unidad']} · {_r['emoji']} {_info['categoria']}"):
+            st.markdown(f"**🧠 ¿Qué mide?** {_info['que_mide']}")
+            st.markdown(f"**📋 ¿Qué significa tu resultado?** {_r['mensajePersonalizado']}")
+            _reco_html = " &nbsp; ".join(f"{ic} {tx}" for ic, tx in _info["recomendaciones"])
+            st.markdown(f"**✅ Recomendaciones generales (educativas, no médicas):** {_reco_html}")
+            if _r["colorSemaforo"] in ("ambar", "rojo"):
+                st.markdown(f"**⚠️ Posibles factores relacionados** (no constituye diagnóstico): "
+                            + " &nbsp; ".join(_info["riesgo"]))
+            st.markdown(f"**💡 ¿Sabías qué?** {_info['curioso']}")
+
+    st.divider()
+
+    # ===== 2. Interpretación Clínica Inteligente (reemplaza el panel de flujo anterior) =====
+    st.markdown("#### 🧠 Interpretación Clínica Inteligente")
+    _todos = [("Hemoglobina", _cat_hemo), ("Triglicéridos", _cat_trigli), ("Glucosa", _cat_gluco),
+              ("Colesterol", _cat_coles), ("Hierro", _cat_hierro)]
+    _con_dato = [(p, c) for p, c in _todos if c != "Introducir datos"]
+    _verdes = [p for p, c in _con_dato if CATEGORIA_SEMAFORO.get(c, "gris") == "verde"]
+    _no_verdes = [(p, c) for p, c in _con_dato if CATEGORIA_SEMAFORO.get(c, "gris") in ("ambar", "rojo")]
+    _pct_salud = round((len(_verdes) / len(_con_dato)) * 100) if _con_dato else 0
+
+    if _con_dato:
+        icol1, icol2 = st.columns(2)
+        with icol1:
+            st.success(f"🟢 {len(_verdes)} parámetro(s) normal(es)")
+            if _no_verdes:
+                st.warning(f"🟡 {len(_no_verdes)} parámetro(s) requiere(n) seguimiento")
+            st.markdown("**✔ Fortalezas**")
+            st.markdown("\n".join(f"- ✔ {p} adecuada" for p in _verdes) or "- Aún sin fortalezas identificadas.")
+        with icol2:
+            st.markdown("**⚠ Aspectos a mejorar**")
+            if _no_verdes:
+                for p, c in _no_verdes:
+                    _reco_corta = _INFO_PARAM[p]["recomendaciones"][0]
+                    st.markdown(f"- ⚠ {p} ({c}) — sugerencia: {_reco_corta[0]} {_reco_corta[1]}")
+            else:
+                st.markdown("- Sin aspectos pendientes por ahora. 🎉")
+        st.markdown(f"**Nivel general · Salud metabólica: {_pct_salud}%**")
+        st.progress(_pct_salud / 100)
+    else:
+        st.info("Ingresa al menos un valor en la hoja 'Mis Datos' (Bloque 4) para ver tu interpretación clínica.")
+
+    # ===== Mini motor de reglas (no es IA real, solo asociaciones simples) =====
+    _insights = []
+    if _cat_hemo in ("Anemia leve", "Anemia moderada", "Anemia grave") and _cat_hierro == "Bajo":
+        _insights.append("Existe una posible asociación entre tu hemoglobina baja y tu hierro bajo: podría sugerir "
+                          "una deficiencia de hierro. Se recomienda acudir al profesional de salud para una valoración clínica.")
+    if _cat_gluco in ("Prediabetes", "Diabetes") and _cat_coles in ("Límite alto", "Alto"):
+        _insights.append("Tu glucosa y tu colesterol elevados en conjunto suelen asociarse a un mayor riesgo metabólico. "
+                          "Se recomienda una valoración médica integral.")
+    if _cat_trigli in ("Alto", "Muy alto") and _cat_coles in ("Límite alto", "Alto"):
+        _insights.append("Triglicéridos y colesterol elevados juntos pueden asociarse a mayor riesgo cardiovascular. "
+                          "Se recomienda consultar a un profesional de salud.")
+    if _insights:
+        st.markdown("#### 🧠 Posibles asociaciones entre tus resultados")
+        for _ins in _insights:
+            st.info(f"🧠 {_ins}")
+
+    st.divider()
+
+    # ===== 3. Estado Fisiológico (signos vitales del Bloque 3) =====
+    st.markdown("#### ❤️ Estado Fisiológico")
+    fv1, fv2, fv3, fv4 = st.columns(4)
+    with fv1:
+        _c_pa = "verde" if (90 <= pas <= 129 and 60 <= pad <= 84) else "ambar"
+        _e_pa = SEMAFORO_ESTILO[_c_pa] if (pas > 0 and pad > 0) else SEMAFORO_ESTILO["gris"]
+        st.markdown(f"""<div class="sema-card" style="text-align:center;">❤️<br><b>Presión arterial</b><br>
+                    <span style="font-size:1.3rem;font-weight:800;">{f"{pas}/{pad}" if pas > 0 else "—"}</span><br>
+                    {_e_pa['emoji']} {_e_pa['etiqueta']}</div>""", unsafe_allow_html=True)
+    with fv2:
+        _c_ox = "verde" if spo2 >= 95 else ("rojo" if 0 < spo2 < 90 else "ambar")
+        _e_ox = SEMAFORO_ESTILO[_c_ox] if spo2 > 0 else SEMAFORO_ESTILO["gris"]
+        st.markdown(f"""<div class="sema-card" style="text-align:center;">🫁<br><b>Oxígeno (SpO2)</b><br>
+                    <span style="font-size:1.3rem;font-weight:800;">{f"{spo2:.0f}%" if spo2 > 0 else "—"}</span><br>
+                    {_e_ox['emoji']} {_e_ox['etiqueta']}</div>""", unsafe_allow_html=True)
+    with fv3:
+        _c_te = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
+        _e_te = SEMAFORO_ESTILO[_c_te] if temp_corp > 34.0 else SEMAFORO_ESTILO["gris"]
+        st.markdown(f"""<div class="sema-card" style="text-align:center;">🌡️<br><b>Temperatura</b><br>
+                    <span style="font-size:1.3rem;font-weight:800;">{f"{temp_corp:.1f}°C" if temp_corp > 34.0 else "—"}</span><br>
+                    {_e_te['emoji']} {_e_te['etiqueta']}</div>""", unsafe_allow_html=True)
+    with fv4:
+        _c_pu = "verde" if 60 <= pulso <= 100 else "ambar"
+        _e_pu = SEMAFORO_ESTILO[_c_pu] if pulso > 0 else SEMAFORO_ESTILO["gris"]
+        st.markdown(f"""<div class="sema-card" style="text-align:center;">💓<br><b>Pulso</b><br>
+                    <span style="font-size:1.3rem;font-weight:800;">{f"{pulso} lpm" if pulso > 0 else "—"}</span><br>
+                    {_e_pu['emoji']} {_e_pu['etiqueta']}</div>""", unsafe_allow_html=True)
+    st.caption("Estos signos vitales se ingresan en 'Mis Datos' → Bloque 3.")
 
     st.divider()
     st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día?")
@@ -3383,11 +3504,7 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
         "Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
         ["Escolar/Académico", "Laboral", "Psicológico/Emocional"]
     )
-    _resultados_ambito = [
-        ("Hemoglobina", _cat_hemo), ("Triglicéridos", _cat_trigli), ("Glucosa", _cat_gluco),
-        ("Colesterol", _cat_coles), ("Hierro", _cat_hierro),
-    ]
-    for _parametro, _categoria in _resultados_ambito:
+    for _parametro, _categoria in _todos:
         _color_pt = CATEGORIA_SEMAFORO.get(_categoria, "gris")
         _hex_pt = SEMAFORO_ESTILO[_color_pt]["hex"]
         _fondo_pt = SEMAFORO_ESTILO[_color_pt]["fondo"]
@@ -3408,9 +3525,25 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
         ("🫀 Colesterol (MedlinePlus)", "https://medlineplus.gov/spanish/cholesterol.html"),
         ("💉 Diabetes (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/diabetes"),
     ])
+
+    st.markdown("""
+    <div style="background:#F5F5F7;border-radius:16px;padding:12px 18px;margin-top:14px;font-size:0.8rem;color:#5C6B60;">
+    📚 <b>Fuentes consultadas:</b> Organización Mundial de la Salud (OMS) · American Diabetes Association ·
+    MedlinePlus · Mayo Clinic · Ministerio de Salud del Perú (MINSA).
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:12px 18px;margin-top:10px;font-size:0.82rem;color:#7A4A00;">
+    ⚠️ <b>Información importante:</b> esta plataforma tiene fines educativos y de apoyo para la comprensión de
+    resultados clínicos. No reemplaza el diagnóstico, tratamiento ni la valoración realizada por un médico o nutricionista.
+    </div>
+    """, unsafe_allow_html=True)
+
     caja_util("Un análisis de sangre trae puros números y siglas difíciles de entender (¿12.5 g/dL es bueno o malo?). "
-              "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc. "
-              "Así sabes de un vistazo si algún valor necesita atención médica. 🩺❤️",
+              "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc., y te explica "
+              "qué significan, por qué ocurren y qué podrías hacer. Así sabes de un vistazo si algún valor necesita "
+              "atención médica. 🩺❤️",
               emoji="🩸", color="#FFEBEE", borde="#E53935")
     imagen_bonita(IMAGENES_POR_HOJA[1], caption="Hoja 1 — Análisis Sanguíneo")
 
