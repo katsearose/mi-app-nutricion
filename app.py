@@ -669,6 +669,58 @@ div[data-testid="stImageCaption"] {
     display:flex; align-items:center; gap:10px; font-size:0.94rem;
     animation: validacion-fadein 0.5s ease both;
 }
+
+/* ---------- Hoja 7: Panel de validación RCD vs. Total Distribuido ---------- */
+.val-card {
+    background:#FFFFFF; border-radius:20px; padding:22px 24px; margin-top:18px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 8px 22px rgba(0,0,0,0.07);
+    border:1px solid rgba(0,0,0,0.05);
+}
+.val-card-title { font-weight:800; font-size:1rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; color:#17301F; }
+.val-comparacion-table { width:100%; border-collapse:collapse; font-size:0.9rem; margin-bottom:20px; }
+.val-comparacion-table td { padding:11px 6px; border-bottom:1px solid #F0F0F0; }
+.val-comparacion-table td:first-child { font-weight:700; color:#5C6B60; }
+.val-comparacion-table td:last-child { text-align:right; font-weight:800; color:#17301F; }
+.val-comparacion-table tr:last-child td { border-bottom:none; }
+.val-comparacion-table tr.val-row-estado-ok td:last-child { color:#1E5631; }
+.val-comparacion-table tr.val-row-estado-bad td:last-child { color:#C0392B; }
+
+.val-checklist {
+    background:#F7F9F7; border-radius:14px; padding:16px 20px;
+    font-family: "SFMono-Regular", Consolas, "Courier New", monospace;
+    font-size:0.84rem; line-height:2.1; color:#17301F; white-space:pre;
+    overflow-x:auto;
+}
+.val-checklist .val-ok { color:#1E5631; font-weight:800; }
+.val-checklist .val-bad { color:#C0392B; font-weight:800; }
+
+.val-banner-ok, .val-banner-error {
+    margin-top:18px; border-radius:20px; padding:22px 24px; text-align:center;
+    animation: validacion-fadein 0.5s ease both;
+}
+.val-banner-ok {
+    background:linear-gradient(135deg,#EAFAEE 0%,#D7F5DE 100%); border:2px solid #34C759; color:#1E5631;
+    box-shadow:0 10px 26px rgba(52,199,89,0.22);
+}
+.val-banner-error {
+    background:linear-gradient(135deg,#FBEAE8 0%,#FAD9D5 100%); border:2px solid #C0392B; color:#8A1F13;
+    box-shadow:0 10px 26px rgba(192,57,43,0.18);
+}
+.val-banner-icon { font-size:2.2rem; display:block; margin-bottom:6px; }
+.val-banner-title { font-weight:900; font-size:1.05rem; letter-spacing:-0.01em; }
+.val-banner-sub { font-size:0.86rem; font-weight:600; margin-top:6px; opacity:0.9; }
+
+/* ---------- Componente global: FormulaBadge — tooltip discreto de fórmula clínica ---------- */
+.formula-badge {
+    display:inline-flex; align-items:center; gap:4px; cursor:help;
+    background:rgba(30,86,49,0.08); color:#1E5631; font-size:0.70rem; font-weight:800;
+    padding:3px 10px; border-radius:999px; margin-left:8px; vertical-align:middle;
+    border:1px solid rgba(30,86,49,0.18); transition: background 0.15s ease, transform 0.15s ease;
+    white-space:nowrap;
+}
+.formula-badge:hover { background:rgba(30,86,49,0.18); transform:translateY(-1px); }
+.formula-badge-txt { font-family: var(--font-round); font-weight:700; letter-spacing:0.01em; }
+.formula-badge-row { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:-6px 0 14px 2px; }
 @media (max-width:700px) {
     .rcd-hero-card { padding:22px 18px; }
     .rcd-hero-card .rcd-value { font-size:2.1rem; }
@@ -895,6 +947,21 @@ def _html_sin_lineas_vacias(html):
     (bloque de código) en vez de renderizarse como HTML. Al quitar esas líneas en blanco, el
     bloque de HTML se mantiene continuo y se renderiza correctamente de principio a fin."""
     return "\n".join(linea for linea in html.split("\n") if linea.strip() != "")
+
+
+def formula_badge(formula, autor="", referencia="", icono="ℹ️", texto="Ver fórmula"):
+    """Insignia discreta tipo 'chip' que muestra, al pasar el cursor (tooltip nativo del
+    navegador vía atributo `title`), la fórmula clínica exacta junto con su autor y su
+    referencia científica — cumpliendo la norma clínica 4.1 sin saturar visualmente la
+    pantalla. Se usa junto a títulos, métricas o resultados en cada hoja de la app."""
+    partes = [f"Fórmula: {formula}"]
+    if autor:
+        partes.append(f"Autor: {autor}")
+    if referencia:
+        partes.append(f"Referencia: {referencia}")
+    tooltip = " · ".join(partes).replace('"', "'").replace("\n", " ")
+    return (f'<span class="formula-badge" title="{tooltip}">{icono} '
+            f'<span class="formula-badge-txt">{texto}</span></span>')
 
 
 def _resolver_imagen(ruta):
@@ -3101,6 +3168,9 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
                    "En adolescentes y niños se incluye también el Percentil.",
                 ilustracion=_ilustracion_imc_svg(), tip="¡Conoce tu IMC y cuida tu salud! 👍")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "IMC = Peso (kg) / [Altura (m)]²",
+        referencia="Organización Mundial de la Salud (OMS)")}</div>""", unsafe_allow_html=True)
 
     if etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None:
         kc1, kc2, kc3 = st.columns(3)
@@ -3214,6 +3284,11 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 elif hoja_activa == "3.-TMB":
     hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
                    "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
+    _formula_tmb = ("Hombres: TMB = (10×peso kg) + (6.25×altura cm) − (5×edad) + 5  |  "
+                     "Mujeres: TMB = (10×peso kg) + (6.25×altura cm) − (5×edad) − 161")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        _formula_tmb, autor="MD Mifflin, ST St Jeor et al. (1990)",
+        referencia="Ecuación de Mifflin-St Jeor")}</div>""", unsafe_allow_html=True)
     st.metric("Resultado TMB", f"{tmb:.0f} kcal/día")
     caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
@@ -3224,6 +3299,9 @@ elif hoja_activa == "3.-TMB":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
     hoja_header(4)
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "RCD = TMB × Factor de Actividad Física",
+        autor="OMS / FAO / UNU", referencia="Factor de Actividad Física")}</div>""", unsafe_allow_html=True)
     tabla_bonita(pd.DataFrame({
         "Actividad": ["Sedentaria", "Ligero", "Moderada", "Intensa"],
         "Hombres": [1.2, 1.55, 1.8, 2.1],
@@ -3242,6 +3320,10 @@ elif hoja_activa == "4.-RCD":
 elif hoja_activa == "5.-CONTROL DE PESO":
     hoja_header(5, "Tu ritmo de cambio se mide como % de tu peso corporal por semana, para evitar adaptaciones "
                    "fisiológicas negativas (pérdida de músculo, metabolismo 'frenado').")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Bajar: RCD_Final = RCD×(1−%déficit)  |  Mantener: RCD_Final = RCD  |  "
+        "Subir: RCD_Final = RCD×(1+%superávit)",
+        autor="OMS / FAO / UNU", referencia="Ajuste de Control de Peso")}</div>""", unsafe_allow_html=True)
     st.info("A diferencia de los adultos, el cuerpo de los menores necesita energía constante no solo para "
             "moverse, sino para el desarrollo de órganos y huesos. Por ello, cualquier ajuste calórico debe "
             "ser controlado para jamás arriesgar su correcto desarrollo biológico.")
@@ -3337,6 +3419,9 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # TABLA 1 — Valores Base y Factores de Conversión
     # =====================================================================================
     st.markdown("#### 🧮 Valores Base y Factores de Conversión")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Prot/Carb = 4 kcal/g · Grasa = 9 kcal/g (excepción nivel Máximo: 4 kcal/g)",
+        referencia="Constantes de conversión de macronutrientes")}</div>""", unsafe_allow_html=True)
     st.caption("Valores universales de energía por gramo y factores aplicados según tu peso.")
     t1c1, t1c2, t1c3 = st.columns(3)
     with t1c1:
@@ -3373,6 +3458,10 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles)
     # =====================================================================================
     st.markdown("#### 📊 Proyección de Requerimientos")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Prot(g)=peso×Factor → Kcal=g×4 | Grasa(g)=peso×Factor → Kcal=g×9 | "
+        "Carb: Kcal = RCD − Kcal Restantes → Gramos = Kcal/4",
+        referencia="Modelo de reparto de macronutrientes por nivel")}</div>""", unsafe_allow_html=True)
     st.caption("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.")
     st.info(f"⚖️ Peso usado en los cálculos: **{peso_usuario} kg** · 🔥 RCD objetivo: **{rcd_usuario:.0f} kcal/día**")
 
@@ -3428,6 +3517,10 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # TABLA 3 — Tu Plan Nutricional Definitivo (filtro inteligente según tu objetivo)
     # =====================================================================================
     st.markdown("#### 🎯 Tu Plan Nutricional Definitivo")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        'IF "Bajar de peso" → Mínimo (1.8/0.5) · IF "Mantenerse" → Intermedio (2.1/1.0) · '
+        'IF "Subir de peso" → Máximo (2.5/1.5)',
+        referencia="Filtro inteligente según objetivoUsuario")}</div>""", unsafe_allow_html=True)
     st.caption("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.")
     st.success(f"🎯 Objetivo seleccionado: **{objetivo_usuario}** → Nivel aplicado: **{nivel_final}** "
                f"(Proteína {FACTORES_PROT[nivel_final]:.1f} g/kg · Grasa {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
@@ -3477,6 +3570,10 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
 elif hoja_activa == "7.-PORCIONES":
     hoja_header(7, "Tu Requerimiento Calórico Diario se reparte en 5 momentos del día usando porcentajes "
                    "preestablecidos, para mantener tu metabolismo activo y evitar la ansiedad.")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Energía(comida) = RCD × % preestablecido (Desayuno 25% · Merienda 5% · Almuerzo 40% · "
+        "Merienda 5% · Cena 25%)",
+        referencia="Distribución calórica por comidas")}</div>""", unsafe_allow_html=True)
 
     # =====================================================================================
     # RCD del usuario (ya calculado y ajustado a su objetivo en la Hoja 5)
@@ -3528,7 +3625,7 @@ elif hoja_activa == "7.-PORCIONES":
 
     _filas_comidas_html += f"""
         <tr class="fila-total-comidas">
-            <td class="comida-nombre" style="color:#FFFFFF;">🔢 TOTAL (RCD)</td>
+            <td class="comida-nombre" style="color:#FFFFFF;">🔢 TOTAL DISTRIBUIDO</td>
             <td>100%</td>
             <td>{_suma_kcal_comidas:.2f} kcal</td>
         </tr>"""
@@ -3548,23 +3645,49 @@ elif hoja_activa == "7.-PORCIONES":
     st.markdown(_html_sin_lineas_vacias(_html_tabla_comidas), unsafe_allow_html=True)
 
     # =====================================================================================
-    # Validación creativa: la suma de las 5 comidas debe coincidir con el RCD
+    # Validación real: comparación explícita entre RCD Calculado y Total Distribuido
     # (margen de error mínimo permitido por decimales de redondeo)
     # =====================================================================================
     _diferencia_validacion = abs(_suma_kcal_comidas - _rcd_comidas)
-    if _diferencia_validacion < 0.5:
+    _coincide = _diferencia_validacion < 0.5
+    _fila_estado_clase = "val-row-estado-ok" if _coincide else "val-row-estado-bad"
+    _estado_txt = "✅ Coinciden" if _coincide else "❌ No coinciden"
+
+    _html_val_card = f"""
+    <div class="val-card">
+        <div class="val-card-title">🔍 Comparación: RCD Calculado vs. Total Distribuido</div>
+        <table class="val-comparacion-table">
+            <tr><td>RCD Calculado</td><td>{_rcd_comidas:.2f} kcal</td></tr>
+            <tr><td>Total Distribuido</td><td>{_suma_kcal_comidas:.2f} kcal</td></tr>
+            <tr><td>Diferencia</td><td>{_diferencia_validacion:.2f} kcal</td></tr>
+            <tr class="{_fila_estado_clase}"><td>Estado</td><td>{_estado_txt}</td></tr>
+        </table>
+        <div class="val-card-title" style="margin-top:4px;">📋 Estado de Validación</div>
+        <div class="val-checklist">
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> RCD Calculado ............. {_rcd_comidas:.2f} kcal
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> Total Distribuido ......... {_suma_kcal_comidas:.2f} kcal
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> Diferencia ................ {_diferencia_validacion:.2f} kcal
+        </div>
+    </div>
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_val_card), unsafe_allow_html=True)
+
+    if _coincide:
         st.markdown("""
-        <div class="validacion-ok">
-            <span style="font-size:1.4rem;">✨</span>
-            <span>¡Equilibrio Perfecto! Las calorías de tus comidas coinciden exactamente con tu RCD.
-            ✅ ¡Matemática exacta! Tu día está planificado al 100%.</span>
+        <div class="val-banner-ok">
+            <span class="val-banner-icon">🟢</span>
+            <div class="val-banner-title">✔ Planificación Energética Correcta</div>
+            <div class="val-banner-sub">Las calorías distribuidas en tus 5 comidas coinciden exactamente
+            con tu Requerimiento Calórico Diario. ✨ ¡Matemática exacta! Tu día está planificado al 100%.</div>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
-        <div class="validacion-error">
-            <span style="font-size:1.4rem;">⚠️</span>
-            <span>Hay una diferencia de {_diferencia_validacion:.2f} kcal entre la suma de tus comidas y tu RCD.</span>
+        <div class="val-banner-error">
+            <span class="val-banner-icon">🔴</span>
+            <div class="val-banner-title">⚠ Existe una diferencia de {_diferencia_validacion:.2f} kcal
+            entre el RCD y la distribución diaria.</div>
+            <div class="val-banner-sub">Revise la planificación.</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -3833,6 +3956,10 @@ elif hoja_activa == "9.-DIETA":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "10.-CLIMA CHICLAYO":
     hoja_header(10)
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "RCD_Ajustado = TMB × Factor_Actividad × 0.95",
+        referencia="Corrección Térmica de Clima Cálido — factor 5% por temperatura ambiental promedio")}</div>""",
+        unsafe_allow_html=True)
 
     col_clima, col_sticker_clima = st.columns([3, 1])
 
@@ -3861,6 +3988,10 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "11.-APORTE 1: EMBARAZO":
     hoja_header(11, "Calculadora independiente, no conectada a los datos generales de la Hoja 0.")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
+        autor="MD Mifflin, ST St Jeor et al. (1990)",
+        referencia="Ecuación de Mifflin-St Jeor + ajuste gestacional")}</div>""", unsafe_allow_html=True)
     nombre_emb = st.text_input("Nombre:", "")
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -3892,6 +4023,9 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     hoja_header(12, "La cafeína tarda entre 5 y 6 horas en reducirse a la mitad en el cuerpo. Calcular de 8 a 10 horas "
                     "antes de acostarse asegura que el estimulante baje lo suficiente para no bloquear los receptores "
                     "cerebrales del sueño, protegiendo el descanso profundo.")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Hora_Límite_Cafeína = Hora_Dormir − 8 horas",
+        referencia="Principio de Vida Media de la Cafeína (FDA / AASM)")}</div>""", unsafe_allow_html=True)
     hora_dormir = st.time_input("Hora de dormir:", value=datetime.strptime("22:00", "%H:%M").time())
     dt_dormir = datetime.combine(datetime.today(), hora_dormir)
     dt_limite = dt_dormir - timedelta(hours=8)
