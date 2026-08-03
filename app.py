@@ -3450,11 +3450,32 @@ elif hoja_activa == "4.-RCD":
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     with st.expander("📋 Ver tabla completa de factores de actividad (Hombres / Mujeres)"):
-        tabla_bonita(pd.DataFrame({
-            "Actividad": ["Sedentaria", "Ligero", "Moderada", "Intensa"],
-            "Hombres": [1.2, 1.55, 1.8, 2.1],
-            "Mujeres": [1.2, 1.56, 1.64, 1.82]
-        }), 4)
+        _FILAS_FACTOR_TABLA = [
+            ("🪑 Sedentaria", "#8E8E93", "#F2F2F7", 1.2, 1.2),
+            ("🚶 Ligero",     "#34C759", "#EAFAEE", FACTOR_ACTIVIDAD["Ligero"]["Hombre"],   FACTOR_ACTIVIDAD["Ligero"]["Mujer"]),
+            ("🏃 Moderada",   "#007AFF", "#EAF3FF", FACTOR_ACTIVIDAD["Moderada"]["Hombre"], FACTOR_ACTIVIDAD["Moderada"]["Mujer"]),
+            ("🔥 Intensa",    "#FF3B30", "#FFEDEC", FACTOR_ACTIVIDAD["Intensa"]["Hombre"],  FACTOR_ACTIVIDAD["Intensa"]["Mujer"]),
+        ]
+        _filas_tabla_html = ""
+        for _nom, _col, _fon, _fh, _fm in _FILAS_FACTOR_TABLA:
+            _es_fila_activa = (_nom.split(" ", 1)[1] == actividad)
+            _resalte = f"box-shadow:inset 0 0 0 2px {_col};" if _es_fila_activa else ""
+            _filas_tabla_html += f"""
+            <tr style="background:{_fon};{_resalte}">
+                <td style="text-align:left;font-weight:800;color:{_col};padding:12px 16px;border-radius:12px 0 0 12px;">{_nom}{' ⭐' if _es_fila_activa else ''}</td>
+                <td style="text-align:center;font-weight:800;color:#1976D2;padding:12px 16px;">♂ {_fh:.2f}</td>
+                <td style="text-align:center;font-weight:800;color:#C2185B;padding:12px 16px;border-radius:0 12px 12px 0;">♀ {_fm:.2f}</td>
+            </tr>"""
+        st.markdown(_html_sin_lineas_vacias(f"""
+        <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-family:var(--font-round);">
+            <thead><tr>
+                <th style="text-align:left;padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">Actividad</th>
+                <th style="padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">Hombres</th>
+                <th style="padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">Mujeres</th>
+            </tr></thead>
+            <tbody>{_filas_tabla_html}</tbody>
+        </table>
+        """), unsafe_allow_html=True)
 
     caja_util("Este es el número más importante de toda la app: son las calorías reales que gastas en un día "
               "normal, sumando tu TMB (Hoja 3) más el movimiento que haces según tu nivel de actividad. "
@@ -3504,6 +3525,27 @@ elif hoja_activa == "5.-CONTROL DE PESO":
 elif hoja_activa == "6.-MACRONUTRIENTES":
     hoja_header(6, "Proteínas y grasas se calculan según tus gramos por kilo de peso corporal; los "
                    "carbohidratos cubren la energía restante hasta completar tu Requerimiento Calórico Diario.")
+
+    # ===== RCD grande y destacado arriba de todo =====
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
+                padding:26px 30px;text-align:center;color:#FFFFFF;margin-bottom:18px;
+                box-shadow:0 16px 36px rgba(30,86,49,0.30);">
+        <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
+            🔥 Tu Requerimiento Calórico Diario (RCD)</div>
+        <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">kcal/día</span></div>
+        <div style="font-size:0.84rem;opacity:0.9;">Sobre este total se reparten tus macronutrientes.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== Referencia OMS + nota: los carbohidratos no son esenciales en la dieta =====
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Distribución de macronutrientes: Proteínas 10–35% · Grasas 20–35% · Carbohidratos 45–65% del VCT",
+        referencia="Organización Mundial de la Salud (OMS) / FAO")}</div>""", unsafe_allow_html=True)
+    st.info("🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
+            "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
+            "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
+            "pero no son indispensables para sobrevivir ni para una nutrición adecuada.")
 
     # =====================================================================================
     # VARIABLES DE ENTRADA (equivalentes a pesoUsuario / rcdUsuario / objetivoUsuario)
@@ -3771,7 +3813,7 @@ elif hoja_activa == "7.-PORCIONES":
 
     _filas_comidas_html += f"""
         <tr class="fila-total-comidas">
-            <td class="comida-nombre" style="color:#FFFFFF;">🔢 TOTAL DISTRIBUIDO</td>
+            <td class="comida-nombre" style="color:#FFFFFF;">🔥 RCD (Total Distribuido)</td>
             <td>100%</td>
             <td>{_suma_kcal_comidas:.2f} kcal</td>
         </tr>"""
