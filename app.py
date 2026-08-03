@@ -1126,7 +1126,7 @@ def generar_pdf_reporte(datos):
     # ---------------- 1. DATOS ANTROPOMÉTRICOS ----------------
     story.append(Paragraph("📏 Datos antropométricos", estilo_seccion))
     story.append(_tabla_datos([
-        ["Peso", f"{datos['peso']} kg"],
+        ["Peso", f"{datos['peso']:.2f} kg"],
         ["Estatura", f"{datos['estatura']} cm"],
         ["IMC", f"{datos['imc']}  —  {datos['categoria_imc']}" + (f"  (Percentil {datos['percentil']})" if datos.get("percentil") else "")],
     ]))
@@ -1134,9 +1134,9 @@ def generar_pdf_reporte(datos):
     # ---------------- 2. REQUERIMIENTO ENERGÉTICO ----------------
     story.append(Paragraph("🔥 Requerimiento energético", estilo_seccion))
     story.append(_tabla_datos([
-        ["TMB (Tasa Metabólica Basal)", f"{datos['tmb']:.0f} kcal/día"],
-        ["RCD (Gasto calórico diario)", f"{datos['rcd']:.0f} kcal/día"],
-        ["Meta calórica (según objetivo)", f"{datos['rcd_final']:.0f} kcal/día"],
+        ["TMB (Tasa Metabólica Basal)", f"{datos['tmb']:.2f} kcal/día"],
+        ["RCD (Gasto calórico diario)", f"{datos['rcd']:.2f} kcal/día"],
+        ["Meta calórica (según objetivo)", f"{datos['rcd_final']:.2f} kcal/día"],
         ["Objetivo nutricional", f"{datos['objetivo']}"],
     ]))
 
@@ -1144,9 +1144,9 @@ def generar_pdf_reporte(datos):
     story.append(Paragraph("🍽️ Macronutrientes recomendados (diarios)", estilo_seccion))
     tabla_macros = Table([
         ["Macronutriente", "Gramos", "Kcal/día", "% del total"],
-        ["Proteínas", f"{datos['gr_prot']:.1f} g", f"{datos['cal_prot']:.0f}", "20%"],
-        ["Carbohidratos", f"{datos['gr_carb']:.1f} g", f"{datos['cal_carb']:.0f}", "50%"],
-        ["Grasas", f"{datos['gr_gras']:.1f} g", f"{datos['cal_gras']:.0f}", "30%"],
+        ["Proteínas", f"{datos['gr_prot']:.2f} g", f"{datos['cal_prot']:.2f}", "20%"],
+        ["Carbohidratos", f"{datos['gr_carb']:.2f} g", f"{datos['cal_carb']:.2f}", "50%"],
+        ["Grasas", f"{datos['gr_gras']:.2f} g", f"{datos['cal_gras']:.2f}", "30%"],
     ], colWidths=(58 * mm, 39 * mm, 39 * mm, 38 * mm))
     tabla_macros.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
@@ -1214,8 +1214,8 @@ def generar_pdf_reporte(datos):
     # ---------------- 6. PROYECCIÓN A 60 DÍAS ----------------
     story.append(Paragraph("📈 Proyección estimada (60 días)", estilo_seccion))
     story.append(_tabla_datos([
-        ["Peso actual", f"{datos['peso']} kg"],
-        ["Peso estimado en 60 días", f"{datos['peso_proyectado']:.1f} kg"],
+        ["Peso actual", f"{datos['peso']:.2f} kg"],
+        ["Peso estimado en 60 días", f"{datos['peso_proyectado']:.2f} kg"],
     ]))
 
     # ---------------- 7. RESUMEN CLÍNICO Y RECOMENDACIONES ----------------
@@ -2437,13 +2437,13 @@ def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v):
 
     m1, m2, m3 = st.columns(3)
     with m1:
-        _gauge_altair(pct_prot, "#FF6B5B", f"Tus Ladrillos: {gr_prot_v:.0f} g/día",
+        _gauge_altair(pct_prot, "#FF6B5B", f"Tus Ladrillos: {gr_prot_v:.2f} g/día",
                       "Para no perder el músculo que ya tienes.", "prot")
     with m2:
-        _gauge_altair(pct_gras, "#FFC93C", f"Tus Hormonas: {gr_gras_v:.0f} g/día",
+        _gauge_altair(pct_gras, "#FFC93C", f"Tus Hormonas: {gr_gras_v:.2f} g/día",
                       "El 'combustible' que mantiene tu cuerpo funcionando bien. ¡No lo bajes demasiado!", "gras")
     with m3:
-        _gauge_altair(pct_carb, "#4FC3F7", f"Tu Energía: {gr_carb_v:.0f} g/día",
+        _gauge_altair(pct_carb, "#4FC3F7", f"Tu Energía: {gr_carb_v:.2f} g/día",
                       "El resto de la energía para tu día y entrenamientos.", "carb")
 
     st.markdown("""
@@ -3078,7 +3078,7 @@ if hoja_activa == "0.-DATOS":
         df0 = pd.DataFrame({
             "Variable": ["Nombre", "Peso", "Edad", "Estatura", "Estatura (m)", "Género", "Actividad física",
                          "Objetivo", "Ajuste (bajar)", "Ajuste (subir)", "Etapa (detectada)"],
-            "Valor": [_nombre_saludo, f"{peso} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m}", genero, actividad,
+            "Valor": [_nombre_saludo, f"{peso:.2f} kg", f"{edad} años", f"{estatura} cm", f"{estatura_m:.2f}", genero, actividad,
                       objetivo, f"{ajuste_bajar*100:.0f}%", f"{ajuste_subir*100:.0f}%", etapa]
         })
         tabla_bonita(df0, 0)
@@ -3289,7 +3289,7 @@ elif hoja_activa == "3.-TMB":
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         _formula_tmb, autor="MD Mifflin, ST St Jeor et al. (1990)",
         referencia="Ecuación de Mifflin-St Jeor")}</div>""", unsafe_allow_html=True)
-    st.metric("Resultado TMB", f"{tmb:.0f} kcal/día")
+    st.metric("Resultado TMB", f"{tmb:.2f} kcal/día")
     caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
               "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
@@ -3302,14 +3302,160 @@ elif hoja_activa == "4.-RCD":
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "RCD = TMB × Factor de Actividad Física",
         autor="OMS / FAO / UNU", referencia="Factor de Actividad Física")}</div>""", unsafe_allow_html=True)
-    tabla_bonita(pd.DataFrame({
-        "Actividad": ["Sedentaria", "Ligero", "Moderada", "Intensa"],
-        "Hombres": [1.2, 1.55, 1.8, 2.1],
-        "Mujeres": [1.2, 1.56, 1.64, 1.82]
-    }), 4)
-    col1, col2 = st.columns(2)
-    col1.metric(f"Factor aplicado ({actividad}, {genero})", factor)
-    col2.metric("Resultado RCD", f"{rcd:.0f} kcal/día")
+
+    # ===== Stepper: IMC ✔ → TMB ✔ → Factor actividad ✔ → RCD ✔ =====
+    st.markdown("""
+    <div class="rcd-stepper-wrap">
+        <div class="rcd-step done"><span class="rcd-step-num">①</span> IMC <span class="rcd-step-check">✔</span></div>
+        <div class="rcd-step-arrow">→</div>
+        <div class="rcd-step done"><span class="rcd-step-num">②</span> TMB <span class="rcd-step-check">✔</span></div>
+        <div class="rcd-step-arrow">→</div>
+        <div class="rcd-step done"><span class="rcd-step-num">③</span> Factor actividad <span class="rcd-step-check">✔</span></div>
+        <div class="rcd-step-arrow">→</div>
+        <div class="rcd-step done active"><span class="rcd-step-num">④</span> RCD <span class="rcd-step-check">✔</span></div>
+    </div>
+    <style>
+    .rcd-stepper-wrap { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:10px 0 20px 0; }
+    .rcd-step { background:#EAFAEE; color:#1E5631; font-weight:800; font-size:0.85rem; padding:9px 16px;
+                border-radius:999px; display:flex; align-items:center; gap:6px; border:1.5px solid #34C75955; }
+    .rcd-step.active { background:#1E5631; color:#FFFFFF; box-shadow:0 6px 16px rgba(30,86,49,0.30); }
+    .rcd-step-check { font-size:0.8rem; }
+    .rcd-step-arrow { color:#B0B8C1; font-size:1.1rem; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ===== Tarjeta informativa: Nivel · Coeficiente · Sexo · Fórmula · Referencia =====
+    st.markdown(f"""
+    <div class="bento-card" style="margin-bottom:18px;">
+        <div class="bento-eyebrow">Resumen del cálculo aplicado</div>
+        <div style="display:flex;flex-wrap:wrap;gap:22px;margin-top:10px;">
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">🏃 Nivel de actividad</div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{actividad}</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📈 Coeficiente aplicado</div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#34C759;">{factor:.2f}</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">🚻 Sexo del paciente</div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{genero}</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📖 Fórmula</div>
+                 <div style="font-size:1.0rem;font-weight:700;color:#17301F;">RCD = TMB × Factor de actividad</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📚 Referencia</div>
+                 <div style="font-size:1.0rem;font-weight:700;color:#17301F;">Organización Mundial de la Salud (OMS)</div></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 4 tarjetas de nivel de actividad (reemplazan la tabla), con la seleccionada iluminada =====
+    st.markdown("#### 🏋️ Nivel de Actividad Física")
+    _NIVELES_RCD = [
+        ("Sedentario", "Sedentaria", "🪑", 1.2, "#8E8E93", "#F2F2F7"),
+        ("Ligero",     "Ligero",     "🚶", FACTOR_ACTIVIDAD["Ligero"][genero],   "#34C759", "#EAFAEE"),
+        ("Moderado",   "Moderada",   "🏃", FACTOR_ACTIVIDAD["Moderada"][genero], "#007AFF", "#EAF3FF"),
+        ("Intenso",    "Intensa",    "🔥", FACTOR_ACTIVIDAD["Intensa"][genero],  "#FF3B30", "#FFEDEC"),
+    ]
+    cols_niv = st.columns(4)
+    for col_n, (nombre_niv, clave_niv, icono_niv, factor_niv, color_niv, fondo_niv) in zip(cols_niv, _NIVELES_RCD):
+        _es_sel = (clave_niv == actividad)
+        with col_n:
+            _estilo_sel = (f"background:linear-gradient(150deg,{color_niv}22 0%,#FFFFFF 75%);"
+                           f"border:2.5px solid {color_niv};box-shadow:0 10px 26px {color_niv}40;transform:translateY(-3px);"
+                           if _es_sel else
+                           f"background:{fondo_niv};border:1.5px solid rgba(0,0,0,0.05);")
+            _badge_sel = (f'<div style="margin-top:8px;background:{color_niv};color:#FFFFFF;font-size:0.68rem;'
+                          f'font-weight:800;padding:3px 10px;border-radius:999px;display:inline-block;">✓ SELECCIONADO</div>'
+                          if _es_sel else "")
+            st.markdown(f"""
+            <div style="{_estilo_sel}border-radius:20px;padding:16px 14px;text-align:center;transition:all 0.2s ease;">
+                <div style="font-size:1.7rem;">{icono_niv}</div>
+                <div style="font-weight:800;color:{color_niv};font-size:0.92rem;margin-top:4px;">{nombre_niv}</div>
+                <div style="font-size:0.72rem;color:#8A94A6;font-weight:700;text-transform:uppercase;margin-top:2px;">Factor</div>
+                <div style="font-size:1.5rem;font-weight:900;color:{color_niv};letter-spacing:-0.02em;">{factor_niv:.2f}</div>
+                {_badge_sel}
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+
+    # ===== Barra de progreso comparativa por nivel de actividad =====
+    st.markdown("#### 📊 Comparativa de Niveles")
+    _factor_max_barra = max(f for _, _, _, f, _, _ in _NIVELES_RCD)
+    for nombre_niv, clave_niv, icono_niv, factor_niv, color_niv, fondo_niv in _NIVELES_RCD:
+        _pct_barra = max(6.0, (factor_niv / _factor_max_barra) * 100)
+        _es_sel = (clave_niv == actividad)
+        _marca_sel = " ← seleccionado" if _es_sel else ""
+        _grosor = "6" if _es_sel else "3"
+        st.markdown(f"""
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div style="width:110px;font-size:0.85rem;font-weight:700;color:#17301F;flex-shrink:0;">{icono_niv} {nombre_niv}</div>
+            <div style="flex:1;height:16px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
+                <div style="width:{_pct_barra:.0f}%;height:100%;border-radius:999px;background:{color_niv};
+                            {'box-shadow:0 0 0 2px ' + color_niv + '55;' if _es_sel else ''}"></div>
+            </div>
+            <div style="width:170px;font-size:0.8rem;font-weight:{'800' if _es_sel else '600'};color:{color_niv if _es_sel else '#8A94A6'};">
+                {factor_niv:.2f}{_marca_sel}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    # ===== Diagrama del cálculo: TMB → × Factor → = RCD =====
+    st.markdown("#### 🧮 Diagrama del Cálculo")
+    st.markdown(f"""
+    <div class="cp5-glass-flow" style="margin-top:6px;">
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">⚡ TMB</div>
+            <div class="cp5-flow-value">{tmb:.2f}</div>
+            <div class="cp5-flow-legend">kcal/día — tu gasto en reposo (Hoja 3)</div>
+        </div>
+        <div class="cp5-flow-arrow">×</div>
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">🏃 Factor de actividad</div>
+            <div class="cp5-flow-value">{factor:.2f}</div>
+            <div class="cp5-flow-legend">{actividad} · {genero}</div>
+        </div>
+        <div class="cp5-flow-arrow">=</div>
+        <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.35);">
+            <div class="cp5-flow-label">🔥 RCD</div>
+            <div class="cp5-flow-value" style="color:#E67E22;">{rcd:.2f}</div>
+            <div class="cp5-flow-legend">kcal/día — tu gasto calórico diario</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== Fórmula desarrollada, con los números reales del usuario =====
+    st.markdown(f"""
+    <div style="text-align:center;background:#F7F9F7;border-radius:18px;padding:16px 20px;margin-top:16px;
+                font-family:var(--font-round);border:1px solid rgba(0,0,0,0.04);">
+        <span style="font-size:1.3rem;font-weight:800;color:#17301F;">{tmb:.2f}</span>
+        <span style="font-size:1.1rem;color:#8A94A6;margin:0 10px;">×</span>
+        <span style="font-size:1.3rem;font-weight:800;color:#34C759;">{factor:.2f}</span>
+        <span style="font-size:1.1rem;color:#8A94A6;margin:0 10px;">=</span>
+        <span style="font-size:1.5rem;font-weight:900;color:#E67E22;">{rcd:.2f} kcal</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    # ===== Resultado final destacado, con fondo degradado naranja-rojo =====
+    st.markdown(f"""
+    <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#FF9500 0%,#FF6B35 55%,#FF3B30 100%);
+                border-radius:26px;padding:30px 34px;text-align:center;color:#FFFFFF;
+                box-shadow:0 18px 40px rgba(255,111,0,0.35);">
+        <div style="position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:0.16;">🔥</div>
+        <div style="font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.95;">
+            Resultado Final · Requerimiento Calórico Diario</div>
+        <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.2f} <span style="font-size:1.2rem;font-weight:700;">kcal/día</span></div>
+        <div style="font-size:0.86rem;opacity:0.92;">Factor aplicado: <b>{actividad}</b> ({factor:.2f}) · Sexo: <b>{genero}</b></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    with st.expander("📋 Ver tabla completa de factores de actividad (Hombres / Mujeres)"):
+        tabla_bonita(pd.DataFrame({
+            "Actividad": ["Sedentaria", "Ligero", "Moderada", "Intensa"],
+            "Hombres": [1.2, 1.55, 1.8, 2.1],
+            "Mujeres": [1.2, 1.56, 1.64, 1.82]
+        }), 4)
+
     caja_util("Este es el número más importante de toda la app: son las calorías reales que gastas en un día "
               "normal, sumando tu TMB (Hoja 3) más el movimiento que haces según tu nivel de actividad. "
               "Es tu 'punto de equilibrio' calórico. 🏃‍♀️🔥",
@@ -3463,7 +3609,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         "Carb: Kcal = RCD − Kcal Restantes → Gramos = Kcal/4",
         referencia="Modelo de reparto de macronutrientes por nivel")}</div>""", unsafe_allow_html=True)
     st.caption("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.")
-    st.info(f"⚖️ Peso usado en los cálculos: **{peso_usuario} kg** · 🔥 RCD objetivo: **{rcd_usuario:.0f} kcal/día**")
+    st.info(f"⚖️ Peso usado en los cálculos: **{peso_usuario:.2f} kg** · 🔥 RCD objetivo: **{rcd_usuario:.2f} kcal/día**")
 
     _filas_niveles_html = ""
     for _nivel in ["Mínimo", "Intermedio", "Máximo"]:
@@ -3769,7 +3915,7 @@ elif hoja_activa == "9.-DIETA":
     _ICONOS_COMIDA_D9 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
     _filas_tiempos_html = "".join(
         f"""<div class="rn-tiempos-row"><span>{_ICONOS_COMIDA_D9[_c]} {_c}</span>
-            <span class="rn-kcal">{porciones[_c]['kcal']:.0f} kcal</span></div>"""
+            <span class="rn-kcal">{porciones[_c]['kcal']:.2f} kcal</span></div>"""
         for _c in porciones
     )
 
@@ -3782,15 +3928,15 @@ elif hoja_activa == "9.-DIETA":
         <div class="resumen-nutri-card rn-macros">
             <div class="rn-title">🍽️ Distribución de Macronutrientes</div>
             <div class="rn-macro-row">🥩 Proteínas
-                <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.0f} g</span></div>
+                <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.2f} g</span></div>
             <div class="rn-macro-row">🌾 Carbohidratos
-                <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.0f} g</span></div>
+                <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.2f} g</span></div>
             <div class="rn-macro-row">🥑 Grasas
-                <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.0f} g</span></div>
+                <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.2f} g</span></div>
         </div>
         <div class="resumen-nutri-card rn-rcd">
             <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 Requerimiento Calórico Diario</div>
-            <div class="rn-rcd-value">{rcd_final:.0f}</div>
+            <div class="rn-rcd-value">{rcd_final:.2f}</div>
             <div style="font-size:0.85rem;opacity:0.9;">kcal / día</div>
         </div>
     </div>
@@ -3973,7 +4119,7 @@ elif hoja_activa == "10.-CLIMA CHICLAYO":
                 "biológica: el cuerpo reduce su tasa metabólica basal para evitar producir calor interno excesivo. "
                 "Por ello, se aplica un factor de **0.95**, restando automáticamente un 5% al gasto calórico diario total.")
         st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo).")
-        st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo:.1f} kcal/día")
+        st.metric("Gasto energético ajustado al clima de Chiclayo", f"{rcd_chiclayo:.2f} kcal/día")
 
     st.divider()
     recursos_externos(10, [
@@ -4009,9 +4155,9 @@ elif hoja_activa == "11.-APORTE 1: EMBARAZO":
 
     tmb_emb = (10 * peso_emb) + (6.25 * altura_emb) - (5 * edad_emb) - 161 + ajuste_trim
     if nombre_emb.strip():
-        st.metric(f"Total TMB para {nombre_emb}", f"{tmb_emb:.0f} kcal/día")
+        st.metric(f"Total TMB para {nombre_emb}", f"{tmb_emb:.2f} kcal/día")
     else:
-        st.metric("Total TMB", f"{tmb_emb:.0f} kcal/día")
+        st.metric("Total TMB", f"{tmb_emb:.2f} kcal/día")
     caja_util("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
               "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
               "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
@@ -4181,7 +4327,7 @@ elif hoja_activa == "📄 MI REPORTE":
     # --- Bloque 1: Datos antropométricos ---
     st.markdown("#### 📏 Datos antropométricos")
     r1, r2, r3 = st.columns(3)
-    r1.metric("Peso", f"{peso} kg")
+    r1.metric("Peso", f"{peso:.2f} kg")
     r2.metric("Estatura", f"{estatura} cm")
     with r3:
         if etapa in ["Niñez", "Adolescencia"]:
@@ -4191,15 +4337,15 @@ elif hoja_activa == "📄 MI REPORTE":
 
     st.markdown("#### 🔥 Requerimiento energético")
     r4, r5, r6 = st.columns(3)
-    r4.metric("TMB", f"{tmb:.0f} kcal/día")
-    r5.metric("RCD (gasto diario)", f"{rcd:.0f} kcal/día")
-    r6.metric("Meta calórica (objetivo)", f"{rcd_final:.0f} kcal/día")
+    r4.metric("TMB", f"{tmb:.2f} kcal/día")
+    r5.metric("RCD (gasto diario)", f"{rcd:.2f} kcal/día")
+    r6.metric("Meta calórica (objetivo)", f"{rcd_final:.2f} kcal/día")
 
     st.markdown("#### 🍽️ Macronutrientes recomendados")
     r7, r8, r9 = st.columns(3)
-    r7.metric("Proteínas", f"{gr_prot:.1f} g")
-    r8.metric("Carbohidratos", f"{gr_carb:.1f} g")
-    r9.metric("Grasas", f"{gr_gras:.1f} g")
+    r7.metric("Proteínas", f"{gr_prot:.2f} g")
+    r8.metric("Carbohidratos", f"{gr_carb:.2f} g")
+    r9.metric("Grasas", f"{gr_gras:.2f} g")
 
     # --- Bloque 2: Análisis sanguíneo, si hay datos ---
     st.markdown("#### 🩸 Análisis sanguíneo")
