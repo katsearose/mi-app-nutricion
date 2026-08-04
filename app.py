@@ -12,6 +12,19 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 from pathlib import Path
 
+
+def _hex_a_rgba(color_hex, alpha=0.12):
+    """Convierte un color '#RRGGBB' a 'rgba(r,g,b,alpha)'. Evita el error de Plotly
+    con algunos entornos que no aceptan hex de 8 dígitos (#RRGGBBAA) como fillcolor."""
+    color_hex = (color_hex or "#34C759").lstrip("#")
+    if len(color_hex) >= 6:
+        r = int(color_hex[0:2], 16)
+        g = int(color_hex[2:4], 16)
+        b = int(color_hex[4:6], 16)
+    else:
+        r, g, b = 52, 199, 89
+    return f"rgba({r},{g},{b},{alpha})"
+
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors as rl_colors
@@ -36,7 +49,7 @@ COLORES = {
     3:  ("3", "Tasa Metabólica Basal (TMB)",                 "⚡", "#FF9500", "#FFF3E5"),  # systemOrange
     4:  ("4", "Requerimiento Calórico Diario (RCD)",         "🔥", "#34C759", "#EAFAEE"),  # systemGreen
     5:  ("5", "Control de Peso",                              "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
-    6:  ("6", "Cálculo de los Macronutrientes",               "🍽️", "#FFCC00", "#FFFAE0"),  # systemYellow
+    6:  ("6", "Plan Nutricional Basado en la OMS",             "⚖️", "#FFCC00", "#FFFAE0"),  # systemYellow
     7:  ("7", "Cálculo de las Porciones del Día",            "⏰", "#30B0C7", "#E6F7FA"),  # systemTeal
     8:  ("8", "Página FatSecret",                             "🌐", "#00C7BE", "#E1FBF9"),  # systemMint
     9:  ("9", "Plan de Dieta Semanal",                        "🍱", "#FF6B35", "#FFEEE6"),  # naranja cálido
@@ -3531,21 +3544,19 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
         </div>
         """, unsafe_allow_html=True)
 
-    b2c1, b2c2 = st.columns(2)
-    with b2c1:
-        objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
-                                 key="objetivo")
-    with b2c2:
-        st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
-        if objetivo == "Bajar de peso":
-            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-                options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
-        elif objetivo == "Subir de peso":
-            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-                options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
-        else:
-            ajuste_txt = None
-            st.caption("Sin ajuste calórico: se mantiene tu RCD.")
+    objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
+                             key="objetivo")
+
+    st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
+    if objetivo == "Bajar de peso":
+        ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+            options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
+    elif objetivo == "Subir de peso":
+        ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+            options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
+    else:
+        ajuste_txt = None
+        st.caption("Sin ajuste calórico: se mantiene tu RCD.")
 
     if objetivo in ("Bajar de peso", "Subir de peso"):
         _DESC_AJUSTE = {
@@ -3568,19 +3579,18 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
                  "Requiere una alimentación bien planificada."),
             ],
         }[objetivo]
-        _cols_ajuste = st.columns(3)
-        for _col_w, (_tit_a, _ic_a, _col_a, _fon_a, _desc_a) in zip(_cols_ajuste, _DESC_AJUSTE):
+        for _tit_a, _ic_a, _col_a, _fon_a, _desc_a in _DESC_AJUSTE:
             _sel_a = (_tit_a == ajuste_txt)
-            with _col_w:
-                _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateY(-3px);"
-                             if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
-                st.markdown(f"""
-                <div style="background:{_fon_a};border-radius:16px;padding:14px 14px;height:100%;{_estilo_a}transition:all 0.2s ease;">
-                    <div style="font-size:1.3rem;">{_ic_a}</div>
-                    <div style="font-weight:800;color:{_col_a};font-size:0.86rem;margin:4px 0 4px 0;">{_tit_a}{' ✓' if _sel_a else ''}</div>
-                    <div style="font-size:0.78rem;color:#3C3C43;">{_desc_a}</div>
-                </div>
-                """, unsafe_allow_html=True)
+            _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateX(4px);"
+                         if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
+            st.markdown(f"""
+            <div style="background:{_fon_a};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo_a}
+                        transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
+                <div style="font-size:1.4rem;">{_ic_a}</div>
+                <div><b style="color:{_col_a};">{_tit_a}</b>{' ✓' if _sel_a else ''}<br>
+                <span style="font-size:0.84rem;color:#3C3C43;">{_desc_a}</span></div>
+            </div>
+            """, unsafe_allow_html=True)
         if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
            (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
             st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
@@ -3596,44 +3606,34 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
                 '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Estos indicadores muestran cómo está '
                 'funcionando tu cuerpo en este momento, y ayudan a detectar señales de alerta a tiempo.</p></div>',
                 unsafe_allow_html=True)
-    b3c1, b3c2, b3c3, b3c4 = st.columns(4)
-    with b3c1:
-        spo2 = st.number_input("Oxigenación SpO2 (%):", min_value=0.0, max_value=100.0, value=0.0, step=1.0,
-                                key="spo2", help="Normal: 95% a 100%.")
-        st.markdown(_gauge_track_html(spo2 if spo2 > 0 else None, 0, 100,
-                    [(0, 90, "rojo"), (90, 95, "ambar"), (95, 100, "verde")]), unsafe_allow_html=True)
-        if spo2 > 0:
-            _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
-            _badge_vital(spo2, "%", _c, "Normal" if _c == "verde" else ("Bajo" if _c == "rojo" else "Atención"))
-    with b3c2:
-        pulso = st.number_input("Pulso (lpm):", min_value=0, max_value=220, value=0, step=1,
-                                 key="pulso", help="Ideal en reposo: 60 a 100 lpm.")
-        st.markdown(_gauge_track_html(pulso if pulso > 0 else None, 0, 220,
-                    [(0, 60, "ambar"), (60, 100, "verde"), (100, 220, "rojo")]), unsafe_allow_html=True)
-        if pulso > 0:
-            _c = "verde" if 60 <= pulso <= 100 else "ambar"
-            _badge_vital(pulso, " lpm", _c, "Normal" if _c == "verde" else "Atención")
-    with b3c3:
-        temp_corp = st.number_input("Temperatura (°C):", min_value=34.0, max_value=42.0, value=34.0, step=0.1,
-                                     key="temp_corp", help="Normal: 36.5°C a 37.5°C.")
-        st.markdown(_gauge_track_html(temp_corp if temp_corp > 34.0 else None, 34.0, 42.0,
-                    [(34.0, 36.5, "ambar"), (36.5, 37.5, "verde"), (37.5, 42.0, "rojo")]), unsafe_allow_html=True)
-        if temp_corp > 34.0:
-            _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
-            _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
-    with b3c4:
-        st.caption("Presión Arterial (mmHg):")
-        pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
-        pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
-        st.markdown(_gauge_track_html(pas if pas > 0 else None, 0, 250,
-                    [(0, 90, "ambar"), (90, 130, "verde"), (130, 250, "rojo")]), unsafe_allow_html=True)
-        if pas > 0 and pad > 0:
-            if pas < 50 or pas > 300 or pad < 30 or pad > 200:
-                st.markdown('<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                             '⚠️ Valor fuera de rango clínico. Por favor verifica tus datos</p>', unsafe_allow_html=True)
-            else:
-                _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
-                _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
+    spo2 = st.number_input("Oxigenación SpO2 (%):", min_value=0.0, max_value=100.0, value=0.0, step=1.0,
+                            key="spo2", help="Normal: 95% a 100%.")
+    if spo2 > 0:
+        _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
+        _badge_vital(spo2, "%", _c, "Normal" if _c == "verde" else ("Bajo" if _c == "rojo" else "Atención"))
+
+    pulso = st.number_input("Pulso (lpm):", min_value=0, max_value=220, value=0, step=1,
+                             key="pulso", help="Ideal en reposo: 60 a 100 lpm.")
+    if pulso > 0:
+        _c = "verde" if 60 <= pulso <= 100 else "ambar"
+        _badge_vital(pulso, " lpm", _c, "Normal" if _c == "verde" else "Atención")
+
+    temp_corp = st.number_input("Temperatura (°C):", min_value=34.0, max_value=42.0, value=34.0, step=0.1,
+                                 key="temp_corp", help="Normal: 36.5°C a 37.5°C.")
+    if temp_corp > 34.0:
+        _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
+        _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
+
+    st.caption("Presión Arterial (mmHg):")
+    pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
+    pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
+    if pas > 0 and pad > 0:
+        if pas < 50 or pas > 300 or pad < 30 or pad > 200:
+            st.markdown('<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         '⚠️ Valor fuera de rango clínico. Por favor verifica tus datos</p>', unsafe_allow_html=True)
+        else:
+            _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
+            _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
     st.caption("ℹ️ Un valor estándar y saludable de presión ronda los 120/80 mmHg.")
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
@@ -3643,32 +3643,16 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
                 '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Con tus valores de sangre identificamos '
                 'riesgos como anemia, colesterol alto o glucosa elevada, para darte recomendaciones más precisas.</p></div>',
                 unsafe_allow_html=True)
-    b4c1, b4c2, b4c3, b4c4, b4c5 = st.columns(5)
-    with b4c1:
-        hemo = st.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
-                                key="hemo", help="Normal: 12-17 g/dL, varía por género.")
-        _min_g, _max_g, _seg_g = _zonas_gauge("Hemoglobina", etapa, genero)
-        st.markdown(_gauge_track_html(hemo if hemo > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-    with b4c2:
-        gluco = st.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
-                                 key="gluco", help="Normal en ayunas: 70-100 mg/dL.")
-        _min_g, _max_g, _seg_g = _zonas_gauge("Glucosa")
-        st.markdown(_gauge_track_html(gluco if gluco > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-    with b4c3:
-        coles = st.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
-                                 key="coles", help="Ideal: menor a 200 mg/dL.")
-        _min_g, _max_g, _seg_g = _zonas_gauge("Colesterol")
-        st.markdown(_gauge_track_html(coles if coles > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-    with b4c4:
-        trigli = st.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
-                                  key="trigli", help="Ideal: menor a 150 mg/dL.")
-        _min_g, _max_g, _seg_g = _zonas_gauge("Triglicéridos")
-        st.markdown(_gauge_track_html(trigli if trigli > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
-    with b4c5:
-        hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
-                                  key="hierro", help="Normal: 60-170 µg/dL.")
-        _min_g, _max_g, _seg_g = _zonas_gauge("Hierro", etapa, genero)
-        st.markdown(_gauge_track_html(hierro if hierro > 0 else None, _min_g, _max_g, _seg_g), unsafe_allow_html=True)
+    hemo = st.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
+                            key="hemo", help="Normal: 12-17 g/dL, varía por género.")
+    gluco = st.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
+                             key="gluco", help="Normal en ayunas: 70-100 mg/dL.")
+    coles = st.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
+                             key="coles", help="Ideal: menor a 200 mg/dL.")
+    trigli = st.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
+                              key="trigli", help="Ideal: menor a 150 mg/dL.")
+    hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
+                              key="hierro", help="Normal: 60-170 µg/dL.")
 
 # ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 16 secciones siempre visibles ----
 st.sidebar.markdown(
@@ -5167,19 +5151,8 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== Referencia OMS + nota: los carbohidratos no son esenciales en la dieta =====
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "Distribución de macronutrientes: Proteínas 10–35% · Grasas 20–35% · Carbohidratos 45–65% del VCT",
-        referencia="Organización Mundial de la Salud (OMS) / FAO")}</div>""", unsafe_allow_html=True)
-    st.info("🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
-            "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
-            "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
-            "pero no son indispensables para sobrevivir ni para una nutrición adecuada.")
-
     # =====================================================================================
     # VARIABLES DE ENTRADA (equivalentes a pesoUsuario / rcdUsuario / objetivoUsuario)
-    # Ya viven en la sesión de la app: `peso`, `rcd_final` (RCD ya ajustado a tu objetivo) y
-    # `objetivo` (Bajar de peso / Mantenerse / Subir de peso), ingresados en la barra lateral.
     # =====================================================================================
     peso_usuario = peso
     rcd_usuario = rcd_final
@@ -5232,39 +5205,104 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     total_kcal_final = datos_final["kcal_prot"] + datos_final["kcal_gras"] + datos_final["kcal_carb"]
     total_gr_final = datos_final["gr_prot"] + datos_final["gr_gras"] + datos_final["gr_carb"]
 
+    _pct_prot_final = (datos_final["kcal_prot"] / total_kcal_final * 100) if total_kcal_final else 0
+    _pct_gras_final = (datos_final["kcal_gras"] / total_kcal_final * 100) if total_kcal_final else 0
+    _pct_carb_final = (datos_final["kcal_carb"] / total_kcal_final * 100) if total_kcal_final else 0
+
     # =====================================================================================
-    # TABLA 1 — Valores Base y Factores de Conversión
+    # 1. ¿CÓMO SE REPARTEN TUS CALORÍAS? — mapa visual en vez de 3 tarjetas iguales
     # =====================================================================================
-    st.markdown("#### 🧮 Valores Base y Factores de Conversión")
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "Prot/Carb = 4 kcal/g · Grasa = 9 kcal/g (excepción nivel Máximo: 4 kcal/g)",
-        referencia="Constantes de conversión de macronutrientes")}</div>""", unsafe_allow_html=True)
-    st.caption("Valores universales de energía por gramo y factores aplicados según tu peso.")
-    t1c1, t1c2, t1c3 = st.columns(3)
-    with t1c1:
+    st.markdown("#### 🍽️ ¿Cómo se reparten tus calorías?")
+    st.markdown(f"""
+    <div style="text-align:center;margin:6px 0 18px 0;">
+        <div style="font-size:2.1rem;font-weight:900;color:#17301F;">{rcd_final:.0f} <span style="font-size:1rem;font-weight:700;color:#8E8E93;">kcal</span></div>
+        <div style="font-size:1.3rem;color:#8E8E93;margin:2px 0 14px 0;">↓</div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;background:#FFEBF0;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FF2D5533;">
+            <div style="font-size:1.6rem;">❤️</div>
+            <div style="font-weight:800;color:#C2185B;margin:4px 0 2px 0;">Proteínas</div>
+            <div style="font-size:0.78rem;color:#8A5252;">Construyen</div>
+            <div style="font-weight:800;color:#C2185B;margin-top:6px;">4 kcal/g</div>
+        </div>
+        <div style="flex:1;min-width:150px;background:#EAFAEE;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #34C75933;">
+            <div style="font-size:1.6rem;">🥑</div>
+            <div style="font-weight:800;color:#1E5631;margin:4px 0 2px 0;">Grasas</div>
+            <div style="font-size:0.78rem;color:#3E7050;">Protegen</div>
+            <div style="font-weight:800;color:#1E5631;margin-top:6px;">9 kcal/g</div>
+        </div>
+        <div style="flex:1;min-width:150px;background:#FFF8E1;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FFCC0055;">
+            <div style="font-size:1.6rem;">🌾</div>
+            <div style="font-weight:800;color:#8A6D00;margin:4px 0 2px 0;">Carbohidratos</div>
+            <div style="font-size:0.78rem;color:#9C8300;">Dan energía</div>
+            <div style="font-weight:800;color:#8A6D00;margin-top:6px;">4 kcal/g</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # =====================================================================================
+    # 2. RECOMENDACIÓN INTERNACIONAL — tarjeta OMS bien visible
+    # =====================================================================================
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#EAF3FF 0%,#DCEBFF 100%);border-radius:20px;
+                padding:20px 24px;margin-bottom:18px;border:1.5px solid #007AFF33;">
+        <div style="font-weight:800;color:#007AFF;font-size:1rem;margin-bottom:10px;">
+            🌍 Recomendación internacional</div>
+        <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">
+            Según la Organización Mundial de la Salud (OMS):</p>
+        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ Proteínas y grasas son nutrientes esenciales.</p>
+        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ Los carbohidratos son la principal fuente práctica de energía.</p>
+        <p style="margin:0 0 8px 0;color:#3C3C43;font-size:0.84rem;">✔ Una alimentación saludable debe incluir un equilibrio entre los tres macronutrientes.</p>
+        <p style="margin:0;color:#8E8E93;font-size:0.7rem;">Referencia: Organización Mundial de la Salud (OMS).</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.info("🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
+            "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
+            "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
+            "pero no son indispensables para sobrevivir ni para una nutrición adecuada.")
+
+    st.divider()
+
+    # =====================================================================================
+    # 3. TARJETAS CON PERSONALIDAD — qué función cumple cada macronutriente
+    # =====================================================================================
+    st.markdown("#### 🧠 ¿Qué hace cada macronutriente?")
+    tp1, tp2, tp3 = st.columns(3)
+    with tp1:
         st.markdown("""
         <div class="macro-card prot">
-            <div class="mc-head"><span class="mc-icon">🥩</span><span class="mc-title">Proteínas</span>
+            <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">Proteínas</span>
                 <span class="mc-tip" title="1 gramo de proteína equivale a 4 kcal. Se calcula multiplicando tu peso (kg) por un factor de 1.8 a 2.5 g/kg.">ℹ️</span></div>
-            <div class="mc-value">4 kcal/g</div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏗 Construyen músculos</p>
+            <p style="margin:2px 0;font-size:0.82rem;">🩹 Reparan tejidos</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 Forman enzimas</p>
+            <div class="mc-value">⚡ 4 kcal/g</div>
             <div class="mc-sub">Factores (g/kg de peso):<br>Mínimo <b>1.8</b> · Intermedio <b>2.1</b> · Máximo <b>2.5</b></div>
         </div>
         """, unsafe_allow_html=True)
-    with t1c2:
+    with tp2:
         st.markdown("""
         <div class="macro-card gras">
             <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">Grasas</span>
                 <span class="mc-tip" title="1 gramo de grasa equivale a 9 kcal. Se calcula multiplicando tu peso (kg) por un factor de 0.5 a 1.5 g/kg.">ℹ️</span></div>
-            <div class="mc-value">9 kcal/g</div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 Protegen el cerebro</p>
+            <p style="margin:2px 0;font-size:0.82rem;">🔥 Reserva energética</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 Ayudan a absorber vitaminas</p>
+            <div class="mc-value">⚡ 9 kcal/g</div>
             <div class="mc-sub">Factores (g/kg de peso):<br>Mínimo <b>0.5</b> · Intermedio <b>1.0</b> · Máximo <b>1.5</b></div>
         </div>
         """, unsafe_allow_html=True)
-    with t1c3:
+    with tp3:
         st.markdown("""
         <div class="macro-card carb">
             <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">Carbohidratos</span>
                 <span class="mc-tip" title="1 gramo de carbohidrato equivale a 4 kcal. No usan un factor de peso: cubren la energía restante hasta tu RCD.">ℹ️</span></div>
-            <div class="mc-value">4 kcal/g</div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 Principal combustible</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 Energía para el cerebro</p>
+            <div class="mc-value">⚡ 4 kcal/g</div>
             <div class="mc-sub">Sin factor de peso — cubren el resto de la energía de tu RCD.</div>
         </div>
         """, unsafe_allow_html=True)
@@ -5272,9 +5310,14 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     st.divider()
 
     # =====================================================================================
-    # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles)
+    # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles) — sin tocar
     # =====================================================================================
     st.markdown("#### 📊 Proyección de Requerimientos")
+    st.markdown(f"""
+    <div style="text-align:center;color:#8E8E93;font-size:0.8rem;font-weight:700;margin-bottom:8px;">
+        Peso → Factores OMS → Proteínas → Grasas → Carbohidratos → Plan nutricional
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "Prot(g)=peso×Factor → Kcal=g×4 | Grasa(g)=peso×Factor → Kcal=g×9 | "
         "Carb: Kcal = RCD − Kcal Restantes → Gramos = Kcal/4",
@@ -5333,7 +5376,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # =====================================================================================
     # TABLA 3 — Tu Plan Nutricional Definitivo (filtro inteligente según tu objetivo)
     # =====================================================================================
-    st.markdown("#### 🎯 Tu Plan Nutricional Definitivo")
+    st.markdown("#### 🎯 Este será tu plan diario")
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         'IF "Bajar de peso" → Mínimo (1.8/0.5) · IF "Mantenerse" → Intermedio (2.1/1.0) · '
         'IF "Subir de peso" → Máximo (2.5/1.5)',
@@ -5341,6 +5384,52 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     st.caption("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.")
     st.success(f"🎯 Objetivo seleccionado: **{objetivo_usuario}** → Nivel aplicado: **{nivel_final}** "
                f"(Proteína {FACTORES_PROT[nivel_final]:.1f} g/kg · Grasa {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
+
+    # ---- Resumen visual: 3 tarjetas grandes + barra de calorías ----
+    rp1, rp2, rp3 = st.columns(3)
+    for _col_r, _ic_r, _val_r, _lab_r, _col_hex_r, _fon_r in [
+        (rp1, "❤️", f"{datos_final['gr_prot']:.0f} g", "Proteínas", "#C2185B", "#FFEBF0"),
+        (rp2, "🥑", f"{datos_final['gr_gras']:.0f} g", "Grasas", "#1E5631", "#EAFAEE"),
+        (rp3, "🌾", f"{datos_final['gr_carb']:.0f} g", "Carbohidratos", "#8A6D00", "#FFF8E1"),
+    ]:
+        with _col_r:
+            st.markdown(f"""
+            <div style="background:{_fon_r};border-radius:20px;padding:20px;text-align:center;">
+                <div style="font-size:1.8rem;">{_ic_r}</div>
+                <div style="font-size:1.6rem;font-weight:900;color:{_col_hex_r};margin:4px 0;">{_val_r}</div>
+                <div style="font-size:0.82rem;font-weight:700;color:{_col_hex_r};">{_lab_r}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="margin:14px 0 4px 0;">
+        <div style="display:flex;height:22px;border-radius:11px;overflow:hidden;">
+            <div style="width:{_pct_prot_final:.1f}%;background:#FF2D55;"></div>
+            <div style="width:{_pct_gras_final:.1f}%;background:#34C759;"></div>
+            <div style="width:{_pct_carb_final:.1f}%;background:#FFCC00;"></div>
+        </div>
+        <div style="text-align:center;margin-top:6px;font-weight:800;color:#17301F;">
+            {total_kcal_final:.0f} kcal — 100%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ---- Gráfico donut ----
+    fig_donut_macro = go.Figure(data=[go.Pie(
+        labels=["❤️ Proteínas", "🥑 Grasas", "🌾 Carbohidratos"],
+        values=[datos_final["kcal_prot"], datos_final["kcal_gras"], datos_final["kcal_carb"]],
+        hole=0.62,
+        marker=dict(colors=["#FF2D55", "#34C759", "#FFCC00"]),
+        textinfo="label+percent",
+        textfont=dict(size=13),
+    )])
+    fig_donut_macro.update_layout(
+        annotations=[dict(text=f"🍽<br><b>{total_kcal_final:.0f}</b><br>kcal", x=0.5, y=0.5,
+                           font=dict(size=15, color="#17301F"), showarrow=False)],
+        showlegend=False, height=340, margin=dict(t=20, b=20, l=20, r=20),
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig_donut_macro, use_container_width=True)
+    st.caption("El gráfico muestra de dónde vienen principalmente tus calorías diarias.")
 
     _html_tabla_final = f"""
     <table class="macro-final-table">
@@ -5375,6 +5464,50 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
 
     if abs(total_kcal_final - rcd_usuario) < 1:
         st.success("✅ El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).")
+
+    st.divider()
+
+    # =====================================================================================
+    # ¿POR QUÉ NO TODOS SE CALCULAN IGUAL? — versión corta, tipo clínica
+    # =====================================================================================
+    st.markdown("#### 💡 ¿Por qué no todos se calculan igual?")
+    wp1, wp2, wp3 = st.columns(3)
+    with wp1:
+        st.markdown("""<div style="background:#FFEBF0;border-radius:16px;padding:14px;text-align:center;height:100%;">
+        <div style="font-size:1.3rem;">❤️</div><b style="color:#C2185B;">Proteínas</b>
+        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">Dependen de tu peso corporal.</p>
+        </div>""", unsafe_allow_html=True)
+    with wp2:
+        st.markdown("""<div style="background:#EAFAEE;border-radius:16px;padding:14px;text-align:center;height:100%;">
+        <div style="font-size:1.3rem;">🥑</div><b style="color:#1E5631;">Grasas</b>
+        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">También dependen de tu peso.</p>
+        </div>""", unsafe_allow_html=True)
+    with wp3:
+        st.markdown("""<div style="background:#FFF8E1;border-radius:16px;padding:14px;text-align:center;height:100%;">
+        <div style="font-size:1.3rem;">🌾</div><b style="color:#8A6D00;">Carbohidratos</b>
+        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">Se calculan con las calorías restantes hasta completar tu RCD.</p>
+        </div>""", unsafe_allow_html=True)
+
+    st.write("")
+
+    # =====================================================================================
+    # ¿SABÍAS QUE? — curiosidades rotativas
+    # =====================================================================================
+    _curiosidades_macro = [
+        ("📚", "El cuerpo puede almacenar muy poca proteína. Por eso necesita consumirla regularmente."),
+        ("🧠", "El cerebro utiliza principalmente glucosa como fuente de energía."),
+        ("🥑", "Las grasas aportan más del doble de energía por gramo que proteínas y carbohidratos."),
+    ]
+    _idx_curio = int(datetime.now().timestamp() // 8) % len(_curiosidades_macro)
+    _ic_curio, _txt_curio = _curiosidades_macro[_idx_curio]
+    st.markdown(f"""
+    <div style="background:#F5F5F7;border-radius:16px;padding:14px 18px;display:flex;gap:12px;align-items:center;">
+        <div style="font-size:1.4rem;">{_ic_curio}</div>
+        <div style="font-size:0.84rem;color:#3C3C43;"><b>¿Sabías que?</b> {_txt_curio}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
 
     caja_util("Las proteínas y grasas se calculan según tu peso corporal (gramos por kilo), porque son "
               "nutrientes estructurales que dependen de tu masa, no de cuánta energía gastas. Los "
@@ -6335,7 +6468,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         x=dias_eje, y=pesos_dia_completo, mode="lines", name="Peso estimado",
         line=dict(color=_color_tema, width=4, shape="spline"),
     ))
-    fig_tiempo.update_traces(fill="tozeroy", fillcolor=_color_tema + "1F")
+    fig_tiempo.update_traces(fill="tozeroy", fillcolor=_hex_a_rgba(_color_tema, 0.12))
 
     hitos_x = [0, 30, 60]
     hitos_y = [pesos_dia_completo[0], pesos_dia_completo[30], pesos_dia_completo[60]]
