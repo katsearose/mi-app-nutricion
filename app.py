@@ -2715,20 +2715,45 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- 3. "Comienza aquí" — conecta la portada con el formulario, responde "¿qué hago ahora?" ---
+# --- 3. "Comienza aquí" — Onboarding Steps rediseñado (Cards Grid + Callout) -------------
 st.markdown("""
-<div style="background:linear-gradient(120deg,#EAFAEE 0%,#FFFFFF 80%);border-radius:22px;
-padding:22px 28px;margin:18px 0;border:1.5px solid rgba(52,199,89,0.3);
-box-shadow:0 6px 18px rgba(52,199,89,0.10);">
-<p style="margin:0 0 10px 0;font-weight:800;color:#1E5631;font-size:1.1rem;">🚀 ¿Cómo empezar?</p>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-<div><span style="color:#1E5631;font-weight:800;">①</span> Completa tus datos personales en el panel izquierdo.</div>
-<div><span style="color:#1E5631;font-weight:800;">②</span> Navega libremente por las 17 secciones.</div>
-<div><span style="color:#1E5631;font-weight:800;">③</span> Explora tus resultados explicados paso a paso.</div>
-<div><span style="color:#1E5631;font-weight:800;">④</span> Descarga tu reporte final en PDF.</div>
+<div style="margin:18px 0 0 0;">
+<p style="margin:0 0 2px 0;font-weight:700;color:#1E5631;font-size:1.35rem;">🚀 ¿Cómo empezar?</p>
+<p style="margin:0 0 16px 0;color:#5C6B60;font-size:0.92rem;">Sigue estos simples pasos para obtener tu diagnóstico personalizado.</p>
 </div>
-<p style="margin:14px 0 0 0;color:#5C6B60;font-size:0.85rem;">Solo tendrás que ingresar tus datos una vez
-durante esta sesión — luego podrás moverte entre las demás secciones cuando quieras.</p>
+""", unsafe_allow_html=True)
+
+_ONBOARD_STEPS = [
+    ("1", "📝", "Ingresa tus datos", "Completa tu información personal en el panel izquierdo.",
+     "#EAF4FE", "#8FC1F2", "#1565C0"),
+    ("2", "🧩", "Explora las secciones", "Navega libremente por las 17 áreas del centro de control.",
+     "#F3EEFB", "#C6AEE8", "#6A3FA0"),
+    ("3", "🔍", "Revisa tus resultados", "Descubre tus indicadores explicados paso a paso.",
+     "#EAFAEE", "#9BD8AE", "#1E5631"),
+    ("4", "📄", "Descarga tu PDF", "Obtén tu reporte final completo y listo para guardar.",
+     "#FFF6E0", "#F4D27A", "#B8860B"),
+]
+_cols_onboard = st.columns(4)
+for _col_ob, (_num, _ic, _tit, _txt, _fondo, _borde, _hex) in zip(_cols_onboard, _ONBOARD_STEPS):
+    with _col_ob:
+        st.markdown(f"""
+        <div style="position:relative;background:{_fondo};border:1px solid {_borde};border-radius:20px;
+        padding:22px 16px 16px 16px;height:170px;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+        <div style="position:absolute;top:-10px;left:-10px;width:30px;height:30px;border-radius:50%;
+        background:{_hex};color:#FFFFFF;font-weight:800;font-size:0.9rem;display:flex;align-items:center;
+        justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.18);">{_num}</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">{_ic}</div>
+        <p style="margin:0 0 4px 0;font-weight:800;color:{_hex};font-size:0.92rem;">{_tit}</p>
+        <p style="margin:0;color:#5C6B60;font-size:0.8rem;line-height:1.4;">{_txt}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("""
+<div style="display:flex;align-items:center;gap:10px;background:#F2F7F3;border:1px solid #D8E6DA;
+border-radius:999px;padding:12px 22px;margin:14px 0 4px 0;">
+<span style="font-size:1.1rem;">🔒</span>
+<span style="color:#3C4A3F;font-size:0.85rem;">Solo tendrás que ingresar tus datos una vez durante esta sesión.
+Luego podrás moverte libremente entre todas las secciones cuando quieras.</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -3093,10 +3118,29 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
+NAV_COLORES = {
+    "0.-DATOS":                    ("#007AFF", "#EAF3FF"),
+    "1.-ANÁLISIS SANGUÍNEO":       ("#FF3B30", "#FFEDEC"),
+    "1B.-ESTADO FISIOLÓGICO":      ("#FF2D55", "#FFEBF0"),
+    "2.-IMC Y PERCENTIL":          ("#AF52DE", "#F6ECFC"),
+    "3.-TMB":                      ("#FF9500", "#FFF3E5"),
+    "4.-RCD":                      ("#34C759", "#EAFAEE"),
+    "5.-CONTROL DE PESO":          ("#FF375F", "#FFEBF0"),
+    "6.-MACRONUTRIENTES":          ("#FFCC00", "#FFFAE0"),
+    "7.-PORCIONES":                ("#30B0C7", "#E6F7FA"),
+    "8.-FATSECRET":                ("#00C7BE", "#E1FBF9"),
+    "9.-DIETA":                    ("#FF6B35", "#FFEEE6"),
+    "10.-CLIMA CHICLAYO":          ("#FFB300", "#FFF6E0"),
+    "11.-APORTE 1: EMBARAZO":      ("#BF5AF2", "#F7ECFD"),
+    "12.-APORTE 2: CAFEÍNA":       ("#5856D6", "#ECEBFB"),
+    "13.-LÍNEA DE TIEMPO":         ("#5AC8FA", "#E9F8FF"),
+    "📄 MI REPORTE":               ("#32ADE6", "#E7F6FD"),
+    "🎓 SOBRE NOSOTRAS":           ("#FF2D55", "#FFEBF0"),
+}
+
 _nav_colores_css = "<style>\n"
 for _i_nav, _hoja_nav_css in enumerate(OPCIONES_HOJAS, start=1):
-    _idx_color_css = list(COLORES.keys())[_i_nav - 1]
-    _, _, _, _borde_css, _fondo_css = COLORES[_idx_color_css]
+    _borde_css, _fondo_css = NAV_COLORES.get(_hoja_nav_css, ("#1E5631", "#EAFAEE"))
     _nav_colores_css += f'''
 section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="secondary"] {{
     background:{_fondo_css} !important; color:{_borde_css} !important;
