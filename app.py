@@ -3925,45 +3925,36 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     _signo_dif = "" if abs(_diferencia_rcd) < 1 else ("+" if _diferencia_rcd > 0 else "")
     _obj_emoji = {"Bajar de peso": "📉", "Subir de peso": "📈", "Mantenerse": "⚖️"}[objetivo]
     _obj_color = {"Bajar de peso": "#FF9500", "Subir de peso": "#007AFF", "Mantenerse": "#34C759"}[objetivo]
+    _obj_verbo = {"Bajar de peso": "reducidas", "Subir de peso": "añadidas", "Mantenerse": "iguales"}[objetivo]
 
-    # ===== 1. HERO PRINCIPAL =====
+    # ===== 1. HERO PRINCIPAL — todo el resultado en un solo vistazo =====
     st.markdown(f"""
     <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:26px;
-                padding:26px 30px;color:#FFFFFF;text-align:center;margin-bottom:18px;
+                padding:30px 34px;color:#FFFFFF;margin-bottom:18px;
                 box-shadow:0 16px 36px rgba(30,86,49,0.28);">
-        <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">🎯 Tu Plan de Control de Peso</div>
-        <div style="font-size:1rem;opacity:0.95;max-width:640px;margin:8px auto 0 auto;line-height:1.5;">
-            "No es una dieta. Es un ajuste inteligente de tus calorías para ayudarte a alcanzar tu objetivo,
-            {_nombre_saludo}, de forma segura."
+        <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;text-align:center;">🎯 Tu Plan de Control de Peso</div>
+        <div style="font-size:0.98rem;opacity:0.95;max-width:680px;margin:8px auto 22px auto;line-height:1.5;text-align:center;">
+            Con los datos que ingresaste calculamos cuántas calorías necesita tu cuerpo y las ajustamos según
+            la meta que elegiste, {_nombre_saludo}.
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ===== 2. FLUJO: RCD inicial → Objetivo → Ajuste → RCD objetivo (4 tarjetas grandes) =====
-    st.markdown(f"""
-    <div style="display:flex;flex-direction:column;gap:6px;max-width:520px;margin:0 auto;">
-        <div style="background:#EAFAEE;border:2px solid #34C759;border-radius:20px;padding:16px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#1E5631;text-transform:uppercase;">🟢 RCD Inicial</div>
-            <div style="font-size:2rem;font-weight:900;color:#1E5631;letter-spacing:-0.02em;">{rcd:.0f} <span style="font-size:1rem;font-weight:700;">kcal/día</span></div>
-            <div style="font-size:0.78rem;color:#3E7050;">Las calorías que tu cuerpo necesita para mantener tu peso.</div>
-        </div>
-        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
-        <div style="background:{_obj_color}1A;border:2px solid {_obj_color};border-radius:20px;padding:14px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:{_obj_color};text-transform:uppercase;">Objetivo seleccionado</div>
-            <div style="font-size:1.5rem;font-weight:900;color:{_obj_color};">{_obj_emoji} {objetivo}</div>
-        </div>
-        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
-        <div style="background:#EAF3FF;border:2px solid #007AFF;border-radius:20px;padding:14px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#007AFF;text-transform:uppercase;">🔵 Ajuste aplicado</div>
-            <div style="font-size:1.5rem;font-weight:900;color:#007AFF;">
-                {("-" if objetivo == "Bajar de peso" else ("+" if objetivo == "Subir de peso" else "")) + f"{ajuste_aplicado*100:.0f}%" if ajuste_aplicado else "0% (sin cambio)"}
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+            <div style="flex:1;min-width:170px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.25);
+                        border-radius:20px;padding:16px 18px;text-align:center;">
+                <div style="font-size:0.76rem;font-weight:800;text-transform:uppercase;opacity:0.85;">✅ Tu cuerpo necesita</div>
+                <div style="font-size:1.9rem;font-weight:900;margin-top:4px;">{rcd:.0f}</div>
+                <div style="font-size:0.78rem;opacity:0.85;">kcal/día</div>
             </div>
-        </div>
-        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
-        <div style="background:#FFEBF0;border:2px solid #FF2D55;border-radius:20px;padding:18px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">❤️ Nuevo RCD Objetivo</div>
-            <div style="font-size:2.3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/día</span></div>
-            <div style="font-size:0.78rem;color:#9C1948;">Las calorías recomendadas para cumplir tu meta.</div>
+            <div style="flex:1;min-width:170px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.25);
+                        border-radius:20px;padding:16px 18px;text-align:center;">
+                <div style="font-size:0.76rem;font-weight:800;text-transform:uppercase;opacity:0.85;">{_obj_emoji} Tu objetivo</div>
+                <div style="font-size:1.5rem;font-weight:900;margin-top:9px;">{objetivo}</div>
+            </div>
+            <div style="flex:1;min-width:170px;background:#FFFFFF;border-radius:20px;padding:16px 18px;text-align:center;
+                        box-shadow:0 8px 22px rgba(0,0,0,0.18);">
+                <div style="font-size:0.76rem;font-weight:800;text-transform:uppercase;color:#D81B60;">❤️ Comerás</div>
+                <div style="font-size:1.9rem;font-weight:900;margin-top:4px;color:#D81B60;">{rcd_final:.0f}</div>
+                <div style="font-size:0.78rem;color:#D81B60;">kcal/día</div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -3972,10 +3963,65 @@ elif hoja_activa == "5.-CONTROL DE PESO":
         st.warning(f"⚠️ Tu ajuste se limitó automáticamente para nunca bajar de tu TMB ({tmb:.0f} kcal/día), "
                    "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.")
 
+    # ===== 2. LÍNEA DE PROCESO: RCD inicial → Meta → Ajuste → Nuevo RCD =====
+    st.markdown(f"""
+    <div style="display:flex;flex-direction:column;align-items:center;max-width:340px;margin:22px auto 0 auto;">
+        <div style="display:flex;align-items:center;gap:14px;width:100%;">
+            <div style="width:46px;height:46px;border-radius:50%;background:#34C759;color:#FFF;flex-shrink:0;
+                        display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 12px #34C75955;">🟢</div>
+            <div style="flex:1;background:#EAFAEE;border-radius:16px;padding:10px 16px;">
+                <div style="font-size:0.72rem;font-weight:800;color:#1E5631;text-transform:uppercase;">RCD Inicial</div>
+                <div style="font-size:1.3rem;font-weight:900;color:#1E5631;">{rcd:.0f} kcal</div>
+            </div>
+        </div>
+        <div style="width:2px;height:22px;background:#D7DCE0;margin:2px 0 2px 23px;"></div>
+        <div style="display:flex;align-items:center;gap:14px;width:100%;">
+            <div style="width:46px;height:46px;border-radius:50%;background:{_obj_color};color:#FFF;flex-shrink:0;
+                        display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 12px {_obj_color}55;">{_obj_emoji}</div>
+            <div style="flex:1;background:{_obj_color}1A;border-radius:16px;padding:10px 16px;">
+                <div style="font-size:0.72rem;font-weight:800;color:{_obj_color};text-transform:uppercase;">Meta</div>
+                <div style="font-size:1.15rem;font-weight:900;color:{_obj_color};">{objetivo}</div>
+            </div>
+        </div>
+        <div style="width:2px;height:22px;background:#D7DCE0;margin:2px 0 2px 23px;"></div>
+        <div style="display:flex;align-items:center;gap:14px;width:100%;">
+            <div style="width:46px;height:46px;border-radius:50%;background:#007AFF;color:#FFF;flex-shrink:0;
+                        display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 12px #007AFF55;">🔵</div>
+            <div style="flex:1;background:#EAF3FF;border-radius:16px;padding:10px 16px;">
+                <div style="font-size:0.72rem;font-weight:800;color:#007AFF;text-transform:uppercase;">Ajuste</div>
+                <div style="font-size:1.3rem;font-weight:900;color:#007AFF;">
+                    {("-" if objetivo == "Bajar de peso" else ("+" if objetivo == "Subir de peso" else "")) + f"{ajuste_aplicado*100:.0f}%" if ajuste_aplicado else "0%"}
+                </div>
+            </div>
+        </div>
+        <div style="width:2px;height:22px;background:#D7DCE0;margin:2px 0 2px 23px;"></div>
+        <div style="display:flex;align-items:center;gap:14px;width:100%;">
+            <div style="width:46px;height:46px;border-radius:50%;background:#FF2D55;color:#FFF;flex-shrink:0;
+                        display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 12px #FF2D5555;">❤️</div>
+            <div style="flex:1;background:#FFEBF0;border-radius:16px;padding:10px 16px;">
+                <div style="font-size:0.72rem;font-weight:800;color:#D81B60;text-transform:uppercase;">Nuevo RCD</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#D81B60;">{rcd_final:.0f} kcal</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.divider()
 
-    # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
-    st.markdown("#### 📊 ¿Qué cambió?")
+    # ===== 3. RCD OBJETIVO en grande — el porcentaje pasa a ser una nota secundaria =====
+    st.markdown(f"""
+    <div style="text-align:center;background:#FFFFFF;border-radius:24px;padding:26px 24px;margin-bottom:8px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 10px 26px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);">
+        <div style="font-size:0.8rem;font-weight:800;color:#8A94A6;text-transform:uppercase;letter-spacing:0.05em;">Tu RCD objetivo</div>
+        <div style="font-size:3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;margin:4px 0;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/día</span></div>
+        <div style="font-size:0.86rem;color:#5C6B60;">
+            {"Se obtuvo aplicando un ajuste del " + f"{ajuste_aplicado*100:.0f}%" + " sobre tu RCD inicial." if ajuste_aplicado else "Es igual a tu RCD inicial, sin ajustes."}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 4. COMPARACIÓN DE TUS CALORÍAS =====
+    st.markdown("#### 📊 Comparación de tus calorías")
     _c1, _c2, _c3 = st.columns(3)
     with _c1:
         st.markdown(f"""<div class="bento-card" style="text-align:center;">
@@ -3989,7 +4035,7 @@ elif hoja_activa == "5.-CONTROL DE PESO":
         </div>""", unsafe_allow_html=True)
     with _c3:
         st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">Diferencia</div>
+            <div class="bento-eyebrow">Calorías {_obj_verbo}</div>
             <div style="font-size:1.7rem;font-weight:900;color:{_obj_color};">{_signo_dif}{_diferencia_rcd:.0f} kcal</div>
         </div>""", unsafe_allow_html=True)
 
@@ -4013,25 +4059,7 @@ elif hoja_activa == "5.-CONTROL DE PESO":
 
     st.divider()
 
-    # ===== 4. EXPLICACIÓN SENCILLA =====
-    st.markdown("#### 💬 ¿Qué significa este cambio?")
-    if objetivo == "Bajar de peso":
-        _texto_expl = (f"Como elegiste **Bajar de peso**, el sistema redujo un **{ajuste_aplicado*100:.0f}%** tus "
-                        "calorías diarias. Eso permite que tu cuerpo obtenga parte de la energía usando las "
-                        "reservas de grasa, siempre manteniendo un aporte adecuado de nutrientes. "
-                        "**No es una dieta extrema. Es un déficit calórico controlado.**")
-    elif objetivo == "Subir de peso":
-        _texto_expl = (f"Como elegiste **Subir de peso**, el sistema aumentó un **{ajuste_aplicado*100:.0f}%** tus "
-                        "calorías diarias. Ese excedente le da a tu cuerpo la energía extra que necesita para "
-                        "construir tejido nuevo (músculo). **No es 'comer de más': es un superávit calórico controlado.**")
-    else:
-        _texto_expl = ("Como elegiste **Mantenerte**, tu RCD Objetivo es igual a tu RCD Inicial: comerás "
-                        "aproximadamente lo mismo que gastas, sin déficit ni superávit, para conservar tu peso actual.")
-    st.markdown(f"""<div class="info3-card">{_texto_expl}</div>""", unsafe_allow_html=True)
-
-    st.divider()
-
-    # ===== 5. TU OBJETIVO EXPLICADO (reemplaza el panel de misión) =====
+    # ===== 5. TU OBJETIVO EXPLICADO — la opción elegida resalta, las otras se apagan =====
     st.markdown("#### 🧭 Tu objetivo explicado")
     st.caption("Según el objetivo elegido, cambia el comportamiento de tus calorías.")
     _oc1, _oc2, _oc3 = st.columns(3)
@@ -4046,13 +4074,18 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     for _col_o, _tit_o, _ic_o, _col_hex_o, _fon_o, _desc_o in _objetivos_info:
         _es_sel_o = (_tit_o == objetivo)
         with _col_o:
-            _estilo_o = (f"border:2.5px solid {_col_hex_o};box-shadow:0 8px 20px {_col_hex_o}40;"
-                         if _es_sel_o else "border:1px solid rgba(0,0,0,0.06);")
+            if _es_sel_o:
+                _estilo_o = (f"background:{_fon_o};border:3px solid {_col_hex_o};"
+                              f"box-shadow:0 10px 24px {_col_hex_o}55;transform:translateY(-3px);")
+                _op_o = "1"
+            else:
+                _estilo_o = "background:#F2F2F4;border:1px solid rgba(0,0,0,0.05);"
+                _op_o = "0.42"
             st.markdown(f"""
-            <div style="background:{_fon_o};border-radius:18px;padding:16px 14px;height:100%;{_estilo_o}">
-                <div style="font-size:1.8rem;text-align:center;">{_ic_o}</div>
-                <div style="font-weight:800;color:{_col_hex_o};font-size:0.9rem;text-align:center;margin:4px 0;">{_tit_o}{' ✓' if _es_sel_o else ''}</div>
-                <div style="font-size:0.78rem;color:#3C3C43;text-align:center;">{_desc_o}</div>
+            <div style="{_estilo_o}border-radius:18px;padding:16px 14px;height:100%;opacity:{_op_o};transition:all 0.2s ease;">
+                <div style="font-size:{'2.1rem' if _es_sel_o else '1.5rem'};text-align:center;">{_ic_o}</div>
+                <div style="font-weight:800;color:{_col_hex_o if _es_sel_o else '#8A94A6'};font-size:{'0.98rem' if _es_sel_o else '0.85rem'};text-align:center;margin:4px 0;">{_tit_o}{' ✓' if _es_sel_o else ''}</div>
+                <div style="font-size:0.78rem;color:{'#3C3C43' if _es_sel_o else '#8A94A6'};text-align:center;">{_desc_o}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -4062,8 +4095,94 @@ elif hoja_activa == "5.-CONTROL DE PESO":
 
     st.divider()
 
-    # ===== 6. Distribución de macronutrientes (se conserva) =====
-    _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso)
+    # ===== 6. ¿CÓMO LOGRAR ESTE OBJETIVO? — recomendaciones prácticas para el día a día =====
+    st.markdown("#### 🍽 ¿Cómo lograr este objetivo?")
+    _RECOMENDACIONES_OBJETIVO = {
+        "Bajar de peso": {
+            "intro": "Además del ajuste de calorías, puedes ayudarte con pequeños cambios en tu rutina diaria.",
+            "🏫 En el colegio": ["Camina por los pasillos cuando sea posible.", "Participa en los recreos activos.", "Únete a un taller deportivo."],
+            "🏠 En casa": ["Ayuda con tareas domésticas.", "Reduce un poco el tiempo sentado.", "Sal a caminar con tu familia."],
+            "🚶 En tus traslados": ["Camina algunos minutos adicionales.", "Usa escaleras cuando sea posible.", "Baja una parada antes si utilizas transporte público."],
+        },
+        "Subir de peso": {
+            "intro": "Además del ajuste de calorías, estos hábitos te ayudan a aprovechar mejor esa energía extra.",
+            "🏫 En el colegio": ["No te saltes el refrigerio ni el almuerzo.", "Lleva un snack energético extra (frutos secos, plátano).", "Prioriza el descanso entre clases exigentes."],
+            "🏠 En casa": ["Añade una porción extra en tus comidas principales.", "Come un snack antes de dormir.", "Duerme bien: así tu cuerpo aprovecha la energía para crecer."],
+            "🚶 En tus traslados": ["Mantente bien hidratado.", "Lleva contigo un snack por si sientes hambre.", "No te preocupes por 'quemar de más': tu meta es sumar energía."],
+        },
+        "Mantenerse": {
+            "intro": "Como tu meta es mantener tu peso actual, lo ideal es conservar tus hábitos de siempre.",
+            "🏫 En el colegio": ["Conserva tus horarios habituales de comida.", "Mantén tu nivel de actividad actual.", "Evita saltarte comidas por falta de tiempo."],
+            "🏠 En casa": ["Sigue tus rutinas de alimentación de siempre.", "Mantén tu actividad física habitual.", "Duerme las horas que necesitas para recuperarte bien."],
+            "🚶 En tus traslados": ["Continúa moviéndote como sueles hacerlo.", "Mantente hidratado durante el día.", "No hay cambios drásticos que hacer: ¡vas por buen camino!"],
+        },
+    }
+    _reco_obj = _RECOMENDACIONES_OBJETIVO[objetivo]
+    st.caption(_reco_obj["intro"])
+    _rc1, _rc2, _rc3 = st.columns(3)
+    for _col_r, _bloque_key in zip([_rc1, _rc2, _rc3], ["🏫 En el colegio", "🏠 En casa", "🚶 En tus traslados"]):
+        with _col_r:
+            _bullets_html = "".join(f"<li style='margin-bottom:6px;'>{b}</li>" for b in _reco_obj[_bloque_key])
+            st.markdown(f"""
+            <div class="info3-card">
+                <div class="info3-title">{_bloque_key}</div>
+                <ul style="padding-left:18px;margin:0;font-size:0.82rem;color:#3C3C43;line-height:1.4;">{_bullets_html}</ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ===== 7. ASÍ SE DISTRIBUYEN TUS CALORÍAS — macros en gramos, sin protagonismo de porcentajes =====
+    st.markdown("#### 🍽 Así se distribuirán tus calorías")
+    _mc1, _mc2, _mc3 = st.columns(3)
+    with _mc1:
+        st.markdown(f"""
+        <div class="macro-card prot">
+            <div class="mc-head"><span class="mc-icon">🥩</span><span class="mc-title">Proteínas</span></div>
+            <div class="mc-value">{gr_prot:.0f} g <span style="font-size:0.85rem;font-weight:600;">al día</span></div>
+            <div class="mc-sub">Ayudan a conservar y reparar tus músculos.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with _mc2:
+        st.markdown(f"""
+        <div class="macro-card gras">
+            <div class="mc-head"><span class="mc-icon">🫒</span><span class="mc-title">Grasas saludables</span></div>
+            <div class="mc-value">{gr_gras:.0f} g <span style="font-size:0.85rem;font-weight:600;">al día</span></div>
+            <div class="mc-sub">Necesarias para hormonas, cerebro y absorción de vitaminas.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with _mc3:
+        st.markdown(f"""
+        <div class="macro-card carb">
+            <div class="mc-head"><span class="mc-icon">🍞</span><span class="mc-title">Carbohidratos</span></div>
+            <div class="mc-value">{gr_carb:.0f} g <span style="font-size:0.85rem;font-weight:600;">al día</span></div>
+            <div class="mc-sub">La principal fuente de energía para estudiar, trabajar y hacer ejercicio.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    st.caption("⚠️ Recalcula tu plan cada vez que bajes o subas entre 3 y 5 kg.")
+
+    st.divider()
+
+    # ===== 8. RESUMEN FINAL — todo el cálculo en un mensaje claro =====
+    if objetivo == "Bajar de peso":
+        _texto_resumen = (f"Tu cuerpo necesita aproximadamente **{rcd:.0f} kcal** al día para mantener tu peso actual. "
+                           f"Como elegiste **bajar de peso**, el sistema redujo tu consumo recomendado a **{rcd_final:.0f} kcal** diarias. "
+                           "Este ajuste busca ayudarte a perder grasa de forma gradual sin dejar de aportar la energía "
+                           "necesaria para que tu organismo funcione correctamente.")
+    elif objetivo == "Subir de peso":
+        _texto_resumen = (f"Tu cuerpo necesita aproximadamente **{rcd:.0f} kcal** al día para mantener tu peso actual. "
+                           f"Como elegiste **subir de peso**, el sistema aumentó tu consumo recomendado a **{rcd_final:.0f} kcal** diarias. "
+                           "Ese excedente le da a tu cuerpo la energía extra que necesita para construir tejido nuevo de forma sana.")
+    else:
+        _texto_resumen = (f"Tu cuerpo necesita aproximadamente **{rcd:.0f} kcal** al día para mantener tu peso actual. "
+                           f"Como elegiste **mantenerte**, tu consumo recomendado sigue siendo **{rcd_final:.0f} kcal** diarias: "
+                           "ni de más, ni de menos, para conservar tu peso tal como está.")
+    st.markdown(f"""
+    <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:20px;padding:18px 24px;">
+    <b style="color:#1E5631;">✅ En resumen</b><br><br>
+    <span style="color:#17301F;line-height:1.6;">{_texto_resumen}</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
               "número exacto de calorías al día (tu RCD Objetivo), sin arriesgar tu salud: nunca por debajo de "
