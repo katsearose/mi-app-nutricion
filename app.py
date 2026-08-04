@@ -37,6 +37,452 @@ from reportlab.platypus import (
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
 
 # =========================================================================================
+# BASE PERUANA DE ALIMENTOS — datos reales extraídos de las Tablas Peruanas de Composición
+# de Alimentos (INS/CENAN, 11.ª edición digital, marzo 2025, ISBN 978-612-310-178-7).
+# Curaduría de ~343 alimentos de mayor consumo en el Perú, de los ~970 alimentos crudos
+# que contiene la publicación oficial. Valores expresados por 100 g de porción comestible.
+# Columnas: (código, nombre, grupo, kcal, proteínas g, grasas g, CHO disponible g,
+#            fibra g, calcio mg, hierro mg, vitamina C mg)
+# =========================================================================================
+FOOD_DB_RAW = [
+    ('A3', 'Arroz blanco corriente', 'A', 358.0, 7.8, 0.7, None, None, 6.0, 1.04, 0.9),
+    ('A2', 'Arroz pilado o pulido cocido', 'A', 115.0, 2.4, 0.1, None, None, 11.0, 0.3, 0.0),
+    ('A167', 'Avena con quinua, hojuela precocida de', 'A', 369.0, 11.1, 10.8, 58.3, 9.3, 40.0, 3.14, None),
+    ('A5', 'Avena envasada', 'A', 380.0, 13.7, 4.7, None, None, 51.0, 3.5, 0.0),
+    ('A6', 'Avena, hojuela cocida', 'A', 54.0, 1.3, 0.5, None, None, 21.0, 0.5, 0.0),
+    ('A7', 'Avena, hojuela cruda', 'A', 333.0, 13.3, 4.0, 61.6, 10.6, 49.0, 4.1, 0.0),
+    ('A12', 'Cebada con cáscara', 'A', 284.0, 8.4, 2.0, 60.2, 17.3, 61.0, 4.58, 0.0),
+    ('A15', 'Cebada para mote, pelada', 'A', 328.0, 8.2, 1.1, None, None, 47.0, 3.6, 0.0),
+    ('A17', 'Cebada perlada o resbalada cocida', 'A', 59.0, 1.0, 0.1, 13.9, 3.8, 9.0, 0.9, 0.0),
+    ('A18', 'Cebada perlada o resbalada cruda', 'A', 277.0, 5.3, 0.6, 64.2, 15.6, 18.0, 4.0, 2.0),
+    ('A19', 'Cebada tostada y molida (chaquepa)', 'A', 349.0, 7.7, 0.8, None, None, 55.0, 7.1, 0.0),
+    ('A16', 'Cebada tostada, harina integral', 'A', 274.0, 8.7, 3.2, 54.8, 25.4, None, 9.6, None),
+    ('A13', 'Cebada, llunka de (morón americano)', 'A', 249.0, 1.9, 0.7, 59.8, 17.3, 42.0, 9.7, 2.1),
+    ('A14', 'Cebada, mashka o machica', 'A', 302.0, 8.6, 0.7, 67.3, 10.1, 74.0, 12.3, 1.9),
+    ('A21', 'Fideo crudo fortificado con hierro', 'A', 337.0, 9.4, 0.2, 74.5, 3.2, 24.0, 5.5, 0.0),
+    ('A22', 'Fideo tallarín crudo fortificado con hierro', 'A', 305.0, 9.5, 0.1, 66.4, 3.2, 40.0, 5.5, 0.0),
+    ('A83', 'Galleta de soda (San Jorge)', 'A', 440.0, 9.3, 13.3, None, None, 68.0, 7.7, 0.0),
+    ('A24', 'Galleta de soda (salada)', 'A', 433.0, 10.1, 14.7, 65.0, 3.0, 38.0, 1.5, 0.0),
+    ('A84', 'Galleta de vainilla (Field)', 'A', 462.0, 7.3, 15.6, None, None, None, 4.4, None),
+    ('A25', 'Galleta de vainilla (dulce)', 'A', 434.0, 6.0, 12.7, 73.8, 1.1, 22.0, 0.6, 0.0),
+    ('A1', 'Kiwicha, achita o achis o amaranto', 'A', 351.0, 12.8, 6.6, 59.8, 9.3, 236.0, 7.32, 1.3),
+    ('A104', 'Maíz morado, harina de (api)', 'A', 318.0, 8.5, 4.2, 64.5, 9.8, 29.0, 6.47, None),
+    ('A34', 'Maíz, grano fresco (choclo)', 'A', 104.0, 3.3, 0.8, 25.1, 2.7, 8.0, 0.8, 4.8),
+    ('A112', 'Pan cuay de trigo de Carhuaz', 'A', 358.0, 10.0, 11.6, None, None, None, 5.62, None),
+    ('A113', 'Pan cuay de trigo de Huaraz', 'A', 297.0, 7.6, 10.1, 43.8, 5.1, None, 4.45, None),
+    ('A45', 'Pan de cebada (serrano)', 'A', 295.0, 7.2, 0.2, None, None, 60.0, 6.5, None),
+    ('A47', 'Pan de molde', 'A', 317.0, 6.8, 2.5, 66.8, 2.4, 13.0, 0.4, 0.0),
+    ('A186', 'Pan de molde integral', 'A', 274.0, 12.4, 5.9, 42.8, 6.4, 308.0, 5.65, 0.0),
+    ('A122', 'Pan de quinua de Lima', 'A', 241.0, 9.5, 1.7, None, None, None, 3.31, None),
+    ('A123', 'Pan de trigo artesanal de Carhuaz', 'A', 286.0, 8.8, 4.6, None, None, None, 5.11, None),
+    ('A49', 'Pan francés fortificado con hierro', 'A', 277.0, 8.4, 0.2, 60.5, 2.4, 35.0, 3.14, 1.0),
+    ('A129', 'Pan integral', 'A', 339.0, 9.1, 9.0, None, None, None, 5.16, None),
+    ('A54', 'Quinua', 'A', 351.0, 13.6, 5.8, 60.7, 5.9, 56.0, 7.5, 0.5),
+    ('A52', 'Quinua blanca (Puno)', 'A', 355.0, 13.3, 6.1, 61.2, 5.9, 120.0, 4.31, 0.0),
+    ('A51', 'Quinua blanca, (Junín)', 'A', 334.0, 12.5, 6.5, 56.0, 10.0, 85.0, 3.03, 0.0),
+    ('A53', 'Quinua cocida', 'A', 89.0, 2.8, 1.3, None, None, 27.0, 1.6, 0.0),
+    ('A55', 'Quinua dulce, blanca (Junín)', 'A', 361.0, 11.1, 7.7, 61.5, 5.9, 93.0, 4.3, 2.2),
+    ('A56', 'Quinua dulce, blanca (Puno)', 'A', 349.0, 11.6, 5.3, 63.0, 5.9, 115.0, 5.3, 1.1),
+    ('A57', 'Quinua dulce, rosada (Junín)', 'A', 360.0, 12.3, 7.2, 61.2, 5.9, 80.0, 4.3, 1.1),
+    ('A60', 'Quinua rosada (Puno)', 'A', 356.0, 12.5, 6.4, 61.7, 5.9, 124.0, 5.2, 0.0),
+    ('A50', 'Quinua, afrecho de', 'A', 351.0, 10.7, 4.5, None, None, 573.0, 4.0, None),
+    ('A58', 'Quinua, harina de', 'A', 337.0, 12.4, 6.0, 57.9, 9.3, 104.0, 9.65, None),
+    ('A59', 'Quinua, hojuela de', 'A', 376.0, 13.9, 7.4, None, None, 114.0, 5.46, None),
+    ('A61', 'Quinua, sémola de', 'A', 362.0, 19.5, 10.7, 47.9, 5.9, 76.0, 3.6, 0.0),
+    ('A144', 'Quinua, variedad Ayara (Puno)', 'A', 276.0, 14.0, 6.3, 41.1, 21.5, None, 6.25, None),
+    ('A147', 'Quinua, variedad CICA-127 (Puno)', 'A', 360.0, 15.8, 5.2, 62.0, 5.1, None, 5.81, None),
+    ('A146', 'Quinua, variedad CICA-18 (Puno)', 'A', 345.0, 14.4, 5.7, 58.7, 7.6, None, 4.37, None),
+    ('A149', 'Quinua, variedad Choclito (Puno)', 'A', 342.0, 13.4, 5.2, 59.9, 7.2, None, 4.49, None),
+    ('A150', 'Quinua, variedad Chullpi- roja (Puno)', 'A', 330.0, 13.7, 5.5, 55.9, 10.9, None, 5.87, None),
+    ('A148', 'Quinua, variedad Cuchiwilla (Puno)', 'A', 317.0, 15.2, 5.2, 52.1, 12.2, None, 4.15, None),
+    ('A151', 'Quinua, variedad Misa Jiura (Puno)', 'A', 349.0, 12.3, 5.4, 62.2, 6.4, None, 4.0, None),
+    ('A152', 'Quinua, variedad Pasankalla-roja (Puno)', 'A', 355.0, 12.7, 6.2, 61.6, 6.9, None, 4.85, None),
+    ('A153', "Quinua, variedad Q' OITU-negra (Puno)", 'A', 308.0, 11.6, 4.9, 53.9, 14.3, None, 11.53, None),
+    ('A154', 'Quinua, variedad Wariponcho (Puno)', 'A', 347.0, 12.6, 5.5, 61.2, 6.7, None, 3.77, None),
+    ('A155', 'Quinua, variedad Witulla (Puno)', 'A', 350.0, 13.7, 5.9, 60.2, 7.7, None, 4.99, None),
+    ('A145', 'Quinua, variedad blanca de Juli (Puno)', 'A', 347.0, 11.6, 4.8, 63.7, 6.9, None, 4.32, None),
+    ('A143', 'Quinua, variedad real', 'A', 331.0, 14.2, 5.1, 56.7, 9.1, None, 4.0, None),
+    ('A73', 'Trigo', 'A', 289.0, 10.3, 1.9, 62.5, 12.2, 36.0, 3.87, 4.8),
+    ('A67', 'Trigo para mote pelado cocido', 'A', 63.0, 1.9, 0.1, None, None, 29.0, 0.4, 0.0),
+    ('A68', 'Trigo para mote pelado crudo', 'A', 325.0, 9.8, 0.9, None, None, 80.0, 2.5, 0.9),
+    ('A70', 'Trigo resbalado cocido', 'A', 83.0, 2.8, 0.3, None, None, 5.0, 0.5, 0.7),
+    ('A71', 'Trigo resbalado crudo', 'A', 327.0, 11.4, 1.8, None, None, 17.0, 4.8, 4.5),
+    ('A159', 'Trigo sin tostar (chaquepa)', 'A', 338.0, 7.0, 2.2, None, None, None, 2.43, None),
+    ('A160', 'Trigo tostado (chaquepa)', 'A', 369.0, 7.6, 2.5, None, None, None, 1.73, None),
+    ('A63', 'Trigo, harina fortificada con hierro de', 'A', 362.0, 10.5, 2.0, 73.6, 2.7, 36.0, 5.5, 1.8),
+    ('A65', 'Trigo, harina tostada de (machica)', 'A', 330.0, 7.9, 1.2, 77.2, 2.7, 67.0, 0.9, 2.7),
+    ('A158', 'Trigo, hojuela de (chaque)', 'A', 322.0, 10.0, 2.5, None, None, None, 2.1, None),
+    ('A64', 'Trigo, llunka de', 'A', 312.0, 9.1, 1.0, None, None, 60.0, 1.6, 2.0),
+    ('A66', 'Trigo, mote de, sancochado', 'A', 154.0, 2.5, 0.6, None, None, 38.0, 2.5, 0.4),
+    ('A69', 'Trigo, pelado', 'A', 330.0, 8.4, 1.4, None, None, 51.0, 4.6, None),
+    ('A72', 'Trigo, sémola de', 'A', 319.0, 7.8, 1.1, 74.5, 3.9, 40.0, 0.8, 0.0),
+    ('B3', 'Ají amarillo fresco', 'B', 39.0, 0.9, 0.7, None, None, 31.0, 0.9, 60.0),
+    ('B4', 'Ají amarillo fresco, molido sin sal', 'B', 52.0, 1.9, 1.7, None, None, 97.0, 3.5, 16.2),
+    ('B5', 'Ají amarillo seco', 'B', 199.0, 7.3, 6.3, 36.1, 28.7, 124.0, 8.2, 6.0),
+    ('B12', 'Ají verde', 'B', 57.0, 2.5, 0.8, None, None, 21.0, 1.3, 48.5),
+    ('B15', 'Alcachofa', 'B', 24.0, 2.2, 0.2, 4.9, 14.0, 42.0, 1.0, 1.42),
+    ('B17', 'Apio, tallo sin hojas', 'B', 8.0, 1.0, 0.2, 1.1, 2.8, 91.0, 1.2, 7.99),
+    ('B18', 'Berenjena', 'B', 12.0, 1.0, 0.1, 2.3, 3.6, 20.0, 4.03, 8.82),
+    ('B19', 'Berenjena Costeña o tomate de árbol', 'B', 41.0, 1.3, 0.3, None, None, 18.0, 0.2, 2.3),
+    ('B21', 'Brocoli', 'B', 32.0, 3.9, 1.3, 3.3, 0.7, 93.0, 0.84, 114.0),
+    ('B32', 'Col crespa o repollo, sin cogollo', 'B', 15.0, 1.5, 0.3, 2.6, 2.3, 70.0, 0.4, 48.5),
+    ('B35', 'Col, hojas de', 'B', 32.0, 2.7, 0.6, 5.6, 2.0, 170.0, 0.1, 96.3),
+    ('B106', 'Coliflor con tallo y sin hojas', 'B', 20.0, 2.1, 0.6, 2.9, 1.8, None, 0.49, None),
+    ('B38', 'Coliflor sin tallo y sin hojas', 'B', 17.0, 2.2, 0.6, 1.9, 2.5, 26.0, 0.6, 75.3),
+    ('B39', 'Culantro sin tallo', 'B', 34.0, 3.3, 1.3, 4.2, 2.8, 259.0, 5.3, 37.2),
+    ('B107', 'Culantro, con hojas y tallo', 'B', 15.0, 3.5, 0.2, 1.2, 4.7, 135.0, 4.5, 4.78),
+    ('B43', 'Esparragos', 'B', 15.0, 2.2, 0.3, 2.1, 1.7, 35.0, 1.33, 2.32),
+    ('B44', 'Espinaca blanca', 'B', 24.0, 1.9, 0.6, 4.1, 2.2, 80.0, 4.6, 16.4),
+    ('B45', 'Espinaca negra sin tronco', 'B', 24.0, 2.8, 0.9, 2.7, 2.2, 234.0, 4.3, 15.2),
+    ('B108', 'Espinaca, hojas sin tallo', 'B', 30.0, 4.8, 1.4, 1.9, 2.8, None, 21.29, None),
+    ('B53', 'Lechuga americana', 'B', 7.0, 0.6, 0.1, 1.2, 1.2, 52.0, 0.1, 1.5),
+    ('B112', 'Lechuga de seda', 'B', 10.0, 1.3, 0.1, 1.7, 0.6, 39.0, 1.3, 10.0),
+    ('B54', 'Lechuga larga', 'B', 12.0, 1.5, 0.2, 1.8, 2.1, 64.0, 1.6, 14.5),
+    ('B128', 'Lechuga morada, hojas sin tallo', 'B', 11.0, 1.2, 0.1, 1.9, 0.4, 50.0, 2.27, 23.82),
+    ('B55', 'Lechuga redonda', 'B', 8.0, 1.3, 0.2, 0.8, 1.3, 47.0, 1.0, 7.4),
+    ('B60', 'Nabo', 'B', 10.0, 0.6, 0.2, 1.8, 1.8, 34.0, 0.1, 21.1),
+    ('B61', 'Nabo, hojas de', 'B', 24.0, 2.9, 0.4, 3.8, 3.2, 367.0, 2.8, 49.2),
+    ('B130', 'Pepinillo japonés con cáscara y pepas', 'B', 7.0, 0.9, 0.0, 1.3, 0.6, 15.0, 0.08, 12.5),
+    ('B67', 'Pepinillo sin cáscara', 'B', 9.0, 0.5, 0.1, 1.9, 0.7, 20.0, 0.3, 12.6),
+    ('B68', 'Perejil sin tallo', 'B', 41.0, 4.8, 0.7, 6.6, 3.3, 202.0, 8.7, 95.8),
+    ('B131', 'Pimiento amarillo', 'B', 24.0, 1.0, 0.2, 5.5, 0.8, 7.0, 0.18, 162.47),
+    ('B69', 'Pimiento rojo', 'B', 27.0, 1.2, 1.3, 3.7, 0.9, 12.0, 0.36, 108.3),
+    ('B116', 'Pimiento verde', 'B', 19.0, 1.1, 0.1, 4.3, 0.7, 21.0, 0.17, 55.0),
+    ('B71', 'Poro sin hojas', 'B', 34.0, 2.7, 0.8, 5.8, 1.8, 78.0, 0.7, 8.6),
+    ('B73', 'Rabanitos', 'B', 7.0, 0.8, 0.1, 1.3, 1.6, 36.0, 1.0, 18.6),
+    ('B76', 'Rocoto fresco', 'B', 36.0, 1.2, 0.5, None, None, 6.0, 0.5, 14.9),
+    ('B78', 'Siuca culantro', 'B', 28.0, 1.9, 0.5, 5.3, 2.8, 195.0, 4.9, 0.7),
+    ('B79', 'Tomate', 'B', 15.0, 0.8, 0.2, 3.1, 1.2, 7.0, 0.6, 18.4),
+    ('B119', 'Tomate de palito', 'B', 44.0, 1.6, 0.2, None, None, 15.0, 0.8, 4.9),
+    ('B80', 'Tomate italiano', 'B', 12.0, 0.8, 0.2, 2.4, 1.2, 7.0, 0.3, 32.5),
+    ('B132', 'Tomate italiano, sin pepas, sin cáscara', 'B', 18.0, 0.8, 0.1, 4.2, 0.7, 8.0, 0.12, 32.64),
+    ('B120', 'Tomate redondo, con cáscara', 'B', 18.0, 0.7, 0.3, 4.0, 0.7, 24.0, 0.45, 10.18),
+    ('B81', 'Tomate, con carne salsa de', 'B', 106.0, 2.7, 5.7, None, None, 20.0, 2.1, 9.4),
+    ('B83', 'Tomate, salsa concentrada de', 'B', 75.0, 2.7, 1.0, None, None, 19.0, 2.9, 26.8),
+    ('B82', 'Tomate, salsa de', 'B', 18.0, 1.5, 0.7, 2.4, 1.5, 117.0, 3.0, 0.0),
+    ('B133', 'Vainita, sancochada, sin sal', 'B', 17.0, 2.2, 0.1, 3.1, 3.1, 48.0, 1.28, 0.0),
+    ('B84', 'Vainitas', 'B', 25.0, 2.4, 0.3, 4.7, 3.4, 88.0, 1.4, 9.6),
+    ('B85', 'Zanahoria', 'B', 19.0, 1.0, 0.3, 3.6, 4.1, 51.0, 0.3, 3.23),
+    ('B86', 'Zanahoria, harina de', 'B', 293.0, 7.3, 1.5, None, None, 418.0, None, 10.0),
+    ('C100', 'Aguaymanto', 'C', 51.0, 1.9, 0.0, 12.4, 4.9, 11.0, 1.24, 43.3),
+    ('C12', 'Chirimoya', 'C', 72.0, 1.9, 0.3, 17.7, 4.0, 102.0, 0.29, 10.36),
+    ('C13', 'Ciruela', 'C', 82.0, 1.0, 0.2, None, None, 20.0, 0.9, 36.8),
+    ('C15', 'Coco, agua de', 'C', 10.0, 0.7, 0.1, 2.0, 1.1, 21.0, 0.0, 0.8),
+    ('C107', 'Durazno, néctar envasado', 'C', 6.0, 0.0, 0.0, 1.4, 1.7, None, 0.05, 5.35),
+    ('C7', 'Durazno-Melocotón', 'C', 43.0, 0.8, 0.2, 10.8, 1.6, None, 0.59, 0.77),
+    ('C18', 'Fresa', 'C', 34.0, 0.7, 0.8, 6.9, 2.0, 37.0, 1.2, 42.0),
+    ('C20', 'Granadilla', 'C', 51.0, 2.5, 2.7, 5.7, 5.8, 17.0, 1.28, 9.88),
+    ('C21', 'Granadilla, jugo enlatado de', 'C', 62.0, 1.1, 0.0, None, None, 6.0, 0.6, 129.6),
+    ('C108', 'Granadilla, jugo natural, sin azúcar', 'C', 25.0, 1.1, 0.2, 5.4, 1.9, 6.0, 0.42, 11.25),
+    ('C22', 'Guanábana', 'C', 44.0, 0.9, 0.2, 11.0, 3.3, 38.0, 0.7, 19.0),
+    ('C35', 'Lúcuma', 'C', 97.0, 2.1, 0.2, 24.7, 10.2, 16.0, 0.79, 0.77),
+    ('C36', 'Lúcuma, harina de', 'C', 329.0, 4.0, 2.4, None, None, 92.0, 4.6, 11.6),
+    ('C40', 'Mandarina', 'C', 29.0, 0.6, 0.3, 6.8, 1.8, 19.0, 0.3, 48.7),
+    ('C41', 'Mango', 'C', 54.0, 0.4, 0.2, 14.1, 1.8, 17.0, 0.4, 24.8),
+    ('C152', 'Mango Edward', 'C', 69.0, 0.6, 0.3, 17.9, 0.9, 7.0, 0.08, 61.17),
+    ('C86', 'Mango ciruelo o taperibá', 'C', 56.0, 0.6, 0.3, None, None, 39.0, 0.7, 5.9),
+    ('C151', 'Mango criollo', 'C', 66.0, 0.4, 0.2, 17.4, 0.3, 6.0, 0.0, 9.6),
+    ('C154', 'Mango kafro', 'C', 64.0, 0.7, 0.4, 16.4, 0.5, None, 0.14, 21.3),
+    ('C155', 'Mango kent', 'C', 65.0, 0.7, 0.0, 17.5, 0.6, None, 0.17, 14.95),
+    ('C113', 'Mango, néctar envasado', 'C', 44.0, 0.0, 0.0, 11.0, 1.5, None, 0.03, 0.94),
+    ('C123', 'Maracuyá, jugo natural, envasado', 'C', 35.0, None, None, 8.7, 1.4, 11.0, 0.2, 0.0),
+    ('C43', 'Maracuyá, jugo puro de', 'C', 61.0, 0.9, 0.1, 15.9, 0.2, 13.0, 3.0, 22.0),
+    ('C124', 'Maracuyá, néctar envasado', 'C', 9.0, 0.0, 0.0, 2.1, 0.2, None, 0.02, 24.05),
+    ('C45', 'Melón', 'C', 21.0, 0.5, 0.1, 5.0, 0.8, 13.0, 0.5, 23.0),
+    ('C46', 'Melón enano', 'C', 20.0, 0.6, 0.2, None, None, 23.0, 0.4, 15.3),
+    ('C47', 'Membrillo', 'C', 36.0, 0.3, 0.1, 9.6, 1.9, 9.0, 0.7, 12.5),
+    ('C48', 'Naranja', 'C', 31.0, 0.6, 0.2, 7.7, 2.4, 23.0, 0.2, 92.3),
+    ('C49', 'Naranja agria, jugo de', 'C', 32.0, 0.5, 0.2, 8.0, 0.2, 31.0, 0.2, 42.0),
+    ('C50', 'Naranja de Guayaquil', 'C', 31.0, 0.5, 0.2, 7.8, 2.4, 37.0, 0.1, 42.2),
+    ('C51', 'Naranja de Huando', 'C', 36.0, 1.2, 0.2, 8.5, 2.4, 30.0, 0.1, 43.9),
+    ('C128', 'Naranja tangelo', 'C', 24.0, 1.0, 0.2, 5.2, 2.2, None, 0.63, 11.74),
+    ('C129', 'Naranja tangelo, jugo natural', 'C', 16.0, 0.7, 0.2, 3.5, 2.4, None, 0.26, 9.16),
+    ('C125', 'Naranja, bebida envasada', 'C', 56.0, 0.0, 0.0, 14.0, 0.7, None, 0.02, 52.25),
+    ('C126', 'Naranja, jugo natural, envasado', 'C', 16.0, None, None, 4.1, 0.9, 10.0, 0.11, 72.94),
+    ('C127', 'Naranja, néctar envasado', 'C', 43.0, None, None, 10.7, 1.6, 6.0, 0.38, 17.92),
+    ('C131', 'Palta "fuerte"', 'C', 104.0, 1.9, 8.9, 6.5, 10.6, 11.0, 0.49, 3.82),
+    ('C161', 'Palta Hass', 'C', 204.0, 1.0, 23.5, 1.0, 6.8, 9.0, 0.57, 0.0),
+    ('C59', 'Papaya', 'C', 25.0, 0.4, 0.1, 6.4, 1.8, 23.0, 0.3, 47.7),
+    ('C132', 'Papaya arequipeña', 'C', 17.0, 1.0, 0.3, 3.3, 0.5, None, 0.3, 34.45),
+    ('C162', 'Papaya, néctar natural, sin azúcar', 'C', 15.0, 0.4, 0.5, 2.4, 0.6, 10.0, 0.14, 12.58),
+    ('C133', 'Pera, néctar envasado', 'C', 46.0, 0.0, 0.0, 11.4, 0.0, None, 0.02, 0.81),
+    ('C69', 'Piña', 'C', 33.0, 0.4, 0.2, 8.4, 1.4, 10.0, 0.4, 19.9),
+    ('C164', 'Piña Golden o baby golden', 'C', 55.0, 0.6, 0.1, 14.3, 1.3, 11.0, 0.18, 53.46),
+    ('C165', 'Piña Hawaiana', 'C', 44.0, 0.6, 0.4, 10.7, 1.2, 8.0, 0.19, 32.38),
+    ('C166', 'Piña Selva', 'C', 30.0, 0.5, 0.4, 7.1, 2.1, 6.0, 0.15, 29.04),
+    ('C167', 'Piña Selva, néctar natural, sin azúcar', 'C', 19.0, 0.2, 0.5, 3.5, 0.0, 2.0, 0.17, 6.52),
+    ('C134', 'Piña, bebida envasada', 'C', 29.0, 0.0, 0.0, 7.2, 1.1, None, 0.01, 33.87),
+    ('C83', 'Sandia', 'C', 23.0, 0.7, 0.1, 5.5, 0.4, 6.0, 0.3, 3.0),
+    ('C170', 'Uva Red Globe, con cáscara, sin pepas', 'C', 52.0, 0.6, 0.4, 12.8, 0.8, 11.0, 0.34, 5.65),
+    ('C93', 'Uva blanca', 'C', 40.0, 0.3, 0.2, 10.4, 0.9, 5.0, 0.8, 1.4),
+    ('C94', 'Uva borgoña', 'C', 79.0, 0.9, 0.3, 20.4, 0.9, 18.0, 1.1, 4.7),
+    ('C95', 'Uva italia', 'C', 63.0, 0.4, 0.1, 16.8, 0.9, 19.0, 0.5, 2.8),
+    ('C96', 'Uva negra', 'C', 63.0, 0.2, 0.1, 17.2, 0.9, 6.0, 2.2, 2.2),
+    ('C97', 'Uva quebranta', 'C', 66.0, 0.5, 0.1, None, None, 14.0, 0.4, 0.7),
+    ('D3', 'Aceite vegetal de algodón', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D4', 'Aceite vegetal de girasol', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D43', 'Aceite vegetal de girasol con canola', 'D', 883.0, 0.0, 99.9, None, None, 0.0, 0.0, None),
+    ('D6', 'Aceite vegetal de maní', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D5', 'Aceite vegetal de maíz', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D44', 'Aceite vegetal de oliva extravirgen', 'D', 883.0, 0.0, 99.9, None, None, 0.0, 0.0, None),
+    ('D7', 'Aceite vegetal de olivo', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D8', 'Aceite vegetal de palma', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D45', 'Aceite vegetal de sacha Inchi', 'D', 883.0, 0.0, 99.9, None, None, 0.0, 0.0, None),
+    ('D9', 'Aceite vegetal de soya', 'D', 884.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D40', 'Ajonjolí negro, semilla de', 'D', 501.0, 16.0, 51.3, 3.8, 17.9, 995.0, None, None),
+    ('D39', 'Ajonjolí, semilla de*', 'D', 525.0, 17.7, 49.7, 11.7, 11.8, 975.0, 14.55, 0.0),
+    ('D10', 'Almendra', 'D', 554.0, 19.4, 54.1, 8.4, 9.9, 195.0, 3.72, 0.0),
+    ('D17', 'Manteca de cerdo', 'D', 879.0, 0.0, 99.4, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ('D19', 'Mantequilla', 'D', 729.0, 2.0, 82.0, None, None, 0.0, 0.0, 0.0),
+    ('D20', 'Mantequilla con sal', 'D', 717.0, 0.9, 81.1, 0.1, 0.0, 24.0, 0.02, 0.0),
+    ('D46', 'Mantequilla sin sal', 'D', 746.0, 0.2, 84.7, None, None, 18.0, 0.08, 0.0),
+    ('D21', 'Margarina vegetal con sal', 'D', 720.0, 0.6, 81.0, 0.3, 0.0, 0.0, 0.0, 0.0),
+    ('D29', 'Margarina, Dorina Light al 50% de grasa', 'D', 409.0, 0.0, 46.2, None, None, None, None, None),
+    ('D31', 'Margarina, La Preferida 70% grasa', 'D', 598.0, 0.0, 67.6, None, None, None, None, None),
+    ('D32', 'Margarina, Manty 40% de grasa vegetal', 'D', 325.0, 0.0, 36.8, None, None, None, None, None),
+    ('D33', 'Margarina, Sello de Oro', 'D', 607.0, 0.0, 68.6, None, None, None, None, None),
+    ('D35', 'Margarina, Swis 60% de grasa', 'D', 479.0, 0.0, 54.1, None, None, None, None, None),
+    ('D34', 'Margarina, Swis Light', 'D', 407.0, 0.0, 46.1, None, None, None, None, None),
+    ('D37', 'Pecana', 'D', 670.0, 9.1, 73.8, 5.2, 6.5, 43.0, 2.53, 1.0),
+    ('E5', 'Camaroncito seco (chino)', 'E', 247.0, 52.3, 1.9, None, None, 524.0, 4.9, 0.0),
+    ('E6', 'Camarones frescos', 'E', 88.0, 17.8, 0.2, None, None, 117.0, 0.1, 5.2),
+    ('E7', 'Cangrejo', 'E', 94.0, 19.8, 0.6, None, None, 108.0, 0.82, 2.0),
+    ('E8', 'Cangrejo cocido*', 'E', 97.0, 14.8, 2.9, None, None, 423.0, 4.1, None),
+    ('E91', 'Choro, pulpa cocida, envasado', 'E', 101.0, 17.2, 1.5, None, None, 58.0, 0.12, None),
+    ('E12', 'Concha de abanico', 'E', 92.0, 15.9, 1.8, None, None, 12.0, 0.29, 11.6),
+    ('E14', 'Langostino blanco', 'E', 69.0, 14.5, 0.8, None, None, 89.0, 2.03, None),
+    ('E77', 'Pescado Tilapia, fresco', 'E', 100.0, 18.4, 2.1, None, None, 23.0, 0.23, 0.0),
+    ('E18', 'Pescado anchoveta', 'E', 156.0, 19.1, 8.2, None, None, 77.0, 3.04, 8.7),
+    ('E19', 'Pescado atún, en conserva', 'E', 181.0, 22.9, 9.9, None, None, None, None, None),
+    ('E21', 'Pescado atún, enlatado en aceite', 'E', 186.0, 26.5, 8.1, None, 0.0, 4.0, 1.2, 0.0),
+    ('E20', 'Pescado atún, enlatado en agua', 'E', 116.0, 25.5, 0.8, None, None, 11.0, 1.53, 0.0),
+    ('E22', 'Pescado atún, fresco', 'E', 141.0, 23.3, 4.6, None, None, None, None, None),
+    ('E27', 'Pescado bonito', 'E', 138.0, 23.4, 4.2, None, None, 28.0, 0.7, 1.6),
+    ('E29', 'Pescado bonito fresco, músculo claro', 'E', 115.0, 23.5, 1.3, None, None, 20.0, 1.03, None),
+    ('E30', 'Pescado bonito fresco, músculo oscuro', 'E', 106.0, 23.1, 0.7, None, None, 10.0, 1.93, None),
+    ('E28', 'Pescado bonito, huevera de', 'E', 101.0, 17.2, 3.0, None, None, 24.0, 1.8, 10.1),
+    ('E31', 'Pescado bonito, pulpa asada', 'E', 136.0, 24.0, 3.7, None, None, 15.0, 1.0, None),
+    ('E32', 'Pescado bonito, seco salado', 'E', 184.0, 32.3, 5.1, None, None, 112.0, 6.1, 0.0),
+    ('E34', 'Pescado caballa, en conserva', 'E', 225.0, 24.8, 14.0, None, None, None, None, None),
+    ('E35', 'Pescado caballa, fresco', 'E', 182.0, 21.5, 10.0, None, None, 90.0, 1.96, None),
+    ('E36', 'Pescado caballa, salado', 'E', 132.0, 21.4, 4.1, None, None, 120.0, 2.45, None),
+    ('E47', 'Pescado corvina', 'E', 124.0, 19.5, 4.5, None, 0.0, 57.0, 1.1, 1.5),
+    ('E49', 'Pescado jurel, en conserva', 'E', 127.0, 23.2, 3.8, None, None, None, None, None),
+    ('E50', 'Pescado jurel, fresco', 'E', 121.0, 22.2, 2.7, None, None, 37.0, 1.56, None),
+    ('E51', 'Pescado lenguado', 'E', 91.0, 18.8, 1.2, None, 0.0, 18.0, 0.7, 2.0),
+    ('E57', 'Pescado merluza, fresco', 'E', 72.0, 15.8, 0.5, None, None, 15.0, 0.2, 1.0),
+    ('E58', 'Pescado merluza, seco', 'E', 363.0, 73.8, 5.3, None, None, None, None, None),
+    ('E63', 'Pescado pejerrey', 'E', 105.0, 19.6, 2.4, None, None, 105.0, 0.7, 0.0),
+    ('E81', 'Pescado trucha rosada', 'E', 110.0, 20.9, 2.3, None, None, 8.0, 0.2, 8.4),
+    ('E82', 'Pescado trucha, en conserva', 'E', 167.0, 21.5, 9.0, None, None, None, None, None),
+    ('E83', 'Pescado trucha, fresca', 'E', 111.0, 19.5, 3.1, None, None, 19.0, 0.22, 1.0),
+    ('E89', 'Pota, concentrado proteico de', 'E', 396.0, 91.8, 0.3, None, None, None, None, None),
+    ('E90', 'Pulpo', 'E', 80.0, 13.6, 1.4, None, None, 53.0, 3.0, 3.2),
+    ('E92', 'mejillones, caracol, concha de abanico,', 'E', 80.0, 15.3, 0.9, None, None, 29.0, 0.06, None),
+    ('F61', 'Alpaca, carne pulpa de', 'F', 109.0, 24.1, 0.5, None, None, 11.0, 2.2, 7.0),
+    ('F13', 'Cerdo, carne sin hueso', 'F', 198.0, 14.4, 15.1, 0.1, 0.0, 12.0, 1.3, 0.6),
+    ('F14', 'Cerdo, hígado de', 'F', 128.0, 18.5, 4.7, 1.7, 0.0, 17.0, 6.2, 9.8),
+    ('F49', 'Chorizo', 'F', 287.0, 21.0, 21.9, 0.0, 0.0, 56.0, 4.0, 0.0),
+    ('F72', 'Cordero, pierna cruda*', 'F', 128.0, 20.6, 4.5, 0.0, 0.0, 6.0, 1.82, 0.0),
+    ('F74', 'Cuy, carne de', 'F', 96.0, 19.0, 1.6, 0.1, 0.0, 29.0, 1.9, 0.0),
+    ('F20', 'Gallina, pechuga de, sin piel', 'F', 108.0, 19.2, 2.9, 0.0, 0.0, 5.0, 0.8, 4.4),
+    ('F21', 'Gallina, pierna de, sin piel', 'F', 120.0, 20.6, 3.6, 0.0, 0.0, 9.0, 0.9, 4.7),
+    ('F58', 'Hot Dog', 'F', 364.0, 11.0, 34.3, None, None, 76.0, 1.3, 0.0),
+    ('F50', 'Jamón del país', 'F', 344.0, 24.7, 26.4, 0.0, 0.0, 48.0, 2.1, 0.0),
+    ('F25', 'Pavo, carne de', 'F', 160.0, 20.4, 8.0, 0.0, 0.0, 15.0, 3.8, 0.0),
+    ('F118', 'Pavo, pechuga de, con piel', 'F', 94.0, 17.7, 1.3, None, None, 21.0, 0.31, None),
+    ('F119', 'Pavo, pierna de, con piel', 'F', 105.0, 16.4, 2.6, None, None, 115.0, 1.2, None),
+    ('F26', 'Pollo, carne pulpa', 'F', 119.0, 21.4, 3.1, 0.0, 0.0, 12.0, 1.5, 2.3),
+    ('F89', 'Res, carne molida de, cruda', 'F', 164.0, 21.0, 8.3, None, None, 13.0, 1.95, 0.0),
+    ('F35', 'Res, carne pulpa de', 'F', 105.0, 21.3, 1.6, 0.0, 0.0, 16.0, 3.4, 0.0),
+    ('F38', 'Res, hígado de', 'F', 140.0, 20.0, 4.6, 3.3, 0.0, 13.0, 5.4, 19.5),
+    ('F95', 'Res, lengua cocida**', 'F', 269.0, 16.6, 18.2, None, None, 18.0, 2.4, 0.0),
+    ('F39', 'Res, lengua de', 'F', 173.0, 16.5, 11.2, 0.3, 0.0, 9.0, 2.2, 1.9),
+    ('F56', 'Salchicha blanca chica', 'F', 449.0, 12.0, 43.2, 2.0, 0.0, 22.0, 3.2, 2.3),
+    ('F57', 'Salchicha blanca grande', 'F', 363.0, 13.6, 32.3, 3.5, 0.0, 76.0, 1.2, 2.5),
+    ('F59', 'Salchicha de "Huacho"', 'F', 461.0, 12.9, 44.0, 2.4, 0.0, 80.0, 5.5, 0.0),
+    ('F60', 'Tocino', 'F', 493.0, 13.5, 47.9, 0.8, 0.0, 26.0, 1.2, 1.9),
+    ('F134', 'Tocino, sancochado', 'F', 350.0, 25.0, 27.0, None, None, 21.0, 1.6, None),
+    ('G1', 'Crema de leche, espesa', 'G', 345.0, 2.1, 37.0, 2.8, 0.0, 65.0, 0.1, 0.6),
+    ('G2', 'Crema de leche, rala', 'G', 195.0, 2.7, 19.3, 3.7, 0.0, 96.0, 0.1, 0.8),
+    ('G4', 'Leche en polvo descremada', 'G', 362.0, 36.2, 0.8, 52.0, 0.0, 1257.0, 1.2, 6.8),
+    ('G5', 'Leche en polvo entera', 'G', 484.0, 27.0, 26.1, 36.1, 0.0, 848.0, 0.2, 9.0),
+    ('G6', 'Leche evaporada descremada', 'G', 79.0, 7.1, 0.9, 10.5, 0.0, None, None, 13.0),
+    ('G7', 'Leche evaporada entera', 'G', 133.0, 6.3, 7.7, 10.9, 0.0, 231.0, None, 0.0),
+    ('G8', 'Leche fresca c/menos de 1% grasa', 'G', 43.0, 3.5, 1.0, 4.7, 0.0, 130.0, 0.05, 5.2),
+    ('G10', 'Leche fresca de cabra', 'G', 66.0, 3.2, 3.8, 5.0, 0.0, 171.0, None, 0.0),
+    ('G11', 'Leche fresca de vaca', 'G', 63.0, 3.1, 3.5, 4.9, 0.0, 106.0, 1.3, 0.5),
+    ('G21', 'Leche fresca de vaca, descremada***', 'G', 30.0, 2.5, 0.0, 5.0, 0.0, None, None, None),
+    ('G9', 'Leche fresca entera (Plusa)', 'G', 64.0, 3.2, 3.2, 5.1, 0.0, 106.0, 0.3, 0.5),
+    ('G30', 'Queso edam', 'G', 330.0, 24.4, 25.3, None, None, 935.0, 0.31, 0.64),
+    ('G13', 'Queso fresco de cabra', 'G', 173.0, 16.3, 10.3, 3.4, 0.0, 310.0, 0.8, 0.0),
+    ('G14', 'Queso fresco de vaca', 'G', 265.0, 17.2, 20.2, 3.6, 0.0, 1105.0, 0.14, 0.64),
+    ('G15', 'Queso mantecoso', 'G', 322.0, 19.5, 26.5, None, None, 266.0, 0.39, 0.64),
+    ('G16', 'Queso parmesano duro', 'G', 440.0, 39.1, 30.3, 1.8, 0.0, 1260.0, 0.6, 0.0),
+    ('G26', 'Yogurt bebible de fresa', 'G', 78.0, 2.7, 1.2, None, None, 127.0, 0.08, None),
+    ('G17', 'Yogurt de leche entera', 'G', 61.0, 3.5, 3.3, 4.7, 0.0, 121.0, 0.05, 0.53),
+    ('G19', 'Yogurt frutado de leche descremada', 'G', 95.0, 4.4, 0.2, 19.0, 0.0, 152.0, 0.07, 0.7),
+    ('G37', 'Yogurt griego descremado con fresas', 'G', 74.0, 4.2, 0.3, 14.0, 1.0, 151.0, 0.07, 0.64),
+    ('G38', 'Yogurt griego natural sin azúcar', 'G', 79.0, 4.0, 3.9, 7.2, 0.7, 126.0, 0.03, 0.64),
+    ('G20', 'Yogurt natural de leche descremada', 'G', 56.0, 5.7, 0.2, 7.7, 0.0, 199.0, 0.09, 0.9),
+    ('H16', 'Café sin azúcar', 'H', 2.0, 0.1, 0.0, 0.6, 0.0, 4.0, 0.2, 0.0),
+    ('H21', 'Carambola, refresco de, con azúcar', 'H', 30.0, 0.0, 0.0, 7.3, 0.1, None, 0.22, None),
+    ('H23', 'Cebada, refresco de, con azúcar', 'H', 22.0, 0.1, 0.0, 5.4, 0.0, None, 0.08, None),
+    ('H1', 'Cerveza', 'H', 36.0, 0.3, 0.0, 5.1, 0.0, 0.0, 0.1, 0.0),
+    ('H29', 'Manzana, refresco de, con azúcar', 'H', 34.0, 0.1, 0.1, 8.2, 0.0, None, 0.08, None),
+    ('H30', 'Maracuyá, refresco de, con azúcar', 'H', 34.0, 0.1, 0.2, 7.9, 0.0, None, 0.21, None),
+    ('J4', 'Huevo de gallina entero, crudo', 'J', 166.0, 12.7, 11.1, None, None, 29.0, 2.6, None),
+    ('J2', 'Huevo de gallina, clara de', 'J', 51.0, 10.9, 0.2, 0.7, 0.0, 7.0, 0.08, 0.0),
+    ('J5', 'Huevo de gallina, yema de', 'J', 354.0, 15.6, 30.9, 1.9, 0.0, 136.0, 4.3, 0.0),
+    ('K2', 'Azúcar rubia', 'K', 380.0, 0.0, 0.0, 97.5, 0.0, 45.0, 1.7, 0.0),
+    ('K4', 'Miel de abeja', 'K', 330.0, 0.0, 0.0, 85.4, 0.2, 26.0, 0.4, 1.3),
+    ('L1', 'Achiote seco', 'L', 388.0, 11.3, 5.3, None, None, 11.0, 5.6, 0.0),
+    ('L4', 'Café grano sin tostar', 'L', 203.0, 11.7, 10.8, None, None, 120.0, 2.9, None),
+    ('L38', 'Chocolate simple con azúcar (para taza)', 'L', 248.0, 3.8, 16.8, None, None, 46.0, 2.8, 0.0),
+    ('L23', 'Levadura fresca para pan**', 'L', 113.0, 13.4, 0.3, None, None, 20.0, 2.3, None),
+    ('L24', 'Levadura seca**', 'L', 359.0, 41.6, 1.2, None, None, 47.0, 9.8, None),
+    ('L42', 'Mayonesa con sal, envasada*', 'L', 390.0, 0.9, 33.4, 23.9, 0.0, 14.0, 0.2, 0.0),
+    ('L12', 'Té hojas secas', 'L', 308.0, 8.0, 4.0, None, None, 400.0, 11.9, 5.0),
+    ('L50', 'Vinagre', 'L', 21.0, 0.0, 0.0, 6.0, 0.0, 7.0, 0.5, 0.0),
+    ('Q1', 'Al 110 maternizada', 'Q', 502.0, 14.0, 25.0, None, None, 450.0, 6.0, 40.0),
+    ('Q2', 'Cerelac manzana', 'Q', 414.0, 11.0, 7.4, None, None, 275.0, 6.3, 20.0),
+    ('Q3', 'Cerelac trigo', 'Q', 425.0, 11.5, 7.8, None, None, 275.0, 6.3, 20.0),
+    ('Q4', 'Eledón maternizada', 'Q', 417.0, 27.9, 12.0, 49.8, 0.0, 1070.0, 0.4, 10.4),
+    ('Q5', 'Nan maternizada', 'Q', 509.0, 11.4, 26.0, None, None, 320.0, 6.0, 41.0),
+    ('Q6', 'Nestúm cereal mixto', 'Q', 380.0, 9.4, 1.2, None, None, 690.0, 15.6, 45.0),
+    ('Q7', 'Nestúm tres cereales', 'Q', 376.0, 10.7, 2.4, None, None, 690.0, 14.7, 45.0),
+    ('Q8', 'Pelargón maternizada', 'Q', 458.0, 16.5, 17.1, None, None, 590.0, 6.0, 37.0),
+    ('T3', 'Arveja, seca sin cáscara', 'T', 247.0, 21.7, 3.2, 35.6, 25.5, 65.0, 2.6, 3.5),
+    ('T15', 'Frejol canario', 'T', 236.0, 21.9, 2.1, 35.0, 25.1, 138.0, 6.6, 6.3),
+    ('T16', 'Frejol canario cocido', 'T', 43.0, 5.2, 0.5, 5.1, 10.4, 45.0, 1.6, 0.0),
+    ('T18', 'Frejol canario serranito', 'T', 238.0, 19.2, 1.8, 38.4, 24.9, 149.0, 4.0, 4.5),
+    ('T17', 'Frejol canario, fresco (frejol verde)', 'T', 102.0, 9.7, 0.6, 15.6, 14.0, 60.0, 2.18, 5.22),
+    ('T20', 'Frejol castilla', 'T', 227.0, 23.3, 2.7, 30.5, 26.4, 97.0, 6.65, 2.1),
+    ('T64', 'Frejol castilla sancochado sin sal', 'T', 119.0, 10.1, 1.8, 17.1, 5.6, 39.0, 3.18, 0.0),
+    ('T26', 'Frejol negro', 'T', 270.0, 18.2, 1.3, 48.2, 15.2, 133.0, 9.3, 2.3),
+    ('T69', 'Frejol negro sancochado sin sal', 'T', 104.0, 9.8, 1.7, 13.8, 9.1, 64.0, 2.3, 0.0),
+    ('T30', 'Frejol palo, fresco (Lenteja verde)', 'T', 82.0, 7.0, 0.8, 12.5, 10.7, 114.0, 1.09, 7.06),
+    ('T31', 'Frejol panamito', 'T', 235.0, 21.5, 1.7, 35.8, 24.9, 174.0, 6.3, 5.8),
+    ('T71', 'Frejol panamito sancochado sin sal', 'T', 106.0, 9.5, 1.4, 15.1, 10.3, 78.0, 1.95, 0.0),
+    ('T44', 'Garbanzo', 'T', 293.0, 17.6, 5.4, 45.9, 17.4, 120.0, 5.95, 5.4),
+    ('T43', 'Garbanzo, cocido', 'T', 127.0, 6.9, 2.5, 20.2, 7.6, 54.0, 1.9, 0.0),
+    ('T52', 'Lentejas chicas', 'T', 211.0, 22.6, 1.0, 30.5, 30.5, 73.0, 7.6, 5.5),
+    ('T53', 'Lentejas chicas cocidas', 'T', 65.0, 6.4, 0.1, 10.4, 7.9, 43.0, 1.7, 0.0),
+    ('T54', 'Lentejas grandes', 'T', 214.0, 23.2, 1.1, 30.5, 30.5, 71.0, 4.8, 4.4),
+    ('T58', 'Pallar cocido, con cáscara', 'T', 94.0, 7.7, 0.8, 14.9, 7.0, 28.0, 1.28, 0.1),
+    ('T83', 'Pallar del río Manú', 'T', 329.0, 22.0, 0.9, None, None, 186.0, 4.0, 2.9),
+    ('T55', 'Pallar morado', 'T', 259.0, 20.0, 1.3, 43.8, 19.0, 51.0, 3.8, 0.0),
+    ('T56', 'Pallar seco', 'T', 253.0, 20.4, 1.2, 42.4, 19.0, 70.0, 6.7, 7.5),
+    ('T57', 'Pallar sin cáscara', 'T', 260.0, 21.6, 1.4, 42.6, 19.0, 38.0, 5.2, 0.0),
+    ('U3', 'Camote amarillo sin cáscara', 'U', 95.0, 2.0, 0.0, 20.5, 2.9, 41.0, 0.43, 22.46),
+    ('U4', 'Camote blanco', 'U', 114.0, 1.7, 0.1, None, None, 26.0, 2.5, 12.9),
+    ('U41', 'Camote de Huarayoc', 'U', 106.0, 1.6, 0.2, None, None, 6.0, 0.5, 12.0),
+    ('U42', 'Camote deshidratado', 'U', 333.0, 3.7, 0.7, None, None, 120.0, 2.9, 0.8),
+    ('U43', 'Camote deshidratado tratado con lejía', 'U', 327.0, 5.3, 0.8, None, None, 73.0, 1.9, 0.5),
+    ('U5', 'Camote morado sin cáscara', 'U', 105.0, 1.4, 0.3, None, None, 36.0, 1.4, 13.6),
+    ('U6', 'Camote, harina de', 'U', 341.0, 2.1, 0.9, 81.3, 3.0, 153.0, 5.7, 7.9),
+    ('U13', 'Maca, afrechillo', 'U', 316.0, 10.5, 0.6, None, None, 475.0, 29.3, 2.0),
+    ('U14', 'Maca, almidón', 'U', 350.0, 6.1, 1.2, None, None, 175.0, 31.7, 2.8),
+    ('U47', 'Maca, harina de', 'U', 328.0, 8.7, 4.1, 70.3, 8.6, 61.0, 7.97, None),
+    ('U15', 'Maca, pasta integral', 'U', 310.0, 14.0, 1.0, None, None, 245.0, 25.0, 8.0),
+    ('U16', 'Mashua o isaño', 'U', 32.0, 0.7, 0.1, 7.7, 2.9, None, 0.37, 42.06),
+    ('U17', 'Olluco sin cáscara', 'U', 59.0, 1.1, 0.1, None, None, 3.0, 1.1, 11.5),
+    ('U38', 'Yuca, harina de', 'U', 333.0, 0.3, 0.1, 82.1, 0.1, 155.0, 1.31, 13.6),
+]
+
+FOOD_COLS = ["codigo", "nombre", "grupo_cod", "kcal", "proteinas", "grasas", "cho", "fibra", "calcio", "hierro", "vitc"]
+FOOD_DB = [dict(zip(FOOD_COLS, fila)) for fila in FOOD_DB_RAW]
+
+GRUPOS_ALIMENTOS = {
+    "A": {"nombre": "Cereales y derivados", "icono": "🥖",
+          "aporta": "Aportan energía y carbohidratos complejos, base de la alimentación diaria.",
+          "tips": ["Prefiere las versiones integrales.", "Combina con verduras y una fuente de proteína.",
+                    "Modera la porción si tu objetivo es bajar de peso.", "Evita el exceso de harinas refinadas."]},
+    "B": {"nombre": "Verduras y hortalizas", "icono": "🥬",
+          "aporta": "Ricas en fibra, vitaminas y minerales; bajas en calorías.",
+          "tips": ["Llena la mitad de tu plato con verduras.", "Varía los colores para más variedad de nutrientes.",
+                    "Prefiérelas crudas, al vapor o salteadas.", "Lávalas bien antes de consumir."]},
+    "C": {"nombre": "Frutas y derivados", "icono": "🍎",
+          "aporta": "Fuente natural de vitaminas, fibra y antioxidantes.",
+          "tips": ["Consume frutas enteras, no solo en jugo.", "Prefiere frutas de temporada.",
+                    "No reemplaces el agua por jugos.", "Incluye variedad de colores."]},
+    "D": {"nombre": "Grasas, aceites y oleaginosas", "icono": "🥑",
+          "aporta": "Aportan energía concentrada y ácidos grasos esenciales.",
+          "tips": ["Usa aceites vegetales con moderación.", "Prefiere grasas no saturadas (palta, frutos secos).",
+                    "Evita frituras frecuentes.", "Controla el tamaño de la porción."]},
+    "E": {"nombre": "Pescados y mariscos", "icono": "🐟",
+          "aporta": "Proteína de alto valor biológico y ácidos grasos omega-3.",
+          "tips": ["Prefiere cocción al vapor, horno o plancha.", "Incluye pescado azul 2 a 3 veces por semana.",
+                    "Modera la sal al preparar.", "Verifica su frescura antes de comprar."]},
+    "F": {"nombre": "Carnes y derivados", "icono": "🥩",
+          "aporta": "Fuente principal de proteína de alto valor biológico y hierro.",
+          "tips": ["Prefiere carnes magras.", "Retira la grasa visible.",
+                    "Evita frituras frecuentes.", "Combina con verduras."]},
+    "G": {"nombre": "Leches y derivados", "icono": "🥛",
+          "aporta": "Aportan calcio, proteína y vitaminas para huesos y músculos.",
+          "tips": ["Prefiere versiones bajas en grasa.", "Aportan calcio para huesos y dientes.",
+                    "Evita las versiones con exceso de azúcar.", "Modera los quesos maduros por su sodio."]},
+    "H": {"nombre": "Bebidas", "icono": "🥤",
+          "aporta": "Hidratan, aunque algunas aportan azúcares y calorías extra.",
+          "tips": ["El agua debe ser tu bebida principal.", "Modera bebidas azucaradas y alcohólicas.",
+                    "Revisa el contenido de azúcar añadida.", "Prefiere jugos naturales sin azúcar agregada."]},
+    "J": {"nombre": "Huevos y derivados", "icono": "🍳",
+          "aporta": "Proteína completa y nutrientes esenciales como colina y vitamina D.",
+          "tips": ["Prefiere cocción con poco aceite.", "Combínalo con verduras.",
+                    "Modera el consumo si tienes indicación médica.", "Consérvalo refrigerado."]},
+    "K": {"nombre": "Productos azucarados", "icono": "🍯",
+          "aporta": "Aportan energía rápida, con poco valor nutricional adicional.",
+          "tips": ["Consume con moderación.", "Prefiere endulzantes naturales en poca cantidad.",
+                    "Evita el consumo diario.", "Revisa etiquetas de azúcares añadidos."]},
+    "L": {"nombre": "Misceláneos", "icono": "🧂",
+          "aporta": "Ingredientes complementarios: condimentos, infusiones y otros.",
+          "tips": ["Usa la sal con moderación.", "Prefiere infusiones sin azúcar añadida.",
+                    "Cuida la porción al usar condimentos.", "Úsalos como complemento, no como base del plato."]},
+    "Q": {"nombre": "Alimentos infantiles", "icono": "🍼",
+          "aporta": "Formulados para cubrir necesidades específicas en la primera infancia.",
+          "tips": ["Usa solo según indicación del pediatra o nutricionista.", "Respeta las porciones por edad.",
+                    "No reemplaces la lactancia materna sin indicación médica.", "Verifica la fecha de vencimiento."]},
+    "T": {"nombre": "Leguminosas y derivados", "icono": "🫘",
+          "aporta": "Buena fuente de proteína vegetal, fibra y hierro.",
+          "tips": ["Combínalas con cereales para una proteína más completa.", "Ayudan a la saciedad por su fibra.",
+                    "Remójalas antes de cocinar para mejorar la digestión.", "Inclúyelas varias veces por semana."]},
+    "U": {"nombre": "Tubérculos, raíces y derivados", "icono": "🥔",
+          "aporta": "Fuente de energía y carbohidratos, con vitaminas y minerales.",
+          "tips": ["Prefiere sancochado o al vapor antes que frito.", "Modera la porción si buscas bajar de peso.",
+                    "Consúmelos con cáscara bien lavada cuando sea posible.", "Combina con proteínas y verduras."]},
+}
+
+GUIAS_ALIMENTARIAS_PERU = [
+    ("🥦", "Llena la mitad de tu plato con verduras.", "En cada comida principal."),
+    ("🍎", "Consume frutas todos los días.", "Enteras, mejor que en jugo."),
+    ("🥛", "Incluye lácteos según tu edad.", "Prefiere las versiones bajas en grasa."),
+    ("🫘", "Prefiere alimentos naturales.", "Menos ultraprocesados, más alimentos frescos."),
+    ("💧", "El agua es tu bebida principal.", "Evita reemplazarla por bebidas azucaradas."),
+    ("🏃", "Realiza actividad física.", "Al menos 30 minutos la mayoría de días."),
+]
+
+
+def _norm_txt(s):
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn").lower()
+
+
+def buscar_alimentos(consulta, limite=12):
+    q = _norm_txt(consulta).strip()
+    if not q:
+        return []
+    exact, starts, contains = [], [], []
+    for f in FOOD_DB:
+        n = _norm_txt(f["nombre"])
+        if n == q:
+            exact.append(f)
+        elif n.startswith(q):
+            starts.append(f)
+        elif q in n:
+            contains.append(f)
+    return (exact + starts + contains)[:limite]
+
+# =========================================================================================
 # PALETA DE COLORES — inspirada en los colores del sistema de iOS (systemBlue, systemGreen, etc.)
 # Cada hoja conserva su propio acento, ahora dentro de la paleta de iOS, con fondos "tinted"
 # muy suaves como los que usa iOS en tarjetas agrupadas (Ajustes, Salud, Recordatorios).
@@ -51,7 +497,7 @@ COLORES = {
     5:  ("5", "Control de Peso",                              "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
     6:  ("6", "Plan Nutricional Basado en la OMS",             "⚖️", "#FFCC00", "#FFFAE0"),  # systemYellow
     7:  ("7", "Cálculo de las Porciones del Día",            "⏰", "#30B0C7", "#E6F7FA"),  # systemTeal
-    8:  ("8", "Página FatSecret",                             "🌐", "#00C7BE", "#E1FBF9"),  # systemMint
+    8:  ("8", "Base Peruana de Alimentos",                     "🇵🇪", "#00C7BE", "#E1FBF9"),  # systemMint
     9:  ("9", "Plan de Dieta Semanal",                        "🍱", "#FF6B35", "#FFEEE6"),  # naranja cálido
     10: ("10", "¿El Clima Influye en tu Gasto Energético?",  "🌤️", "#FFB300", "#FFF6E0"),  # amarillo sol
     11: ("Aporte 1", "Energía durante el Embarazo",             "👶", "#BF5AF2", "#F7ECFD"),  # púrpura claro
@@ -3402,7 +3848,7 @@ ETIQUETAS_NAV = {
     "5.-CONTROL DE PESO":          ("📈", "Control de Peso"),
     "6.-MACRONUTRIENTES":          ("🥗", "Macronutrientes"),
     "7.-PORCIONES":                ("🍎", "Porciones del Día"),
-    "8.-FATSECRET":                ("🥑", "FatSecret"),
+    "8.-FATSECRET":                ("🇵🇪", "Base de Alimentos"),
     "9.-DIETA":                    ("📝", "Dieta"),
     "10.-CLIMA CHICLAYO":          ("🌤️", "Clima Chiclayo"),
     "11.-APORTE 1: EMBARAZO":      ("🤰", "TMB en Embarazo"),
@@ -5674,30 +6120,157 @@ elif hoja_activa == "7.-PORCIONES":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "8.-FATSECRET":
-    hoja_header(8)
+    hoja_header(8, subtitulo="Composición nutricional oficial de los alimentos de mayor consumo en el Perú, "
+                             "según el INS/CENAN. Ya no dependemos de plataformas externas.")
     st.markdown("*\"Conocer la información nutricional de los alimentos permite llevar una alimentación más "
                 "equilibrada y saludable. Una buena nutrición ayuda al crecimiento, desarrollo y bienestar del organismo.\"*")
-    st.write("FatSecret es una plataforma de nutrición que permite buscar información sobre distintos alimentos "
-             "y conocer sus calorías, proteínas, grasas y carbohidratos.")
 
-    with st.expander("ℹ️ ¿Qué significa cada dato en FatSecret?"):
-        st.markdown("- **Calorías:** total de energía que aporta el alimento, para ajustarlo a tus necesidades diarias.")
-        st.markdown("- **Fibra alimentaria:** indica qué tan natural o integral es el alimento; ayuda a la digestión y la saciedad.")
-        st.markdown("- **Sodio:** alerta sobre la sal oculta, sobre todo en procesados; protege la salud cardiovascular.")
-        st.markdown("- **Azúcares:** separa los carbohidratos saludables de los azúcares simples o añadidos.")
-        st.markdown("- **Porción (g/ml):** cantidad exacta de comida a la que corresponden las calorías y nutrientes mostrados.")
+    st.markdown("""
+    <style>
+    .bpa-card{background:#1C1C1E;border-radius:22px;padding:26px 28px;margin:14px 0;
+        box-shadow:0 1px 2px rgba(0,0,0,0.15),0 10px 26px rgba(0,0,0,0.18);color:#F2F2F7;}
+    .bpa-card h3{margin:0 0 2px 0;color:#F2F2F7;font-size:1.35rem;font-weight:800;}
+    .bpa-sub{color:#9DA3AE;font-size:0.85rem;margin-bottom:16px;}
+    .bpa-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+    .bpa-metric{background:#2C2C2E;border-radius:14px;padding:12px 14px;text-align:center;}
+    .bpa-metric .lbl{font-size:0.72rem;color:#9DA3AE;font-weight:600;}
+    .bpa-metric .val{font-size:1.25rem;font-weight:800;color:#F2F2F7;margin-top:2px;}
+    .bpa-source{background:#0F2A3A;border-radius:14px;padding:12px 16px;font-size:0.82rem;color:#7FC7FF;margin-bottom:16px;}
+    .bpa-tips{color:#D7D9DE;font-size:0.9rem;margin:4px 0;}
+    .bpa-chip{display:inline-block;background:#2C2C2E;color:#D7D9DE;border-radius:999px;padding:6px 14px;
+        font-size:0.78rem;font-weight:600;margin-right:8px;margin-top:8px;}
+    .bpa-bar-wrap{margin-bottom:16px;}
+    .bpa-bar{height:14px;border-radius:999px;overflow:hidden;display:flex;background:#2C2C2E;}
+    .bpa-bar-label{display:flex;justify-content:space-between;font-size:0.72rem;color:#9DA3AE;margin-top:6px;}
+    .bpa-guide-card{background:#EAFAEE;border-radius:16px;padding:14px 16px;text-align:center;height:100%;}
+    .bpa-guide-card .gi{font-size:1.6rem;}
+    .bpa-guide-card .gt{font-weight:800;color:#1C1C1E;font-size:0.9rem;margin:6px 0 2px 0;}
+    .bpa-guide-card .gd{font-size:0.78rem;color:#5C6B60;}
+    .bpa-pro-item{font-size:0.9rem;color:#1C1C1E;margin:4px 0;}
+    </style>
+    """, unsafe_allow_html=True)
 
-    st.markdown("#### 🔎 Buscador Nutricional Interactivo")
-    alimento = st.text_input("Coloca el alimento aquí:", "")
-    if alimento.strip():
-        url = f"https://www.fatsecret.es/calor%C3%ADas-nutrici%C3%B3n/search?q={quote(alimento.strip())}"
-        st.link_button(f"🔍 Ver '{alimento}' en FatSecret", url, use_container_width=True)
-    else:
-        st.link_button("🌐 Abrir FatSecret", "https://www.fatsecret.es/", use_container_width=True)
-    caja_util("Cuando no sepas cuántas calorías tiene un alimento, no tienes que adivinar: escribe su nombre "
-              "aquí y con un clic vas directo a su ficha nutricional completa en FatSecret. Así armas tu dieta "
-              "con información real, no con suposiciones. 🔍🥗",
-              emoji="🌐", color="#E0F2F1", borde="#00796B")
+    st.markdown("#### 🔎 Buscador Nutricional")
+    consulta = st.text_input("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
+                              "", key="bpa_buscar")
+
+    resultados = buscar_alimentos(consulta) if consulta.strip() else []
+
+    alimento_sel = None
+    if consulta.strip() and resultados:
+        opciones = [f"{r['nombre']} · {GRUPOS_ALIMENTOS[r['grupo_cod']]['icono']} {GRUPOS_ALIMENTOS[r['grupo_cod']]['nombre']}" for r in resultados]
+        idx_sel = st.selectbox("Coincidencias encontradas:", range(len(opciones)),
+                                format_func=lambda i: opciones[i], key="bpa_sel")
+        alimento_sel = resultados[idx_sel]
+    elif consulta.strip() and not resultados:
+        st.warning(f"No encontramos '{consulta}' en la Base Peruana de Alimentos (343 alimentos curados de mayor "
+                   "consumo). Puedes buscarlo directamente en FatSecret como respaldo.")
+        url = f"https://www.fatsecret.es/calor%C3%ADas-nutrici%C3%B3n/search?q={quote(consulta.strip())}"
+        st.link_button(f"🔍 Buscar '{consulta}' en FatSecret", url, use_container_width=True)
+
+    if alimento_sel:
+        f = alimento_sel
+        g = GRUPOS_ALIMENTOS[f["grupo_cod"]]
+
+        def _m(v, suf=""):
+            return f"{v:g}{suf}" if v is not None else "s/d"
+
+        kcal, prot, gras, cho, fibra = f["kcal"], f["proteinas"], f["grasas"], f["cho"], f["fibra"]
+        partes = [("Grasas", gras, "#FF9500"), ("Carbohidratos", cho, "#30B0C7"), ("Proteínas", prot, "#34C759")]
+        total_e = sum((p[1] or 0) * (9 if p[0] == "Grasas" else 4) for p in partes)
+        barras = ""
+        etiquetas = []
+        if total_e > 0:
+            for nombre_p, val, color in partes:
+                pct = round(((val or 0) * (9 if nombre_p == "Grasas" else 4) / total_e) * 100)
+                if pct > 0:
+                    barras += f'<div style="width:{pct}%;background:{color};"></div>'
+                    etiquetas.append(f"{nombre_p} {pct}%")
+
+        st.markdown(f"""
+        <div class="bpa-card">
+            <h3>{g['icono']} {f['nombre']}</h3>
+            <div class="bpa-sub">{g['nombre']} · código {f['codigo']}</div>
+            <div class="bpa-sub" style="margin-top:-10px;">Resumen nutricional · por 100 g de porción comestible</div>
+            <div class="bpa-grid">
+                <div class="bpa-metric"><div class="lbl">🔥 Energía</div><div class="val">{_m(kcal,' kcal')}</div></div>
+                <div class="bpa-metric"><div class="lbl">💪 Proteínas</div><div class="val">{_m(prot,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🥑 Grasas</div><div class="val">{_m(gras,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🍞 Carbohidratos</div><div class="val">{_m(cho,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🌾 Fibra</div><div class="val">{_m(fibra,' g')}</div></div>
+            </div>
+            {"<div class='bpa-bar-wrap'><div style='font-size:0.78rem;color:#9DA3AE;margin-bottom:6px;'>Distribución energética</div><div class='bpa-bar'>" + barras + "</div><div class='bpa-bar-label'>" + " · ".join(etiquetas) + "</div></div>" if barras else ""}
+            <div class="bpa-source">📚 Según la Tabla Peruana de Composición de Alimentos (INS/CENAN, 11.ª edición digital, 2025). Valores por 100 g de porción comestible.</div>
+            <div style="font-weight:700;color:#F2F2F7;margin-bottom:4px;">¿Qué aporta principalmente?</div>
+            <div class="bpa-tips">{g['icono']} {g['aporta']}</div>
+            <div style="font-weight:700;color:#F2F2F7;margin:12px 0 4px 0;">Recomendaciones</div>
+            {''.join(f'<div class="bpa-tips">✔ {t}</div>' for t in g['tips'])}
+            <div>
+                <span class="bpa-chip">🍽️ Macronutrientes</span>
+                <span class="bpa-chip">📋 Dieta</span>
+                <span class="bpa-chip">⚖️ Control de peso</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if f["calcio"] is not None or f["hierro"] is not None or f["vitc"] is not None:
+            st.markdown(
+                f"<div style='color:#5C6B60;font-size:0.85rem;margin-top:-8px;'>"
+                f"Además, cada 100 g aportan: "
+                f"{'🦴 Calcio ' + _m(f['calcio'],' mg') + '  ' if f['calcio'] is not None else ''}"
+                f"{'🩸 Hierro ' + _m(f['hierro'],' mg') + '  ' if f['hierro'] is not None else ''}"
+                f"{'🍊 Vitamina C ' + _m(f['vitc'],' mg') if f['vitc'] is not None else ''}"
+                f"</div>", unsafe_allow_html=True)
+
+    elif not consulta.strip():
+        with st.expander("🗂️ Ver los 14 grupos de alimentos disponibles"):
+            cols_g = st.columns(4)
+            for i, (cod, g) in enumerate(GRUPOS_ALIMENTOS.items()):
+                n_items = sum(1 for x in FOOD_DB if x["grupo_cod"] == cod)
+                with cols_g[i % 4]:
+                    st.markdown(f"**{g['icono']} {g['nombre']}**  \n{n_items} alimentos")
+
+    st.markdown("---")
+    st.markdown("### 🍽️ Guía Alimentaria Peruana")
+    cols_guia = st.columns(3)
+    for i, (icono, titulo, desc) in enumerate(GUIAS_ALIMENTARIAS_PERU):
+        with cols_guia[i % 3]:
+            st.markdown(f"""
+            <div class="bpa-guide-card">
+                <div class="gi">{icono}</div>
+                <div class="gt">{titulo}</div>
+                <div class="gd">{desc}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    st.caption("Basado en las Guías Alimentarias para la Población Peruana (MINSA).")
+
+    st.markdown("### 📚 Información para profesionales")
+    with st.container():
+        st.markdown("""
+        <div style="background:#F2F2F7;border-radius:18px;padding:18px 22px;">
+        <div class="bpa-pro-item">✔ Valores expresados por 100 g de porción comestible.</div>
+        <div class="bpa-pro-item">✔ Basado en la Tabla Peruana de Composición de Alimentos, INS/CENAN.</div>
+        <div class="bpa-pro-item">✔ Utilizar porciones individualizadas según el caso.</div>
+        <div class="bpa-pro-item">✔ Ajustar según edad.</div>
+        <div class="bpa-pro-item">✔ Ajustar según condición clínica.</div>
+        <div class="bpa-pro-item">✔ Ajustar según evaluación nutricional.</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background:#EAFAEE;border-left:5px solid #1E5631;border-radius:16px;padding:16px 20px;margin-top:14px;">
+    <b style="color:#1E5631;">👩‍⚕️ Criterio profesional</b><br>
+    <span style="color:#1C1C1E;">Las porciones, intercambios y recomendaciones específicas deben ser definidas por el
+    nutricionista responsable, considerando la evaluación clínica, nutricional y los objetivos individuales del
+    paciente.</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    caja_util("Busca cualquier alimento peruano de consumo frecuente y obtén al instante su información "
+              "nutricional oficial (INS/CENAN): calorías, proteínas, grasas, carbohidratos y fibra por cada "
+              "100 g, junto con recomendaciones prácticas según su grupo alimenticio. Ya no depende de FatSecret. 🇵🇪🥗",
+              emoji="🇵🇪", color="#E0F2F1", borde="#00796B")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "9.-DIETA":
