@@ -1511,7 +1511,6 @@ def formula_badge(formula, autor="", referencia="", icono="ℹ️", texto="Ver f
             f'<span class="formula-badge-txt">{texto}</span></span>')
 
 
-@st.cache_data(show_spinner=False)
 def _resolver_imagen(ruta):
     """Busca una imagen probando varias ubicaciones (la ruta indicada, directamente en /assets,
     y en /assets/hojas) y varias extensiones/mayúsculas (.jpg, .JPG, .jpeg, .png, etc.).
@@ -1535,7 +1534,6 @@ def _resolver_imagen(ruta):
     return None
 
 
-@st.cache_data(show_spinner=False)
 def _img_to_b64(ruta):
     """Convierte una imagen (ruta en disco) a base64. Devuelve None si no existe o falla."""
     try:
@@ -1592,7 +1590,6 @@ def _rl_hex(hexcolor):
     return rl_colors.HexColor(hexcolor)
 
 
-@st.cache_data(show_spinner=False)
 def generar_pdf_reporte(datos):
     """Genera el Informe de Resultados en un PDF real con estilo de informe médico/clínico
     (encabezado tipo consultorio, tablas de valores, semáforo de resultados en colores,
@@ -2455,7 +2452,6 @@ def color_categoria_imc(categoria):
     return estilo
 
 
-@st.cache_data(show_spinner=False)
 def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, genero_usuario=None):
     """Recrea el gráfico de percentiles con bandas de color entre cada curva (P5, P50, P85, P95),
     con el IMC en el eje Y, etiquetas de dato en cada punto, y una estrella marcando la posición
@@ -3657,7 +3653,6 @@ def mostrar_sticker(ruta, ancho=170):
     if ruta.exists():
         st.image(str(ruta), width=ancho)
 
-@st.cache_data(show_spinner=False)
 def _img_b64(path):
     try:
         return base64.b64encode(Path(path).read_bytes()).decode()
@@ -3796,7 +3791,6 @@ _POSIBLES_NOMBRES_EXCEL = [
     "Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx",
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
 ]
-@st.cache_data(show_spinner=False)
 def _buscar_excel_original():
     for _nombre in _POSIBLES_NOMBRES_EXCEL:
         _candidata = Path(__file__).parent / _nombre
