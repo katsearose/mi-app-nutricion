@@ -43,7 +43,7 @@ COLORES = {
     10: ("10", "¿El Clima Influye en tu Gasto Energético?",  "🌤️", "#FFB300", "#FFF6E0"),  # amarillo sol
     11: ("Aporte 1", "Energía durante el Embarazo",             "👶", "#BF5AF2", "#F7ECFD"),  # púrpura claro
     12: ("Aporte 2", "Hora Límite para Consumir Cafeína",     "🌙", "#1B2A4A", "#FFF4DE"),  # azul noche + amarillo café
-    13: ("13", "Línea de Tiempo: Tu Progreso Estimado",       "📈", "#5AC8FA", "#E9F8FF"),  # celeste claro
+    13: ("13", "¿Cómo cambiaría tu peso?",                    "🎯", "#5AC8FA", "#E9F8FF"),  # celeste claro
     14: ("14", "Mi Reporte de Resultados",                    "📄", "#32ADE6", "#E7F6FD"),  # systemCyan
     15: ("", "Sobre Nosotras",                                 "🎓", "#FF2D55", "#FFEBF0"),  # systemPink
 }
@@ -2840,7 +2840,7 @@ ETIQUETAS_NAV = {
     "10.-CLIMA CHICLAYO":          ("🌤️", "Clima Chiclayo"),
     "11.-APORTE 1: EMBARAZO":      ("🤰", "TMB en Embarazo"),
     "12.-APORTE 2: CAFEÍNA":       ("☕", "Límite de Cafeína"),
-    "13.-LÍNEA DE TIEMPO":         ("⏳", "Mi Proyección"),
+    "13.-LÍNEA DE TIEMPO":         ("🎯", "¿Cómo cambia tu peso?"),
     "📄 MI REPORTE":               ("📄", "Mi Reporte"),
     "🎓 SOBRE NOSOTRAS":           ("👥", "Sobre Nosotros"),
 }
@@ -3869,92 +3869,191 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     st.write("")
 
-    # --- 3.6 Tablas de referencia clínica — matriz de celdas con highlighter dinámico -----
+    # --- 3.6 Tablas de referencia clínica — filas con highlight dinámico (Bento Grid) ------
     st.markdown("##### 📊 Tablas de Referencia Clínica")
-    st.caption("Rangos internacionales estandarizados. Tu valor actual se resalta en color vibrante con un glow.")
+    st.caption("Rangos clínicos oficiales. La fila que corresponde a tu valor actual se enciende con un glow.")
 
-    def _celda_matriz(_emoji, _titulo, _rango, _tono_pastel, _tono_vibrante, _activa):
-        """Renderiza una celda de la matriz: pastel por defecto, vibrante+glow si es la categoría activa."""
+    _TABLE_CSS = """
+    <style>
+    .tabla-ref-wrap{background:#FFFFFF;border-radius:16px;padding:18px 20px 14px 20px;margin-bottom:18px;
+    border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 14px rgba(0,0,0,0.05);}
+    .tabla-ref-head{display:flex;align-items:baseline;gap:10px;margin-bottom:2px;flex-wrap:wrap;}
+    .tabla-ref-titulo{font-weight:800;font-size:1rem;color:#17301F;}
+    .tabla-ref-fuente{font-size:0.8rem;color:gray;}
+    table.tabla-ref{width:100%;border-collapse:separate;border-spacing:0 6px;margin-top:8px;font-size:0.85rem;}
+    table.tabla-ref th{text-align:left;font-size:0.74rem;color:#8E8E93;font-weight:800;
+    text-transform:uppercase;letter-spacing:.02em;padding:0 16px 6px 16px;}
+    table.tabla-ref td{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.05);}
+    table.tabla-ref tr.fila-ref td:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px;}
+    table.tabla-ref tr.fila-ref td:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px;}
+    .badge-activo{display:inline-block;margin-left:8px;background:#1C1C1E;color:#FFFFFF;font-weight:900;
+    font-size:0.68rem;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+    @keyframes pulse-ref{0%{box-shadow:0 0 0 0 rgba(52,199,89,0.55);}70%{box-shadow:0 0 0 10px rgba(52,199,89,0);}
+    100%{box-shadow:0 0 0 0 rgba(52,199,89,0);}}
+    .fila-pulse{animation:pulse-ref 1.8s infinite;}
+    </style>
+    """
+    st.markdown(_TABLE_CSS, unsafe_allow_html=True)
+
+    def _fila_ref(_celdas, _tono_pastel, _tono_vibrante, _activa, _pulse=False):
+        """_celdas: lista de textos por columna. Devuelve <tr> con estilo pastel o vibrante+glow si activa."""
         if _activa:
-            _fondo = _tono_vibrante["fondo"]
-            _texto = _tono_vibrante["texto"]
-            _borde = f"3px solid {_tono_vibrante['borde']}"
-            _sombra = f"box-shadow:0 0 0 3px {_tono_vibrante['glow']}, 0 6px 18px {_tono_vibrante['glow']};"
-            _marca = '<div style="margin-top:6px;font-size:0.72rem;font-weight:900;">👉 TU RESULTADO</div>'
-            _transform = "transform:translateY(-3px);"
+            _fondo, _texto = _tono_vibrante["fondo"], _tono_vibrante["texto"]
+            _borde = f"2px solid {_tono_vibrante['borde']}"
+            _glow = f"box-shadow:0 0 15px {_tono_vibrante['glow']};"
+            _badge = '<span class="badge-activo">📍 TU VALOR ACTUAL</span>'
         else:
-            _fondo = _tono_pastel["fondo"]
-            _texto = _tono_pastel["texto"]
-            _borde = f"1px solid {_tono_pastel['borde']}"
-            _sombra = ""
-            _marca = ""
-            _transform = ""
-        return f"""
-        <div style="background:{_fondo};color:{_texto};border:{_borde};border-radius:16px;
-        padding:12px 10px;text-align:center;min-height:92px;display:flex;flex-direction:column;
-        justify-content:center;transition:all .2s ease;{_sombra}{_transform}">
-        <div style="font-size:1.15rem;">{_emoji}</div>
-        <div style="font-weight:800;font-size:0.78rem;margin-top:2px;">{_titulo}</div>
-        <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">{_rango}</div>
-        {_marca}
-        </div>
-        """
+            _fondo, _texto = _tono_pastel["fondo"], _tono_pastel["texto"]
+            _borde = "1px solid rgba(0,0,0,0.04)"
+            _glow = ""
+            _badge = ""
+        _clase = "fila-ref" + (" fila-pulse" if _activa and _pulse else "")
+        _tds = "".join(
+            f'<td style="background:{_fondo};color:{_texto};border-top:{_borde};border-bottom:{_borde};">'
+            f'{_c}{_badge if _i == len(_celdas)-1 else ""}</td>'
+            for _i, _c in enumerate(_celdas)
+        )
+        return f'<tr class="{_clase}">{_tds}</tr>'
 
-    # Tonos pastel (por defecto) y vibrantes (highlighter) reutilizables por severidad
-    _TONO = {
-        "verde":  {"pastel": {"fondo": "#E3F7E9", "texto": "#1E5631", "borde": "#B7E4C3"},
-                   "vibrante": {"fondo": "#34C759", "texto": "#FFFFFF", "borde": "#1E5631", "glow": "rgba(52,199,89,0.45)"}},
-        "amarillo": {"pastel": {"fondo": "#FFF7DC", "texto": "#8A6D00", "borde": "#F3E19B"},
-                   "vibrante": {"fondo": "#FFD60A", "texto": "#4A3900", "borde": "#B8860B", "glow": "rgba(255,214,10,0.55)"}},
-        "naranja": {"pastel": {"fondo": "#FDEBD9", "texto": "#B0530A", "borde": "#F5C48E"},
-                   "vibrante": {"fondo": "#FF9500", "texto": "#FFFFFF", "borde": "#B0530A", "glow": "rgba(255,149,0,0.5)"}},
-        "rojo":   {"pastel": {"fondo": "#FBEAE8", "texto": "#C0392B", "borde": "#F0B7B0"},
-                   "vibrante": {"fondo": "#FF3B30", "texto": "#FFFFFF", "borde": "#8E1B12", "glow": "rgba(255,59,48,0.55)"}},
-        "azul":   {"pastel": {"fondo": "#E7F1FE", "texto": "#0D47A1", "borde": "#B3D2F7"},
-                   "vibrante": {"fondo": "#0A84FF", "texto": "#FFFFFF", "borde": "#0D47A1", "glow": "rgba(10,132,255,0.5)"}},
+    _TONO2 = {
+        "verde":    {"pastel": {"fondo": "#E8F5E9", "texto": "#1E5631"}, "vibrante": {"fondo": "#34C759", "texto": "#FFFFFF", "borde": "#1E5631", "glow": "rgba(52,199,89,0.55)"}},
+        "menta":    {"pastel": {"fondo": "#E1F7EC", "texto": "#0E6B4F"}, "vibrante": {"fondo": "#00C7A0", "texto": "#FFFFFF", "borde": "#0E6B4F", "glow": "rgba(0,199,160,0.55)"}},
+        "amarillo": {"pastel": {"fondo": "#FFFDE7", "texto": "#8A6D00"}, "vibrante": {"fondo": "#FFD600", "texto": "#4A3900", "borde": "#B8860B", "glow": "rgba(255,214,0,0.6)"}},
+        "naranja":  {"pastel": {"fondo": "#FFF1E0", "texto": "#B0530A"}, "vibrante": {"fondo": "#FF9500", "texto": "#FFFFFF", "borde": "#B0530A", "glow": "rgba(255,149,0,0.55)"}},
+        "rojo":     {"pastel": {"fondo": "#FFEBEE", "texto": "#C0392B"}, "vibrante": {"fondo": "#FF3B30", "texto": "#FFFFFF", "borde": "#8E1B12", "glow": "rgba(255,59,48,0.6)"}},
+        "rojo_osc": {"pastel": {"fondo": "#FBDADA", "texto": "#8E1B12"}, "vibrante": {"fondo": "#D70015", "texto": "#FFFFFF", "borde": "#5A0A0A", "glow": "rgba(215,0,21,0.6)"}},
+        "purpura":  {"pastel": {"fondo": "#F3E5F5", "texto": "#6A3FA0"}, "vibrante": {"fondo": "#AF52DE", "texto": "#FFFFFF", "borde": "#4B2270", "glow": "rgba(175,82,222,0.6)"}},
     }
 
-    def _render_tabla_matriz(_titulo_tabla, _fuente, _columnas, _activo_idx):
-        """_columnas: lista de (emoji, titulo, rango, tono_key). _activo_idx: índice activo o None."""
-        st.markdown(f"**{_titulo_tabla}** &nbsp; <span style='color:#8E8E93;font-size:0.76rem;'>· {_fuente}</span>",
-                    unsafe_allow_html=True)
-        _cols_html = st.columns(len(_columnas))
-        for _i, (_col, (_em, _tt, _rg, _tono)) in enumerate(zip(_cols_html, _columnas)):
-            with _col:
-                st.markdown(_celda_matriz(_em, _tt, _rg, _TONO[_tono]["pastel"], _TONO[_tono]["vibrante"],
-                                           _i == _activo_idx), unsafe_allow_html=True)
-        st.write("")
+    def _render_tabla_html(_icono, _titulo, _fuente, _headers, _filas_html):
+        _ths = "".join(f"<th>{_h}</th>" for _h in _headers)
+        st.markdown(f"""
+        <div class="tabla-ref-wrap">
+        <div class="tabla-ref-head"><span style="font-size:1.2rem;">{_icono}</span>
+        <span class="tabla-ref-titulo">{_titulo}</span></div>
+        <div class="tabla-ref-fuente">{_fuente}</div>
+        <table class="tabla-ref"><thead><tr>{_ths}</tr></thead><tbody>{_filas_html}</tbody></table>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # --- Presión Arterial ---
-    _pa_cols = [("🟢", "Óptima", "<120/<80", "verde"), ("🟢", "Normal", "120-129/80-84", "verde"),
-                ("🟡", "Normal Alta", "130-139/85-89", "amarillo"), ("🟠", "Hipertensión G1", "140-159/90-99", "naranja"),
-                ("🔴", "Hipertensión G2/G3", "≥160/≥100", "rojo")]
-    _pa_idx_map = {"Óptima": 0, "Normal": 1, "Normal Alta": 2, "Hipertensión G1": 3,
-                   "Hipertensión G2": 4, "Crisis Hipertensiva": 4}
-    _render_tabla_matriz("❤️ Presión Arterial", "Sociedad Europea de Cardiología (ESC)", _pa_cols,
-                          _pa_idx_map.get(_cat_pa))
+    # --- 1. Presión Arterial (AHA) ---
+    def _fila_activa_pa(_cat):
+        return {"Normal": 0, "Elevado": 1, "Hipertensión Estadio 1": 2, "Hipertensión Estadio 2": 3,
+                "Hipertensión Severa": 4, "Emergencia Hipertensiva": 5}.get(_cat)
 
-    # --- Oxigenación SpO2 ---
-    _ox_cols = [("🟢", "Excelente", "95-100%", "verde"), ("🟡", "Aceptable", "90-94%", "amarillo"),
-                ("🔴", "Baja", "<90%", "rojo")]
-    _ox_idx_map = {"Excelente": 0, "Aceptable": 1, "Hipoxia": 2}
-    _render_tabla_matriz("🫁 Oxigenación (SpO₂)", "Organización Mundial de la Salud (OMS)", _ox_cols,
-                          _ox_idx_map.get(_cat_ox))
+    _idx_pa_activa = None
+    if pas > 0 and pad > 0:
+        if pas > 180 or pad > 120:
+            _idx_pa_activa = 4 if pas <= 200 and pad <= 130 else 5
+        elif pas >= 140 or pad >= 90:
+            _idx_pa_activa = 3
+        elif pas >= 130 or pad >= 80:
+            _idx_pa_activa = 2
+        elif pas >= 120:
+            _idx_pa_activa = 1
+        else:
+            _idx_pa_activa = 0
 
-    # --- Temperatura Corporal ---
-    _te_cols = [("🟦", "Hipotermia", "<35°C", "azul"), ("🟢", "Normal", "36.1-37.2°C", "verde"),
-                ("🟡", "Febrícula", "37.3-37.9°C", "amarillo"), ("🔴", "Fiebre", "≥38°C", "rojo")]
-    _te_idx_map = {"Hipotermia": 0, "Temperatura baja": 1, "Normal": 1, "Febrícula": 2,
-                   "Fiebre": 3, "Fiebre alta": 3}
-    _render_tabla_matriz("🌡️ Temperatura Corporal", "Rangos clínicos estándar", _te_cols,
-                          _te_idx_map.get(_cat_te))
+    _pa_filas_data = [
+        (["Normal", "&lt; 120", "y", "&lt; 80"], "verde"),
+        (["Elevado", "120 – 129", "y", "&lt; 80"], "amarillo"),
+        (["Hipertensión Estadio 1", "130 – 139", "o", "80 – 89"], "naranja"),
+        (["Hipertensión Estadio 2", "≥ 140", "o", "≥ 90"], "rojo"),
+        (["Hipertensión Severa", "&gt; 180", "y/o", "&gt; 120"], "rojo_osc"),
+        (["Emergencia Hipertensiva", "&gt; 180", "y/o", "&gt; 120"], "purpura"),
+    ]
+    _pa_html = "".join(
+        _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pa_activa)
+        for _i, (_d, _t) in enumerate(_pa_filas_data)
+    )
+    _render_tabla_html("❤️", "Presión Arterial", "Fuente: American Heart Association (AHA)",
+                        ["Categoría", "Sistólica (mmHg)", "Condición", "Diastólica (mmHg)"], _pa_html)
 
-    # --- Pulso en Reposo ---
-    _pu_cols = [("🐢", "Lento", "<60 lpm", "azul"), ("💚", "Normal", "60-100 lpm", "verde"),
-                ("⚡", "Elevado", ">100 lpm", "amarillo")]
-    _pu_idx_map = {"Bradicardia": 0, "Normal": 1, "Taquicardia": 2}
-    _render_tabla_matriz("💓 Pulso en Reposo", "American Heart Association (AHA)", _pu_cols,
-                          _pu_idx_map.get(_cat_pu))
+    # --- 2. Saturación de Oxígeno (SpO₂) ---
+    _idx_ox_activa = None
+    if spo2 > 0:
+        if spo2 < 67:
+            _idx_ox_activa = 4
+        elif spo2 < 85:
+            _idx_ox_activa = 3
+        elif spo2 < 95:
+            _idx_ox_activa = 2
+        elif spo2 <= 100 and etapa in ("Niñez", "Adolescencia"):
+            _idx_ox_activa = 0
+        else:
+            _idx_ox_activa = 1
+
+    _ox_filas_data = [
+        (["≥ 97%", "Normal (Lactantes/Niños)", "Excelente oxigenación tisular"], "menta"),
+        (["95% – 100%", "Normal (Adultos / &gt;70 años)", "Transporte idóneo de O₂"], "verde"),
+        (["85% – 94%", "Anormal / Alerta Leve", "Hipoxemia leve / monitoreo"], "amarillo"),
+        (["80% – 85%", "Compromiso Cerebral (Hipoxia)", "Riesgo de alteración neurológica"], "naranja"),
+        (["&lt; 67%", "Cianosis Severa", "Coloración azulada (Urgencia)"], "rojo"),
+    ]
+    _ox_html = "".join(
+        _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_ox_activa)
+        for _i, (_d, _t) in enumerate(_ox_filas_data)
+    )
+    _render_tabla_html("🫁", "Saturación de Oxígeno (SpO₂)", "Fuente: Organización Mundial de la Salud (OMS)",
+                        ["Rango de SpO₂", "Estado Clínico", "Manifestación Fisiológica"], _ox_html)
+
+    # --- 3. Temperatura Corporal (°C) ---
+    _idx_te_activa = None
+    if temp_corp > 34.0:
+        if edad <= 2:
+            _idx_te_activa = 0
+        elif edad <= 10:
+            _idx_te_activa = 1
+        elif edad <= 65:
+            _idx_te_activa = 2
+        else:
+            _idx_te_activa = 3
+
+    _te_filas_data = [
+        (["Bebés (0–2 años)", "Rectal / Axilar", "36.6 – 38.0 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
+        (["Niños (3–10 años)", "Oral / Axilar", "35.5 – 37.5 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
+        (["Adultos (11–65 años)", "Oral", "36.4 – 37.6 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
+        (["Adultos (&gt;65 años)", "Oral", "35.8 – 36.9 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
+    ]
+    _te_alerta = temp_corp >= 38.0
+    _te_html = "".join(
+        _fila_ref(_d, _TONO2["verde"]["pastel"], _TONO2["rojo" if _te_alerta else "verde"]["vibrante"],
+                  _i == _idx_te_activa)
+        for _i, (_d, _t) in enumerate(_te_filas_data)
+    )
+    _render_tabla_html("🌡️", "Temperatura Corporal (°C)", "Fuente: Rangos clínicos por grupo de edad",
+                        ["Grupo de Edad", "Tipo Lectura", "Normal (°C)", "Fiebre (°C)", "Fiebre Alta (°C)"], _te_html)
+    if _idx_te_activa is not None and _te_alerta:
+        st.markdown('<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     '⚠️ ¡Atención: Fiebre detectada!</p>', unsafe_allow_html=True)
+
+    # --- 4. Frecuencia Cardíaca (Pulso en Reposo) ---
+    _idx_pu_activa = None
+    if pulso > 0:
+        if edad <= 3:
+            _idx_pu_activa = 3
+        elif edad <= 5:
+            _idx_pu_activa = 4
+        elif edad <= 12:
+            _idx_pu_activa = 5
+        else:
+            _idx_pu_activa = 6
+
+    _pu_filas_data = [
+        (["Pretérmino", "120 – 180 lpm", "&lt; 120 o &gt; 180 lpm"], "amarillo"),
+        (["Recién Nacido (0–1 mes)", "100 – 160 lpm", "&lt; 100 o &gt; 160 lpm"], "verde"),
+        (["Bebé (1–12 meses)", "80 – 140 lpm", "&lt; 80 o &gt; 140 lpm"], "verde"),
+        (["Niño Pequeño (1–3 años)", "80 – 130 lpm", "&lt; 80 o &gt; 130 lpm"], "verde"),
+        (["Preescolar (3–5 años)", "80 – 110 lpm", "&lt; 80 o &gt; 110 lpm"], "verde"),
+        (["Edad Escolar (6–12 años)", "70 – 100 lpm", "&lt; 70 o &gt; 100 lpm"], "verde"),
+        (["Adolescentes y Adultos", "60 – 100 lpm", "&lt; 60 o &gt; 100 lpm"], "verde"),
+    ]
+    _pu_html = "".join(
+        _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pu_activa, _pulse=True)
+        for _i, (_d, _t) in enumerate(_pu_filas_data)
+    )
+    _render_tabla_html("💓", "Frecuencia Cardíaca (Pulso en Reposo)", "Fuente: American Heart Association (AHA)",
+                        ["Grupo de Edad", "Rango Normal en Reposo", "Estado Anormal (Alerta)"], _pu_html)
 
     st.write("")
 
@@ -5563,11 +5662,8 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
-    hoja_header(13, "Proyección basada en el principio termodinámico de las 7,700 kcal por kilogramo de grasa "
-                    "corporal: la misma constante que usan los nutricionistas para estimar cambios de peso.")
-
-    st.caption("Se calcula comparando tu gasto de mantenimiento (Hoja 4) con tu meta calórica (Hoja 5), "
-               "proyectado a 60 días (2 meses), usando 7,700 kcal como el equivalente a 1 kg de grasa corporal.")
+    hoja_header(13, "Manteniendo tus hábitos actuales y el plan de calorías calculado, esta es una estimación "
+                    "de cómo podría cambiar tu peso con el tiempo.")
 
     def calcular_proyeccion(calorias_consumidas, tdee, dias=60):
         """Función proyectiva: aplica la fórmula del déficit/superávit calórico y retorna
@@ -5576,56 +5672,80 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         peso_proyectado = (deficit_diario * dias) / 7700
         return deficit_diario, peso_proyectado
 
-    deficit_diario, peso_cambio_60 = calcular_proyeccion(rcd_final, rcd, dias=60)
+    _DIAS_PROY = 60
+    deficit_diario, peso_cambio_60 = calcular_proyeccion(rcd_final, rcd, dias=_DIAS_PROY)
+    _es_mantener = (objetivo == "Mantenerse" or abs(peso_cambio_60) < 0.05)
+    _es_bajar = (not _es_mantener) and peso_cambio_60 > 0
+    _peso_final = peso - peso_cambio_60
+    _peso_30 = peso - (deficit_diario * 30) / 7700
 
-    # --- Tarjeta de resultado destacado (estilo "hero", coherente con la identidad visual de la app) ---
-    if objetivo == "Mantenerse" or abs(peso_cambio_60) < 0.05:
-        grad = "linear-gradient(135deg,#34C759 0%,#30D158 60%,#63E6A5 100%)"
-        sombra = "rgba(52,199,89,0.30)"
-        mensaje_destacado = f"Como tu objetivo es mantenerte, {_nombre_saludo}, tu peso se mantendría estable durante los próximos 60 días. ¡Vas por buen camino! 💚"
-    elif peso_cambio_60 > 0:
-        grad = "linear-gradient(135deg,#007AFF 0%,#5AC8FA 55%,#64D2FF 100%)"
-        sombra = "rgba(0,122,255,0.30)"
-        mensaje_destacado = f"Si mantienes este hábito por 60 días, {_nombre_saludo}, tu proyección estimada de pérdida es de <b>{peso_cambio_60:.1f} kg</b>."
-    else:
-        grad = "linear-gradient(135deg,#FF9500 0%,#FFB300 55%,#FFCC66 100%)"
-        sombra = "rgba(255,149,0,0.30)"
-        mensaje_destacado = f"⚠️ Cuidado, {_nombre_saludo}: si mantienes este hábito, podrías <b>aumentar aproximadamente {abs(peso_cambio_60):.1f} kg</b> en 2 meses."
+    _color_tema = "#34C759" if _es_mantener else ("#007AFF" if _es_bajar else "#FF9500")
 
-    st.markdown(f"""
-    <div style="background:{grad};border-radius:28px;padding:32px 36px;color:white;
-                box-shadow:0 16px 36px {sombra};margin:10px 0 22px 0;">
-        <div style="font-size:0.82rem;letter-spacing:0.03em;opacity:0.9;text-transform:uppercase;font-weight:700;">
-            Proyección a 60 días (2 meses)</div>
-        <div style="font-size:2.2rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.02em;">
-            {peso - peso_cambio_60:.1f} kg <span style="font-size:1rem;font-weight:500;opacity:0.9;">peso estimado</span></div>
-        <div style="font-size:1rem;line-height:1.5;font-weight:400;">{mensaje_destacado}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # === 1. HERO: 4 tarjetas grandes en una fila, con flecha horizontal entre cada una =====
+    _obj_label = "Mantener peso" if _es_mantener else ("Bajar de peso" if _es_bajar else "Subir de peso")
+    _tarjetas_hero = [
+        ("⚖️", "Peso actual", f"{peso:.1f} kg", "Tu peso registrado hoy."),
+        ("🎯", "Objetivo", _obj_label, f"Ajuste aplicado: {ajuste_aplicado*100:.0f}%" if not _es_mantener else "Mantener tu peso estable."),
+        ("📅", "Tiempo analizado", f"{_DIAS_PROY} días", "Aproximadamente 2 meses."),
+        ("🏁", "Peso estimado", f"{_peso_final:.1f} kg", "Si mantienes el mismo plan."),
+    ]
+    _cols_hero = st.columns([1, 0.18, 1, 0.18, 1, 0.18, 1])
+    for _j, (_ic, _tt, _val, _desc) in enumerate(_tarjetas_hero):
+        with _cols_hero[_j * 2]:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border-radius:20px;padding:18px 16px;height:150px;
+            border:1.5px solid {_color_tema}33;box-shadow:0 4px 14px rgba(0,0,0,0.06);
+            display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:1.5rem;">{_ic}</div>
+            <p style="margin:6px 0 2px 0;color:#8E8E93;font-size:0.74rem;font-weight:800;text-transform:uppercase;">{_tt}</p>
+            <p style="margin:0 0 4px 0;color:#17301F;font-size:1.25rem;font-weight:800;">{_val}</p>
+            <p style="margin:0;color:#8E8E93;font-size:0.72rem;line-height:1.3;">{_desc}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        if _j < 3:
+            with _cols_hero[_j * 2 + 1]:
+                st.markdown(f"""<div style="height:150px;display:flex;align-items:center;justify-content:center;
+                font-size:1.6rem;color:{_color_tema};">→</div>""", unsafe_allow_html=True)
 
-    # --- Curva de progreso día a día: gráfico Plotly claro, con hitos marcados en 0/30/60 días ---
-    dias_eje = list(range(0, 61))
+    st.write("")
+
+    # === 2. Secuencia: ¿Cómo cambiaría tu peso? (Hoy → 30 días → 60 días) en una sola fila ===
+    st.markdown("##### 📉 ¿Cómo cambiaría tu peso?")
+    _secuencia = [("Hoy", peso), ("En 30 días", _peso_30), ("En 60 días", _peso_final)]
+    _cols_sec = st.columns([1, 0.18, 1, 0.18, 1])
+    for _j, (_tt, _val) in enumerate(_secuencia):
+        with _cols_sec[_j * 2]:
+            st.markdown(f"""
+            <div style="background:{_color_tema}14;border:1.5px solid {_color_tema}44;border-radius:18px;
+            padding:16px;text-align:center;">
+            <p style="margin:0 0 4px 0;color:#5C6B60;font-size:0.78rem;font-weight:700;">{_tt}</p>
+            <p style="margin:0;color:{_color_tema};font-size:1.5rem;font-weight:800;">{_val:.1f} kg</p>
+            </div>
+            """, unsafe_allow_html=True)
+        if _j < 2:
+            with _cols_sec[_j * 2 + 1]:
+                st.markdown(f"""<div style="height:100%;display:flex;align-items:center;justify-content:center;
+                font-size:1.4rem;color:{_color_tema};padding-top:14px;">→</div>""", unsafe_allow_html=True)
+
+    st.write("")
+
+    # === 3. El gráfico, ya como apoyo visual, con título simple =============================
+    dias_eje = list(range(0, _DIAS_PROY + 1))
     pesos_dia_completo = [round(peso - (deficit_diario * d) / 7700, 2) for d in dias_eje]
-
-    color_linea = "#34C759" if (objetivo == "Mantenerse" or abs(peso_cambio_60) < 0.05) else ("#007AFF" if peso_cambio_60 > 0 else "#FF9500")
 
     fig_tiempo = go.Figure()
     fig_tiempo.add_trace(go.Scatter(
         x=dias_eje, y=pesos_dia_completo, mode="lines", name="Peso estimado",
-        line=dict(color=color_linea, width=4, shape="spline"),
-        fill="tozeroy", fillcolor=color_linea.replace(")", ",0.12)").replace("#", "rgba(") if False else None,
+        line=dict(color=_color_tema, width=4, shape="spline"),
     ))
-    # Relleno suave bajo la curva
-    fig_tiempo.update_traces(fill="tonexty")
-    fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=[0]*len(dias_eje), line=dict(width=0), showlegend=False, hoverinfo="skip"))
+    fig_tiempo.update_traces(fill="tozeroy", fillcolor=_color_tema + "1F")
 
-    # Puntos de hito: hoy, 30 días, 60 días
     hitos_x = [0, 30, 60]
     hitos_y = [pesos_dia_completo[0], pesos_dia_completo[30], pesos_dia_completo[60]]
     hitos_txt = ["Hoy", "En 1 mes", "En 2 meses"]
     fig_tiempo.add_trace(go.Scatter(
         x=hitos_x, y=hitos_y, mode="markers+text", name="Hitos",
-        marker=dict(size=14, color="#FFFFFF", line=dict(color=color_linea, width=4)),
+        marker=dict(size=14, color="#FFFFFF", line=dict(color=_color_tema, width=4)),
         text=[f"{t}<br><b>{v:.1f} kg</b>" for t, v in zip(hitos_txt, hitos_y)],
         textposition="top center", textfont=dict(size=13, color="#17301F", family="-apple-system"),
         showlegend=False,
@@ -5634,34 +5754,129 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     _rango_min = min(pesos_dia_completo) - 3
     _rango_max = max(pesos_dia_completo) + 5
     fig_tiempo.update_layout(
-        title=dict(text="¿Cómo cambiará tu peso en los próximos 60 días?", x=0.02, xanchor="left",
+        title=dict(text="Evolución estimada del peso", x=0.02, xanchor="left",
                    font=dict(size=18, color="#17301F", family="-apple-system")),
         xaxis_title="Días a partir de hoy", yaxis_title="Peso estimado (kg)",
         xaxis=dict(dtick=10, gridcolor="#F0F0F0"), yaxis=dict(range=[_rango_min, _rango_max], gridcolor="#F0F0F0"),
-        height=430, margin=dict(t=60, l=10, r=10, b=10),
+        height=400, margin=dict(t=60, l=10, r=10, b=10),
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)", showlegend=False,
     )
     st.plotly_chart(fig_tiempo, use_container_width=True)
-    st.caption("👀 Lee el gráfico así: la línea muestra tu peso estimado día a día. Los tres círculos marcan "
-               "'Hoy', 'En 1 mes' y 'En 2 meses', con el peso exacto proyectado en cada punto. Si la línea "
-               "baja, significa que irías perdiendo peso; si sube, irías ganando peso; y si se mantiene plana, "
-               "tu peso no cambiaría.")
+    st.caption("Cada punto representa el peso aproximado si mantienes el mismo consumo de calorías todos los días.")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Peso actual (hoy)", f"{pesos_dia_completo[0]:.1f} kg")
-    col2.metric("Estimado en 30 días", f"{pesos_dia_completo[30]:.1f} kg",
-                delta=f"{pesos_dia_completo[30]-pesos_dia_completo[0]:.1f} kg")
-    col3.metric("Estimado en 60 días", f"{pesos_dia_completo[60]:.1f} kg",
-                delta=f"{pesos_dia_completo[60]-pesos_dia_completo[0]:.1f} kg")
+    st.write("")
 
-    st.caption("⚠️ Esta proyección es un cálculo matemático de referencia (no un diagnóstico médico) y asume "
-               "que mantienes el mismo ajuste calórico todos los días. El cuerpo humano no cambia de forma "
-               "perfectamente lineal, y en menores de edad cualquier cambio de peso debe estar supervisado por "
-               "un profesional de la salud.")
+    # === 4. ¿Por qué cambia mi peso? =========================================================
+    st.markdown(f"""
+    <div style="background:#F2F7F3;border-radius:18px;padding:18px 22px;margin-bottom:16px;border:1px solid #D8E6DA;">
+    <p style="margin:0 0 8px 0;font-weight:800;color:#1E5631;font-size:1rem;">🤔 ¿Por qué cambia mi peso?</p>
+    <p style="margin:0;color:#3C4A3F;font-size:0.88rem;line-height:1.6;">Tu cuerpo necesita una cierta cantidad
+    de calorías para mantener su peso (RCD). Cuando consumes menos calorías de las que gastas, utiliza parte de
+    sus reservas de energía y tu peso disminuye. Si consumes más de las necesarias, ocurre lo contrario y el
+    peso aumenta.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    caja_util(f"Esta línea de tiempo te muestra, con la misma matemática que usan los nutricionistas, cómo "
-              f"avanzarías en 60 días si sigues tu plan calórico. Ver el progreso estimado ayuda a entender que "
-              f"los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, {_nombre_saludo}! 🌱",
+    # === 5. ¿Cómo se calculó esta proyección? — paso a paso con los números reales ==========
+    st.markdown("##### 🧮 ¿Cómo se calculó esta proyección?")
+    _signo_ajuste = "-" if _es_bajar else ("+" if not _es_mantener else "±")
+    _rcd_obj_label = "Nuevo RCD" if not _es_mantener else "RCD objetivo"
+
+    _pasos = [
+        ("1", f"Se calcula tu RCD (gasto calórico diario).", f"RCD = {rcd:.0f} kcal"),
+        ("2", f"Se aplica tu objetivo ({_obj_label}, {_signo_ajuste}{ajuste_aplicado*100:.0f}%).",
+         f"{_rcd_obj_label} = {rcd_final:.0f} kcal"),
+        ("3", "Se obtiene el déficit/superávit diario.", f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/día"),
+        ("4", f"Se calcula el total acumulado en {_DIAS_PROY} días.",
+         f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal"),
+        ("5", "Se convierte a kilogramos (7,700 kcal ≈ 1 kg de grasa corporal).",
+         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 = {peso_cambio_60:.2f} kg"),
+    ]
+    for _num, _desc, _formula in _pasos:
+        st.markdown(f"""
+        <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:16px;
+        padding:12px 18px;margin-bottom:8px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="min-width:32px;height:32px;border-radius:50%;background:{_color_tema};color:#FFFFFF;
+        font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{_num}</div>
+        <div style="flex:1;"><p style="margin:0;color:#3C4A3F;font-size:0.85rem;">{_desc}</p>
+        <p style="margin:2px 0 0 0;color:{_color_tema};font-weight:800;font-size:0.92rem;font-family:monospace;">{_formula}</p></div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background:{_color_tema}14;border:1.5px solid {_color_tema}55;border-radius:16px;
+    padding:14px 18px;margin:8px 0 18px 0;">
+    <p style="margin:0;color:#17301F;font-size:0.92rem;"><b>Resultado:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
+    {abs(peso_cambio_60):.2f} = <b style="color:{_color_tema};">{_peso_final:.2f} kg</b> — peso estimado en {_DIAS_PROY} días.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- Fórmulas generales según el objetivo (solo se muestra la que aplica) ---
+    with st.expander("📐 Ver las fórmulas generales"):
+        if _es_bajar:
+            st.markdown("""
+- **Déficit diario** = RCD − RCD objetivo
+- **Déficit total** = Déficit diario × Número de días
+- **Peso perdido** = Déficit total ÷ 7,700
+- **Peso final** = Peso inicial − Peso perdido
+            """)
+        elif not _es_mantener:
+            st.markdown("""
+- **Superávit diario** = RCD objetivo − RCD
+- **Superávit acumulado** = Superávit diario × Número de días
+- **Ganancia estimada** = Superávit acumulado ÷ 7,700
+- **Peso final** = Peso inicial + Ganancia estimada
+            """)
+        else:
+            st.markdown("- **Peso final** = Peso inicial (sin déficit ni superávit aplicado)")
+        st.caption("Se utiliza el equivalente energético aproximado de 7,700 kcal por kilogramo de grasa corporal, "
+                   "ampliamente empleado para estimar cambios de peso. En la práctica, el cuerpo humano es más "
+                   "complejo y el ritmo real puede variar entre personas.")
+
+    # === 6. ¿Qué significa esta proyección? (caja azul) =====================================
+    st.markdown("""
+    <div style="background:#E7F1FE;border-radius:16px;padding:16px 20px;margin-bottom:14px;border:1px solid #B3D2F7;">
+    <p style="margin:0;color:#0D47A1;font-size:0.88rem;line-height:1.6;"><b>🟦 ¿Qué significa esta proyección?</b><br>
+    Esta proyección supone que mantendrás aproximadamente el mismo nivel de actividad física y el mismo consumo
+    de calorías durante todo el período. Si alguno de estos factores cambia, el resultado también cambiará.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # === 7. Lo que debes saber (caja amarilla) ===============================================
+    st.markdown("""
+    <div style="background:#FFFDE7;border-radius:16px;padding:16px 20px;margin-bottom:18px;border:1px solid #F3E19B;">
+    <p style="margin:0;color:#8A6D00;font-size:0.88rem;line-height:1.6;"><b>⚠️ Lo que debes saber</b><br>
+    Ninguna calculadora puede predecir exactamente cuánto peso perderá o ganará una persona. Este resultado es
+    una estimación basada en ecuaciones científicas y sirve como una guía para comprender cómo influyen las
+    calorías en el peso corporal.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # === 8. ¿Qué puede hacer que esta proyección cambie? — 4 tarjetas ========================
+    st.markdown("##### 🎯 ¿Qué puede hacer que esta proyección cambie?")
+    _factores = [
+        ("🏃", "Más ejercicio", "Bajarías un poco más rápido.", "#EAFAEE", "#9BD8AE", "#1E5631"),
+        ("🍕", "Consumir más calorías", "Bajarías más lento o incluso subirías.", "#FDEBD9", "#F5C48E", "#B0530A"),
+        ("😴", "Dormir poco", "Puede dificultar mantener el plan.", "#F3EEFB", "#C6AEE8", "#6A3FA0"),
+        ("💧", "Retención de líquidos", "El peso diario puede variar aunque estés perdiendo grasa.", "#E7F1FE", "#B3D2F7", "#0D47A1"),
+    ]
+    _cols_fact = st.columns(4)
+    for _col_f, (_ic, _tt, _txt, _fondo, _borde, _hex) in zip(_cols_fact, _factores):
+        with _col_f:
+            st.markdown(f"""
+            <div style="background:{_fondo};border:1px solid {_borde};border-radius:18px;padding:16px 14px;
+            height:150px;">
+            <div style="font-size:1.5rem;">{_ic}</div>
+            <p style="margin:8px 0 4px 0;font-weight:800;color:{_hex};font-size:0.88rem;">{_tt}</p>
+            <p style="margin:0;color:#5C6B60;font-size:0.78rem;line-height:1.4;">{_txt}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.write("")
+    caja_util(f"Esta proyección te muestra, con la misma matemática que usan los nutricionistas, cómo "
+              f"avanzarías en {_DIAS_PROY} días si sigues tu plan calórico. Ver el progreso estimado ayuda a "
+              f"entender que los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, "
+              f"{_nombre_saludo}! 🌱",
               emoji="📈", color="#E8EAF6", borde="#3949AB")
 
 # ---------------------------------------------------------------------------------------
