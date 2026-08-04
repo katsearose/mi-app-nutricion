@@ -471,16 +471,28 @@ def buscar_alimentos(consulta, limite=12):
     q = _norm_txt(consulta).strip()
     if not q:
         return []
-    exact, starts, contains = [], [], []
+    exact, word_start, word_mid, contains = [], [], [], []
     for f in FOOD_DB:
         n = _norm_txt(f["nombre"])
         if n == q:
-            exact.append(f)
-        elif n.startswith(q):
-            starts.append(f)
-        elif q in n:
-            contains.append(f)
-    return (exact + starts + contains)[:limite]
+            exact.append((0, f))
+            continue
+        if n.startswith(q):
+            word_start.append((0, f))
+            continue
+        idx = n.find(q)
+        if idx == -1:
+            continue
+        # ¿coincide con el inicio de una palabra? (tras espacio, coma o inicio)
+        es_inicio_palabra = idx == 0 or n[idx - 1] in " ,("
+        if es_inicio_palabra:
+            word_mid.append((idx, f))
+        else:
+            contains.append((idx, f))
+    word_mid.sort(key=lambda t: (t[0], t[1]["nombre"]))
+    contains.sort(key=lambda t: (t[0], t[1]["nombre"]))
+    orden = [f for _, f in exact] + [f for _, f in word_start] + [f for _, f in word_mid] + [f for _, f in contains]
+    return orden[:limite]
 
 # =========================================================================================
 # PALETA DE COLORES — inspirada en los colores del sistema de iOS (systemBlue, systemGreen, etc.)
@@ -6144,7 +6156,19 @@ elif hoja_activa == "8.-FATSECRET":
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("#### 🔎 Buscador Nutricional")
+    st.markdown("#### 🌐 Buscador FatSecret (externo)")
+    consulta_fs = st.text_input("Escribe el nombre de un alimento para buscarlo en FatSecret:",
+                                 "", key="bpa_buscar_fatsecret")
+    if consulta_fs.strip():
+        url_fs = f"https://www.fatsecret.es/calor%C3%ADas-nutrici%C3%B3n/search?q={quote(consulta_fs.strip())}"
+        st.link_button(f"🔍 Ver '{consulta_fs}' en FatSecret", url_fs, use_container_width=True)
+    else:
+        st.link_button("🌐 Abrir FatSecret", "https://www.fatsecret.es/", use_container_width=True)
+    st.caption("FatSecret es una base externa con miles de alimentos y productos envasados. Úsala cuando no "
+               "encuentres el alimento en la Base Peruana de Alimentos de abajo.")
+
+    st.markdown("---")
+    st.markdown("#### 🔎 Buscador Nutricional · Tabla Peruana de Composición de Alimentos (más completa)")
     consulta = st.text_input("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
                               "", key="bpa_buscar")
 
@@ -6158,9 +6182,7 @@ elif hoja_activa == "8.-FATSECRET":
         alimento_sel = resultados[idx_sel]
     elif consulta.strip() and not resultados:
         st.warning(f"No encontramos '{consulta}' en la Base Peruana de Alimentos (343 alimentos curados de mayor "
-                   "consumo). Puedes buscarlo directamente en FatSecret como respaldo.")
-        url = f"https://www.fatsecret.es/calor%C3%ADas-nutrici%C3%B3n/search?q={quote(consulta.strip())}"
-        st.link_button(f"🔍 Buscar '{consulta}' en FatSecret", url, use_container_width=True)
+                   "consumo). Puedes buscarlo en el buscador de FatSecret de arriba como respaldo.")
 
     if alimento_sel:
         f = alimento_sel
@@ -6238,6 +6260,19 @@ elif hoja_activa == "8.-FATSECRET":
             """, unsafe_allow_html=True)
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
     st.caption("Basado en las Guías Alimentarias para la Población Peruana (MINSA).")
+
+    st.markdown("### 🗂️ Alimentos disponibles en el buscador (Tabla Peruana de Composición de Alimentos)")
+    st.caption("343 alimentos curados de mayor consumo en el Perú, agrupados por categoría, con su energía "
+               "(kcal) por 100 g de porción comestible.")
+    orden_grupos = sorted(GRUPOS_ALIMENTOS.items(), key=lambda kv: -sum(1 for x in FOOD_DB if x["grupo_cod"] == kv[0]))
+    for cod, g in orden_grupos:
+        items_g = sorted([x for x in FOOD_DB if x["grupo_cod"] == cod], key=lambda x: x["nombre"])
+        with st.expander(f"{g['icono']} {g['nombre']} · {len(items_g)} alimentos"):
+            cols_tabla = st.columns(3)
+            for i, it in enumerate(items_g):
+                kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else "s/d"
+                with cols_tabla[i % 3]:
+                    st.markdown(f"- **{it['nombre']}** · {kcal_txt}")
 
     st.markdown("### 📚 Información para profesionales")
     with st.container():
