@@ -5300,9 +5300,9 @@ elif hoja_activa == "4.-RCD":
         if i < len(_tarjetas_grandes_rcd) - 1:
             _tarjetas_html_rcd += """
         <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;margin:2px 0;">↓</div>"""
-    st.markdown(f"""<div style="display:flex;flex-direction:column;gap:2px;margin:16px 0 22px 0;">
+    st.markdown(_html_sin_lineas_vacias(f"""<div style="display:flex;flex-direction:column;gap:2px;margin:16px 0 22px 0;">
         {_tarjetas_html_rcd}
-    </div>""", unsafe_allow_html=True)
+    </div>"""), unsafe_allow_html=True)
 
     # ===== Tarjeta informativa: Nivel · Coeficiente · Sexo · Fórmula · Referencia =====
     st.markdown(f"""
