@@ -234,7 +234,7 @@ div[data-testid="stButton"] button[kind="primary"] {
     line-height: 1.2 !important;
 }
 
-/* ---------- Navegación lateral tipo "Pills" (sidebar, 16 secciones siempre visibles) ---------- */
+/* ---------- Navegación lateral tipo "Pills" (sidebar, 17 secciones siempre visibles) ---------- */
 .sidebar-nav-title {
     font-weight: 800; color: var(--brand-green); font-size: 0.72rem; text-transform: uppercase;
     letter-spacing: 0.06em; margin: 2px 0 6px 4px; display:flex; align-items:center; gap:6px;
@@ -2723,7 +2723,7 @@ box-shadow:0 6px 18px rgba(52,199,89,0.10);">
 <p style="margin:0 0 10px 0;font-weight:800;color:#1E5631;font-size:1.1rem;">🚀 ¿Cómo empezar?</p>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
 <div><span style="color:#1E5631;font-weight:800;">①</span> Completa tus datos personales en el panel izquierdo.</div>
-<div><span style="color:#1E5631;font-weight:800;">②</span> Navega libremente por las 16 secciones.</div>
+<div><span style="color:#1E5631;font-weight:800;">②</span> Navega libremente por las 17 secciones.</div>
 <div><span style="color:#1E5631;font-weight:800;">③</span> Explora tus resultados explicados paso a paso.</div>
 <div><span style="color:#1E5631;font-weight:800;">④</span> Descarga tu reporte final en PDF.</div>
 </div>
@@ -2776,12 +2776,13 @@ _ruta_excel = _buscar_excel_original()
 st.markdown("---")
 
 # =========================================================================================
-# NAVEGACIÓN — 16 secciones en un panel lateral fijo (Sidebar Pill Navigation)
+# NAVEGACIÓN — 17 secciones en un panel lateral fijo (Sidebar Pill Navigation)
 # Todas las secciones existen simultáneamente en la app; el sidebar decide cuál se pinta.
 # =========================================================================================
 OPCIONES_HOJAS = [
     "0.-DATOS",
     "1.-ANÁLISIS SANGUÍNEO",
+    "1B.-ESTADO FISIOLÓGICO",
     "2.-IMC Y PERCENTIL",
     "3.-TMB",
     "4.-RCD",
@@ -2798,10 +2799,11 @@ OPCIONES_HOJAS = [
     "🎓 SOBRE NOSOTRAS",
 ]
 
-# Ícono + etiqueta corta para cada píldora del sidebar (16 secciones, siempre visibles)
+# Ícono + etiqueta corta para cada píldora del sidebar (17 secciones, siempre visibles)
 ETIQUETAS_NAV = {
     "0.-DATOS":                    ("⚙️", "Mis Datos"),
     "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Análisis Sanguíneo"),
+    "1B.-ESTADO FISIOLÓGICO":      ("❤️", "Estado Fisiológico"),
     "2.-IMC Y PERCENTIL":          ("⚖️", "IMC y Percentil"),
     "3.-TMB":                      ("🔥", "TMB"),
     "4.-RCD":                      ("⚡", "RCD"),
@@ -3087,7 +3089,7 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
 
 # ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 16 secciones siempre visibles ----
 st.sidebar.markdown(
-    '<div class="sidebar-nav-title">🧭 Navegación · 16 secciones</div>',
+    '<div class="sidebar-nav-title">🧭 Navegación · 17 secciones</div>',
     unsafe_allow_html=True,
 )
 
@@ -3521,6 +3523,55 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.divider()
 
+    st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día? (Análisis Sanguíneo)")
+    ambito_seleccionado = st.selectbox(
+        "Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
+        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"], key="ambito_sangre"
+    )
+    for _parametro, _categoria in _todos:
+        _color_pt = CATEGORIA_SEMAFORO.get(_categoria, "gris")
+        _hex_pt = SEMAFORO_ESTILO[_color_pt]["hex"]
+        _fondo_pt = SEMAFORO_ESTILO[_color_pt]["fondo"]
+        _texto_impacto = generar_impacto_ambito(_parametro, _categoria, ambito_seleccionado)
+        st.markdown(f"""
+        <div style="background:{_fondo_pt};border-left:4px solid {_hex_pt};border-radius:16px;
+                    padding:12px 18px;margin-bottom:8px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);">
+        <b style="color:{_hex_pt};">{_parametro}</b> <span style="color:#1C1C1E;">({_categoria})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with st.expander("📊 Ver tablas de referencia clínica completas"):
+        panel_referencia_hemo_hierro()
+        panel_referencia_trigli_gluco_coles()
+    recursos_externos(1, [
+        ("🩸 Anemia (MedlinePlus)", "https://medlineplus.gov/spanish/anemia.html"),
+        ("🫀 Colesterol (MedlinePlus)", "https://medlineplus.gov/spanish/cholesterol.html"),
+        ("💉 Diabetes (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/diabetes"),
+    ])
+
+    st.markdown("""
+    <div style="background:#F5F5F7;border-radius:16px;padding:12px 18px;margin-top:14px;font-size:0.8rem;color:#5C6B60;">
+    📚 <b>Fuentes consultadas:</b> Organización Mundial de la Salud (OMS) · American Diabetes Association ·
+    MedlinePlus · Mayo Clinic · Ministerio de Salud del Perú (MINSA).
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:12px 18px;margin-top:10px;font-size:0.82rem;color:#7A4A00;">
+    ⚠️ <b>Información importante:</b> esta plataforma tiene fines educativos y de apoyo para la comprensión de
+    resultados clínicos. No reemplaza el diagnóstico, tratamiento ni la valoración realizada por un médico o nutricionista.
+    </div>
+    """, unsafe_allow_html=True)
+
+    caja_util("Un análisis de sangre trae puros números y siglas difíciles de entender (¿12.5 g/dL es bueno o malo?). "
+              "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc., y te explica "
+              "qué significan, por qué ocurren y qué podrías hacer. Así sabes de un vistazo si algún valor necesita "
+              "atención médica. 🩺❤️",
+              emoji="🩸", color="#FFEBEE", borde="#E53935")
+
+# ---------------------------------------------------------------------------------------
+elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     # ===== 3. MÓDULO: Estado Fisiológico (signos vitales del Bloque 3) =====================
     def _clasif_pa(_pas, _pad):
         if _pas <= 0 or _pad <= 0: return "Sin datos", "gris"
@@ -3593,36 +3644,97 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.write("")
 
-    # --- 3.3 Detalle: ¿Qué significa cada resultado? --------------------------------------
+    # --- 3.3 Detalle: ¿Qué significa cada resultado? (4 sub-tarjetas por signo vital) -----
     st.markdown("##### 🔎 ¿Qué significa cada resultado?")
+    _PASTEL_CARD = {
+        "mide":  {"fondo": "#EAF4FE", "borde": "#8FC1F2", "titulo": "#1565C0"},
+        "signif":{"fondo": "#F3EEFB", "borde": "#C6AEE8", "titulo": "#6A3FA0"},
+        "reco":  {"fondo": "#EAFAEE", "borde": "#9BD8AE", "titulo": "#1E5631"},
+        "curio": {"fondo": "#FFF6E0", "borde": "#F4D27A", "titulo": "#B8860B"},
+    }
     _INFO_VITAL = {
         "Presión Arterial": {
             "icono": "❤️", "valor": f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", "categoria": _cat_pa, "color": _col_pa,
-            "explicacion": "Tu corazón está enviando sangre al resto del cuerpo; este valor indica con qué fuerza lo hace.",
-            "cambia_por": ["😰 Estrés", "🏃 Ejercicio reciente", "🧂 Alto consumo de sal", "💊 Medicamentos", "😴 Falta de descanso"],
+            "que_mide": "Mide la fuerza con la que el corazón bombea sangre a través de las arterias hacia el resto del cuerpo.",
+            "sin_dato": "Aún no ingresaste tu presión arterial. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
+            "recomendaciones": [("🥗", "Menos sal, más frutas y verduras"), ("💧", "Buena hidratación"), ("🩺", "Consulta si persiste alta")],
+            "curioso": "La postura, el estrés y hasta hablar durante la medición pueden alterar el resultado hasta en 10 mmHg.",
         },
         "Oxigenación (SpO₂)": {
             "icono": "🫁", "valor": f"{spo2:.0f} %" if spo2 > 0 else "—", "categoria": _cat_ox, "color": _col_ox,
-            "explicacion": "Indica si tu sangre está transportando suficiente oxígeno para que tus órganos y músculos funcionen correctamente.",
-            "cambia_por": ["🌬️ Enfermedades respiratorias", "⛰️ Cambios de altitud geográfica", "🩸 Deficiencias en la circulación"],
+            "que_mide": "Indica el porcentaje de oxígeno que transporta tu sangre hacia órganos y músculos.",
+            "sin_dato": "Aún no ingresaste tu oxigenación. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
+            "recomendaciones": [("🫁", "Respiración profunda"), ("🚭", "Evitar el humo/tabaco"), ("🩺", "Consulta si baja de 95%")],
+            "curioso": "La altura geográfica reduce naturalmente el SpO₂; a mayor altitud, el aire tiene menos oxígeno disponible.",
         },
         "Temperatura": {
             "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", "categoria": _cat_te, "color": _col_te,
-            "explicacion": "Indica cómo regula el calor tu organismo.",
-            "cambia_por": ["🦠 Infecciones o inflamación", "❄️ Exposición prolongada al frío"],
+            "que_mide": "Refleja qué tan bien tu organismo regula el calor interno para mantener sus funciones vitales.",
+            "sin_dato": "Aún no ingresaste tu temperatura. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
+            "recomendaciones": [("💧", "Hidratación constante"), ("🛌", "Reposo si hay fiebre"), ("🩺", "Consulta si persiste alta")],
+            "curioso": "El ejercicio intenso, la ropa abrigada o el ambiente caluroso pueden subir tu temperatura sin que estés enferma/o.",
         },
         "Pulso": {
             "icono": "💓", "valor": f"{pulso} lpm" if pulso > 0 else "—", "categoria": _cat_pu, "color": _col_pu,
-            "explicacion": "Representa cuántas veces late tu corazón en un minuto estando en reposo.",
-            "cambia_por": ["🏃 Actividad física", "😱 Emociones fuertes", "🤒 Fiebre", "☕ Consumo de cafeína"],
+            "que_mide": "Cuenta cuántas veces late tu corazón en un minuto mientras estás en reposo.",
+            "sin_dato": "Aún no ingresaste tu pulso. Ve a 'Mis Datos' → Bloque 3 para registrarlo.",
+            "recomendaciones": [("🚶", "Actividad física regular"), ("☕", "Moderar la cafeína"), ("🩺", "Consulta si es muy alto/bajo")],
+            "curioso": "La cafeína, las emociones fuertes y la fiebre pueden acelerar tu pulso incluso en reposo.",
         },
     }
     for _param, _info in _INFO_VITAL.items():
         _st = SEMAFORO_ESTILO[_info["color"]]
-        with st.expander(f"{_info['icono']} {_param} — {_info['valor']} · {_st['emoji']} {_info['categoria']}"):
-            st.markdown(f"**Explicación:** {_info['explicacion']}")
-            st.markdown("**📌 ¿Por qué puede cambiar?**")
-            st.markdown(" &nbsp; ".join(_info["cambia_por"]))
+        st.markdown(f"""
+        <div style="background:#FFFFFF;border-radius:22px;padding:16px 18px 20px 18px;margin-bottom:14px;
+        border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <span style="font-size:1.3rem;">{_info['icono']}</span>
+        <b style="font-size:1.02rem;color:#17301F;">{_param}</b>
+        <span style="margin-left:auto;background:{_st['fondo']};color:{_st['hex']};padding:4px 12px;
+        border-radius:999px;font-size:0.76rem;font-weight:800;">{_st['emoji']} {_info['valor']} · {_info['categoria']}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        _significado_txt = _info["sin_dato"] if _info["color"] == "gris" else \
+            f"Con tu resultado de <b>{_info['valor']}</b>, tu estado se clasifica como <b>{_info['categoria']}</b> {_st['emoji']}."
+        _reco_chips_html = "".join(
+            f"""<span style="display:inline-block;background:#FFFFFF;border:1px solid #D8ECDD;border-radius:999px;
+            padding:5px 12px;margin:3px 5px 3px 0;font-size:0.78rem;color:#1E5631;font-weight:700;">{_ic} {_tx}</span>"""
+            for _ic, _tx in _info["recomendaciones"]
+        )
+
+        _c1, _c2, _c3, _c4 = st.columns(4)
+        with _c1:
+            st.markdown(f"""
+            <div style="background:{_PASTEL_CARD['mide']['fondo']};border:1px solid {_PASTEL_CARD['mide']['borde']};
+            border-radius:18px;padding:14px 14px;height:170px;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['mide']['titulo']};font-size:0.84rem;">🧠 ¿Qué mide?</p>
+            <p style="margin:0;font-size:0.8rem;color:#2E2E33;line-height:1.4;">{_info['que_mide']}</p>
+            </div>""", unsafe_allow_html=True)
+        with _c2:
+            st.markdown(f"""
+            <div style="background:{_PASTEL_CARD['signif']['fondo']};border:1px solid {_PASTEL_CARD['signif']['borde']};
+            border-radius:18px;padding:14px 14px;height:170px;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['signif']['titulo']};font-size:0.84rem;">📋 ¿Qué significa tu resultado?</p>
+            <p style="margin:0;font-size:0.8rem;color:#2E2E33;line-height:1.4;">{_significado_txt}</p>
+            </div>""", unsafe_allow_html=True)
+        with _c3:
+            st.markdown(f"""
+            <div style="background:{_PASTEL_CARD['reco']['fondo']};border:1px solid {_PASTEL_CARD['reco']['borde']};
+            border-radius:18px;padding:14px 14px;height:170px;overflow:hidden;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['reco']['titulo']};font-size:0.84rem;">✅ Recomendaciones generales</p>
+            <div style="line-height:1.9;">{_reco_chips_html}</div>
+            </div>""", unsafe_allow_html=True)
+        with _c4:
+            st.markdown(f"""
+            <div style="background:{_PASTEL_CARD['curio']['fondo']};border:1px solid {_PASTEL_CARD['curio']['borde']};
+            border-radius:18px;padding:14px 14px;height:170px;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['curio']['titulo']};font-size:0.84rem;">💡 ¿Sabías qué?</p>
+            <p style="margin:0;font-size:0.8rem;color:#2E2E33;line-height:1.4;">{_info['curioso']}</p>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.write("")
 
     st.write("")
 
@@ -3713,28 +3825,92 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.write("")
 
-    # --- 3.6 Tablas de referencia clínica — acordeones -------------------------------------
+    # --- 3.6 Tablas de referencia clínica — matriz de celdas con highlighter dinámico -----
     st.markdown("##### 📊 Tablas de Referencia Clínica")
-    st.caption("Rangos internacionales estandarizados para adultos en reposo.")
-    with st.expander("❤️ Presión Arterial — Sociedad Europea de Cardiología (ESC)"):
-        for _em, _txt in [("🟢", "**Óptima:** < 120 / < 80 mmHg"), ("🟢", "**Normal:** 120–129 / 80–84 mmHg"),
-                           ("🟡", "**Normal Alta:** 130–139 / 85–89 mmHg"), ("🟠", "**Hipertensión G1:** 140–159 / 90–99 mmHg"),
-                           ("🔴", "**Hipertensión G2:** 160–179 / 100–109 mmHg"), ("🚨", "**Crisis Hipertensiva:** ≥ 180 / ≥ 110 mmHg")]:
-            st.markdown(f"{_em} {_txt}")
-    with st.expander("🫁 Oxigenación (SpO₂) — Organización Mundial de la Salud (OMS)"):
-        st.markdown("🟢 **95 % – 100 %** → Excelente / Normal")
-        st.markdown("🟡 **90 % – 94 %** → Aceptable (puede requerir evaluación médica)")
-        st.markdown("🔴 **< 90 %** → Hipoxia (atención médica inmediata)")
-    with st.expander("🌡️ Temperatura Corporal"):
-        st.markdown("🟦 **Hipotermia:** < 35.0 °C")
-        st.markdown("🟢 **Normal:** 36.1 °C – 37.2 °C")
-        st.markdown("🟡 **Febrícula:** 37.3 °C – 37.9 °C")
-        st.markdown("🟠 **Fiebre:** 38.0 °C – 39.5 °C")
-        st.markdown("🔴 **Fiebre Alta:** ≥ 39.6 °C")
-    with st.expander("💓 Pulso / Frecuencia Cardíaca — American Heart Association (AHA)"):
-        st.markdown("🐢 **Lento (Bradicardia):** < 60 lpm")
-        st.markdown("💚 **Normal:** 60 – 100 lpm")
-        st.markdown("⚡ **Rápido (Taquicardia):** > 100 lpm")
+    st.caption("Rangos internacionales estandarizados. Tu valor actual se resalta en color vibrante con un glow.")
+
+    def _celda_matriz(_emoji, _titulo, _rango, _tono_pastel, _tono_vibrante, _activa):
+        """Renderiza una celda de la matriz: pastel por defecto, vibrante+glow si es la categoría activa."""
+        if _activa:
+            _fondo = _tono_vibrante["fondo"]
+            _texto = _tono_vibrante["texto"]
+            _borde = f"3px solid {_tono_vibrante['borde']}"
+            _sombra = f"box-shadow:0 0 0 3px {_tono_vibrante['glow']}, 0 6px 18px {_tono_vibrante['glow']};"
+            _marca = '<div style="margin-top:6px;font-size:0.72rem;font-weight:900;">👉 TU RESULTADO</div>'
+            _transform = "transform:translateY(-3px);"
+        else:
+            _fondo = _tono_pastel["fondo"]
+            _texto = _tono_pastel["texto"]
+            _borde = f"1px solid {_tono_pastel['borde']}"
+            _sombra = ""
+            _marca = ""
+            _transform = ""
+        return f"""
+        <div style="background:{_fondo};color:{_texto};border:{_borde};border-radius:16px;
+        padding:12px 10px;text-align:center;min-height:92px;display:flex;flex-direction:column;
+        justify-content:center;transition:all .2s ease;{_sombra}{_transform}">
+        <div style="font-size:1.15rem;">{_emoji}</div>
+        <div style="font-weight:800;font-size:0.78rem;margin-top:2px;">{_titulo}</div>
+        <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">{_rango}</div>
+        {_marca}
+        </div>
+        """
+
+    # Tonos pastel (por defecto) y vibrantes (highlighter) reutilizables por severidad
+    _TONO = {
+        "verde":  {"pastel": {"fondo": "#E3F7E9", "texto": "#1E5631", "borde": "#B7E4C3"},
+                   "vibrante": {"fondo": "#34C759", "texto": "#FFFFFF", "borde": "#1E5631", "glow": "rgba(52,199,89,0.45)"}},
+        "amarillo": {"pastel": {"fondo": "#FFF7DC", "texto": "#8A6D00", "borde": "#F3E19B"},
+                   "vibrante": {"fondo": "#FFD60A", "texto": "#4A3900", "borde": "#B8860B", "glow": "rgba(255,214,10,0.55)"}},
+        "naranja": {"pastel": {"fondo": "#FDEBD9", "texto": "#B0530A", "borde": "#F5C48E"},
+                   "vibrante": {"fondo": "#FF9500", "texto": "#FFFFFF", "borde": "#B0530A", "glow": "rgba(255,149,0,0.5)"}},
+        "rojo":   {"pastel": {"fondo": "#FBEAE8", "texto": "#C0392B", "borde": "#F0B7B0"},
+                   "vibrante": {"fondo": "#FF3B30", "texto": "#FFFFFF", "borde": "#8E1B12", "glow": "rgba(255,59,48,0.55)"}},
+        "azul":   {"pastel": {"fondo": "#E7F1FE", "texto": "#0D47A1", "borde": "#B3D2F7"},
+                   "vibrante": {"fondo": "#0A84FF", "texto": "#FFFFFF", "borde": "#0D47A1", "glow": "rgba(10,132,255,0.5)"}},
+    }
+
+    def _render_tabla_matriz(_titulo_tabla, _fuente, _columnas, _activo_idx):
+        """_columnas: lista de (emoji, titulo, rango, tono_key). _activo_idx: índice activo o None."""
+        st.markdown(f"**{_titulo_tabla}** &nbsp; <span style='color:#8E8E93;font-size:0.76rem;'>· {_fuente}</span>",
+                    unsafe_allow_html=True)
+        _cols_html = st.columns(len(_columnas))
+        for _i, (_col, (_em, _tt, _rg, _tono)) in enumerate(zip(_cols_html, _columnas)):
+            with _col:
+                st.markdown(_celda_matriz(_em, _tt, _rg, _TONO[_tono]["pastel"], _TONO[_tono]["vibrante"],
+                                           _i == _activo_idx), unsafe_allow_html=True)
+        st.write("")
+
+    # --- Presión Arterial ---
+    _pa_cols = [("🟢", "Óptima", "<120/<80", "verde"), ("🟢", "Normal", "120-129/80-84", "verde"),
+                ("🟡", "Normal Alta", "130-139/85-89", "amarillo"), ("🟠", "Hipertensión G1", "140-159/90-99", "naranja"),
+                ("🔴", "Hipertensión G2/G3", "≥160/≥100", "rojo")]
+    _pa_idx_map = {"Óptima": 0, "Normal": 1, "Normal Alta": 2, "Hipertensión G1": 3,
+                   "Hipertensión G2": 4, "Crisis Hipertensiva": 4}
+    _render_tabla_matriz("❤️ Presión Arterial", "Sociedad Europea de Cardiología (ESC)", _pa_cols,
+                          _pa_idx_map.get(_cat_pa))
+
+    # --- Oxigenación SpO2 ---
+    _ox_cols = [("🟢", "Excelente", "95-100%", "verde"), ("🟡", "Aceptable", "90-94%", "amarillo"),
+                ("🔴", "Baja", "<90%", "rojo")]
+    _ox_idx_map = {"Excelente": 0, "Aceptable": 1, "Hipoxia": 2}
+    _render_tabla_matriz("🫁 Oxigenación (SpO₂)", "Organización Mundial de la Salud (OMS)", _ox_cols,
+                          _ox_idx_map.get(_cat_ox))
+
+    # --- Temperatura Corporal ---
+    _te_cols = [("🟦", "Hipotermia", "<35°C", "azul"), ("🟢", "Normal", "36.1-37.2°C", "verde"),
+                ("🟡", "Febrícula", "37.3-37.9°C", "amarillo"), ("🔴", "Fiebre", "≥38°C", "rojo")]
+    _te_idx_map = {"Hipotermia": 0, "Temperatura baja": 1, "Normal": 1, "Febrícula": 2,
+                   "Fiebre": 3, "Fiebre alta": 3}
+    _render_tabla_matriz("🌡️ Temperatura Corporal", "Rangos clínicos estándar", _te_cols,
+                          _te_idx_map.get(_cat_te))
+
+    # --- Pulso en Reposo ---
+    _pu_cols = [("🐢", "Lento", "<60 lpm", "azul"), ("💚", "Normal", "60-100 lpm", "verde"),
+                ("⚡", "Elevado", ">100 lpm", "amarillo")]
+    _pu_idx_map = {"Bradicardia": 0, "Normal": 1, "Taquicardia": 2}
+    _render_tabla_matriz("💓 Pulso en Reposo", "American Heart Association (AHA)", _pu_cols,
+                          _pu_idx_map.get(_cat_pu))
 
     st.write("")
 
@@ -3759,54 +3935,7 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
     st.caption("Estos signos vitales se ingresan en 'Mis Datos' → Bloque 3.")
 
     st.divider()
-    st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día? (Análisis Sanguíneo)")
-    ambito_seleccionado = st.selectbox(
-        "Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
-        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"], key="ambito_sangre"
-    )
-    for _parametro, _categoria in _todos:
-        _color_pt = CATEGORIA_SEMAFORO.get(_categoria, "gris")
-        _hex_pt = SEMAFORO_ESTILO[_color_pt]["hex"]
-        _fondo_pt = SEMAFORO_ESTILO[_color_pt]["fondo"]
-        _texto_impacto = generar_impacto_ambito(_parametro, _categoria, ambito_seleccionado)
-        st.markdown(f"""
-        <div style="background:{_fondo_pt};border-left:4px solid {_hex_pt};border-radius:16px;
-                    padding:12px 18px;margin-bottom:8px;
-                    box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);">
-        <b style="color:{_hex_pt};">{_parametro}</b> <span style="color:#1C1C1E;">({_categoria})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
-        </div>
-        """, unsafe_allow_html=True)
 
-    with st.expander("📊 Ver tablas de referencia clínica completas"):
-        panel_referencia_hemo_hierro()
-        panel_referencia_trigli_gluco_coles()
-    recursos_externos(1, [
-        ("🩸 Anemia (MedlinePlus)", "https://medlineplus.gov/spanish/anemia.html"),
-        ("🫀 Colesterol (MedlinePlus)", "https://medlineplus.gov/spanish/cholesterol.html"),
-        ("💉 Diabetes (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/diabetes"),
-    ])
-
-    st.markdown("""
-    <div style="background:#F5F5F7;border-radius:16px;padding:12px 18px;margin-top:14px;font-size:0.8rem;color:#5C6B60;">
-    📚 <b>Fuentes consultadas:</b> Organización Mundial de la Salud (OMS) · American Diabetes Association ·
-    MedlinePlus · Mayo Clinic · Ministerio de Salud del Perú (MINSA).
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:12px 18px;margin-top:10px;font-size:0.82rem;color:#7A4A00;">
-    ⚠️ <b>Información importante:</b> esta plataforma tiene fines educativos y de apoyo para la comprensión de
-    resultados clínicos. No reemplaza el diagnóstico, tratamiento ni la valoración realizada por un médico o nutricionista.
-    </div>
-    """, unsafe_allow_html=True)
-
-    caja_util("Un análisis de sangre trae puros números y siglas difíciles de entender (¿12.5 g/dL es bueno o malo?). "
-              "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc., y te explica "
-              "qué significan, por qué ocurren y qué podrías hacer. Así sabes de un vistazo si algún valor necesita "
-              "atención médica. 🩺❤️",
-              emoji="🩸", color="#FFEBEE", borde="#E53935")
-
-# ---------------------------------------------------------------------------------------
 elif hoja_activa == "2.-IMC Y PERCENTIL":
     hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
                    "En adolescentes y niños se incluye también el Percentil.",
