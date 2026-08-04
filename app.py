@@ -42,7 +42,7 @@ COLORES = {
     9:  ("9", "Plan de Dieta Semanal",                        "🍱", "#FF6B35", "#FFEEE6"),  # naranja cálido
     10: ("10", "¿El Clima Influye en tu Gasto Energético?",  "🌤️", "#FFB300", "#FFF6E0"),  # amarillo sol
     11: ("Aporte 1", "Energía durante el Embarazo",             "👶", "#BF5AF2", "#F7ECFD"),  # púrpura claro
-    12: ("Aporte 2", "Hora Límite de Cafeína",                "🌙", "#5856D6", "#ECEBFC"),  # systemIndigo
+    12: ("Aporte 2", "Hora Límite para Consumir Cafeína",     "🌙", "#1B2A4A", "#FFF4DE"),  # azul noche + amarillo café
     13: ("13", "Línea de Tiempo: Tu Progreso Estimado",       "📈", "#5AC8FA", "#E9F8FF"),  # celeste claro
     14: ("14", "Mi Reporte de Resultados",                    "📄", "#32ADE6", "#E7F6FD"),  # systemCyan
     15: ("", "Sobre Nosotras",                                 "🎓", "#FF2D55", "#FFEBF0"),  # systemPink
@@ -5036,25 +5036,146 @@ elif hoja_activa == "11.-APORTE 1: EMBARAZO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
-    hoja_header(12, "La cafeína tarda entre 5 y 6 horas en reducirse a la mitad en el cuerpo. Calcular de 8 a 10 horas "
-                    "antes de acostarse asegura que el estimulante baje lo suficiente para no bloquear los receptores "
-                    "cerebrales del sueño, protegiendo el descanso profundo.")
+    hoja_header(12, subtitulo="Dormir bien también ayuda a cuidar tu alimentación. La cafeína puede permanecer "
+                               "varias horas en el organismo. Esta herramienta calcula hasta qué hora puedes "
+                               "consumir café sin afectar tu descanso.", tip="🌙 −8 horas antes de dormir")
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "Hora_Límite_Cafeína = Hora_Dormir − 8 horas",
         referencia="Principio de Vida Media de la Cafeína (FDA / AASM)")}</div>""", unsafe_allow_html=True)
-    hora_dormir = st.time_input("Hora de dormir:", value=datetime.strptime("22:00", "%H:%M").time())
+
+    # --- PASO 1: ¿A qué hora sueles dormir? (selector amigable AM/PM) --------------------
+    st.markdown("##### ① 🛏️ ¿A qué hora sueles dormir?")
+    _opciones_hora, _t_cursor = [], datetime.strptime("19:00", "%H:%M")
+    for _ in range(15):
+        _opciones_hora.append(_t_cursor)
+        _t_cursor += timedelta(minutes=30)
+    _etiquetas_hora = [f"🌙 {t.strftime('%I:%M %p').lstrip('0')}" for t in _opciones_hora]
+    _idx_default = next((i for i, t in enumerate(_opciones_hora) if t.strftime("%H:%M") == "22:00"), 6)
+    _sel_hora = st.selectbox("Hora de dormir:", _etiquetas_hora, index=_idx_default, label_visibility="collapsed")
+    hora_dormir = _opciones_hora[_etiquetas_hora.index(_sel_hora)].time()
     dt_dormir = datetime.combine(datetime.today(), hora_dormir)
     dt_limite = dt_dormir - timedelta(hours=8)
-    st.metric("Hora límite recomendada para tomar cafeína", dt_limite.time().strftime("%H:%M"))
-    st.info("Un buen descanso es fundamental en la dieta, ya que regula las hormonas del hambre y reduce la "
-            "ansiedad por comer dulce al día siguiente.")
+    _fmt = lambda dt: dt.strftime('%I:%M %p').lstrip('0')
+
+    st.write("")
+
+    # --- PASO 2: ✅ Tu resultado — bloque grande con las 3 preguntas clave ----------------
+    st.markdown("##### ② ✅ Tu resultado")
+    st.markdown(f"""
+    <div class="cp5-glass-flow">
+        <div class="cp5-flow-card" style="background:rgba(27,42,74,0.08);border-color:rgba(27,42,74,0.3);">
+            <div class="cp5-flow-label">🛏️ Hora para dormir</div>
+            <div class="cp5-flow-value" style="color:#1B2A4A;">{_fmt(dt_dormir)}</div>
+            <div class="cp5-flow-legend">La hora en la que sueles acostarte.</div>
+        </div>
+        <div class="cp5-flow-arrow">→</div>
+        <div class="cp5-flow-card" style="background:rgba(255,179,0,0.14);border-color:rgba(255,179,0,0.4);">
+            <div class="cp5-flow-label">☕ Último café recomendado</div>
+            <div class="cp5-flow-value" style="color:#B06000;">{_fmt(dt_limite)}</div>
+            <div class="cp5-flow-legend">Después de esa hora, la cafeína aún podría estar activa al dormir.</div>
+        </div>
+        <div class="cp5-flow-arrow">→</div>
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">⏱️ Diferencia recomendada</div>
+            <div class="cp5-flow-value">8 horas</div>
+            <div class="cp5-flow-legend">Tiempo mínimo entre tu última cafeína y dormir.</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- PASO 3: Línea de tiempo visual ---------------------------------------------------
+    st.markdown("##### ③ 🗓️ Tu día, en una línea de tiempo")
+    _linea_tiempo = [
+        ("#FFB300", "☀️", "Mañana", "8:00 AM"),
+        ("#FF9500", "☀️", "Mediodía", "12:00 PM"),
+        ("#B06000", "☕", "Último café", _fmt(dt_limite)),
+        ("#FF6B35", "🌇", "Tarde", "6:00 PM"),
+        ("#1B2A4A", "🌙", "Dormir", _fmt(dt_dormir)),
+    ]
+    _html_lt = ['<div style="max-width:520px;margin:0 auto;">']
+    for _i, (_bc, _em, _tt, _hh) in enumerate(_linea_tiempo):
+        _es_cafe = _tt == "Último café"
+        _fondo_lt = "rgba(255,179,0,0.12)" if _es_cafe else "#FFFFFF"
+        _html_lt.append(f"""
+        <div style="display:flex;align-items:center;gap:14px;background:{_fondo_lt};border-radius:18px;
+        padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
+        <div style="font-size:1.5rem;">{_em}</div>
+        <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.85rem;">{_tt}</p>
+        <p style="margin:0;color:#17301F;font-size:1rem;font-weight:700;">{_hh}</p></div>
+        </div>""")
+        if _i < len(_linea_tiempo) - 1:
+            _html_lt.append('<div style="text-align:center;font-size:1.3rem;color:#1B2A4A;opacity:0.5;margin:2px 0;">↓</div>')
+    _html_lt.append('</div>')
+    st.markdown(_html_sin_lineas_vacias("".join(_html_lt)), unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- PASO 4: ¿Por qué ocurre esto? — tres tarjetas ------------------------------------
+    st.markdown("##### ④ 🤔 ¿Por qué ocurre esto?")
+    col_p1, col_p2, col_p3 = st.columns(3)
+    _porques = [
+        (col_p1, "#5856D6", "#ECEBFC", "🧠", "La cafeína tarda varias horas en desaparecer del cuerpo."),
+        (col_p2, "#1B2A4A", "#E9ECF5", "😴", "Si consumes café muy tarde puede dificultar el sueño."),
+        (col_p3, "#34C759", "#EAFAEE", "🍎", "Dormir bien ayuda a controlar el apetito y favorece una alimentación saludable."),
+    ]
+    for _col, _borde, _fondo, _emoji, _texto in _porques:
+        with _col:
+            st.markdown(f"""
+            <div class="bento-card" style="background:{_fondo};text-align:center;">
+            <div style="font-size:1.6rem;margin-bottom:6px;">{_emoji}</div>
+            <p style="margin:0;color:{_borde};font-weight:700;font-size:0.82rem;line-height:1.45;">{_texto}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- PASO 5: ¿Qué cambia si modifico mi hora de dormir? — mini tabla -----------------
+    st.markdown("##### ⑤ 🔄 ¿Qué cambia si modifico mi hora de dormir?")
+    _tabla_ejemplos = [("9:00 PM", "1:00 PM"), ("10:00 PM", "2:00 PM"),
+                        ("11:00 PM", "3:00 PM"), ("12:00 AM", "4:00 PM")]
+    _hora_actual_txt = _fmt(dt_dormir)
+    _filas_html = []
+    for _dormir_txt, _cafe_txt in _tabla_ejemplos:
+        _es_actual = _dormir_txt == _hora_actual_txt
+        _bg = "background:rgba(255,179,0,0.18);font-weight:800;" if _es_actual else ""
+        _filas_html.append(f"""<tr style="{_bg}">
+            <td style="padding:10px 16px;border-bottom:1px solid #F0E9DC;">🛏️ {_dormir_txt}</td>
+            <td style="padding:10px 16px;border-bottom:1px solid #F0E9DC;">☕ {_cafe_txt}</td>
+            </tr>""")
+    st.markdown(_html_sin_lineas_vacias(f"""
+    <div style="background:#FFFFFF;border-radius:18px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.05);
+    border:1px solid rgba(27,42,74,0.08);">
+    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;color:#17301F;">
+    <thead><tr style="background:#1B2A4A;color:#FFFFFF;">
+    <th style="padding:10px 16px;text-align:left;">Si duermes...</th>
+    <th style="padding:10px 16px;text-align:left;">Último café recomendado</th>
+    </tr></thead>
+    <tbody>{"".join(_filas_html)}</tbody>
+    </table></div>
+    """), unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- PASO 6: 💡 Consejo práctico -------------------------------------------------------
+    st.markdown("""
+    <div style="background:#FFF6E0;border-radius:18px;padding:16px 20px;border-left:5px solid #FFB300;">
+    <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">💡 Consejo</p>
+    <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
+    Si un día deseas tomar café más tarde de lo habitual, intenta reducir la cantidad o elegir una bebida
+    con menos cafeína para disminuir su efecto sobre el sueño.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
     recursos_externos(12, [
         ("☕ Cafeína y sueño (Sleep Foundation)", "https://www.sleepfoundation.org/nutrition/caffeine-and-sleep"),
     ])
     caja_util("¿Sabías que dormir mal te da más hambre y más ganas de comer dulce al día siguiente? Esta "
               "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
               "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
-              emoji="🌙", color="#EDE7F6", borde="#5E35B1")
+              emoji="🌙", color="#FFF4DE", borde="#1B2A4A")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
