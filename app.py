@@ -452,6 +452,23 @@ GRUPOS_ALIMENTOS = {
                     "Consúmelos con cáscara bien lavada cuando sea posible.", "Combina con proteínas y verduras."]},
 }
 
+GRUPOS_COLORES = {
+    "A": ("#FF9500", "#FFF3E5"), "B": ("#34C759", "#EAFAEE"), "C": ("#FF3B30", "#FFEDEC"),
+    "D": ("#AF52DE", "#F6ECFC"), "E": ("#30B0C7", "#E6F7FA"), "F": ("#8E4A2E", "#F5E9E3"),
+    "G": ("#5AC8FA", "#E9F8FF"), "H": ("#32ADE6", "#E7F6FD"), "J": ("#FFCC00", "#FFFAE0"),
+    "K": ("#FF2D55", "#FFEBF0"), "L": ("#8E8E93", "#F2F2F7"), "Q": ("#BF5AF2", "#F7ECFD"),
+    "T": ("#00C7BE", "#E1FBF9"), "U": ("#A2845E", "#F3ECE4"),
+}
+
+def _limpiar_nombre_alimento(nombre):
+    """Limpia nombres para la vista del buscador: quita asteriscos de nota al pie
+    sueltos y espacios repetidos, sin alterar el dato original de la base."""
+    import re
+    n = (nombre or "").strip()
+    n = re.sub(r'\*+\s*$', '', n).strip()
+    n = re.sub(r'\s{2,}', ' ', n)
+    return n
+
 GUIAS_ALIMENTARIAS_PERU = [
     ("🥦", "Llena la mitad de tu plato con verduras.", "En cada comida principal."),
     ("🍎", "Consume frutas todos los días.", "Enteras, mejor que en jugo."),
@@ -509,7 +526,7 @@ COLORES = {
     5:  ("5", "Control de Peso",                              "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
     6:  ("6", "Plan Nutricional Basado en la OMS",             "⚖️", "#FFCC00", "#FFFAE0"),  # systemYellow
     7:  ("7", "Cálculo de las Porciones del Día",            "⏰", "#30B0C7", "#E6F7FA"),  # systemTeal
-    8:  ("8", "Base Peruana de Alimentos",                     "🇵🇪", "#00C7BE", "#E1FBF9"),  # systemMint
+    8:  ("8", "Biblioteca Alimentaria",                         "🥗", "#00C7BE", "#E1FBF9"),  # systemMint
     9:  ("9", "Plan de Dieta Semanal",                        "🍱", "#FF6B35", "#FFEEE6"),  # naranja cálido
     10: ("10", "¿El Clima Influye en tu Gasto Energético?",  "🌤️", "#FFB300", "#FFF6E0"),  # amarillo sol
     11: ("Aporte 1", "Energía durante el Embarazo",             "👶", "#BF5AF2", "#F7ECFD"),  # púrpura claro
@@ -6126,10 +6143,9 @@ elif hoja_activa == "7.-PORCIONES":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "8.-FATSECRET":
-    hoja_header(8, subtitulo="Composición nutricional oficial de los alimentos de mayor consumo en el Perú, "
-                             "según el INS/CENAN. Ya no dependemos de plataformas externas.")
-    st.markdown("*\"Conocer la información nutricional de los alimentos permite llevar una alimentación más "
-                "equilibrada y saludable. Una buena nutrición ayuda al crecimiento, desarrollo y bienestar del organismo.\"*")
+    hoja_header(8, subtitulo="Descubre la composición nutricional de los alimentos más consumidos en el Perú "
+                             "utilizando información oficial del INS/CENAN. Busca un alimento y conoce su "
+                             "aporte de energía y nutrientes de forma clara y sencilla.")
 
     st.markdown("""
     <style>
@@ -6164,11 +6180,17 @@ elif hoja_activa == "8.-FATSECRET":
         st.link_button(f"🔍 Ver '{consulta_fs}' en FatSecret", url_fs, use_container_width=True)
     else:
         st.link_button("🌐 Abrir FatSecret", "https://www.fatsecret.es/", use_container_width=True)
-    st.caption("FatSecret es una base externa con miles de alimentos y productos envasados. Úsala cuando no "
-               "encuentres el alimento en la Base Peruana de Alimentos de abajo.")
+    st.markdown("""
+    <div style="background:#E6F7FA;border-left:5px solid #30B0C7;border-radius:16px;padding:14px 18px;margin:14px 0;">
+    <b style="color:#0B7285;">🌐 ¿Por qué usamos FatSecret?</b><br>
+    <span style="color:#1C1C1E;font-size:0.9rem;">Es una base de datos externa y muy amplia, con miles de alimentos,
+    marcas y productos envasados peruanos e internacionales. La usamos como <b>respaldo rápido</b> cuando buscas un
+    producto comercial específico o algo que no forma parte de nuestra Base Peruana de Alimentos.</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("#### 🔎 Buscador Nutricional · Tabla Peruana de Composición de Alimentos (más completa)")
+    st.markdown("#### 🔎 Buscador Nutricional · Tabla Peruana de Composición de Alimentos")
     consulta = st.text_input("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
                               "", key="bpa_buscar")
 
@@ -6243,8 +6265,24 @@ elif hoja_activa == "8.-FATSECRET":
             cols_g = st.columns(4)
             for i, (cod, g) in enumerate(GRUPOS_ALIMENTOS.items()):
                 n_items = sum(1 for x in FOOD_DB if x["grupo_cod"] == cod)
+                cb, cf = GRUPOS_COLORES.get(cod, ("#8E8E93", "#F2F2F7"))
                 with cols_g[i % 4]:
-                    st.markdown(f"**{g['icono']} {g['nombre']}**  \n{n_items} alimentos")
+                    st.markdown(f"""
+                    <div style="background:{cf};border-left:4px solid {cb};border-radius:12px;
+                        padding:10px 12px;margin-bottom:10px;">
+                        <div style="font-weight:800;color:{cb};font-size:0.88rem;">{g['icono']} {g['nombre']}</div>
+                        <div style="color:#5C6B60;font-size:0.78rem;">{n_items} alimentos</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:16px;padding:14px 18px;margin:14px 0;">
+    <b style="color:#1E5631;">🇵🇪 ¿Por qué usamos la Tabla Peruana de Composición de Alimentos?</b><br>
+    <span style="color:#1C1C1E;font-size:0.9rem;">Es la fuente <b>oficial y nacional</b> (INS/CENAN), elaborada
+    con alimentos y preparaciones típicas del Perú. Sus valores son más precisos para nuestra población que una
+    base genérica, por eso es la base principal del buscador, y FatSecret queda como respaldo complementario.</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### 🍽️ Guía Alimentaria Peruana")
@@ -6261,18 +6299,54 @@ elif hoja_activa == "8.-FATSECRET":
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
     st.caption("Basado en las Guías Alimentarias para la Población Peruana (MINSA).")
 
-    st.markdown("### 🗂️ Alimentos disponibles en el buscador (Tabla Peruana de Composición de Alimentos)")
+    st.markdown("### 🗂️ Alimentos disponibles en el buscador")
     st.caption("343 alimentos curados de mayor consumo en el Perú, agrupados por categoría, con su energía "
-               "(kcal) por 100 g de porción comestible.")
+               "(kcal) por 100 g de porción comestible. Cada grupo tiene su propio color para ubicarlo más fácil.")
     orden_grupos = sorted(GRUPOS_ALIMENTOS.items(), key=lambda kv: -sum(1 for x in FOOD_DB if x["grupo_cod"] == kv[0]))
     for cod, g in orden_grupos:
         items_g = sorted([x for x in FOOD_DB if x["grupo_cod"] == cod], key=lambda x: x["nombre"])
+        color_borde, color_fondo = GRUPOS_COLORES.get(cod, ("#8E8E93", "#F2F2F7"))
+
+        filas_html = ""
+        vistos = set()
+        for it in items_g:
+            nombre_limpio = _limpiar_nombre_alimento(it["nombre"])
+            if not nombre_limpio or nombre_limpio.lower() in vistos:
+                continue
+            vistos.add(nombre_limpio.lower())
+            kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else "s/d"
+            filas_html += (
+                f"<tr><td style='padding:9px 16px;border-bottom:1px solid {color_fondo};color:#1C1C1E;font-size:0.86rem;'>"
+                f"{nombre_limpio}</td>"
+                f"<td style='padding:9px 16px;border-bottom:1px solid {color_fondo};text-align:right;"
+                f"font-weight:700;color:{color_borde};white-space:nowrap;font-size:0.86rem;'>{kcal_txt}</td></tr>"
+            )
+
         with st.expander(f"{g['icono']} {g['nombre']} · {len(items_g)} alimentos"):
-            cols_tabla = st.columns(3)
-            for i, it in enumerate(items_g):
-                kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else "s/d"
-                with cols_tabla[i % 3]:
-                    st.markdown(f"- **{it['nombre']}** · {kcal_txt}")
+            st.markdown(f"""
+            <div style="border-radius:18px;overflow:hidden;border:1px solid {color_fondo};
+                box-shadow:0 1px 2px rgba(0,0,0,0.06),0 6px 18px rgba(0,0,0,0.06);">
+              <div style="background:{color_borde};color:#FFFFFF;padding:12px 18px;font-weight:800;
+                  font-size:0.95rem;display:flex;justify-content:space-between;align-items:center;">
+                <span>{g['icono']} {g['nombre']}</span>
+                <span style="background:rgba(255,255,255,0.25);border-radius:999px;padding:3px 12px;font-size:0.72rem;">
+                    {len(items_g)} alimentos</span>
+              </div>
+              <div style="max-height:360px;overflow-y:auto;background:#FFFFFF;">
+                <table style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr style="background:{color_fondo};position:sticky;top:0;">
+                      <th style="text-align:left;padding:9px 16px;color:{color_borde};font-size:0.7rem;
+                          text-transform:uppercase;letter-spacing:0.03em;">Alimento</th>
+                      <th style="text-align:right;padding:9px 16px;color:{color_borde};font-size:0.7rem;
+                          text-transform:uppercase;letter-spacing:0.03em;">Energía / 100 g</th>
+                    </tr>
+                  </thead>
+                  <tbody>{filas_html}</tbody>
+                </table>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
 
     st.markdown("### 📚 Información para profesionales")
     with st.container():
