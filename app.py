@@ -5261,31 +5261,48 @@ elif hoja_activa == "3.-TMB":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
-    hoja_header(4)
+    hoja_header(4, subtitulo="El Requerimiento Calórico Diario (RCD) es la cantidad de energía que tu cuerpo "
+                             "necesita cada día para funcionar y moverte según tu nivel de actividad actual. "
+                             "Se calcula multiplicando tu metabolismo basal (TMB) por un factor de actividad física.")
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "RCD = TMB × Factor de Actividad Física",
         autor="OMS / FAO / UNU", referencia="Factor de Actividad Física")}</div>""", unsafe_allow_html=True)
 
-    # ===== Stepper: IMC ✔ → TMB ✔ → Factor actividad ✔ → RCD ✔ =====
-    st.markdown("""
-    <div class="rcd-stepper-wrap">
-        <div class="rcd-step done"><span class="rcd-step-num">①</span> IMC <span class="rcd-step-check">✔</span></div>
-        <div class="rcd-step-arrow">→</div>
-        <div class="rcd-step done"><span class="rcd-step-num">②</span> TMB <span class="rcd-step-check">✔</span></div>
-        <div class="rcd-step-arrow">→</div>
-        <div class="rcd-step done"><span class="rcd-step-num">③</span> Factor actividad <span class="rcd-step-check">✔</span></div>
-        <div class="rcd-step-arrow">→</div>
-        <div class="rcd-step done active"><span class="rcd-step-num">④</span> RCD <span class="rcd-step-check">✔</span></div>
-    </div>
-    <style>
-    .rcd-stepper-wrap { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:10px 0 20px 0; }
-    .rcd-step { background:#EAFAEE; color:#1E5631; font-weight:800; font-size:0.85rem; padding:9px 16px;
-                border-radius:999px; display:flex; align-items:center; gap:6px; border:1.5px solid #34C75955; }
-    .rcd-step.active { background:#1E5631; color:#FFFFFF; box-shadow:0 6px 16px rgba(30,86,49,0.30); }
-    .rcd-step-check { font-size:0.8rem; }
-    .rcd-step-arrow { color:#B0B8C1; font-size:1.1rem; }
-    </style>
-    """, unsafe_allow_html=True)
+    # ===== 4 tarjetas grandes: TMB → Nivel de actividad → Factor aplicado → RCD =====
+    _desc_nivel_rcd = {
+        "Sedentario": "Realizas muy poca actividad física durante el día.",
+        "Ligero": "Realizas actividad física ligera durante el día.",
+        "Moderado": "Realizas actividad física moderada durante el día.",
+        "Intenso": "Realizas actividad física intensa durante el día.",
+    }
+    _tarjetas_grandes_rcd = [
+        ("🧍", "Tu metabolismo basal (TMB)", f"{tmb:.0f} kcal/día",
+         "La energía que tu cuerpo necesita incluso en reposo.", "#34C759", "#EAFAEE"),
+        ("🏃", "Tu nivel de actividad", f"{actividad}",
+         _desc_nivel_rcd.get(actividad, "Tu nivel de actividad física habitual durante el día."), "#007AFF", "#EAF3FF"),
+        ("📈", "Factor aplicado", f"{factor:.2f}",
+         "Coeficiente utilizado para calcular tu gasto diario.", "#AF52DE", "#F6ECFC"),
+        ("🔥", "Tu RCD", f"{rcd:.0f} kcal/día",
+         "Las calorías aproximadas que necesitas consumir para mantener tu peso.", "#FF9500", "#FFF3E5"),
+    ]
+    _tarjetas_html_rcd = ""
+    for i, (icono_g, titulo_g, valor_g, desc_g, color_g, fondo_g) in enumerate(_tarjetas_grandes_rcd):
+        _tarjetas_html_rcd += f"""
+        <div style="background:{fondo_g};border:1.5px solid {color_g}33;border-radius:22px;
+                    padding:22px 26px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+            <div style="font-size:2.1rem;">{icono_g}</div>
+            <div style="font-size:0.78rem;font-weight:800;color:{color_g};text-transform:uppercase;
+                        letter-spacing:0.03em;margin-top:4px;">{titulo_g}</div>
+            <div style="font-size:1.8rem;font-weight:900;color:#17301F;margin:6px 0;">{valor_g}</div>
+            <div style="font-size:0.85rem;color:#5C6B60;font-style:italic;max-width:420px;margin:0 auto;">
+                "{desc_g}"</div>
+        </div>"""
+        if i < len(_tarjetas_grandes_rcd) - 1:
+            _tarjetas_html_rcd += """
+        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;margin:2px 0;">↓</div>"""
+    st.markdown(f"""<div style="display:flex;flex-direction:column;gap:2px;margin:16px 0 22px 0;">
+        {_tarjetas_html_rcd}
+    </div>""", unsafe_allow_html=True)
 
     # ===== Tarjeta informativa: Nivel · Coeficiente · Sexo · Fórmula · Referencia =====
     st.markdown(f"""
@@ -5302,6 +5319,12 @@ elif hoja_activa == "4.-RCD":
                  <div style="font-size:1.0rem;font-weight:700;color:#17301F;">RCD = TMB × Factor de actividad</div></div>
             <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📚 Referencia</div>
                  <div style="font-size:1.0rem;font-weight:700;color:#17301F;">Organización Mundial de la Salud (OMS)</div></div>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06);
+                    font-size:0.85rem;color:#5C6B60;line-height:1.5;">
+            Partimos de tu <b>TMB</b> (calculada en la hoja anterior) y la multiplicamos por el <b>coeficiente</b>
+            que corresponde a tu sexo y a tu nivel de actividad física. El resultado es tu <b>RCD</b>: la energía
+            total que tu cuerpo gasta en un día normal, sumando tanto el reposo como el movimiento.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -5337,27 +5360,47 @@ elif hoja_activa == "4.-RCD":
 
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # ===== Barra de progreso comparativa por nivel de actividad =====
-    st.markdown("#### 📊 Comparativa de Niveles")
-    _factor_max_barra = max(f for _, _, _, f, _, _ in _NIVELES_RCD)
-    for nombre_niv, clave_niv, icono_niv, factor_niv, color_niv, fondo_niv in _NIVELES_RCD:
-        _pct_barra = max(6.0, (factor_niv / _factor_max_barra) * 100)
-        _es_sel = (clave_niv == actividad)
-        _marca_sel = " ← seleccionado" if _es_sel else ""
-        _grosor = "6" if _es_sel else "3"
-        st.markdown(f"""
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <div style="width:110px;font-size:0.85rem;font-weight:700;color:#17301F;flex-shrink:0;">{icono_niv} {nombre_niv}</div>
-            <div style="flex:1;height:16px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
-                <div style="width:{_pct_barra:.0f}%;height:100%;border-radius:999px;background:{color_niv};
-                            {'box-shadow:0 0 0 2px ' + color_niv + '55;' if _es_sel else ''}"></div>
-            </div>
-            <div style="width:170px;font-size:0.8rem;font-weight:{'800' if _es_sel else '600'};color:{color_niv if _es_sel else '#8A94A6'};">
-                {factor_niv:.2f}{_marca_sel}</div>
+    # ===== ¿Qué significa tu RCD? =====
+    st.markdown(f"""
+    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
+        <div style="font-weight:800;color:#C06000;font-size:1rem;margin-bottom:6px;">💡 ¿Qué significa tu RCD?</div>
+        <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
+            Si consumes aproximadamente 🔥 <b>{rcd:.0f} kcal al día</b> y mantienes el mismo nivel de actividad
+            física, ⚖️ <b>tu peso tenderá a mantenerse estable</b>. Este es tu punto de equilibrio calórico: comes
+            la misma energía que gastas, así que no ganas ni pierdes peso.
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    # ===== ¿Qué representa el factor de actividad? =====
+    st.markdown(f"""
+    <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
+        <div style="font-weight:800;color:#0B4DA8;font-size:1rem;margin-bottom:6px;">📈 ¿Qué representa el factor de actividad?</div>
+        <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
+            Mientras más te mueves durante el día, más energía necesita tu cuerpo. Por eso el cálculo utiliza un
+            coeficiente que aumenta el gasto calórico según tu nivel de actividad física: multiplica tu TMB para
+            reflejar la energía extra que gastas al trabajar, caminar, hacer ejercicio y todas tus actividades diarias.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== ¿Quién recomienda este método? =====
+    st.markdown("""
+    <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
+        <div style="font-weight:800;color:#1E5631;font-size:1rem;margin-bottom:10px;">📚 ¿Quién recomienda este método?</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div><b style="color:#17301F;">🇺🇳 Organización Mundial de la Salud (OMS)</b>
+                <div style="color:#5C6B60;font-size:0.85rem;">Establece las pautas internacionales sobre los
+                requerimientos de energía y nutrición que se usan como referencia en esta app.</div></div>
+            <div><b style="color:#17301F;">🌾 FAO (Organización de las Naciones Unidas para la Alimentación y la Agricultura)</b>
+                <div style="color:#5C6B60;font-size:0.85rem;">Junto con la OMS, elabora los reportes técnicos con
+                las tablas de necesidades energéticas humanas usadas a nivel mundial.</div></div>
+            <div><b style="color:#17301F;">🎓 UNU (Universidad de las Naciones Unidas)</b>
+                <div style="color:#5C6B60;font-size:0.85rem;">Colabora con la OMS y la FAO en la investigación y
+                validación científica de los factores de actividad física utilizados en este cálculo.</div></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ===== Diagrama del cálculo: TMB → × Factor → = RCD =====
     st.markdown("#### 🧮 Diagrama del Cálculo")
