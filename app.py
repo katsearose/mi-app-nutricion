@@ -543,6 +543,94 @@ div[data-testid="stImageCaption"] {
 .cta-pill-btn { display:inline-block; margin-top:6px; font-size:0.74rem; font-weight:800; padding:5px 14px;
                 border-radius: var(--bento-pill); }
 
+/* ---------- Panel "Tu Diagnóstico Nutricional" (Hoja 2 · IMC) ---------- */
+.diag-panel { background:#FFFFFF; border-radius: var(--bento-radius-lg); padding:22px 24px; margin-bottom:14px;
+              box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round); }
+.diag-panel-title { font-weight:800; font-size:1.1rem; color:#6A1B9A; margin-bottom:14px; }
+.diag-kpi-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
+.diag-kpi { background:#F7F4FB; border-radius:16px; padding:14px 10px; text-align:center; }
+.diag-kpi-icon { font-size:1.3rem; }
+.diag-kpi-label { font-size:0.72rem; font-weight:800; color:#8A94A6; text-transform:uppercase; letter-spacing:0.04em; margin-top:4px; }
+.diag-kpi-val { font-size:1.02rem; font-weight:800; margin-top:4px; line-height:1.2; }
+.diag-frase { margin-top:16px; background:#FAFAFC; border-radius:14px; padding:14px 18px; display:flex;
+              gap:10px; align-items:flex-start; font-size:0.9rem; color:#2A2E35; line-height:1.5; }
+
+/* ---------- Escala horizontal de IMC (reemplaza al velocímetro como foco principal) ---------- */
+.escala-imc-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                    box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
+.escala-imc-zonas { display:flex; width:100%; height:14px; border-radius:999px; overflow:hidden; margin:34px 0 6px 0; position:relative; }
+.escala-imc-labels { display:flex; width:100%; }
+.escala-imc-labels span { flex:1; text-align:center; font-size:0.68rem; font-weight:800; color:#8A94A6; }
+.escala-imc-marker { position:absolute; top:-30px; transform:translateX(-50%); text-align:center; }
+.escala-imc-marker-tri { width:0; height:0; margin:0 auto; border-left:7px solid transparent;
+                          border-right:7px solid transparent; border-top:9px solid #24262B; }
+
+/* ---------- Percentil visual "de cada 100" ---------- */
+.perc-visual-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                     box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
+.perc-visual-grid { display:grid; grid-template-columns: repeat(10, 1fr); gap:4px; margin:12px 0; }
+.perc-visual-dot { width:100%; padding-top:100%; border-radius:3px; }
+
+/* ---------- Estado nutricional (checklist) ---------- */
+.estado-nutri-item { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:#2A2E35; margin-top:6px; }
+
+/* ---------- ¿Qué puedes hacer desde hoy? ---------- */
+.accion-card { background:#FFFFFF; border-radius:16px; padding:14px 12px; text-align:center; height:100%;
+               box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
+.accion-card .accion-emoji { font-size:1.5rem; }
+.accion-card .accion-txt { font-size:0.76rem; font-weight:700; color:#2A2E35; margin-top:6px; line-height:1.3; }
+
+/* ---------- Barra de progreso hacia meta de IMC ---------- */
+.progreso-imc-track { position:relative; width:100%; height:16px; border-radius:999px; background:#EDEDF2; margin:26px 0 8px 0; }
+.progreso-imc-fill { position:absolute; top:0; left:0; height:100%; border-radius:999px; background:linear-gradient(90deg,#42A5F5,#34C759); }
+.progreso-imc-meta { position:absolute; top:-22px; transform:translateX(-50%); font-size:0.7rem; font-weight:800; color:#34C759; text-align:center; }
+.progreso-imc-tu { position:absolute; top:20px; transform:translateX(-50%); font-size:0.7rem; font-weight:800; color:#1565C0; text-align:center; }
+
+/* ---------- Conexión con el resto del sistema ---------- */
+.conexion-card { display:flex; align-items:center; gap:14px; background:#FFFFFF; border-radius:16px; padding:14px 16px;
+                  box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); text-decoration:none;
+                  font-family: var(--font-round); margin-bottom:10px; }
+.conexion-icon { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+                  font-size:1.2rem; flex-shrink:0; }
+.conexion-title { font-weight:800; font-size:0.85rem; color:#24262B; }
+.conexion-desc { font-size:0.76rem; color:#8A94A6; margin-top:1px; }
+.conexion-arrow { margin-left:auto; font-weight:800; color:#8A94A6; flex-shrink:0; }
+
+/* ---------- Hoja 3 (TMB) — ilustración, resultado, fórmula horizontal, flujo y central energética ---------- */
+.tmb-ilustra-wrap { background:#FFFFFF; border-radius: var(--bento-radius-lg); padding:22px 24px;
+                     box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round);
+                     text-align:center; }
+.tmb-ilustra-item { font-size:0.92rem; font-weight:700; color:#2A2E35; margin:6px 0; }
+.tmb-ilustra-flecha { font-size:1.2rem; color:#C2C6D0; margin:2px 0; }
+.tmb-resultado-card { background:linear-gradient(120deg,#FFF3E0 0%,#FFFFFF 75%); border-radius: var(--bento-radius-lg);
+                       padding:26px 28px; text-align:center; box-shadow: var(--bento-shadow);
+                       border:1px solid rgba(251,140,0,0.18); font-family: var(--font-round); }
+.tmb-resultado-num { font-size:2.6rem; font-weight:800; color:#E67E22; letter-spacing:-0.02em; margin:6px 0; }
+.tmb-formula-genero-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; margin-bottom:14px;
+                            box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round); }
+.tmb-formula-genero-title { font-weight:800; font-size:0.95rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.tmb-formula-flow { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.tmb-formula-box { border-radius:14px; padding:10px 14px; text-align:center; font-weight:800; font-size:0.86rem;
+                    min-width:78px; }
+.tmb-formula-box .tmb-box-sub { display:block; font-size:0.66rem; font-weight:700; opacity:0.85; margin-top:2px; }
+.tmb-formula-arrow { font-size:1.3rem; font-weight:800; flex-shrink:0; }
+.tmb-quien-card { background:#F5F0FF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                   box-shadow: var(--bento-shadow); border:1px solid rgba(88,86,214,0.14); font-family: var(--font-round); }
+.tmb-porque-card { background:#EAFAF6; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                    box-shadow: var(--bento-shadow); border:1px solid rgba(0,199,160,0.16); font-family: var(--font-round); }
+.tmb-porque-item { display:flex; align-items:flex-start; gap:8px; font-size:0.84rem; color:#1E5631; margin-top:8px; line-height:1.4; }
+.tmb-central-wrap { background:#171A2B; border-radius: var(--bento-radius-lg); padding:28px 24px; text-align:center;
+                     font-family: var(--font-round); color:#FFFFFF; box-shadow: var(--bento-shadow); }
+.tmb-central-kcal { font-size:1.9rem; font-weight:800; color:#FFD54F; margin:6px 0 18px 0; }
+.tmb-central-organos { display:flex; justify-content:center; gap:26px; flex-wrap:wrap; }
+.tmb-central-organo { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.tmb-central-led { width:10px; height:10px; border-radius:50%; background:#FFD54F; box-shadow:0 0 8px 2px #FFD54F99; }
+.tmb-central-label { font-size:0.7rem; font-weight:700; color:#C7CBE0; }
+.tmb-flujo-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:20px; text-align:center;
+                   box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round); }
+.tmb-flujo-row { display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.tmb-flujo-chip { background:#F7F4FB; border-radius:14px; padding:10px 16px; font-weight:800; font-size:0.82rem; color:#24262B; }
+
 /* ---------- Semáforo Clínico — tarjetas-gauge dinámicas (Hoja 1 y Reporte) ---------- */
 .sema-card {
     background:#FFFFFF; border-radius:20px; padding:16px 14px; height:100%;
@@ -1522,10 +1610,16 @@ def clasif_hemoglobina(valor, etapa, genero):
         elif valor <= 11.9: return "Anemia leve"
         else: return "Normal"
     if genero == "Hombre":
-        if valor < 8: return "Anemia grave"
-        elif valor <= 10.9: return "Anemia moderada"
-        elif valor <= 12.9: return "Anemia leve"
-        else: return "Normal"
+        if etapa == "Adolescencia":
+            if valor < 8: return "Anemia grave"
+            elif valor <= 10.9: return "Anemia moderada"
+            elif valor <= 12.9: return "Anemia leve"
+            else: return "Normal"
+        else:  # Adultez / Vejez
+            if valor < 8: return "Anemia grave"
+            elif valor <= 10.9: return "Anemia moderada"
+            elif valor <= 13.7: return "Anemia leve"
+            else: return "Normal"
     # Solo se alcanza si el género no es "Hombre" ni "Mujer" (no debería ocurrir desde la UI)
     return "Revisa Datos"
 
@@ -1690,7 +1784,9 @@ def _umbral_normal_hemo(etapa, genero):
         return 11.5
     if genero == "Mujer":
         return 12.0
-    return 13.0
+    if genero == "Hombre" and etapa == "Adolescencia":
+        return 13.0
+    return 13.8
 
 
 def _zonas_gauge(parametro, etapa=None, genero=None):
@@ -2116,13 +2212,13 @@ def tarjeta_categoria_imc(titulo, categoria):
 # TABLA VISUAL — "Categorías Generales de IMC" con avatares, rangos y barra de posición
 # =========================================================================================
 _CATEGORIAS_IMC_DEF = [
-    ("Bajo Peso",                "Menos de 18.5", "Tu peso está por debajo de lo recomendado para tu altura.", "🛡️", "#34C759", None, 18.5),
-    ("Peso Saludable",           "18.5 a 24.9",   "Tu peso está dentro del rango saludable.",                   "💚", "#2E9E4A", 18.5, 24.9),
-    ("Sobrepeso",                "25 a 29.9",     "Tu peso está por encima de lo saludable.",                   "🏋️", "#1E88E5", 25, 29.9),
-    ("Obesidad",                 "30 o más",      "Tu peso está muy por encima de lo saludable.",               "⚠️", "#FF9F43", 30, None),
-    ("Obesidad Clase 1",         "30 a 34.9",     "Riesgo moderado para la salud.",                             "1️⃣", "#FF6B81", 30, 34.9),
-    ("Obesidad Clase 2",         "35 a 39.9",     "Mayor riesgo para la salud.",                                "2️⃣", "#F0384A", 35, 39.9),
-    ("Obesidad Clase 3 (Severa)", "40 o más",     "Riesgo muy alto para la salud.",                             "3️⃣", "#B71C33", 40, None),
+    ("Bajo Peso",                "Menos de 18.5", "Tu peso está por debajo de lo recomendado para tu altura.", "🛡️", "#34C759", None, 18.5, ("🟢 Bajo", "#34C759")),
+    ("Peso Saludable",           "18.5 a 24.9",   "Tu peso está dentro del rango saludable.",                   "💚", "#2E9E4A", 18.5, 24.9, ("🟢 Bajo", "#34C759")),
+    ("Sobrepeso",                "25 a 29.9",     "Tu peso está por encima de lo saludable.",                   "🏋️", "#1E88E5", 25, 29.9, ("🟡 Moderado", "#FFCC00")),
+    ("Obesidad",                 "30 o más",      "Tu peso está muy por encima de lo saludable.",               "⚠️", "#FF9F43", 30, None, ("🟠 Alto", "#FF9500")),
+    ("Obesidad Clase 1",         "30 a 34.9",     "Riesgo moderado para la salud.",                             "1️⃣", "#FF6B81", 30, 34.9, ("🔴 Muy alto", "#FF3B30")),
+    ("Obesidad Clase 2",         "35 a 39.9",     "Mayor riesgo para la salud.",                                "2️⃣", "#F0384A", 35, 39.9, ("🔴 Muy alto", "#FF3B30")),
+    ("Obesidad Clase 3 (Severa)", "40 o más",     "Riesgo muy alto para la salud.",                             "3️⃣", "#B71C33", 40, None, ("🔴 Muy alto", "#FF3B30")),
 ]
 _ESCALA_MIN, _ESCALA_MAX = 0, 40
 
@@ -2133,7 +2229,7 @@ def tabla_categorias_imc_visual(imc_usuario=None):
     y en la 3ra columna un indicador de línea con dos puntos marcando el inicio/fin de cada
     rango sobre la escala global (0 a 40+), muy similar a la referencia de diseño."""
     filas_html = []
-    for nombre, rango_txt, subtxt, icono, color, ini, fin in _CATEGORIAS_IMC_DEF:
+    for nombre, rango_txt, subtxt, icono, color, ini, fin, riesgo in _CATEGORIAS_IMC_DEF:
         ini_v = _ESCALA_MIN if ini is None else ini
         fin_v = _ESCALA_MAX if fin is None else fin
         izq = max(0.0, min(100.0, (ini_v - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
@@ -2150,8 +2246,9 @@ def tabla_categorias_imc_visual(imc_usuario=None):
                 marcador_usuario = (f'<div style="position:absolute;top:-14px;left:{pos_usuario:.1f}%;'
                                      f'transform:translateX(-50%);font-size:0.85rem;">📍</div>')
 
+        _r_txt, _r_color = riesgo
         filas_html.append(f"""
-        <div class="imc-row">
+        <div class="imc-row" style="grid-template-columns:1.5fr 0.9fr 1.7fr 1fr;">
             <div style="display:flex;align-items:center;">
                 <span class="imc-clasif-avatar" style="background:{color}22;">{icono}</span>
                 <div>
@@ -2173,6 +2270,9 @@ def tabla_categorias_imc_visual(imc_usuario=None):
                 </div>
                 <div class="imc-scale-ends"><span>0</span><span>40+</span></div>
             </div>
+            <div style="text-align:center;">
+                <span class="bento-pill" style="background:{_r_color}1A;color:{_r_color};">{_r_txt}</span>
+            </div>
         </div>
         """)
 
@@ -2185,8 +2285,8 @@ def tabla_categorias_imc_visual(imc_usuario=None):
                 <div class="imc-table-sub">El Índice de Masa Corporal (IMC) es una guía que relaciona tu peso con tu altura para conocer tu estado nutricional.</div>
             </div>
         </div>
-        <div class="imc-table-head">
-            <span>🔖 Clasificación</span><span>📝 Rango de IMC</span><span>📊 ¿Dónde te encuentras?</span>
+        <div class="imc-table-head" style="grid-template-columns:1.5fr 0.9fr 1.7fr 1fr;">
+            <span>🔖 Clasificación</span><span>📝 Rango de IMC</span><span>📊 ¿Dónde te encuentras?</span><span>🚨 Riesgo</span>
         </div>
         {''.join(filas_html)}
         <div class="imc-footer-banner">
@@ -2213,22 +2313,33 @@ _PERC_COL_ESTILO = [
 ]
 
 
-def _tarjeta_percentil_genero(genero_tabla, tabla, edad_usuario=None, genero_usuario=None):
+_PERC_CATEGORIA_COL = {"Bajo Peso": 0, "Peso Saludable": 1, "Sobrepeso": 2, "Obesidad": 3}
+
+
+def _tarjeta_percentil_genero(genero_tabla, tabla, edad_usuario=None, genero_usuario=None, categoria_usuario=None):
     """Construye una tarjeta de percentiles (Mujer=rosa / Hombre=azul) con cabecera ilustrada,
-    columnas P5/P50/P85/P95 con color propio, filas alternadas y la fila del usuario resaltada."""
+    columnas P5/P50/P85/P95 con color propio, filas alternadas, la fila del usuario resaltada,
+    y además la columna (P5/P50/P85/P95) donde cayó su IMC resaltada con un marco de color."""
     if genero_tabla == "Mujer":
         fondo_banner, color_titulo, icono, badge = "#FCE4EC", "#C2185B", "👧", "♀"
     else:
         fondo_banner, color_titulo, icono, badge = "#E3F2FD", "#1976D2", "👦", "♂"
+
+    col_activa = _PERC_CATEGORIA_COL.get(categoria_usuario) if genero_usuario == genero_tabla else None
 
     filas = []
     for i, edad in enumerate(sorted(tabla.keys())):
         p5, p50, p85, p95 = tabla[edad]
         es_usuario = (edad_usuario == edad and genero_usuario == genero_tabla)
         clases = ("zebra " if i % 2 == 1 else "") + ("user-row" if es_usuario else "")
+        _vals = [p5, p50, p85, p95]
+        _tds = "".join(
+            f'<td style="{"box-shadow:inset 0 0 0 2px " + color_titulo + ";background:" + color_titulo + "14;font-weight:800;" if (es_usuario and col_activa == _j) else ""}">{_v}</td>'
+            for _j, _v in enumerate(_vals)
+        )
         filas.append(f"""<tr class="{clases.strip()}">
             <td style="font-weight:800;color:{color_titulo};">{edad}{' ⭐' if es_usuario else ''}</td>
-            <td>{p5}</td><td>{p50}</td><td>{p85}</td><td>{p95}</td>
+            {_tds}
         </tr>""")
 
     ths = "".join(
@@ -2254,14 +2365,14 @@ def _tarjeta_percentil_genero(genero_tabla, tabla, edad_usuario=None, genero_usu
     st.markdown(html, unsafe_allow_html=True)
 
 
-def tabla_percentiles_genero_visual(edad_usuario=None, genero_usuario=None):
+def tabla_percentiles_genero_visual(edad_usuario=None, genero_usuario=None, categoria_usuario=None):
     """Layout split de dos columnas (grid) con las tarjetas de percentil de Mujer y Hombre,
     reemplazando las dos tablas planas de st.dataframe."""
     col_m, col_h = st.columns(2)
     with col_m:
-        _tarjeta_percentil_genero("Mujer", PERCENTIL_MUJER, edad_usuario, genero_usuario)
+        _tarjeta_percentil_genero("Mujer", PERCENTIL_MUJER, edad_usuario, genero_usuario, categoria_usuario)
     with col_h:
-        _tarjeta_percentil_genero("Hombre", PERCENTIL_HOMBRE, edad_usuario, genero_usuario)
+        _tarjeta_percentil_genero("Hombre", PERCENTIL_HOMBRE, edad_usuario, genero_usuario, categoria_usuario)
 
 
 def fila_dominios_salud(dominios):
@@ -2289,6 +2400,449 @@ def cta_pill(icono, color, titulo, desc, boton_texto, url):
             <span class="cta-pill-btn" style="background:{color};color:#FFFFFF;">{boton_texto} →</span>
         </div>
     </a>
+    """, unsafe_allow_html=True)
+
+
+# =========================================================================================
+# HOJA 2 (IMC) — componentes rediseñados: panel-resumen, escala horizontal, percentil visual,
+# estado nutricional, acciones, progreso hacia meta y conexión con el resto del sistema.
+# =========================================================================================
+_RIESGO_POR_CATEGORIA = {
+    "Bajo Peso": ("Moderado", "#FF9500"),
+    "Peso Saludable": ("Bajo", "#34C759"),
+    "Sobrepeso": ("Moderado", "#FF9500"),
+    "Obesidad": ("Alto", "#FF3B30"),
+    "Obesidad Clase 1": ("Alto", "#FF3B30"),
+    "Obesidad Clase 2": ("Muy alto", "#D70015"),
+    "Obesidad Clase 3": ("Muy alto", "#D70015"),
+    "Obesidad Clase 3 (Severa)": ("Muy alto", "#D70015"),
+}
+
+_FRASE_POR_CATEGORIA = {
+    "Bajo Peso": "Según tus datos actuales, tu peso se encuentra por debajo del rango recomendado para tu edad y estatura.",
+    "Peso Saludable": "Según tus datos actuales, tu peso se encuentra dentro del rango recomendado para tu edad y estatura. ¡Sigue así!",
+    "Sobrepeso": "Según tus datos actuales, tu peso se encuentra por encima del rango recomendado para tu edad y estatura.",
+    "Obesidad": "Según tus datos actuales, tu peso se encuentra muy por encima del rango recomendado para tu edad y estatura.",
+    "Obesidad Clase 1": "Según tus datos actuales, tu peso se encuentra por encima del rango recomendado, con riesgo moderado para tu salud.",
+    "Obesidad Clase 2": "Según tus datos actuales, tu peso se encuentra muy por encima del rango recomendado, con mayor riesgo para tu salud.",
+    "Obesidad Clase 3": "Según tus datos actuales, tu peso se encuentra muy por encima del rango recomendado, con riesgo alto para tu salud.",
+    "Obesidad Clase 3 (Severa)": "Según tus datos actuales, tu peso se encuentra muy por encima del rango recomendado, con riesgo muy alto para tu salud.",
+}
+
+
+def panel_diagnostico_nutricional(imc, percentil_valor, categoria, con_percentil=True):
+    """Sección 1: 'Tu Diagnóstico Nutricional' — 4 tarjetas iguales (IMC, Percentil, Estado,
+    Riesgo) seguidas de una frase-resumen grande, en vez del flujo largo de cajas dispersas."""
+    estilo = color_categoria_imc(categoria)
+    riesgo_txt, riesgo_color = _RIESGO_POR_CATEGORIA.get(categoria, ("—", "#8E8E93"))
+    perc_display = f"P{percentil_valor}" if (con_percentil and percentil_valor is not None) else "—"
+    tarjetas = [
+        ("IMC", str(imc), "⚖️", "#1E5631"),
+        ("Percentil", perc_display, "📊", "#1E88E5"),
+        ("Estado", categoria, "🩺", estilo["hex"]),
+        ("Riesgo", riesgo_txt, "🚨", riesgo_color),
+    ]
+    _kpis = "".join(f"""
+        <div class="diag-kpi">
+            <div class="diag-kpi-icon">{ic}</div>
+            <div class="diag-kpi-label">{lbl}</div>
+            <div class="diag-kpi-val" style="color:{col};">{val}</div>
+        </div>""" for lbl, val, ic, col in tarjetas)
+    frase = _FRASE_POR_CATEGORIA.get(categoria, "Revisa tus datos para conocer tu diagnóstico nutricional.")
+    st.markdown(f"""
+    <div class="diag-panel">
+        <div class="diag-panel-title">🩺 Tu Diagnóstico Nutricional</div>
+        <div class="diag-kpi-grid">{_kpis}</div>
+        <div class="diag-frase" style="border-left:5px solid {estilo['hex']};">
+            <span style="font-size:1.3rem;">{_ILUSTRA_CATEGORIA.get(estilo['colorSemaforo'], '⚪')}</span>
+            <span>{frase}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+_ESCALA_ADULTO_ZONAS = [("Bajo", "#42A5F5", 0, 18.5), ("Normal", "#34C759", 18.5, 25.0),
+                         ("Sobrepeso", "#FF9F43", 25.0, 30.0), ("Obesidad", "#FF5C7C", 30.0, 40.0)]
+_ESCALA_INFANTIL_ZONAS = [("Bajo Peso", "#42A5F5", "< 5"), ("Saludable", "#34C759", "5 – 85"),
+                           ("Sobrepeso", "#FF9F43", "85 – 95"), ("Obesidad", "#FF5C7C", "> 95")]
+
+
+def escala_horizontal_imc(imc, categoria, etapa, percentil_valor=None):
+    """Sección 2: escala horizontal (reemplaza el velocímetro como pieza principal) que muestra
+    de un vistazo en qué zona cae el valor del usuario, con una flecha marcando su posición."""
+    _es_infantil = etapa in ("Niñez", "Adolescencia") and percentil_valor is not None
+    if _es_infantil:
+        _nombres_colores = [(n, c) for n, c, _ in _ESCALA_INFANTIL_ZONAS]
+        _idx_map = {"Bajo Peso": 0, "Peso Saludable": 1, "Sobrepeso": 2, "Obesidad": 3}
+        _idx_activo = _idx_map.get(categoria, 1)
+        _pos_pct = {0: 5, 1: 45, 2: 82, 3: 96}.get(_idx_activo, 45)
+        _valor_mostrar = f"P{percentil_valor}"
+    else:
+        _nombres_colores = [(n, c) for n, c, _, _ in _ESCALA_ADULTO_ZONAS]
+        _min_v, _max_v = 10.0, 40.0
+        _pos_pct = max(2.0, min(98.0, (imc - _min_v) / (_max_v - _min_v) * 100))
+        _valor_mostrar = str(imc)
+
+    _segmentos = "".join(f'<div style="flex:1;background:{c};"></div>' for _, c in _nombres_colores)
+    _etiquetas = "".join(f"<span>{n}</span>" for n, _ in _nombres_colores)
+    estilo = color_categoria_imc(categoria)
+    st.markdown(f"""
+    <div class="escala-imc-wrap">
+        <span class="bento-eyebrow">Dónde te ubicas</span>
+        <div style="position:relative;">
+            <div class="escala-imc-marker" style="left:{_pos_pct:.1f}%;">
+                <div style="font-weight:800;font-size:0.95rem;color:{estilo['hex']};">Tú ({_valor_mostrar})</div>
+                <div class="escala-imc-marker-tri"></div>
+            </div>
+            <div class="escala-imc-zonas">{_segmentos}</div>
+        </div>
+        <div class="escala-imc-labels">{_etiquetas}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def percentil_visual_card(percentil_valor):
+    """Sección 3: representación visual de 100 puntos (10x10) donde se colorean cuántos niños
+    quedan por debajo del percentil del usuario, con una frase explicativa sencilla."""
+    _debajo_map = {"< 5": 5, "50": 50, "85": 85, "95": 95}
+    _debajo = _debajo_map.get(str(percentil_valor), 50)
+    _dots = "".join(
+        f'<div class="perc-visual-dot" style="background:{"#1E88E5" if _i < _debajo else "#E3F2FD"};"></div>'
+        for _i in range(100)
+    )
+    st.markdown(f"""
+    <div class="perc-visual-wrap">
+        <span class="bento-eyebrow">👦 Percentil {percentil_valor}</span>
+        <div style="font-size:0.82rem;color:#5C6B60;margin-top:4px;">De cada 100 niños de tu misma edad y sexo:</div>
+        <div class="perc-visual-grid">{_dots}</div>
+        <div style="font-size:0.85rem;color:#17301F;line-height:1.5;">
+            <b style="color:#1E88E5;">{_debajo}</b> están por debajo de tu IMC.<br>
+            Solo <b style="color:#1E88E5;">{100 - _debajo}</b> tienen un IMC mayor.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+_ESTADO_CHECKLIST = {
+    "Bajo Peso": ["Riesgo de déficit nutricional ↑", "Puede afectar energía y defensas", "Conviene aumentar ingesta calórica de calidad", "Recomendable acudir a nutrición"],
+    "Peso Saludable": ["Riesgo cardiovascular bajo", "Riesgo metabólico bajo", "Mantén tus hábitos actuales", "Sigue con controles periódicos"],
+    "Sobrepeso": ["Riesgo cardiovascular ↑", "Riesgo metabólico ↑", "Conviene mejorar la alimentación", "Recomendable acudir a nutrición"],
+    "Obesidad": ["Riesgo cardiovascular ↑↑", "Riesgo metabólico ↑↑", "Conviene reducir peso", "Recomendable acudir a nutrición"],
+}
+
+
+def tarjeta_estado_nutricional(categoria):
+    """Sección 4: tarjeta 'Estado Nutricional' tipo diagnóstico con checklist, en vez de
+    mostrar solamente la palabra de la categoría."""
+    estilo = color_categoria_imc(categoria)
+    _items = _ESTADO_CHECKLIST.get(categoria, _ESTADO_CHECKLIST["Sobrepeso"])
+    _lis = "".join(f'<div class="estado-nutri-item"><span>✓</span><span>{it}</span></div>' for it in _items)
+    st.markdown(f"""
+    <div class="bento-card" style="border-top:4px solid {estilo['hex']};">
+        <span class="bento-eyebrow">🩺 Estado Nutricional</span>
+        <div style="font-weight:800;font-size:1.2rem;color:{estilo['hex']};margin:4px 0 8px 0;">{categoria}</div>
+        {_lis}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def interpretacion_inteligente_imc(imc, categoria, etapa, riesgo_txt):
+    """Sección 5: caja 'Interpretación Inteligente' con bullets, en el mismo estilo que el
+    resumen clínico del análisis sanguíneo."""
+    _puntos = []
+    if categoria == "Peso Saludable":
+        _puntos = ["Tu peso está dentro del rango saludable para tu edad y estatura.",
+                    "El objetivo es mantener tus hábitos actuales.",
+                    "Continúa con actividad física regular.",
+                    "Mantén una alimentación variada y equilibrada."]
+    else:
+        _puntos = [f"Existe {'déficit' if categoria == 'Bajo Peso' else 'exceso'} de peso según tu IMC{' y percentil' if etapa in ('Niñez', 'Adolescencia') else ''}.",
+                    "El crecimiento y la evolución del peso deben seguir vigilándose.",
+                    "Conviene reducir bebidas azucaradas y ultraprocesados." if categoria != "Bajo Peso" else "Conviene aumentar el aporte calórico con alimentos nutritivos.",
+                    "Incrementar la actividad física y cuidar las horas de sueño."]
+    _bg = "#EAFAEE" if categoria == "Peso Saludable" else "#FFF6E0"
+    _color = "#1E5631" if categoria == "Peso Saludable" else "#B8860B"
+    _lis = "".join(f"<li>{p}</li>" for p in _puntos)
+    st.markdown(f"""
+    <div style="background:{_bg};border-radius:18px;padding:16px 20px;margin-top:6px;">
+        <div style="font-weight:800;color:{_color};margin-bottom:6px;">🧠 Interpretación Inteligente</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;">Según tu IMC{' y tu percentil' if etapa in ('Niñez','Adolescencia') else ''} (riesgo: {riesgo_txt}):</div>
+        <ul style="margin:6px 0 0 18px;padding:0;font-size:0.85rem;color:#3A3A3C;line-height:1.7;">{_lis}</ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def que_influye_imc():
+    """Sección 6: '¿Qué puede influir en tu IMC?' con iconos grandes (reemplaza el bloque
+    'Tu IMC puede estar relacionado con', que sonaba a publicidad)."""
+    st.markdown('<div class="info3-title" style="margin-top:4px;">🔎 ¿Qué puede influir en tu IMC?</div>', unsafe_allow_html=True)
+    fila_dominios_salud([
+        ("🥤", "#1E88E5", "Bebidas azucaradas"),
+        ("🍔", "#FF9500", "Alimentación"),
+        ("🏃", "#34C759", "Actividad física"),
+        ("😴", "#AF52DE", "Sueño"),
+        ("🧬", "#FF2D55", "Genética"),
+    ])
+
+
+def recordar_alerta_clinica():
+    """Sección 7: alerta tipo clínica para el aviso 'El IMC no diagnostica enfermedades'."""
+    st.markdown("""
+    <div style="background:#FFF9E5;border:1px solid #FFE58F55;border-radius:16px;padding:16px 18px;">
+        <div style="font-weight:800;color:#B8860B;margin-bottom:6px;">💡 Importante</div>
+        <div style="font-size:0.85rem;color:#7A5C00;line-height:1.6;">
+        El IMC <b>NO</b> diagnostica enfermedades. Es una herramienta de detección.<br>
+        Siempre debe interpretarse junto con:<br>
+        ✔ Edad &nbsp;&nbsp; ✔ Sexo &nbsp;&nbsp; ✔ Composición corporal &nbsp;&nbsp; ✔ Evaluación clínica
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def links_uniformes_mas_info():
+    """Sección 8: fila de enlaces 'Más información' con estilo uniforme (CDC, OMS, MedlinePlus,
+    Mayo Clinic), reemplazando los botones grandes tipo anuncio."""
+    st.markdown('<div class="info3-title" style="margin-top:4px;">📚 Más información</div>', unsafe_allow_html=True)
+    cl1, cl2, cl3, cl4 = st.columns(4)
+    _links = [
+        ("📚", "#1565C0", "CDC", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html"),
+        ("❤️", "#C0392B", "OMS", "https://www.who.int/es/news-room/fact-sheets/detail/obesity-and-overweight"),
+        ("🥗", "#2E9E4A", "MedlinePlus", "https://medlineplus.gov/spanish/ency/article/007196.htm"),
+        ("🏥", "#AF52DE", "Mayo Clinic", "https://www.mayoclinic.org/es/healthy-lifestyle/adult-health/in-depth/bmi-calculator/itt-20084938"),
+    ]
+    for _col, (_ic, _co, _tt, _url) in zip([cl1, cl2, cl3, cl4], _links):
+        with _col:
+            st.markdown(f"""
+            <a href="{_url}" target="_blank" style="text-decoration:none;">
+                <div class="bento-card" style="text-align:center;padding:14px 8px;">
+                    <div style="font-size:1.3rem;">{_ic}</div>
+                    <div style="font-weight:800;font-size:0.78rem;color:{_co};margin-top:4px;">{_tt}</div>
+                </div>
+            </a>
+            """, unsafe_allow_html=True)
+
+
+_ACCIONES_DESDE_HOY = [
+    ("🥛", "Cambia gaseosas por agua"), ("🚶", "Camina 30 minutos"), ("🍎", "Come fruta"),
+    ("🥦", "Más verduras"), ("😴", "Duerme suficiente"), ("⚽", "Muévete todos los días"),
+]
+
+
+def acciones_desde_hoy():
+    """Sección 12: '¿Qué puedes hacer desde hoy?' con tarjetas cortas de hábitos, en vez de
+    consejos largos en párrafo."""
+    st.markdown("#### 🌱 ¿Qué puedes hacer desde hoy?")
+    _cols = st.columns(len(_ACCIONES_DESDE_HOY))
+    for _col, (_em, _txt) in zip(_cols, _ACCIONES_DESDE_HOY):
+        with _col:
+            st.markdown(f"""
+            <div class="accion-card">
+                <div class="accion-emoji">{_em}</div>
+                <div class="accion-txt">{_txt}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+
+def progreso_hacia_meta_imc(imc, categoria):
+    """Sección 13: barra de progreso del IMC actual hacia la meta saludable (22), conectando
+    con la hoja de Control de Peso / Proyección."""
+    if categoria == "Peso Saludable":
+        st.success(f"🎯 Tu IMC actual ({imc}) ya está dentro del rango saludable (18.5 – 24.9). ¡Sigue así!")
+        return
+    _min_v, _max_v, _meta = 10.0, 40.0, 22.0
+    _pos_tu = max(2.0, min(98.0, (imc - _min_v) / (_max_v - _min_v) * 100))
+    _pos_meta = max(2.0, min(98.0, (_meta - _min_v) / (_max_v - _min_v) * 100))
+    _fill_izq, _fill_der = (min(_pos_tu, _pos_meta), max(_pos_tu, _pos_meta))
+    _diff = round(abs(imc - _meta), 1)
+    st.markdown(f"""
+    <div class="bento-card">
+        <span class="bento-eyebrow">📈 Progreso hacia un IMC saludable</span>
+        <div style="position:relative;">
+            <div class="progreso-imc-meta" style="left:{_pos_meta:.1f}%;">🎯 Meta<br>{_meta:g}</div>
+            <div class="progreso-imc-track">
+                <div class="progreso-imc-fill" style="left:{_fill_izq:.1f}%;width:{max(1.0, _fill_der - _fill_izq):.1f}%;"></div>
+            </div>
+            <div class="progreso-imc-tu" style="left:{_pos_tu:.1f}%;">📍 Tú<br>{imc:g}</div>
+        </div>
+        <div style="margin-top:26px;font-size:0.85rem;color:#5C6B60;">
+        Faltan aproximadamente <b style="color:#1E5631;">{_diff} puntos de IMC</b> para entrar al rango saludable.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def conexion_resto_sistema():
+    """Sección 14: enlaces cruzados hacia otras hojas del sistema para que se sienta como
+    una sola plataforma y no como hojas aisladas."""
+    st.markdown("#### 🔗 ¿Cómo influye este resultado en el resto del sistema?")
+    _conexiones = [
+        ("🩸", "#FF3B30", "Análisis sanguíneo", "El sobrepeso puede elevar colesterol y triglicéridos."),
+        ("🔥", "#FF9500", "TMB", "Tu metabolismo se calculó usando estos datos."),
+        ("🍎", "#34C759", "Dieta", "Tu plan alimenticio fue generado considerando tu IMC."),
+        ("📈", "#5AC8FA", "Proyección", "Simula cómo cambiaría tu peso con tu meta actual."),
+    ]
+    for _ic, _co, _tt, _de in _conexiones:
+        st.markdown(f"""
+        <div class="conexion-card">
+            <span class="conexion-icon" style="background:{_co}1A;color:{_co};">{_ic}</span>
+            <div>
+                <div class="conexion-title">{_tt}</div>
+                <div class="conexion-desc">{_de}</div>
+            </div>
+            <span class="conexion-arrow">→</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# =========================================================================================
+# HOJA 3 (TMB) — ilustración de qué es, resultado, fórmula horizontal por género (colores
+# distintos, sin azul/rosa, flechas hacia la derecha), tarjeta de autoría corregida, etc.
+# =========================================================================================
+def ilustracion_que_es_tmb():
+    """Sección 1: ilustración simple de qué es la TMB (mientras duermes, tu cuerpo sigue
+    gastando energía en funciones vitales)."""
+    st.markdown("""
+    <div class="tmb-ilustra-wrap">
+        <div style="font-size:2.4rem;">😴</div>
+        <div class="tmb-ilustra-item">Estás durmiendo</div>
+        <div class="tmb-ilustra-flecha">↓</div>
+        <div class="tmb-ilustra-item">❤️ Sigue latiendo &nbsp;·&nbsp; 🫁 Sigues respirando</div>
+        <div class="tmb-ilustra-item">🧠 El cerebro trabaja &nbsp;·&nbsp; 🌡️ Mantienes tu temperatura</div>
+        <div class="tmb-ilustra-flecha">↓</div>
+        <div style="font-size:1.3rem;font-weight:800;color:#E67E22;">🔥 Todo eso necesita energía</div>
+        <div style="margin-top:14px;font-size:0.86rem;color:#5C6B60;line-height:1.6;max-width:560px;margin-left:auto;margin-right:auto;">
+        Tu cuerpo nunca se "apaga". Incluso mientras descansas sigue gastando energía para mantenerte con vida.
+        A esa energía la llamamos <b style="color:#E67E22;">Tasa Metabólica Basal (TMB)</b>.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def tarjeta_resultado_tmb(tmb_valor):
+    """Sección 2: tarjeta grande y limpia con el resultado de la TMB."""
+    st.markdown(f"""
+    <div class="tmb-resultado-card">
+        <span class="bento-eyebrow">🔥 Tu TMB</span>
+        <div class="tmb-resultado-num">{tmb_valor:.0f} kcal/día</div>
+        <div style="font-size:0.88rem;color:#5C6B60;max-width:420px;margin:0 auto;line-height:1.6;">
+        Tu cuerpo necesita aproximadamente <b style="color:#E67E22;">{tmb_valor:.0f} kcal</b> al día
+        únicamente para mantener sus funciones vitales.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def formula_horizontal_tmb(peso, estatura, edad, genero_activo, tmb_valor):
+    """Sección 3: fórmula de Mifflin-St Jeor mostrada de forma horizontal para Hombre y Mujer,
+    cada una con su propio color (sin usar azul/rosa) y flechas apuntando a la derecha."""
+    _filas = [
+        ("Hombre", "🧑", "#00897B", "#E0F2F1",
+         [("Peso", f"10 × {peso:g}", f"{10*peso:.1f}"), ("Altura", f"+ 6.25 × {estatura:g}", f"{6.25*estatura:.1f}"),
+          ("Edad", f"− 5 × {edad:g}", f"−{5*edad:.1f}"), ("Constante", "+ 5", "+5")],
+         (10 * peso) + (6.25 * estatura) - (5 * edad) + 5),
+        ("Mujer", "🧑‍🦱", "#D4692B", "#FFF1E6",
+         [("Peso", f"10 × {peso:g}", f"{10*peso:.1f}"), ("Altura", f"+ 6.25 × {estatura:g}", f"{6.25*estatura:.1f}"),
+          ("Edad", f"− 5 × {edad:g}", f"−{5*edad:.1f}"), ("Constante", "− 161", "−161")],
+         (10 * peso) + (6.25 * estatura) - (5 * edad) - 161),
+    ]
+    for _nombre, _icono, _color, _fondo, _pasos, _res in _filas:
+        _es_activo = _nombre == genero_activo
+        _boxes = "".join(
+            f'<div class="tmb-formula-box" style="background:{_color}1A;color:{_color};">{p}<span class="tmb-box-sub">{op}</span></div>'
+            f'<span class="tmb-formula-arrow" style="color:{_color};">→</span>'
+            for p, op, val in _pasos
+        )
+        st.markdown(f"""
+        <div class="tmb-formula-genero-wrap" style="{'box-shadow:0 0 0 2px ' + _color + ';' if _es_activo else ''}">
+            <div class="tmb-formula-genero-title" style="color:{_color};">{_icono} Fórmula para {_nombre}
+                {' <span class=\"bento-pill\" style=\"background:' + _color + ';color:#FFFFFF;\">Tu fórmula</span>' if _es_activo else ''}</div>
+            <div class="tmb-formula-flow">
+                {_boxes}
+                <div class="tmb-formula-box" style="background:{_color};color:#FFFFFF;">= TMB<span class="tmb-box-sub">{_res:.0f} kcal/día</span></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+def tarjeta_quien_creo_formula():
+    """Sección 3b (corregida): Mifflin-St Jeor no es una persona, sino el nombre de la
+    ecuación publicada en 1990 por un equipo de investigadores."""
+    st.markdown("""
+    <div class="tmb-quien-card">
+        <div style="font-weight:800;color:#5856D6;margin-bottom:6px;">👨‍🔬 ¿Quién desarrolló esta fórmula?</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
+        La ecuación de <b>Mifflin–St Jeor</b> fue publicada en 1990 por los investigadores
+        <b>Mark D. Mifflin</b>, <b>Sachiko T. St Jeor</b> y su equipo. Actualmente es una de las
+        fórmulas más utilizadas por nutricionistas y hospitales para estimar la Tasa Metabólica
+        Basal, por su buena precisión en adultos.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def tarjeta_por_que_mifflin():
+    """Sección 4: mini comparación de por qué se usa Mifflin-St Jeor."""
+    _items = ["Mayor precisión que fórmulas antiguas.", "Recomendada en nutrición clínica.",
+              "Utilizada por profesionales de la salud.", "Sirve para calcular las calorías que necesita el cuerpo en reposo."]
+    _lis = "".join(f'<div class="tmb-porque-item"><span>✔</span><span>{it}</span></div>' for it in _items)
+    st.markdown(f"""
+    <div class="tmb-porque-card">
+        <div style="font-weight:800;color:#0E6B4F;margin-bottom:2px;">📚 ¿Por qué usamos Mifflin-St Jeor?</div>
+        {_lis}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def flujo_modulos_tmb():
+    """Sección 5: flujo horizontal (flechas a la derecha) de los módulos que usan la TMB."""
+    st.markdown("""
+    <div class="tmb-flujo-wrap">
+        <span class="bento-eyebrow">🔗 ¿Qué módulos usan la TMB?</span>
+        <div class="tmb-flujo-row">
+            <div class="tmb-flujo-chip" style="background:#FFF3E0;color:#E67E22;">🔥 TMB</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">⚡ RCD</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">🥗 Dieta</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">🍚 Macronutrientes</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">📈 Proyección</div>
+        </div>
+        <div style="margin-top:14px;font-size:0.84rem;color:#5C6B60;">
+        Toda la plataforma utiliza este cálculo como punto de partida.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def central_energetica_tmb(tmb_valor):
+    """Ilustración alternativa tipo 'central eléctrica': la TMB alimenta los órganos vitales,
+    cada uno con un pequeño indicador luminoso."""
+    _organos = [("❤️", "Corazón"), ("🧠", "Cerebro"), ("🫁", "Pulmones"), ("🌡️", "Temperatura"), ("🩸", "Circulación")]
+    _leds = "".join(f'<div class="tmb-central-organo"><div style="font-size:1.6rem;">{ic}</div>'
+                     f'<div class="tmb-central-led"></div><div class="tmb-central-label">{lb}</div></div>' for ic, lb in _organos)
+    st.markdown(f"""
+    <div class="tmb-central-wrap">
+        <div style="font-size:1.6rem;">⚡</div>
+        <div style="font-weight:800;letter-spacing:0.06em;font-size:0.85rem;color:#C7CBE0;">CENTRAL ENERGÉTICA</div>
+        <div class="tmb-central-kcal">🔥 {tmb_valor:.0f} kcal</div>
+        <div class="tmb-central-organos">{_leds}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def interpretacion_inteligente_tmb(tmb_valor):
+    """Sección 6: resumen inteligente breve, dejando claro que la TMB no incluye actividad física."""
+    st.markdown(f"""
+    <div style="background:#FFF3E0;border-radius:18px;padding:16px 20px;margin-top:6px;">
+        <div style="font-weight:800;color:#B8860B;margin-bottom:6px;">🧠 Interpretación Inteligente</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
+        Tu organismo necesita aproximadamente <b>{tmb_valor:.0f} kcal</b> al día para mantener sus funciones vitales.<br>
+        Este valor <b>NO</b> representa las calorías que necesitas para hacer ejercicio, caminar o estudiar.<br>
+        Es la energía mínima necesaria para vivir.
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
 
@@ -3074,8 +3628,12 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
         st.markdown(_gauge_track_html(pas if pas > 0 else None, 0, 250,
                     [(0, 90, "ambar"), (90, 130, "verde"), (130, 250, "rojo")]), unsafe_allow_html=True)
         if pas > 0 and pad > 0:
-            _c = "verde" if (90 <= pas <= 129 and 60 <= pad <= 84) else "ambar"
-            _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
+            if pas < 50 or pas > 300 or pad < 30 or pad > 200:
+                st.markdown('<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                             '⚠️ Valor fuera de rango clínico. Por favor verifica tus datos</p>', unsafe_allow_html=True)
+            else:
+                _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
+                _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
     st.caption("ℹ️ Un valor estándar y saludable de presión ronda los 120/80 mmHg.")
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
@@ -3619,12 +4177,14 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     # ===== 3. MÓDULO: Estado Fisiológico (signos vitales del Bloque 3) =====================
     def _clasif_pa(_pas, _pad):
         if _pas <= 0 or _pad <= 0: return "Sin datos", "gris"
-        if _pas >= 180 or _pad >= 110: return "Crisis Hipertensiva", "rojo"
-        if _pas >= 160 or _pad >= 100: return "Hipertensión G2", "rojo"
-        if _pas >= 140 or _pad >= 90: return "Hipertensión G1", "ambar"
-        if _pas >= 130 or _pad >= 85: return "Normal Alta", "ambar"
-        if _pas >= 120 or _pad >= 80: return "Normal", "verde"
-        return "Óptima", "verde"
+        if _pas < 50 or _pas > 300 or _pad < 30 or _pad > 200: return "Valor no válido", "gris"
+        if _pas < 90 or _pad < 60: return "Baja / Hipotensión", "ambar"
+        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return "Normal / Óptima", "verde"
+        if 120 <= _pas <= 129 and _pad < 80: return "Elevado", "ambar"
+        if _pas > 180 or _pad > 120: return "Emergencia Hipertensiva", "rojo"
+        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return "Hipertensión Estadio 2", "rojo"
+        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return "Hipertensión Estadio 1", "rojo"
+        return "Normal / Óptima", "verde"
 
     def _clasif_spo2(_s):
         if _s <= 0: return "Sin datos", "gris"
@@ -3916,6 +4476,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         return f'<tr class="{_clase}">{_tds}</tr>'
 
     _TONO2 = {
+        "azul":     {"pastel": {"fondo": "#E3F2FD", "texto": "#1565C0"}, "vibrante": {"fondo": "#5AC8FA", "texto": "#0D3C61", "borde": "#1565C0", "glow": "rgba(90,200,250,0.6)"}},
         "verde":    {"pastel": {"fondo": "#E8F5E9", "texto": "#1E5631"}, "vibrante": {"fondo": "#34C759", "texto": "#FFFFFF", "borde": "#1E5631", "glow": "rgba(52,199,89,0.55)"}},
         "menta":    {"pastel": {"fondo": "#E1F7EC", "texto": "#0E6B4F"}, "vibrante": {"fondo": "#00C7A0", "texto": "#FFFFFF", "borde": "#0E6B4F", "glow": "rgba(0,199,160,0.55)"}},
         "amarillo": {"pastel": {"fondo": "#FFFDE7", "texto": "#8A6D00"}, "vibrante": {"fondo": "#FFD600", "texto": "#4A3900", "borde": "#B8860B", "glow": "rgba(255,214,0,0.6)"}},
@@ -3937,29 +4498,31 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         """, unsafe_allow_html=True)
 
     # --- 1. Presión Arterial (AHA) ---
-    def _fila_activa_pa(_cat):
-        return {"Normal": 0, "Elevado": 1, "Hipertensión Estadio 1": 2, "Hipertensión Estadio 2": 3,
-                "Hipertensión Severa": 4, "Emergencia Hipertensiva": 5}.get(_cat)
+    _pa_rango_invalido = pas > 0 and pad > 0 and (pas < 50 or pas > 300 or pad < 30 or pad > 200)
 
     _idx_pa_activa = None
-    if pas > 0 and pad > 0:
-        if pas > 180 or pad > 120:
-            _idx_pa_activa = 4 if pas <= 200 and pad <= 130 else 5
-        elif pas >= 140 or pad >= 90:
-            _idx_pa_activa = 3
-        elif pas >= 130 or pad >= 80:
-            _idx_pa_activa = 2
-        elif pas >= 120:
-            _idx_pa_activa = 1
+    if pas > 0 and pad > 0 and not _pa_rango_invalido:
+        if pas < 90 or pad < 60:
+            _idx_pa_activa = 0   # Baja / Hipotensión
+        elif 90 <= pas <= 119 and 60 <= pad <= 79:
+            _idx_pa_activa = 1   # Normal / Óptima
+        elif 120 <= pas <= 129 and pad < 80:
+            _idx_pa_activa = 2   # Elevado
+        elif pas > 180 or pad > 120:
+            _idx_pa_activa = 5   # Hipertensión Severa / Emergencia Hipertensiva
+        elif 140 <= pas <= 180 or 90 <= pad <= 120:
+            _idx_pa_activa = 4   # Hipertensión Estadio 2
+        elif 130 <= pas <= 139 or 80 <= pad <= 89:
+            _idx_pa_activa = 3   # Hipertensión Estadio 1
         else:
-            _idx_pa_activa = 0
+            _idx_pa_activa = 1
 
     _pa_filas_data = [
-        (["Normal", "&lt; 120", "y", "&lt; 80"], "verde"),
+        (["Baja / Hipotensión", "&lt; 90", "o", "&lt; 60"], "azul"),
+        (["Normal / Óptima", "90 – 119", "y", "60 – 79"], "verde"),
         (["Elevado", "120 – 129", "y", "&lt; 80"], "amarillo"),
         (["Hipertensión Estadio 1", "130 – 139", "o", "80 – 89"], "naranja"),
         (["Hipertensión Estadio 2", "≥ 140", "o", "≥ 90"], "rojo"),
-        (["Hipertensión Severa", "&gt; 180", "y/o", "&gt; 120"], "rojo_osc"),
         (["Emergencia Hipertensiva", "&gt; 180", "y/o", "&gt; 120"], "purpura"),
     ]
     _pa_html = "".join(
@@ -3968,6 +4531,9 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     )
     _render_tabla_html("❤️", "Presión Arterial", "Fuente: American Heart Association (AHA)",
                         ["Categoría", "Sistólica (mmHg)", "Condición", "Diastólica (mmHg)"], _pa_html)
+    if _pa_rango_invalido:
+        st.markdown('<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     '⚠️ Valor fuera de rango clínico. Por favor verifica tus datos</p>', unsafe_allow_html=True)
 
     # --- 2. Saturación de Oxígeno (SpO₂) ---
     _idx_ox_activa = None
@@ -4012,7 +4578,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _te_filas_data = [
         (["Bebés (0–2 años)", "Rectal / Axilar", "36.6 – 38.0 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
         (["Niños (3–10 años)", "Oral / Axilar", "35.5 – 37.5 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
-        (["Adultos (11–65 años)", "Oral", "36.4 – 37.6 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
+        (["Adolescentes y Adultos (11–65 años)", "Oral", "36.4 – 37.6 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
         (["Adultos (&gt;65 años)", "Oral", "35.8 – 36.9 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
     ]
     _te_alerta = temp_corp >= 38.0
@@ -4087,72 +4653,49 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
         "IMC = Peso (kg) / [Altura (m)]²",
         referencia="Organización Mundial de la Salud (OMS)")}</div>""", unsafe_allow_html=True)
 
-    if etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None:
-        kc1, kc2, kc3 = st.columns(3)
-        with kc1:
-            card_gauge_imc(imc, _categoria_imc_usuario)
-        with kc2:
-            card_percentil_barra(_percentil_usuario, _categoria_imc_usuario)
-        with kc3:
-            tarjeta_categoria_imc("Categoría", _categoria_imc_usuario)
-    elif etapa in ["Niñez", "Adolescencia"]:
-        col1, col2 = st.columns(2)
-        with col1:
-            card_gauge_imc(imc, _categoria_imc_usuario)
-        with col2:
-            st.error(_categoria_imc_usuario)
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            card_gauge_imc(imc, _categoria_imc_usuario)
-        with col2:
-            tarjeta_categoria_imc("Categoría (Adultez/Vejez, sin percentil)", _categoria_imc_usuario)
+    _con_percentil = etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None
+    _riesgo_imc = _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Obesidad Clase 3 (Severa)"]
+    _riesgo_txt, _ = _RIESGO_POR_CATEGORIA.get(_categoria_imc_usuario, ("—", "#8E8E93"))
+
+    # --- 1. Tu Diagnóstico Nutricional ------------------------------------------------------
+    panel_diagnostico_nutricional(imc, _percentil_usuario, _categoria_imc_usuario, con_percentil=_con_percentil)
+
+    # --- 2 y 4. Escala horizontal + Estado Nutricional (checklist) --------------------------
+    ec1, ec2 = st.columns([1.4, 1])
+    with ec1:
+        escala_horizontal_imc(imc, _categoria_imc_usuario, etapa, _percentil_usuario if _con_percentil else None)
+    with ec2:
+        tarjeta_estado_nutricional(_categoria_imc_usuario)
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
-    # --- Bloque de 3 columnas: "¿Qué significa tu IMC?" / "Relacionado con" / "Recordar" ---
-    _riesgo_imc = _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Obesidad Clase 3 (Severa)"]
-    ic1, ic2, ic3 = st.columns(3)
+    # --- 3. Percentil con protagonismo (solo Niñez/Adolescencia) ----------------------------
+    if _con_percentil:
+        percentil_visual_card(_percentil_usuario)
+        st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+    elif etapa in ["Niñez", "Adolescencia"]:
+        st.error(_categoria_imc_usuario)
+
+    # --- 5. Interpretación Inteligente --------------------------------------------------------
+    interpretacion_inteligente_imc(imc, _categoria_imc_usuario, etapa, _riesgo_txt)
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    # --- 6 y 7. ¿Qué puede influir en tu IMC? / Recordar (alerta clínica) -------------------
+    ic1, ic2 = st.columns(2)
     with ic1:
-        st.markdown(f"""
-        <div class="info3-card">
-            <div class="info3-title">🔎 ¿Qué significa tu IMC?</div>
-            <div style="font-size:0.83rem;color:#5C6B60;line-height:1.55;">
-            Según la información ingresada, tu Índice de Masa Corporal (IMC) es <b style="color:#17301F;">{imc}</b>,
-            lo que indica que tu peso se encuentra en la categoría de <b style="color:#17301F;">{_categoria_imc_usuario}</b>
-            para tu {"edad y sexo" if etapa in ["Niñez", "Adolescencia"] else "estatura"}.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="info3-card">', unsafe_allow_html=True)
+        que_influye_imc()
+        st.markdown('</div>', unsafe_allow_html=True)
     with ic2:
-        st.markdown("""
-        <div class="info3-card">
-            <div class="info3-title">🩺 Tu IMC puede estar relacionado con:</div>
-        </div>
-        """, unsafe_allow_html=True)
-        fila_dominios_salud([
-            ("💚", "#34C759", "Salud y bienestar general"),
-            ("🩺", "#1E88E5", "Atención médica especializada"),
-            ("🤝", "#FF9F43", "Apoyo y tratamiento"),
-            ("🔍", "#AF52DE", "Detección temprana"),
-        ])
-    with ic3:
-        st.markdown(f"""
-        <div class="info3-card" style="background:#FFF9E5;border:1px solid #FFE58F55;">
-            <div class="info3-title" style="color:#B8860B;">💡 Recordar</div>
-            <div style="font-size:0.82rem;color:#7A5C00;line-height:1.5;">
-            {"Tener un IMC elevado aumenta el riesgo de enfermedades crónicas, como presión alta, diabetes tipo 2 y colesterol alto."
-              if _riesgo_imc else
-              "Hable sobre su categoría de IMC con su proveedor de salud: puede determinar las posibles razones de su peso actual."}
-            El IMC es una medida de detección y no diagnostica enfermedades.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        recordar_alerta_clinica()
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
+    # --- 8. Más información — enlaces uniformes ----------------------------------------------
+    links_uniformes_mas_info()
     if _riesgo_imc:
-        st.markdown("##### Quiero saber más:")
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
         cta1, cta2 = st.columns(2)
         with cta1:
             cta_pill("🩸", "#FF3B30", "Prueba de riesgo de prediabetes (CDC)",
@@ -4162,11 +4705,19 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
             cta_pill("❤️", "#1E88E5", "Riesgos de salud por obesidad (CDC)",
                      "Conoce las enfermedades y condiciones asociadas al sobrepeso y la obesidad.",
                      "Ver más información", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html")
-        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 9. Tabla de categorías de IMC (con columna de Riesgo) ------------------------------
     tabla_categorias_imc_visual(imc_usuario=imc)
 
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    # --- 13. Progreso hacia una meta saludable ------------------------------------------------
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    progreso_hacia_meta_imc(imc, _categoria_imc_usuario)
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 10. Gráfico de percentiles por edad (bandas de colores, ya intuitivo) ---------------
     st.markdown("#### 📈 Percentiles de IMC por edad (2 a 20 años)")
     st.caption("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
                "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
@@ -4180,15 +4731,28 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     if edad not in PERCENTIL_MUJER:
         st.caption("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.")
 
+    # --- 11. Tabla de percentiles — fila Y columna del usuario resaltadas -------------------
     with st.expander("📊 Ver tabla completa de percentiles (edad 2-20 años)", expanded=False):
-        tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero)
+        tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero, categoria_usuario=_categoria_imc_usuario)
         st.markdown("""
         <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
         💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
         si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
-        y por encima de P95 en Obesidad.
+        y por encima de P95 en Obesidad. La columna marcada con tu color es la que corresponde a tu resultado actual.
         </div>
         """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 12. ¿Qué puedes hacer desde hoy? ------------------------------------------------------
+    acciones_desde_hoy()
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 14. Conexión con el resto del sistema ------------------------------------------------
+    conexion_resto_sistema()
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     caja_util("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
@@ -4198,12 +4762,45 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 elif hoja_activa == "3.-TMB":
     hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
                    "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
-    _formula_tmb = ("Hombres: TMB = (10×peso kg) + (6.25×altura cm) − (5×edad) + 5  |  "
-                     "Mujeres: TMB = (10×peso kg) + (6.25×altura cm) − (5×edad) − 161")
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        _formula_tmb, autor="MD Mifflin, ST St Jeor et al. (1990)",
-        referencia="Ecuación de Mifflin-St Jeor")}</div>""", unsafe_allow_html=True)
-    st.metric("Resultado TMB", f"{tmb:.2f} kcal/día")
+
+    # --- 1. ¿Qué es la TMB? -------------------------------------------------------------
+    st.markdown("#### 😴 ¿Qué es la TMB?")
+    ilustracion_que_es_tmb()
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
+    st.markdown("#### 🔥 ¿Cuál es tu resultado?")
+    tarjeta_resultado_tmb(tmb)
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
+    st.markdown("#### 🧪 ¿Cómo se calculó?")
+    formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
+    tarjeta_quien_creo_formula()
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 4. ¿Por qué usamos esta fórmula? -------------------------------------------------
+    tarjeta_por_que_mifflin()
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- Ilustración "central energética" (opcional, muy visual) --------------------------
+    central_energetica_tmb(tmb)
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 5. ¿Qué módulos usan la TMB? — flujo horizontal ----------------------------------
+    flujo_modulos_tmb()
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- 6. Resumen Inteligente -------------------------------------------------------------
+    interpretacion_inteligente_tmb(tmb)
+
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
               "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
