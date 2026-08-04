@@ -2653,62 +2653,89 @@ def _img_b64(path):
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
 
-# --- Identidad de marca: logo circular + logotipo tipográfico, en una sola tarjeta ordenada ---
-if _LOGO_CIRCULAR.exists() or _LOGO_WORDMARK.exists():
-    _col_izq, _col_centro, _col_der = st.columns([1, 3, 1])
-    with _col_centro:
-        st.markdown("""
-        <div style="background:#ffffff;border-radius:22px;padding:18px 28px;margin-bottom:6px;
-                    box-shadow:0 4px 16px rgba(0,0,0,0.08);border:1px solid #eef2ee;">
-        """, unsafe_allow_html=True)
-        _lc, _lw = st.columns([1, 2.4])
-        with _lc:
-            if _LOGO_CIRCULAR.exists():
-                st.image(str(_LOGO_CIRCULAR), width=110)
-        with _lw:
-            if _LOGO_WORDMARK.exists():
-                st.image(str(_LOGO_WORDMARK), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-# --- Barra de navegación superior, con el logo real del colegio ---
-if _logo_b64:
-    st.markdown(f"""
-    <div class="navbar">
-        <div class="navbar-brand">
-            <img src="data:image/png;base64,{_logo_b64}" />
-            <div class="navbar-brand-text">
-                <div class="t1">🥦 CIAM&SUNI</div>
-                <div class="t2">Tu Salud, Personalizada — C.E.P. "Santa María Reina", Chiclayo</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-else:
+# --- 1. MEMBRETE INSTITUCIONAL — tarjeta grande y exclusiva, con el escudo protagonista ---
+st.markdown("""
+<div style="background:linear-gradient(120deg,#FFFFFF 0%,#F4F9F4 100%);border-radius:26px;
+padding:26px 34px;margin-bottom:14px;box-shadow:0 6px 20px rgba(30,86,49,0.10);
+border:1.5px solid rgba(30,86,49,0.14);">
+""", unsafe_allow_html=True)
+_col_esc, _col_memb = st.columns([1, 4])
+with _col_esc:
+    if _ESCUDO.exists():
+        st.image(str(_ESCUDO), width=150)
+    elif _logo_b64:
+        st.image(str(_LOGO_ANCHO), use_container_width=True)
+with _col_memb:
     st.markdown("""
-    <div class="navbar">
-        <div class="navbar-brand">
-            <div class="navbar-brand-text">
-                <div class="t1">🥦 CIAM&SUNI</div>
-                <div class="t2">Tu Salud, Personalizada — C.E.P. "Santa María Reina", Chiclayo</div>
-            </div>
-        </div>
+    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;padding-top:6px;">
+    <p style="margin:0;font-weight:800;color:#1E5631;font-size:1.55rem;letter-spacing:-0.01em;
+       font-family:Georgia,'Times New Roman',serif;">🏫 C.E.P. "Santa María Reina"</p>
+    <p style="margin:2px 0 12px 0;color:#5C6B60;font-size:0.95rem;font-weight:600;">Chiclayo</p>
+    <p style="margin:0;color:#8A94A6;font-size:0.82rem;">Proyecto desarrollado para <b style="color:#1E5631;">5.º "C"</b>
+    &nbsp;·&nbsp; Área de Ciencia y Tecnología &nbsp;·&nbsp; Grupo N.° 04</p>
     </div>
     """, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
-# --- Hero principal ---
+# --- 2. HERO CIAM&SUNI — logotipo único (sin duplicados), descripción clara e ilustración ---
 st.markdown("""
 <div class="hero-card">
-    <div class="hero-emoji-decor">🥗🍎</div>
-    <h1>CIAM&SUNI: Tu Salud, Personalizada</h1>
-    <p class="hero-sub">Una réplica interactiva del Excel oficial del proyecto: ingresa tus datos una sola
-    vez y obtén tu IMC, tu requerimiento calórico, tus macronutrientes y un plan de dieta armado —
-    todo explicado paso a paso para que cualquier persona lo entienda. 😊</p>
-    <div class="hero-badges">
-        <span class="hero-badge">🎓 5° "C" Secundaria — Grupo N°04</span>
-        <span class="hero-badge">🔬 Fórmulas científicas (Mifflin-St Jeor)</span>
-        <span class="hero-badge">☀️ Ajustado al clima de Chiclayo</span>
+    <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
+    <h1>🥗 CIAM&SUNI</h1>
+    <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">Tu Salud, Personalizada</p>
+    <p class="hero-sub">CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu
+    requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante
+    explicaciones sencillas y visuales.</p>
+</div>
+""", unsafe_allow_html=True)
+
+# --- Tarjetas de características (reemplazan los chips: 4 tarjetas claras) ---
+st.markdown("""
+<div class="feature-row">
+    <div class="feature-card">
+        <div class="fc-emoji">🍎</div>
+        <div class="fc-title">Nutrición personalizada</div>
+        <div class="fc-text">Cálculos adaptados a tus propios datos: edad, peso, altura y etapa de vida.</div>
+    </div>
+    <div class="feature-card">
+        <div class="fc-emoji">🧮</div>
+        <div class="fc-title">Basado en evidencia científica</div>
+        <div class="fc-text">Fórmulas reconocidas (Mifflin-St Jeor, FAO/OMS/UNU) aplicadas paso a paso.</div>
+    </div>
+    <div class="feature-card">
+        <div class="fc-emoji">🌡️</div>
+        <div class="fc-title">Adaptado al clima de Chiclayo</div>
+        <div class="fc-text">Un ajuste extra que considera el clima cálido de nuestra región.</div>
+    </div>
+    <div class="feature-card">
+        <div class="fc-emoji">📊</div>
+        <div class="fc-title">Resultados fáciles de comprender</div>
+        <div class="fc-text">Cada cálculo se explica en lenguaje simple: qué significa y qué hacer con él.</div>
     </div>
 </div>
+""", unsafe_allow_html=True)
+
+# --- 3. "Comienza aquí" — conecta la portada con el formulario, responde "¿qué hago ahora?" ---
+st.markdown("""
+<div style="background:linear-gradient(120deg,#EAFAEE 0%,#FFFFFF 80%);border-radius:22px;
+padding:22px 28px;margin:18px 0;border:1.5px solid rgba(52,199,89,0.3);
+box-shadow:0 6px 18px rgba(52,199,89,0.10);">
+<p style="margin:0 0 10px 0;font-weight:800;color:#1E5631;font-size:1.1rem;">🚀 ¿Cómo empezar?</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+<div><span style="color:#1E5631;font-weight:800;">①</span> Completa tus datos personales en el panel izquierdo.</div>
+<div><span style="color:#1E5631;font-weight:800;">②</span> Navega libremente por las 16 secciones.</div>
+<div><span style="color:#1E5631;font-weight:800;">③</span> Explora tus resultados explicados paso a paso.</div>
+<div><span style="color:#1E5631;font-weight:800;">④</span> Descarga tu reporte final en PDF.</div>
+</div>
+<p style="margin:14px 0 0 0;color:#5C6B60;font-size:0.85rem;">Solo tendrás que ingresar tus datos una vez
+durante esta sesión — luego podrás moverte entre las demás secciones cuando quieras.</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<p style="text-align:center;color:#5C6B60;font-size:0.9rem;font-style:italic;margin:0 0 18px 0;">
+"Cada persona tiene necesidades nutricionales diferentes. Esta aplicación adapta los cálculos utilizando
+la información que ingreses, para brindarte resultados personalizados y fáciles de interpretar."</p>
 """, unsafe_allow_html=True)
 
 # --- Aviso médico: esta app es educativa y no reemplaza la consulta profesional ---
@@ -2719,30 +2746,6 @@ st.markdown("""
 <b style="color:#FF9500;">⚕️ Aviso importante:</b> esta aplicación es una herramienta educativa y orientativa.
 No reemplaza la consulta con un médico, nutricionista u otro profesional de la salud.
 Ante cualquier duda o resultado fuera de lo normal, acude siempre a un especialista.
-</div>
-""", unsafe_allow_html=True)
-
-# --- Tarjetas de características (estilo landing page) ---
-st.markdown("""
-<div class="feature-row">
-    <div class="feature-card">
-        <div class="fc-emoji">🧮</div>
-        <div class="fc-title">Cálculo preciso</div>
-        <div class="fc-text">IMC, percentil, TMB, RCD y macronutrientes calculados con las mismas
-        fórmulas del Excel original.</div>
-    </div>
-    <div class="feature-card">
-        <div class="fc-emoji">🍽️</div>
-        <div class="fc-title">Dieta a tu gusto</div>
-        <div class="fc-text">Arma tu menú diario eligiendo alimentos reales, ajustados automáticamente
-        a tu meta calórica.</div>
-    </div>
-    <div class="feature-card">
-        <div class="fc-emoji">🩺</div>
-        <div class="fc-title">Salud en simple</div>
-        <div class="fc-text">Tus análisis de sangre traducidos a un lenguaje claro: Normal, Anemia leve,
-        Alto, etc.</div>
-    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -3518,40 +3521,248 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 
     st.divider()
 
-    # ===== 3. Estado Fisiológico (signos vitales del Bloque 3) =====
-    st.markdown("#### ❤️ Estado Fisiológico")
-    fv1, fv2, fv3, fv4 = st.columns(4)
-    with fv1:
-        _c_pa = "verde" if (90 <= pas <= 129 and 60 <= pad <= 84) else "ambar"
-        _e_pa = SEMAFORO_ESTILO[_c_pa] if (pas > 0 and pad > 0) else SEMAFORO_ESTILO["gris"]
-        st.markdown(f"""<div class="sema-card" style="text-align:center;">❤️<br><b>Presión arterial</b><br>
-                    <span style="font-size:1.3rem;font-weight:800;">{f"{pas}/{pad}" if pas > 0 else "—"}</span><br>
-                    {_e_pa['emoji']} {_e_pa['etiqueta']}</div>""", unsafe_allow_html=True)
-    with fv2:
-        _c_ox = "verde" if spo2 >= 95 else ("rojo" if 0 < spo2 < 90 else "ambar")
-        _e_ox = SEMAFORO_ESTILO[_c_ox] if spo2 > 0 else SEMAFORO_ESTILO["gris"]
-        st.markdown(f"""<div class="sema-card" style="text-align:center;">🫁<br><b>Oxígeno (SpO2)</b><br>
-                    <span style="font-size:1.3rem;font-weight:800;">{f"{spo2:.0f}%" if spo2 > 0 else "—"}</span><br>
-                    {_e_ox['emoji']} {_e_ox['etiqueta']}</div>""", unsafe_allow_html=True)
-    with fv3:
-        _c_te = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
-        _e_te = SEMAFORO_ESTILO[_c_te] if temp_corp > 34.0 else SEMAFORO_ESTILO["gris"]
-        st.markdown(f"""<div class="sema-card" style="text-align:center;">🌡️<br><b>Temperatura</b><br>
-                    <span style="font-size:1.3rem;font-weight:800;">{f"{temp_corp:.1f}°C" if temp_corp > 34.0 else "—"}</span><br>
-                    {_e_te['emoji']} {_e_te['etiqueta']}</div>""", unsafe_allow_html=True)
-    with fv4:
-        _c_pu = "verde" if 60 <= pulso <= 100 else "ambar"
-        _e_pu = SEMAFORO_ESTILO[_c_pu] if pulso > 0 else SEMAFORO_ESTILO["gris"]
-        st.markdown(f"""<div class="sema-card" style="text-align:center;">💓<br><b>Pulso</b><br>
-                    <span style="font-size:1.3rem;font-weight:800;">{f"{pulso} lpm" if pulso > 0 else "—"}</span><br>
-                    {_e_pu['emoji']} {_e_pu['etiqueta']}</div>""", unsafe_allow_html=True)
+    # ===== 3. MÓDULO: Estado Fisiológico (signos vitales del Bloque 3) =====================
+    def _clasif_pa(_pas, _pad):
+        if _pas <= 0 or _pad <= 0: return "Sin datos", "gris"
+        if _pas >= 180 or _pad >= 110: return "Crisis Hipertensiva", "rojo"
+        if _pas >= 160 or _pad >= 100: return "Hipertensión G2", "rojo"
+        if _pas >= 140 or _pad >= 90: return "Hipertensión G1", "ambar"
+        if _pas >= 130 or _pad >= 85: return "Normal Alta", "ambar"
+        if _pas >= 120 or _pad >= 80: return "Normal", "verde"
+        return "Óptima", "verde"
+
+    def _clasif_spo2(_s):
+        if _s <= 0: return "Sin datos", "gris"
+        if _s < 90: return "Hipoxia", "rojo"
+        if _s < 95: return "Aceptable", "ambar"
+        return "Excelente", "verde"
+
+    def _clasif_temp(_t):
+        if _t <= 34.0: return "Sin datos", "gris"
+        if _t < 35.0: return "Hipotermia", "rojo"
+        if _t < 36.1: return "Temperatura baja", "ambar"
+        if _t <= 37.2: return "Normal", "verde"
+        if _t <= 37.9: return "Febrícula", "ambar"
+        if _t <= 39.5: return "Fiebre", "rojo"
+        return "Fiebre alta", "rojo"
+
+    def _clasif_pulso(_p):
+        if _p <= 0: return "Sin datos", "gris"
+        if _p < 60: return "Bradicardia", "ambar"
+        if _p <= 100: return "Normal", "verde"
+        return "Taquicardia", "ambar"
+
+    _cat_pa, _col_pa = _clasif_pa(pas, pad)
+    _cat_ox, _col_ox = _clasif_spo2(spo2)
+    _cat_te, _col_te = _clasif_temp(temp_corp)
+    _cat_pu, _col_pu = _clasif_pulso(pulso)
+
+    # --- 3.1 Hero del módulo -------------------------------------------------------------
+    st.markdown("""
+    <div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFFFFF 75%);border-radius:24px;
+    padding:22px 28px;margin-bottom:16px;border:1px solid rgba(224,54,54,0.15);
+    box-shadow:0 6px 18px rgba(224,54,54,0.08);">
+    <p style="margin:0 0 4px 0;font-weight:800;color:#C0392B;font-size:1.3rem;">❤️ Estado Fisiológico</p>
+    <p style="margin:0 0 8px 0;color:#5C2A26;font-weight:700;font-size:0.98rem;">Así está funcionando tu cuerpo en este momento</p>
+    <p style="margin:0;color:#7A4A44;font-size:0.88rem;line-height:1.5;">No solo mostramos tus signos vitales: te explicamos qué significan, qué pueden indicar y cuándo
+    conviene prestarles atención.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- 3.2 Semáforo fisiológico — dashboard de 4 tarjetas -------------------------------
+    st.markdown("##### 🚦 Una vista rápida del estado general de tus signos vitales")
+    _vitales_dash = [
+        ("❤️", "Presión Arterial", f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", _cat_pa, _col_pa),
+        ("🫁", "Oxigenación (SpO₂)", f"{spo2:.0f} %" if spo2 > 0 else "—", _cat_ox, _col_ox),
+        ("🌡️", "Temperatura", f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", _cat_te, _col_te),
+        ("💓", "Pulso en Reposo", f"{pulso} lpm" if pulso > 0 else "—", _cat_pu, _col_pu),
+    ]
+    _cols_vd = st.columns(4)
+    for _col, (_em, _tt, _val, _cat, _colk) in zip(_cols_vd, _vitales_dash):
+        _st = SEMAFORO_ESTILO[_colk]
+        with _col:
+            st.markdown(f"""
+            <div class="bento-card" style="border-top:4px solid {_st['hex']};text-align:center;">
+            <div style="font-size:1.5rem;">{_em}</div>
+            <p style="margin:6px 0 2px 0;color:#5C6B60;font-size:0.76rem;font-weight:700;text-transform:uppercase;">{_tt}</p>
+            <p style="margin:0 0 6px 0;font-weight:800;font-size:1.15rem;color:#17301F;">{_val}</p>
+            <span style="background:{_st['fondo']};color:{_st['hex']};padding:4px 12px;border-radius:999px;
+            font-size:0.74rem;font-weight:800;">{_st['emoji']} {_cat}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- 3.3 Detalle: ¿Qué significa cada resultado? --------------------------------------
+    st.markdown("##### 🔎 ¿Qué significa cada resultado?")
+    _INFO_VITAL = {
+        "Presión Arterial": {
+            "icono": "❤️", "valor": f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", "categoria": _cat_pa, "color": _col_pa,
+            "explicacion": "Tu corazón está enviando sangre al resto del cuerpo; este valor indica con qué fuerza lo hace.",
+            "cambia_por": ["😰 Estrés", "🏃 Ejercicio reciente", "🧂 Alto consumo de sal", "💊 Medicamentos", "😴 Falta de descanso"],
+        },
+        "Oxigenación (SpO₂)": {
+            "icono": "🫁", "valor": f"{spo2:.0f} %" if spo2 > 0 else "—", "categoria": _cat_ox, "color": _col_ox,
+            "explicacion": "Indica si tu sangre está transportando suficiente oxígeno para que tus órganos y músculos funcionen correctamente.",
+            "cambia_por": ["🌬️ Enfermedades respiratorias", "⛰️ Cambios de altitud geográfica", "🩸 Deficiencias en la circulación"],
+        },
+        "Temperatura": {
+            "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", "categoria": _cat_te, "color": _col_te,
+            "explicacion": "Indica cómo regula el calor tu organismo.",
+            "cambia_por": ["🦠 Infecciones o inflamación", "❄️ Exposición prolongada al frío"],
+        },
+        "Pulso": {
+            "icono": "💓", "valor": f"{pulso} lpm" if pulso > 0 else "—", "categoria": _cat_pu, "color": _col_pu,
+            "explicacion": "Representa cuántas veces late tu corazón en un minuto estando en reposo.",
+            "cambia_por": ["🏃 Actividad física", "😱 Emociones fuertes", "🤒 Fiebre", "☕ Consumo de cafeína"],
+        },
+    }
+    for _param, _info in _INFO_VITAL.items():
+        _st = SEMAFORO_ESTILO[_info["color"]]
+        with st.expander(f"{_info['icono']} {_param} — {_info['valor']} · {_st['emoji']} {_info['categoria']}"):
+            st.markdown(f"**Explicación:** {_info['explicacion']}")
+            st.markdown("**📌 ¿Por qué puede cambiar?**")
+            st.markdown(" &nbsp; ".join(_info["cambia_por"]))
+
+    st.write("")
+
+    # --- 3.4 Interpretación Fisiológica Inteligente ---------------------------------------
+    st.markdown("##### 🧠 Interpretación Fisiológica Inteligente")
+    _todos_vitales = [("Presión Arterial", _col_pa), ("Oxigenación (SpO₂)", _col_ox),
+                       ("Temperatura", _col_te), ("Pulso", _col_pu)]
+    _con_dato_v = [(p, c) for p, c in _todos_vitales if c != "gris"]
+    _rojos_v = [p for p, c in _con_dato_v if c == "rojo"]
+    _ambar_v = [p for p, c in _con_dato_v if c == "ambar"]
+
+    if not _con_dato_v:
+        st.info("Ingresa tus signos vitales en 'Mis Datos' → Bloque 3 para ver tu interpretación fisiológica.")
+    elif _rojos_v:
+        _lista_r = ", ".join(_rojos_v)
+        st.markdown(f"""
+        <div style="background:#FBEAE8;border-radius:20px;padding:18px 24px;border-left:5px solid #C0392B;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#C0392B;">🔴 Atención Requerida</p>
+        <p style="margin:0;color:#7A2E27;font-size:0.9rem;line-height:1.5;">
+        Se detectó un valor fuera de rango en: <b>{_lista_r}</b>. Puede deberse a distintos factores fisiológicos
+        o a una lectura incorrecta del sensor. <i>Recomendación:</i> si la medición persiste o sientes malestar,
+        consulta con un profesional de salud.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    elif _ambar_v:
+        _lista_a = ", ".join(_ambar_v)
+        st.markdown(f"""
+        <div style="background:#FDF1E4;border-radius:20px;padding:18px 24px;border-left:5px solid #E67E22;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#E67E22;">🟡 Atención Ligera</p>
+        <p style="margin:0;color:#7A5A26;font-size:0.9rem;line-height:1.5;">
+        <b>{_lista_a}</b> se encuentra ligeramente fuera del rango habitual. No suele ser motivo de alarma,
+        pero conviene observar cómo evoluciona.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div style="background:#EAFAEE;border-radius:20px;padding:18px 24px;border-left:5px solid #1E5631;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#1E5631;">🟢 Estado General</p>
+        <p style="margin:0 0 8px 0;color:#17301F;font-size:0.9rem;">
+        {" &nbsp;·&nbsp; ".join(f"{SEMAFORO_ESTILO[c]['emoji']} {p}" for p, c in _con_dato_v)}</p>
+        <p style="margin:0;color:#17301F;font-size:0.88rem;"><b>Resultado general:</b> tus signos vitales se
+        encuentran dentro de los rangos esperados para una persona en reposo.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- 3.5 Impacto en la vida diaria — segmented control --------------------------------
+    st.markdown("##### 🎯 Impacto en la vida diaria (Signos Vitales)")
+    _IMPACTO_VITAL = {
+        "🏫 Colegio": {
+            "Presión Arterial": "Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
+            "Oxigenación (SpO₂)": "Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
+            "Temperatura": "Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
+            "Pulso": "Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
+        },
+        "🏠 Casa": {
+            "Presión Arterial": "Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
+            "Oxigenación (SpO₂)": "Sensación de falta de aire al subir escaleras o realizar quehaceres.",
+            "Temperatura": "Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
+            "Pulso": "Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
+        },
+        "🏃 Actividad Física": {
+            "Presión Arterial": "Conviene evitar ejercicio intenso hasta que el valor se normalice.",
+            "Oxigenación (SpO₂)": "El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
+            "Temperatura": "No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
+            "Pulso": "Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
+        },
+        "💼 Trabajo": {
+            "Presión Arterial": "Puede afectar la concentración en tareas que requieren atención sostenida.",
+            "Oxigenación (SpO₂)": "Mayor cansancio en jornadas largas o con esfuerzo físico.",
+            "Temperatura": "Es preferible descansar en casa en vez de asistir a trabajar.",
+            "Pulso": "Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
+        },
+    }
+    _tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo = st.tabs(list(_IMPACTO_VITAL.keys()))
+    for _tab, _ambito_v in zip([_tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo], _IMPACTO_VITAL.keys()):
+        with _tab:
+            for _param, _colk in _todos_vitales:
+                _st = SEMAFORO_ESTILO[_colk]
+                st.markdown(f"""
+                <div style="background:{_st['fondo']};border-left:4px solid {_st['hex']};border-radius:16px;
+                padding:10px 16px;margin-bottom:6px;">
+                <b style="color:{_st['hex']};">{_param}</b> — <span style="color:#1C1C1E;font-size:0.88rem;">
+                {_IMPACTO_VITAL[_ambito_v][_param]}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- 3.6 Tablas de referencia clínica — acordeones -------------------------------------
+    st.markdown("##### 📊 Tablas de Referencia Clínica")
+    st.caption("Rangos internacionales estandarizados para adultos en reposo.")
+    with st.expander("❤️ Presión Arterial — Sociedad Europea de Cardiología (ESC)"):
+        for _em, _txt in [("🟢", "**Óptima:** < 120 / < 80 mmHg"), ("🟢", "**Normal:** 120–129 / 80–84 mmHg"),
+                           ("🟡", "**Normal Alta:** 130–139 / 85–89 mmHg"), ("🟠", "**Hipertensión G1:** 140–159 / 90–99 mmHg"),
+                           ("🔴", "**Hipertensión G2:** 160–179 / 100–109 mmHg"), ("🚨", "**Crisis Hipertensiva:** ≥ 180 / ≥ 110 mmHg")]:
+            st.markdown(f"{_em} {_txt}")
+    with st.expander("🫁 Oxigenación (SpO₂) — Organización Mundial de la Salud (OMS)"):
+        st.markdown("🟢 **95 % – 100 %** → Excelente / Normal")
+        st.markdown("🟡 **90 % – 94 %** → Aceptable (puede requerir evaluación médica)")
+        st.markdown("🔴 **< 90 %** → Hipoxia (atención médica inmediata)")
+    with st.expander("🌡️ Temperatura Corporal"):
+        st.markdown("🟦 **Hipotermia:** < 35.0 °C")
+        st.markdown("🟢 **Normal:** 36.1 °C – 37.2 °C")
+        st.markdown("🟡 **Febrícula:** 37.3 °C – 37.9 °C")
+        st.markdown("🟠 **Fiebre:** 38.0 °C – 39.5 °C")
+        st.markdown("🔴 **Fiebre Alta:** ≥ 39.6 °C")
+    with st.expander("💓 Pulso / Frecuencia Cardíaca — American Heart Association (AHA)"):
+        st.markdown("🐢 **Lento (Bradicardia):** < 60 lpm")
+        st.markdown("💚 **Normal:** 60 – 100 lpm")
+        st.markdown("⚡ **Rápido (Taquicardia):** > 100 lpm")
+
+    st.write("")
+
+    # --- 3.7 Fuentes científicas — chips con enlaces ---------------------------------------
+    st.markdown("##### 🔗 Fuentes de consulta médica")
+    _fuentes_vitales = [
+        ("OMS", "https://www.who.int/es"), ("AHA", "https://www.heart.org/"),
+        ("ESC", "https://www.escardio.org/"), ("Mayo Clinic", "https://www.mayoclinic.org/es-es"),
+        ("MINSA", "https://www.gob.pe/minsa"), ("MedlinePlus", "https://medlineplus.gov/spanish/"),
+    ]
+    _cols_fuentes = st.columns(len(_fuentes_vitales))
+    for _col, (_nom, _url) in zip(_cols_fuentes, _fuentes_vitales):
+        with _col:
+            st.link_button(_nom, _url, use_container_width=True)
+
+    # --- 3.8 Finalidad educativa -------------------------------------------------------------
+    caja_util("Cuando recibes tus signos vitales normalmente solo ves números aislados sin saber si requieren "
+              "atención. Esta sección traduce esos valores a un lenguaje claro y accesible, explicando qué "
+              "significan y cómo influyen en tu día a día. Es una herramienta informativa pensada para ayudarte "
+              "a comprender mejor tu organismo antes de acudir a un profesional de la salud. ❤️🩺",
+              emoji="❤️", color="#FFEBEE", borde="#C0392B")
     st.caption("Estos signos vitales se ingresan en 'Mis Datos' → Bloque 3.")
 
     st.divider()
-    st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día?")
+    st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día? (Análisis Sanguíneo)")
     ambito_seleccionado = st.selectbox(
         "Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
-        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"]
+        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"], key="ambito_sangre"
     )
     for _parametro, _categoria in _todos:
         _color_pt = CATEGORIA_SEMAFORO.get(_categoria, "gris")
