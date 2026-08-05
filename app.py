@@ -38,6 +38,19 @@ from reportlab.lib.utils import ImageReader
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
 
 # =========================================================================================
+# IDIOMA / LANGUAGE — selector global (sidebar, Bloque 0) + helper de traducción T(es, en)
+# =========================================================================================
+st.session_state.setdefault("idioma", "Español")
+
+
+def T(es, en=None):
+    """Devuelve el texto en español o inglés según el idioma elegido en el sidebar.
+    Si no se provee versión en inglés, devuelve el texto en español como respaldo."""
+    if st.session_state.get("idioma", "Español") == "English" and en is not None:
+        return en
+    return es
+
+# =========================================================================================
 # BASE PERUANA DE ALIMENTOS — datos reales extraídos de las Tablas Peruanas de Composición
 # de Alimentos (INS/CENAN, 11.ª edición digital, marzo 2025, ISBN 978-612-310-178-7).
 # Curaduría de ~343 alimentos de mayor consumo en el Perú, de los ~970 alimentos crudos
@@ -4220,6 +4233,28 @@ ETIQUETAS_NAV = {
     "🎓 SOBRE NOSOTRAS":           ("👥", "Acerca de Nosotros"),
 }
 
+ETIQUETAS_NAV_EN = {
+    "0.-DATOS":                    ("👤", "Personal Information"),
+    "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Blood Test"),
+    "1B.-ESTADO FISIOLÓGICO":      ("❤️", "Physiological State"),
+    "2.-IMC Y PERCENTIL":          ("⚖️", "Body Mass Index (BMI)"),
+    "3.-TMB":                      ("🔥", "Basal Metabolic Rate"),
+    "4.-RCD":                      ("⚡", "Daily Caloric Requirement"),
+    "5.-CONTROL DE PESO":          ("📈", "Weight Control"),
+    "6.-MACRONUTRIENTES":          ("🥗", "Macronutrient Distribution"),
+    "7.-PORCIONES":                ("🍎", "Recommended Daily Portions"),
+    "8.-FATSECRET":                ("🥬", "Food Database"),
+    "9.-DIETA":                    ("📝", "Meal Plan"),
+    "12.-APORTE 2: CAFEÍNA":       ("☕", "Caffeine Intake Limit"),
+    "13.-LÍNEA DE TIEMPO":         ("📊", "Weight Projection"),
+    "📄 MI REPORTE":               ("📄", "Nutrition Report"),
+    "🎓 SOBRE NOSOTRAS":           ("👥", "About Us"),
+}
+
+
+def _etiquetas_nav_activas():
+    return ETIQUETAS_NAV_EN if st.session_state.get("idioma", "Español") == "English" else ETIQUETAS_NAV
+
 _DEFAULTS_SESION = {
     "nombre_usuario": "", "genero": "Hombre", "peso": 75.0, "estatura": 168, "edad": 9,
     "actividad": "Ligero", "objetivo": "Bajar de peso",
@@ -4268,6 +4303,14 @@ def _panel_llenar_datos():
                     {est['emoji']} {etiqueta}{f' · {valor}{unidad}' if valor not in (0, 0.0) else ''}</div>""",
                     unsafe_allow_html=True)
 
+    # ===== BLOQUE 0: Idioma / Language =====
+    st.markdown('<div style="background:linear-gradient(120deg,#F3EEFB 0%,#E6DFFA 100%);border-radius:20px;'
+                'padding:14px 22px;margin-bottom:14px;border:1px solid #8E6FCE33;">'
+                '<h4 style="margin:0 0 8px 0;color:#5E35B1;">🌐 Idioma / Language</h4></div>',
+                unsafe_allow_html=True)
+    st.selectbox("Idioma / Language", ["Español", "English"], key="idioma",
+                 label_visibility="collapsed")
+
     # ===== BLOQUE 1: Perfil Básico =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAF3FF 0%,#D6EBFF 100%);border-radius:20px;'
                 'padding:18px 22px;margin-bottom:14px;border:1px solid #007AFF22;">'
@@ -4277,7 +4320,7 @@ def _panel_llenar_datos():
                 unsafe_allow_html=True)
     b1c1, b1c2 = st.columns(2)
     with b1c1:
-        nombre_usuario = st.text_input("¿Cómo te llamas?", value=st.session_state.get("nombre_usuario", ""),
+        nombre_usuario = st.text_input(T("¿Cómo te llamas?", "What's your name?"), value=st.session_state.get("nombre_usuario", ""),
                                         key="nombre_usuario", help="Tu plan se sentirá hecho a tu medida.")
     with b1c2:
         genero = st.radio("Género:", ["Hombre", "Mujer"], horizontal=True, key="genero",
@@ -4575,7 +4618,7 @@ _nav_colores_css += "</style>"
 st.sidebar.markdown(_nav_colores_css, unsafe_allow_html=True)
 
 for _hoja_nav in OPCIONES_HOJAS:
-    _icono_nav, _titulo_nav = ETIQUETAS_NAV[_hoja_nav]
+    _icono_nav, _titulo_nav = _etiquetas_nav_activas()[_hoja_nav]
     _es_activo_nav = (_hoja_nav == st.session_state["hoja_activa"])
     if st.sidebar.button(
         f"{_icono_nav}  {_titulo_nav}",
@@ -4771,7 +4814,7 @@ else:
 # pinta la sección actualmente seleccionada.
 # =========================================================================================
 hoja_activa = st.session_state["hoja_activa"]
-_icono_actual, _titulo_actual = ETIQUETAS_NAV[hoja_activa]
+_icono_actual, _titulo_actual = _etiquetas_nav_activas()[hoja_activa]
 st.markdown(f"""
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
     <span style="font-size:1.4rem;">{_icono_actual}</span>
