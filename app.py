@@ -4054,7 +4054,6 @@ def _panel_llenar_datos():
                                          "anula cualquier ahorro energético por clima (ACOG).",
                                     disabled=embarazada)
     if embarazada:
-        st.session_state["vive_en_chiclayo"] = False
         vive_en_chiclayo = False
 
     # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
@@ -4108,7 +4107,6 @@ def _panel_llenar_datos():
         # fitness (±10/15/20/30%) se OCULTAN por completo. El aporte calórico es automático
         # y aditivo por trimestre e IMC previo (IOM / FAO-OMS / ACOG).
         objetivo = "Mantenerse"
-        st.session_state["objetivo"] = "Mantenerse"
         ajuste_txt = None
         st.info("🤰 En Modo Embarazo no se elige objetivo ni ritmo: tus calorías se calculan automáticamente "
                 "sumando el bloque energético de tu trimestre a tu TMB gestacional. Nunca se resta energía.")
