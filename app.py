@@ -3689,129 +3689,140 @@ def _img_b64(path):
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
 
-# --- 1. MEMBRETE INSTITUCIONAL — banner ancho del colegio, arriba de todo (tamaño moderado) ---
-if _LOGO_ANCHO.exists():
-    st.markdown('<div style="text-align:center;margin-bottom:14px;">', unsafe_allow_html=True)
-    _col_memb_l, _col_memb_c, _col_memb_r = st.columns([1, 3, 1])
-    with _col_memb_c:
-        st.image(str(_LOGO_ANCHO), use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+# =========================================================================================
+# ENCABEZADO "LANDING" (membrete, hero, tarjetas, onboarding) — SOLO en la página de inicio
+# ("0.-DATOS"). Antes se renderizaba en TODAS las hojas, lo que hacía la app notablemente más
+# lenta al navegar o escribir datos (Streamlit vuelve a ejecutar todo el script en cada
+# interacción). Ahora solo se construye cuando realmente se está viendo esa página.
+# =========================================================================================
+_EN_PORTADA = st.session_state.get("hoja_activa", "0.-DATOS") == "0.-DATOS"
 
-# --- 2. LOGO (escudo) a la izquierda + HERO CIAM&SUNI (bloque verde) a la derecha, más ancho ---
-_col_esc, _col_hero = st.columns([1, 2.2])
-with _col_esc:
-    _escudo_b64 = _img_b64(_ESCUDO) if _ESCUDO.exists() else None
-    _escudo_img_tag = (f'<img src="data:image/png;base64,{_escudo_b64}" '
-                        f'style="max-width:78%;max-height:210px;object-fit:contain;" />') if _escudo_b64 else ""
-    st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#FFFFFF 0%,#F4F9F4 100%);border-radius:26px;
-    padding:20px;margin-bottom:14px;box-shadow:0 6px 20px rgba(30,86,49,0.10);
-    border:1.5px solid rgba(30,86,49,0.14);height:100%;min-height:260px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-    {_escudo_img_tag}
-    <p style="margin:12px 0 0 0;font-weight:800;color:#1E5631;font-size:1.05rem;letter-spacing:-0.01em;
-       font-family:Georgia,'Times New Roman',serif;">🏫 C.E.P. "Santa María Reina"</p>
-    <p style="margin:2px 0 0 0;color:#5C6B60;font-size:0.85rem;font-weight:600;">Chiclayo</p>
-    </div>
-    """, unsafe_allow_html=True)
-with _col_hero:
-    st.markdown("""
-    <div class="hero-card" style="height:100%;min-height:260px;box-sizing:border-box;">
-        <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
-        <h1>🥗 CIAM&SUNI</h1>
-        <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">Tu Salud, Personalizada</p>
-        <p class="hero-sub">CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu
-        requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante
-        explicaciones sencillas y visuales.</p>
-    </div>
-    """, unsafe_allow_html=True)
+if _EN_PORTADA:
+    # --- 1. MEMBRETE INSTITUCIONAL — banner ancho del colegio, arriba de todo (tamaño moderado) ---
+    if _LOGO_ANCHO.exists():
+        st.markdown('<div style="text-align:center;margin-bottom:14px;">', unsafe_allow_html=True)
+        _col_memb_l, _col_memb_c, _col_memb_r = st.columns([1, 3, 1])
+        with _col_memb_c:
+            st.image(str(_LOGO_ANCHO), use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# --- Tarjetas de características (reemplazan los chips: 4 tarjetas claras) ---
-st.markdown("""
-<div class="feature-row">
-    <div class="feature-card">
-        <div class="fc-emoji">🍎</div>
-        <div class="fc-title">Nutrición personalizada</div>
-        <div class="fc-text">Cálculos adaptados a tus propios datos: edad, peso, altura y etapa de vida.</div>
-    </div>
-    <div class="feature-card">
-        <div class="fc-emoji">🧮</div>
-        <div class="fc-title">Basado en evidencia científica</div>
-        <div class="fc-text">Fórmulas reconocidas (Mifflin-St Jeor, FAO/OMS/UNU) aplicadas paso a paso.</div>
-    </div>
-    <div class="feature-card">
-        <div class="fc-emoji">🌡️</div>
-        <div class="fc-title">Adaptado al clima de Chiclayo</div>
-        <div class="fc-text">Un ajuste extra que considera el clima cálido de nuestra región.</div>
-    </div>
-    <div class="feature-card">
-        <div class="fc-emoji">📊</div>
-        <div class="fc-title">Resultados fáciles de comprender</div>
-        <div class="fc-text">Cada cálculo se explica en lenguaje simple: qué significa y qué hacer con él.</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# --- 3. "Comienza aquí" — Onboarding Steps rediseñado (Cards Grid + Callout) -------------
-st.markdown("""
-<div style="margin:18px 0 0 0;">
-<p style="margin:0 0 2px 0;font-weight:700;color:#1E5631;font-size:1.35rem;">🚀 ¿Cómo empezar?</p>
-<p style="margin:0 0 16px 0;color:#5C6B60;font-size:0.92rem;">Sigue estos simples pasos para obtener tu diagnóstico personalizado.</p>
-</div>
-""", unsafe_allow_html=True)
-
-_ONBOARD_STEPS = [
-    ("1", "📝", "Ingresa tus datos", "Completa tu información personal en el panel izquierdo.",
-     "#EAF4FE", "#8FC1F2", "#1565C0"),
-    ("2", "🧩", "Explora las secciones", "Navega libremente por las 17 áreas del centro de control.",
-     "#F3EEFB", "#C6AEE8", "#6A3FA0"),
-    ("3", "🔍", "Revisa tus resultados", "Descubre tus indicadores explicados paso a paso.",
-     "#EAFAEE", "#9BD8AE", "#1E5631"),
-    ("4", "📄", "Descarga tu PDF", "Obtén tu reporte final completo y listo para guardar.",
-     "#FFF6E0", "#F4D27A", "#B8860B"),
-]
-_cols_onboard = st.columns(4)
-for _col_ob, (_num, _ic, _tit, _txt, _fondo, _borde, _hex) in zip(_cols_onboard, _ONBOARD_STEPS):
-    with _col_ob:
+    # --- 2. LOGO (escudo) a la izquierda + HERO CIAM&SUNI (bloque verde) a la derecha, más ancho ---
+    _col_esc, _col_hero = st.columns([1, 2.2])
+    with _col_esc:
+        _escudo_b64 = _img_b64(_ESCUDO) if _ESCUDO.exists() else None
+        _escudo_img_tag = (f'<img src="data:image/png;base64,{_escudo_b64}" '
+                            f'style="max-width:78%;max-height:210px;object-fit:contain;" />') if _escudo_b64 else ""
         st.markdown(f"""
-        <div style="position:relative;background:{_fondo};border:1px solid {_borde};border-radius:20px;
-        padding:22px 16px 16px 16px;height:170px;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-        <div style="position:absolute;top:-10px;left:-10px;width:30px;height:30px;border-radius:50%;
-        background:{_hex};color:#FFFFFF;font-weight:800;font-size:0.9rem;display:flex;align-items:center;
-        justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.18);">{_num}</div>
-        <div style="font-size:1.6rem;margin-bottom:8px;">{_ic}</div>
-        <p style="margin:0 0 4px 0;font-weight:800;color:{_hex};font-size:0.92rem;">{_tit}</p>
-        <p style="margin:0;color:#5C6B60;font-size:0.8rem;line-height:1.4;">{_txt}</p>
+        <div style="background:linear-gradient(120deg,#FFFFFF 0%,#F4F9F4 100%);border-radius:26px;
+        padding:20px;margin-bottom:14px;box-shadow:0 6px 20px rgba(30,86,49,0.10);
+        border:1.5px solid rgba(30,86,49,0.14);height:100%;min-height:260px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        {_escudo_img_tag}
+        <p style="margin:12px 0 0 0;font-weight:800;color:#1E5631;font-size:1.05rem;letter-spacing:-0.01em;
+           font-family:Georgia,'Times New Roman',serif;">🏫 C.E.P. "Santa María Reina"</p>
+        <p style="margin:2px 0 0 0;color:#5C6B60;font-size:0.85rem;font-weight:600;">Chiclayo</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with _col_hero:
+        st.markdown("""
+        <div class="hero-card" style="height:100%;min-height:260px;box-sizing:border-box;">
+            <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
+            <h1>🥗 CIAM&SUNI</h1>
+            <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">Tu Salud, Personalizada</p>
+            <p class="hero-sub">CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu
+            requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante
+            explicaciones sencillas y visuales.</p>
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown("""
-<div style="display:flex;align-items:center;gap:10px;background:#F2F7F3;border:1px solid #D8E6DA;
-border-radius:999px;padding:12px 22px;margin:14px 0 4px 0;">
-<span style="font-size:1.1rem;">🔒</span>
-<span style="color:#3C4A3F;font-size:0.85rem;">Solo tendrás que ingresar tus datos una vez durante esta sesión.
-Luego podrás moverte libremente entre todas las secciones cuando quieras.</span>
-</div>
-""", unsafe_allow_html=True)
+    # --- Tarjetas de características (reemplazan los chips: 4 tarjetas claras) ---
+    st.markdown("""
+    <div class="feature-row">
+        <div class="feature-card">
+            <div class="fc-emoji">🍎</div>
+            <div class="fc-title">Nutrición personalizada</div>
+            <div class="fc-text">Cálculos adaptados a tus propios datos: edad, peso, altura y etapa de vida.</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-emoji">🧮</div>
+            <div class="fc-title">Basado en evidencia científica</div>
+            <div class="fc-text">Fórmulas reconocidas (Mifflin-St Jeor, FAO/OMS/UNU) aplicadas paso a paso.</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-emoji">🌡️</div>
+            <div class="fc-title">Adaptado al clima de Chiclayo</div>
+            <div class="fc-text">Un ajuste extra que considera el clima cálido de nuestra región.</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-emoji">📊</div>
+            <div class="fc-title">Resultados fáciles de comprender</div>
+            <div class="fc-text">Cada cálculo se explica en lenguaje simple: qué significa y qué hacer con él.</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown("""
-<p style="text-align:center;color:#5C6B60;font-size:0.9rem;font-style:italic;margin:0 0 18px 0;">
-"Cada persona tiene necesidades nutricionales diferentes. Esta aplicación adapta los cálculos utilizando
-la información que ingreses, para brindarte resultados personalizados y fáciles de interpretar."</p>
-""", unsafe_allow_html=True)
+    # --- 3. "Comienza aquí" — Onboarding Steps rediseñado (Cards Grid + Callout) -------------
+    st.markdown("""
+    <div style="margin:18px 0 0 0;">
+    <p style="margin:0 0 2px 0;font-weight:700;color:#1E5631;font-size:1.35rem;">🚀 ¿Cómo empezar?</p>
+    <p style="margin:0 0 16px 0;color:#5C6B60;font-size:0.92rem;">Sigue estos simples pasos para obtener tu diagnóstico personalizado.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- Aviso médico: esta app es educativa y no reemplaza la consulta profesional ---
-st.markdown("""
-<div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
-            padding:16px 24px;margin-bottom:18px;
-            box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-<b style="color:#FF9500;">⚕️ Aviso importante:</b> esta aplicación es una herramienta educativa y orientativa.
-No reemplaza la consulta con un médico, nutricionista u otro profesional de la salud.
-Ante cualquier duda o resultado fuera de lo normal, acude siempre a un especialista.
-</div>
-""", unsafe_allow_html=True)
+    _ONBOARD_STEPS = [
+        ("1", "📝", "Ingresa tus datos", "Completa tu información personal en el panel izquierdo.",
+         "#EAF4FE", "#8FC1F2", "#1565C0"),
+        ("2", "🧩", "Explora las secciones", "Navega libremente por las 17 áreas del centro de control.",
+         "#F3EEFB", "#C6AEE8", "#6A3FA0"),
+        ("3", "🔍", "Revisa tus resultados", "Descubre tus indicadores explicados paso a paso.",
+         "#EAFAEE", "#9BD8AE", "#1E5631"),
+        ("4", "📄", "Descarga tu PDF", "Obtén tu reporte final completo y listo para guardar.",
+         "#FFF6E0", "#F4D27A", "#B8860B"),
+    ]
+    _cols_onboard = st.columns(4)
+    for _col_ob, (_num, _ic, _tit, _txt, _fondo, _borde, _hex) in zip(_cols_onboard, _ONBOARD_STEPS):
+        with _col_ob:
+            st.markdown(f"""
+            <div style="position:relative;background:{_fondo};border:1px solid {_borde};border-radius:20px;
+            padding:22px 16px 16px 16px;height:170px;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+            <div style="position:absolute;top:-10px;left:-10px;width:30px;height:30px;border-radius:50%;
+            background:{_hex};color:#FFFFFF;font-weight:800;font-size:0.9rem;display:flex;align-items:center;
+            justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.18);">{_num}</div>
+            <div style="font-size:1.6rem;margin-bottom:8px;">{_ic}</div>
+            <p style="margin:0 0 4px 0;font-weight:800;color:{_hex};font-size:0.92rem;">{_tit}</p>
+            <p style="margin:0;color:#5C6B60;font-size:0.8rem;line-height:1.4;">{_txt}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="display:flex;align-items:center;gap:10px;background:#F2F7F3;border:1px solid #D8E6DA;
+    border-radius:999px;padding:12px 22px;margin:14px 0 4px 0;">
+    <span style="font-size:1.1rem;">🔒</span>
+    <span style="color:#3C4A3F;font-size:0.85rem;">Solo tendrás que ingresar tus datos una vez durante esta sesión.
+    Luego podrás moverte libremente entre todas las secciones cuando quieras.</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <p style="text-align:center;color:#5C6B60;font-size:0.9rem;font-style:italic;margin:0 0 18px 0;">
+    "Cada persona tiene necesidades nutricionales diferentes. Esta aplicación adapta los cálculos utilizando
+    la información que ingreses, para brindarte resultados personalizados y fáciles de interpretar."</p>
+    """, unsafe_allow_html=True)
+
+    # --- Aviso médico: esta app es educativa y no reemplaza la consulta profesional ---
+    st.markdown("""
+    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
+                padding:16px 24px;margin-bottom:18px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+    <b style="color:#FF9500;">⚕️ Aviso importante:</b> esta aplicación es una herramienta educativa y orientativa.
+    No reemplaza la consulta con un médico, nutricionista u otro profesional de la salud.
+    Ante cualquier duda o resultado fuera de lo normal, acude siempre a un especialista.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
+
+    st.markdown("---")
 
 # --- Acceso directo al Excel original, para que cualquiera pueda abrirlo/descargarlo libremente ---
 _POSIBLES_NOMBRES_EXCEL = [
@@ -3820,7 +3831,10 @@ _POSIBLES_NOMBRES_EXCEL = [
     "Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx",
     "Grupo_n_4_VER_2.xlsx", "Grupo_n_4_VER_2__1_.xlsx", "Grupo n°4 VER.2.xlsx", "Grupo_n_4_VER.2.xlsx",
 ]
+@st.cache_data(show_spinner=False)
 def _buscar_excel_original():
+    """Busca el Excel original en disco. Cacheado: el resultado no cambia durante la sesión,
+    así que evitamos repetir el escaneo de la carpeta (glob) en cada rerun."""
     for _nombre in _POSIBLES_NOMBRES_EXCEL:
         _candidata = Path(__file__).parent / _nombre
         if _candidata.exists():
@@ -3833,8 +3847,6 @@ def _buscar_excel_original():
     return None
 
 _ruta_excel = _buscar_excel_original()
-
-st.markdown("---")
 
 # =========================================================================================
 # NAVEGACIÓN — 15 secciones en un panel lateral fijo (Sidebar Pill Navigation)
