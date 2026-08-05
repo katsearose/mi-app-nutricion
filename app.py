@@ -1662,9 +1662,13 @@ def generar_pdf_reporte(datos):
 
     story = []
 
+    _embarazada_pdf = bool(datos.get("embarazada", False))
+    _titulo_pdf = "🤰 Reporte de Orientación Nutricional Gestacional" if _embarazada_pdf else \
+                  "📄 Informe de Resultados — CIAM&amp;SUNI"
+
     # ---------------- ENCABEZADO TIPO CONSULTORIO ----------------
     header_tbl = Table([
-        [Paragraph("📄 Informe de Resultados — CIAM&amp;SUNI", estilo_titulo),
+        [Paragraph(_titulo_pdf, estilo_titulo),
          Paragraph(f"Generado: {datos['fecha']}", estilo_fecha)],
         [Paragraph('C.E.P. "Santa María Reina", Chiclayo — Programa de Salud Escolar', estilo_subtitulo), ""],
     ], colWidths=[130 * mm, 44 * mm])
@@ -1678,6 +1682,22 @@ def generar_pdf_reporte(datos):
     story.append(Spacer(1, 6))
     story.append(HRFlowable(width="100%", thickness=1.3, color=_rl_hex(VERDE)))
     story.append(Spacer(1, 10))
+
+    if _embarazada_pdf:
+        # Bloque obligatorio por Ley Sanitaria: visible en la primera página.
+        _aviso_legal_tbl = Table([[Paragraph(
+            "<b>Este informe es un modelo de distribución de porciones y energía automatizado con fines "
+            "educativos.</b> No sustituye la evaluación, control prenatal, ni las indicaciones específicas "
+            "de su médico ginecólogo-obstetra o nutricionista clínico certificado.", estilo_aviso)]],
+            colWidths=[174 * mm])
+        _aviso_legal_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), _rl_hex("#FFF4DE")),
+            ("BOX", (0, 0), (-1, -1), 0.8, _rl_hex("#E0A800")),
+            ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ]))
+        story.append(_aviso_legal_tbl)
+        story.append(Spacer(1, 10))
 
     # ---------------- DATOS DEL PACIENTE ----------------
     datos_paciente = Table([[
@@ -1716,20 +1736,29 @@ def generar_pdf_reporte(datos):
 
     # ---------------- 2. REQUERIMIENTO ENERGÉTICO ----------------
     story.append(Paragraph("🔥 Requerimiento energético", estilo_seccion))
+    _obj_label_pdf = (f"Automático por trimestre ({datos.get('trimestre', '')}) — sin déficit ni superávit "
+                       "tipo fitness") if _embarazada_pdf else datos['objetivo']
     story.append(_tabla_datos([
         ["TMB (Tasa Metabólica Basal)", f"{datos['tmb']:.2f} kcal/día"],
         ["RCD (Gasto calórico diario)", f"{datos['rcd']:.2f} kcal/día"],
-        ["Meta calórica (según objetivo)", f"{datos['rcd_final']:.2f} kcal/día"],
-        ["Objetivo nutricional", f"{datos['objetivo']}"],
+        ["Meta calórica (según objetivo)" if not _embarazada_pdf else "Meta calórica gestacional",
+         f"{datos['rcd_final']:.2f} kcal/día"],
+        ["Objetivo nutricional", _obj_label_pdf],
     ]))
 
     # ---------------- 3. MACRONUTRIENTES ----------------
-    story.append(Paragraph("🍽️ Macronutrientes recomendados (diarios)", estilo_seccion))
+    _titulo_macros_pdf = "🍽️ Distribución de porciones y energía (diaria)" if _embarazada_pdf else \
+                          "🍽️ Macronutrientes recomendados (diarios)"
+    story.append(Paragraph(_titulo_macros_pdf, estilo_seccion))
+    _total_kcal_macros = max(datos['cal_prot'] + datos['cal_carb'] + datos['cal_gras'], 1)
+    _pct_prot_pdf = datos['cal_prot'] / _total_kcal_macros * 100
+    _pct_carb_pdf = datos['cal_carb'] / _total_kcal_macros * 100
+    _pct_gras_pdf = datos['cal_gras'] / _total_kcal_macros * 100
     tabla_macros = Table([
         ["Macronutriente", "Gramos", "Kcal/día", "% del total"],
-        ["Proteínas", f"{datos['gr_prot']:.2f} g", f"{datos['cal_prot']:.2f}", "20%"],
-        ["Carbohidratos", f"{datos['gr_carb']:.2f} g", f"{datos['cal_carb']:.2f}", "50%"],
-        ["Grasas", f"{datos['gr_gras']:.2f} g", f"{datos['cal_gras']:.2f}", "30%"],
+        ["Proteínas", f"{datos['gr_prot']:.2f} g", f"{datos['cal_prot']:.2f}", f"{_pct_prot_pdf:.0f}%"],
+        ["Carbohidratos", f"{datos['gr_carb']:.2f} g", f"{datos['cal_carb']:.2f}", f"{_pct_carb_pdf:.0f}%"],
+        ["Grasas", f"{datos['gr_gras']:.2f} g", f"{datos['cal_gras']:.2f}", f"{_pct_gras_pdf:.0f}%"],
     ], colWidths=(58 * mm, 39 * mm, 39 * mm, 38 * mm))
     tabla_macros.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
@@ -2052,6 +2081,32 @@ DIETA = {
         "Grasa": {"Aceitunas": 55, "Queso crema": 202, "Aceite de aguacate": 84, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
 }
+
+# =========================================================================================
+# FILTRO DE SEGURIDAD ALIMENTARIA — MODO EMBARAZO (FDA, "Seguridad Alimentaria para Futuras
+# Mamás"): bloquea alimentos de alto riesgo microbiológico (Listeria, Salmonella, Toxoplasma).
+# =========================================================================================
+_PALABRAS_RIESGO_EMBARAZO = [
+    "crudo", "cruda", "crudos", "crudas", "semicocid", "ceviche", "tiradito", "sushi", "sashimi",
+    "tártaro", "tartar", "carpaccio", "mayonesa", "término medio", "jamón serrano", "embutido",
+    "queso fresco artesanal", "queso artesanal", "no pasteurizad", "leche cruda",
+]
+
+
+def _es_alimento_riesgo_embarazo(nombre_alimento):
+    """True si el nombre del alimento coincide con un ítem de alto riesgo microbiológico
+    (pescado/marisco crudo, huevo crudo, embutidos sin cocer, lácteos no pasteurizados, etc.)."""
+    _n = (nombre_alimento or "").lower()
+    return any(_p in _n for _p in _PALABRAS_RIESGO_EMBARAZO)
+
+
+def dieta_filtrada_para(comida, macro, embarazada_flag):
+    """Devuelve el diccionario {alimento: kcal} de DIETA[comida][macro], quitando los
+    alimentos de alto riesgo si el Modo Embarazo está activo."""
+    _opciones = DIETA[comida][macro]
+    if not embarazada_flag:
+        return _opciones
+    return {k: v for k, v in _opciones.items() if not _es_alimento_riesgo_embarazo(k)}
 
 # =========================================================================================
 # LÍMITES BIOLÓGICOS MÁXIMOS DOCUMENTADOS (récords históricos) — usados como tope duro en los inputs
@@ -3994,7 +4049,13 @@ def _panel_llenar_datos():
                                       ["Primer trimestre", "Segundo trimestre", "Tercer trimestre"],
                                       key="trimestre_emb")
     vive_en_chiclayo = st.checkbox("🌤️ ¿Vives en Chiclayo?", key="vive_en_chiclayo",
-                                    help="Ajusta tu RCD según el clima cálido de la ciudad (−5%).")
+                                    help="Ajusta tu RCD según el clima cálido de la ciudad (−5%)." if not embarazada
+                                    else "Desactivado en Modo Embarazo: el gasto cardiovascular gestacional "
+                                         "anula cualquier ahorro energético por clima (ACOG).",
+                                    disabled=embarazada)
+    if embarazada:
+        st.session_state["vive_en_chiclayo"] = False
+        vive_en_chiclayo = False
 
     # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
@@ -4042,60 +4103,70 @@ def _panel_llenar_datos():
         </div>
         """, unsafe_allow_html=True)
 
-    objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
-                             key="objetivo")
-
-    st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
-    if objetivo == "Bajar de peso":
-        ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-            options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
-    elif objetivo == "Subir de peso":
-        ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-            options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
-    else:
+    if genero == "Mujer" and embarazada:
+        # Modo Embarazo: el selector de objetivo (bajar/subir/mantener) y los ritmos tipo
+        # fitness (±10/15/20/30%) se OCULTAN por completo. El aporte calórico es automático
+        # y aditivo por trimestre e IMC previo (IOM / FAO-OMS / ACOG).
+        objetivo = "Mantenerse"
+        st.session_state["objetivo"] = "Mantenerse"
         ajuste_txt = None
-        st.caption("Sin ajuste calórico: se mantiene tu RCD.")
+        st.info("🤰 En Modo Embarazo no se elige objetivo ni ritmo: tus calorías se calculan automáticamente "
+                "sumando el bloque energético de tu trimestre a tu TMB gestacional. Nunca se resta energía.")
+    else:
+        objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
+                                 key="objetivo")
 
-    if objetivo in ("Bajar de peso", "Subir de peso"):
-        _DESC_AJUSTE = {
-            "Bajar de peso": [
-                ("Gradual (-10%)", "🌱", "#34C759", "#EAFAEE",
-                 "Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles."),
-                ("Equilibrado (-20%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
-                 "La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables."),
-                ("Intensivo (-30%)", "🚀", "#FF3B30", "#FFEDEC",
-                 "Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
-                 "periodos cortos y con seguimiento."),
-            ],
-            "Subir de peso": [
-                ("Gradual (+10%)", "🌱", "#34C759", "#EAFAEE",
-                 "Aumenta las calorías de forma moderada para favorecer una ganancia progresiva."),
-                ("Equilibrado (+15%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
-                 "La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa."),
-                ("Acelerado (+20%)", "🚀", "#FF3B30", "#FFEDEC",
-                 "Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
-                 "Requiere una alimentación bien planificada."),
-            ],
-        }[objetivo]
-        for _tit_a, _ic_a, _col_a, _fon_a, _desc_a in _DESC_AJUSTE:
-            _sel_a = (_tit_a == ajuste_txt)
-            _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateX(4px);"
-                         if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
-            st.markdown(f"""
-            <div style="background:{_fon_a};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo_a}
-                        transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
-                <div style="font-size:1.4rem;">{_ic_a}</div>
-                <div><b style="color:{_col_a};">{_tit_a}</b>{' ✓' if _sel_a else ''}<br>
-                <span style="font-size:0.84rem;color:#3C3C43;">{_desc_a}</span></div>
-            </div>
-            """, unsafe_allow_html=True)
-        if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
-           (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
-            st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
+        st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
+        if objetivo == "Bajar de peso":
+            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+                options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
+        elif objetivo == "Subir de peso":
+            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
+                options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
+        else:
+            ajuste_txt = None
+            st.caption("Sin ajuste calórico: se mantiene tu RCD.")
 
-    st.caption("ℹ️ **¿Qué significa este ajuste?** Define qué tan rápido deseas alcanzar tu objetivo, adaptando "
-               "tus calorías diarias a partir de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado "
-               "suele ser la opción recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
+        if objetivo in ("Bajar de peso", "Subir de peso"):
+            _DESC_AJUSTE = {
+                "Bajar de peso": [
+                    ("Gradual (-10%)", "🌱", "#34C759", "#EAFAEE",
+                     "Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles."),
+                    ("Equilibrado (-20%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
+                     "La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables."),
+                    ("Intensivo (-30%)", "🚀", "#FF3B30", "#FFEDEC",
+                     "Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
+                     "periodos cortos y con seguimiento."),
+                ],
+                "Subir de peso": [
+                    ("Gradual (+10%)", "🌱", "#34C759", "#EAFAEE",
+                     "Aumenta las calorías de forma moderada para favorecer una ganancia progresiva."),
+                    ("Equilibrado (+15%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
+                     "La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa."),
+                    ("Acelerado (+20%)", "🚀", "#FF3B30", "#FFEDEC",
+                     "Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
+                     "Requiere una alimentación bien planificada."),
+                ],
+            }[objetivo]
+            for _tit_a, _ic_a, _col_a, _fon_a, _desc_a in _DESC_AJUSTE:
+                _sel_a = (_tit_a == ajuste_txt)
+                _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateX(4px);"
+                             if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
+                st.markdown(f"""
+                <div style="background:{_fon_a};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo_a}
+                            transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
+                    <div style="font-size:1.4rem;">{_ic_a}</div>
+                    <div><b style="color:{_col_a};">{_tit_a}</b>{' ✓' if _sel_a else ''}<br>
+                    <span style="font-size:0.84rem;color:#3C3C43;">{_desc_a}</span></div>
+                </div>
+                """, unsafe_allow_html=True)
+            if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
+               (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
+                st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
+
+        st.caption("ℹ️ **¿Qué significa este ajuste?** Define qué tan rápido deseas alcanzar tu objetivo, adaptando "
+                   "tus calorías diarias a partir de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado "
+                   "suele ser la opción recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
 
     # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
     st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
@@ -4268,7 +4339,13 @@ etapa = etapa_desde_edad(edad)
 actividad = st.session_state["actividad"]
 objetivo = st.session_state["objetivo"]
 
-if objetivo == "Bajar de peso":
+if genero == "Mujer" and embarazada:
+    # Modo Embarazo: nunca se aplica déficit ni superávit tipo fitness; el ajuste calórico
+    # es 100% automático por trimestre/IMC (ver bloque de TMB/RCD gestacional más abajo).
+    ajuste_txt = "0"
+    ajuste_bajar = 0.0
+    ajuste_subir = 0.0
+elif objetivo == "Bajar de peso":
     ajuste_txt = st.session_state["ajuste_bajar_sel"]
     _MAPA_BAJAR = {"Gradual (-10%)": 0.10, "Equilibrado (-20%) ⭐ Recomendado": 0.20, "Intensivo (-30%)": 0.30}
     ajuste_bajar = _MAPA_BAJAR.get(ajuste_txt, 0.20)
@@ -4303,12 +4380,28 @@ hierro = st.session_state["hierro"]
 estatura_m = estatura / 100.0
 imc = round(peso / (estatura_m ** 2))  # =REDONDEAR(D30/F30) -> 0 decimales, igual que el Excel
 
+_imc_previo_obesidad = (round(peso / ((estatura / 100.0) ** 2)) >= 30) if (estatura and peso) else False
+
 if genero == "Mujer" and embarazada:
-    _AJUSTE_TRIMESTRE = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 452}
+    # Modo Embarazo (ACOG / FAO-OMS / IOM): la TMB gestacional es el punto de partida y el
+    # RCD se calcula SUMANDO bloques fijos de kcal por trimestre — nunca restando — con un
+    # incremento moderado si hay obesidad previa (IMC ≥ 30) para evitar macrosomía/preeclampsia.
+    _AJUSTE_TRIMESTRE_NORMAL = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 450}
+    _AJUSTE_TRIMESTRE_OBESIDAD = {"Primer trimestre": 0, "Segundo trimestre": 200, "Tercer trimestre": 250}
     tmb_base_gestacion = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
-    ajuste_gestacion = _AJUSTE_TRIMESTRE.get(trimestre, 0)
-    tmb = tmb_base_gestacion + ajuste_gestacion
+    tmb = tmb_base_gestacion
+    tabla_trimestre = _AJUSTE_TRIMESTRE_OBESIDAD if _imc_previo_obesidad else _AJUSTE_TRIMESTRE_NORMAL
+    ajuste_gestacion = tabla_trimestre.get(trimestre, 0)
     tmb_fuente = "embarazo_" + trimestre.split(" ")[0].lower()
+
+    factor = 1.0  # en Modo Embarazo no se aplica factor de actividad tipo fitness sobre el RCD
+    rcd_base = tmb
+    rcd = rcd_base  # el clima de Chiclayo NUNCA reduce el RCD gestacional (gasto cardíaco/térmico ya elevado)
+    ajuste_clima_aplicado = False
+
+    ajuste_aplicado = 0.0
+    rcd_final = tmb + ajuste_gestacion  # RCD = TMB gestacional + bloque fijo del trimestre (IOM/FAO-OMS)
+    _ico_recortada_por_tmb = False
 else:
     tmb_base_gestacion = None
     ajuste_gestacion = 0
@@ -4318,23 +4411,23 @@ else:
         tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
     tmb_fuente = "mifflin_st_jeor"
 
-factor = FACTOR_ACTIVIDAD[actividad][genero]
-rcd_base = tmb * factor  # RCD base = TMB x Factor de actividad
-rcd = rcd_base * 0.95 if vive_en_chiclayo else rcd_base  # RCD (con ajuste de clima si vive en Chiclayo)
-ajuste_clima_aplicado = vive_en_chiclayo
+    factor = FACTOR_ACTIVIDAD[actividad][genero]
+    rcd_base = tmb * factor  # RCD base = TMB x Factor de actividad
+    rcd = rcd_base * 0.95 if vive_en_chiclayo else rcd_base  # RCD (con ajuste de clima si vive en Chiclayo)
+    ajuste_clima_aplicado = vive_en_chiclayo
 
-# Hoja 5: ajuste según objetivo (Control de Peso) — respetando el límite fisiológico de no bajar de la TMB
-if objetivo == "Bajar de peso":
-    ajuste_aplicado = ajuste_bajar
-    rcd_final = max(rcd * (1 - ajuste_aplicado), tmb)
-elif objetivo == "Subir de peso":
-    ajuste_aplicado = ajuste_subir
-    rcd_final = rcd * (1 + ajuste_aplicado)
-else:
-    ajuste_aplicado = 0.0
-    rcd_final = rcd
+    # Hoja 5: ajuste según objetivo (Control de Peso) — respetando el límite fisiológico de no bajar de la TMB
+    if objetivo == "Bajar de peso":
+        ajuste_aplicado = ajuste_bajar
+        rcd_final = max(rcd * (1 - ajuste_aplicado), tmb)
+    elif objetivo == "Subir de peso":
+        ajuste_aplicado = ajuste_subir
+        rcd_final = rcd * (1 + ajuste_aplicado)
+    else:
+        ajuste_aplicado = 0.0
+        rcd_final = rcd
 
-_ico_recortada_por_tmb = (objetivo == "Bajar de peso") and (rcd * (1 - ajuste_bajar) < tmb)
+    _ico_recortada_por_tmb = (objetivo == "Bajar de peso") and (rcd * (1 - ajuste_bajar) < tmb)
 
 # Plazo estimado, según los lapsos máximos recomendados (Guía de Ritmos y Lapsos Seguros)
 if objetivo == "Bajar de peso":
@@ -4364,12 +4457,23 @@ _cambio_semanal_kg = (_diferencia_diaria * 7) / 7700
 _ritmo_pct_semanal = (_cambio_semanal_kg / peso) * 100 if peso > 0 else 0
 
 # Hoja 6: Macronutrientes
-cal_prot = rcd_final * 0.20
-cal_carb = rcd_final * 0.50
-cal_gras = rcd_final * 0.30
-gr_prot = cal_prot / 4
-gr_carb = cal_carb / 4
-gr_gras = cal_gras / 9
+if genero == "Mujer" and embarazada:
+    # Modo Embarazo (IOM — DRIs para Macronutrientes): proteína mínima 1.1 g/kg de peso actual,
+    # carbohidratos SIEMPRE entre 45%-55% del RCD (nunca low-carb/keto, por riesgo de cetosis
+    # neurotóxica fetal), y grasas completando el resto priorizando insaturadas (Omega-3 DHA).
+    gr_prot = max(peso * 1.1, (rcd_final * 0.20) / 4)
+    cal_prot = gr_prot * 4
+    cal_carb = rcd_final * 0.50  # punto medio del rango seguro 45%-55%
+    gr_carb = cal_carb / 4
+    cal_gras = max(rcd_final - cal_prot - cal_carb, 0)
+    gr_gras = cal_gras / 9
+else:
+    cal_prot = rcd_final * 0.20
+    cal_carb = rcd_final * 0.50
+    cal_gras = rcd_final * 0.30
+    gr_prot = cal_prot / 4
+    gr_carb = cal_carb / 4
+    gr_gras = cal_gras / 9
 
 # Hoja 7: Porciones del día
 porciones = {
@@ -6906,22 +7010,31 @@ elif hoja_activa == "9.-DIETA":
     st.markdown('<p class="selector-menu-sub">Elige una fuente de carbohidrato, proteína y grasa para cada '
                 'momento del día.</p>', unsafe_allow_html=True)
 
+    if genero == "Mujer" and embarazada:
+        st.warning("🤰 Modo Embarazo activo: se ocultaron los alimentos crudos/semicocidos (ceviche, sushi, "
+                   "tártaros), carnes término medio, huevo crudo, mayonesa casera, embutidos sin cocinar "
+                   "(jamón serrano) y lácteos artesanales no pasteurizados, por riesgo de Listeria, "
+                   "Salmonella y Toxoplasma (FDA — Seguridad Alimentaria para Futuras Mamás).")
+
     seleccion = {}
     for comida in DIETA:
         st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {comida.upper()}</div>',
                     unsafe_allow_html=True)
+        _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
+        _opciones_prot = dieta_filtrada_para(comida, "Proteína", embarazada)
+        _opciones_gras = dieta_filtrada_para(comida, "Grasa", embarazada)
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown('<div class="macro-select-label carb">🌾 Carbohidrato</div>', unsafe_allow_html=True)
-            carb_sel = st.selectbox(f"Carbohidrato — {comida}", list(DIETA[comida]["Carbohidrato"].keys()),
+            carb_sel = st.selectbox(f"Carbohidrato — {comida}", list(_opciones_carb.keys()),
                                      key=f"c_{comida}", label_visibility="collapsed")
         with c2:
             st.markdown('<div class="macro-select-label prot">🥩 Proteína</div>', unsafe_allow_html=True)
-            prot_sel = st.selectbox(f"Proteína — {comida}", list(DIETA[comida]["Proteína"].keys()),
+            prot_sel = st.selectbox(f"Proteína — {comida}", list(_opciones_prot.keys()),
                                      key=f"p_{comida}", label_visibility="collapsed")
         with c3:
             st.markdown('<div class="macro-select-label gras">🥑 Grasa</div>', unsafe_allow_html=True)
-            gras_sel = st.selectbox(f"Grasa — {comida}", list(DIETA[comida]["Grasa"].keys()),
+            gras_sel = st.selectbox(f"Grasa — {comida}", list(_opciones_gras.keys()),
                                      key=f"g_{comida}", label_visibility="collapsed")
         seleccion[comida] = {
             "Carbohidrato": carb_sel,
@@ -7052,6 +7165,22 @@ elif hoja_activa == "9.-DIETA":
               "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
               "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
+
+elif hoja_activa == "12.-APORTE 2: CAFEÍNA" and genero == "Mujer" and embarazada:
+    hoja_header(12, subtitulo="En el embarazo, el hígado procesa la cafeína mucho más lento (su vida media "
+                               "sube hasta 15 horas) y atraviesa la placenta libremente. Por eso, en Modo "
+                               "Embarazo esta hoja deja de calcular horarios de sueño y se convierte en un "
+                               "tope fijo de consumo diario.", tip="☕ Máximo 200 mg de cafeína al día")
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "Límite gestacional = 200 mg de cafeína / día (tope fijo, no calculadora de horario)",
+        referencia="Organización Mundial de la Salud (OMS) — Recomendaciones sobre Atención Prenatal")}</div>""",
+        unsafe_allow_html=True)
+    st.error("🚫 **Máximo 200 mg de cafeína al día.** Superar esta dosis se asocia a restricción del "
+             "crecimiento intrauterino y bajo peso al nacer (OMS). Referencia rápida: 1 taza de café "
+             "filtrado ≈ 95 mg · 1 taza de té ≈ 47 mg · 1 lata de gaseosa cola ≈ 34 mg · 1 barra de "
+             "chocolate negro (50 g) ≈ 25 mg.")
+    st.caption("⚕️ Esta herramienta es orientativa y no reemplaza la indicación de tu médico "
+               "ginecólogo-obstetra o nutricionista.")
 
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     hoja_header(12, subtitulo="Dormir bien también ayuda a cuidar tu alimentación. La cafeína puede permanecer "
@@ -7196,6 +7325,74 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
               emoji="🌙", color="#FFF4DE", borde="#1B2A4A")
 
 # ---------------------------------------------------------------------------------------
+elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
+    hoja_header(13, "En Modo Embarazo esta hoja ya no proyecta pérdida/ganancia de grasa: muestra el Canal "
+                    "de Ganancia de Peso Gestacional del IOM, según tu IMC previo al embarazo, para que "
+                    "registres tu peso semana a semana y verifiques que te mantienes dentro del rango saludable.")
+
+    # Canal de Ganancia de Peso Gestacional (IOM / National Research Council — Weight Gain During Pregnancy)
+    _CANALES_IOM = [
+        (18.5, "Bajo peso (IMC < 18.5)", 12.5, 18.0, "#5AC8FA"),
+        (25.0, "Normal (IMC 18.5–24.9)", 11.5, 16.0, "#34C759"),
+        (30.0, "Sobrepeso (IMC 25.0–29.9)", 7.0, 11.5, "#FF9500"),
+        (999.0, "Obesidad (IMC ≥ 30.0)", 5.0, 9.0, "#FF3B30"),
+    ]
+    _imc_previo = imc  # IMC previo/actual usado como aproximación del IMC pregestacional
+    for _tope, _etq, _min_kg, _max_kg, _color_canal in _CANALES_IOM:
+        if _imc_previo < _tope:
+            _canal_etiqueta, _canal_min, _canal_max, _canal_color = _etq, _min_kg, _max_kg, _color_canal
+            break
+
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        f"Meta total IOM: {_canal_min:.1f} a {_canal_max:.1f} kg ganados al final del embarazo — {_canal_etiqueta}",
+        referencia="Instituto de Medicina (IOM) y National Research Council (US), Weight Gain During Pregnancy")}</div>""",
+        unsafe_allow_html=True)
+    st.write("")
+
+    _semanas_totales = 40
+    _semana_actual = {"Primer trimestre": 8, "Segundo trimestre": 20, "Tercer trimestre": 34}.get(trimestre, 8)
+    _sem_eje = list(range(0, _semanas_totales + 1))
+    _linea_min = [round((_canal_min / _semanas_totales) * s, 2) for s in _sem_eje]
+    _linea_max = [round((_canal_max / _semanas_totales) * s, 2) for s in _sem_eje]
+    _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso)
+
+    fig_iom = go.Figure()
+    fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_max], mode="lines",
+                                  name="Límite máximo IOM", line=dict(color=_canal_color, width=2, dash="dash")))
+    fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_min], mode="lines",
+                                  name="Límite mínimo IOM", line=dict(color=_canal_color, width=2, dash="dash"),
+                                  fill="tonexty", fillcolor=_hex_a_rgba(_canal_color, 0.14)))
+    fig_iom.add_trace(go.Scatter(x=[_semana_actual], y=[_peso_hoy], mode="markers+text",
+                                  name="Tu peso actual", marker=dict(size=14, color="#FFFFFF",
+                                  line=dict(color="#1E5631", width=4)),
+                                  text=[f"Hoy: {_peso_hoy:.1f} kg"], textposition="top center",
+                                  textfont=dict(size=13, color="#17301F")))
+    fig_iom.update_layout(
+        title=dict(text="Canal de Ganancia de Peso Gestacional (IOM)", x=0.02, xanchor="left",
+                   font=dict(size=18, color="#17301F", family="-apple-system")),
+        xaxis_title="Semana de embarazo", yaxis_title="Peso (kg)",
+        height=420, margin=dict(t=60, l=10, r=10, b=10),
+        plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig_iom, use_container_width=True)
+
+    st.write("")
+    st.markdown("##### 📝 Registra tu peso de esta semana")
+    _peso_registro = st.number_input("Tu peso actual (kg):", min_value=20.0, max_value=300.0,
+                                      value=float(_peso_hoy), step=0.1, key="peso_gestacional_hoy")
+    _kg_ganados = _peso_registro - peso
+    if _kg_ganados < (_canal_min / _semanas_totales) * _semana_actual - 1:
+        st.warning("🟨 Vas por debajo del canal saludable para tu semana de embarazo. Coméntalo con tu "
+                   "médico ginecólogo-obstetra o nutricionista.")
+    elif _kg_ganados > (_canal_max / _semanas_totales) * _semana_actual + 1:
+        st.warning("🟨 Vas por encima del canal saludable para tu semana de embarazo. Coméntalo con tu "
+                   "médico ginecólogo-obstetra o nutricionista.")
+    else:
+        st.success("🟢 Tu ganancia de peso está dentro del canal saludable IOM para tu semana de embarazo.")
+
+    st.info("El aumento de peso en el embarazo no sigue un patrón estético: mantenerte dentro de este rango "
+            "médico ayuda a evitar partos prematuros (ganar muy poco) o diabetes gestacional (ganar demasiado).")
+
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hoja_header(13, "Manteniendo tus hábitos actuales y el plan de calorías calculado, esta es una estimación "
                     "de cómo podría cambiar tu peso con el tiempo.")
@@ -7600,6 +7797,8 @@ elif hoja_activa == "📄 MI REPORTE":
         "rcd": rcd,
         "rcd_final": rcd_final,
         "objetivo": objetivo,
+        "embarazada": (genero == "Mujer" and embarazada),
+        "trimestre": trimestre if (genero == "Mujer" and embarazada) else "",
         "gr_prot": gr_prot, "cal_prot": cal_prot,
         "gr_carb": gr_carb, "cal_carb": cal_carb,
         "gr_gras": gr_gras, "cal_gras": cal_gras,
