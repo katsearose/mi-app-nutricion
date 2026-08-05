@@ -1056,8 +1056,8 @@ div[data-testid="stImageCaption"] {
 /* ---------- Percentil visual "de cada 100" ---------- */
 .perc-visual-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
                      box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
-.perc-visual-grid { display:grid; grid-template-columns: repeat(10, 1fr); gap:4px; margin:12px 0; }
-.perc-visual-dot { width:100%; padding-top:100%; border-radius:3px; }
+.perc-visual-grid { display:grid; grid-template-columns: repeat(10, 1fr); gap:3px; margin:12px auto; max-width:220px; }
+.perc-visual-dot { width:100%; padding-top:100%; border-radius:2px; }
 
 /* ---------- Estado nutricional (checklist) ---------- */
 .estado-nutri-item { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:#2A2E35; margin-top:6px; }
@@ -1170,6 +1170,8 @@ div[data-testid="stImageCaption"] {
 .macro-niveles-table th:last-child { border-top-right-radius:14px; }
 .macro-niveles-table td { padding:9px 12px; text-align:center; background:#FFFFFF; border-bottom:1px solid #F0F0F0; }
 .macro-niveles-table tr:nth-child(even) td { background:#F7F9F7; }
+.badge-tu-nivel { display:inline-block; background:#FFCC00; color:#5C4700; font-size:0.62rem; font-weight:900;
+    padding:2px 9px; border-radius:999px; margin-left:6px; vertical-align:middle; letter-spacing:0.02em; }
 .macro-final-table { width:100%; border-collapse:separate; border-spacing:0; font-size:0.92rem; border-radius:16px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.06); }
 .macro-final-table th { background:linear-gradient(135deg,#1E5631,#2E7D32); color:#FFFFFF; padding:12px 14px; font-weight:800; text-align:center; }
 .macro-final-table td { padding:12px 14px; text-align:center; background:#FFFFFF; border-bottom:1px solid #F0F0F0; font-weight:600; color:#17301F; }
@@ -4093,7 +4095,7 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
         _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
         _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
 
-    st.caption("Presión Arterial (mmHg):")
+    st.markdown("**Presión Arterial (mmHg):**")
     pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
     pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
     if pas > 0 and pad > 0:
@@ -4103,7 +4105,6 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
         else:
             _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
             _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
-    st.caption("ℹ️ Un valor estándar y saludable de presión ronda los 120/80 mmHg.")
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
     st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
@@ -4670,7 +4671,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     <div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFFFFF 75%);border-radius:24px;
     padding:22px 28px;margin-bottom:16px;border:1px solid rgba(224,54,54,0.15);
     box-shadow:0 6px 18px rgba(224,54,54,0.08);">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#C0392B;font-size:1.3rem;">❤️ Estado Fisiológico</p>
+    <p style="margin:0 0 4px 0;font-weight:900;color:#C0392B;font-size:1.85rem;letter-spacing:-0.02em;">❤️ Estado Fisiológico</p>
     <p style="margin:0 0 8px 0;color:#5C2A26;font-weight:700;font-size:0.98rem;">Así está funcionando tu cuerpo en este momento</p>
     <p style="margin:0;color:#7A4A44;font-size:0.88rem;line-height:1.5;">No solo mostramos tus signos vitales: te explicamos qué significan, qué pueden indicar y cuándo
     conviene prestarles atención.</p>
@@ -5838,20 +5839,27 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     st.info(f"⚖️ Peso usado en los cálculos: **{peso_usuario:.2f} kg** · 🔥 RCD objetivo: **{rcd_usuario:.2f} kcal/día**")
 
     _filas_niveles_html = ""
+    _COL_PROT = ("#C2185B", "#FFEBF0")
+    _COL_GRAS = ("#1E5631", "#EAFAEE")
+    _COL_CARB = ("#8A6D00", "#FFF8E1")
     for _nivel in ["Mínimo", "Intermedio", "Máximo"]:
         _d = niveles_calculados[_nivel]
+        _es_actual = (_nivel == nivel_final)
+        _borde_sel = "box-shadow:inset 0 2px 0 #FFCC00,inset 0 -2px 0 #FFCC00;" if _es_actual else ""
+        _nombre_fila = f"⭐ {_nivel}" if _es_actual else _nivel
+        _badge_tu_nivel = ' <span class="badge-tu-nivel">TU NIVEL</span>' if _es_actual else ""
         _filas_niveles_html += f"""
         <tr>
-            <td style="text-align:left;font-weight:800;">{_nivel}</td>
-            <td>{FACTORES_PROT[_nivel]:.1f} g/kg</td>
-            <td>{_d['gr_prot']:.1f} g</td>
-            <td>{_d['kcal_prot']:.0f} kcal/día</td>
-            <td>{FACTORES_GRAS[_nivel]:.1f} g/kg</td>
-            <td>{_d['gr_gras']:.1f} g</td>
-            <td>{_d['kcal_gras']:.0f} kcal/día</td>
-            <td>{_d['kcal_restantes']:.0f} kcal/día</td>
-            <td>{_d['gr_carb']:.1f} g</td>
-            <td>{_d['kcal_carb']:.0f} kcal/día</td>
+            <td style="text-align:left;font-weight:800;{_borde_sel}">{_nombre_fila}{_badge_tu_nivel}</td>
+            <td style="background:{_COL_PROT[1]};{_borde_sel}">{FACTORES_PROT[_nivel]:.1f} g/kg</td>
+            <td style="background:{_COL_PROT[1]};{_borde_sel}">{_d['gr_prot']:.1f} g</td>
+            <td style="background:{_COL_PROT[1]};color:{_COL_PROT[0]};font-weight:800;{_borde_sel}">{_d['kcal_prot']:.0f} kcal/día</td>
+            <td style="background:{_COL_GRAS[1]};{_borde_sel}">{FACTORES_GRAS[_nivel]:.1f} g/kg</td>
+            <td style="background:{_COL_GRAS[1]};{_borde_sel}">{_d['gr_gras']:.1f} g</td>
+            <td style="background:{_COL_GRAS[1]};color:{_COL_GRAS[0]};font-weight:800;{_borde_sel}">{_d['kcal_gras']:.0f} kcal/día</td>
+            <td style="background:{_COL_CARB[1]};{_borde_sel}">{_d['kcal_restantes']:.0f} kcal/día</td>
+            <td style="background:{_COL_CARB[1]};{_borde_sel}">{_d['gr_carb']:.1f} g</td>
+            <td style="background:{_COL_CARB[1]};color:{_COL_CARB[0]};font-weight:800;{_borde_sel}">{_d['kcal_carb']:.0f} kcal/día</td>
         </tr>"""
 
     _html_tabla_niveles = f"""
@@ -5860,14 +5868,14 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         <thead>
         <tr>
             <th rowspan="2">Nivel</th>
-            <th colspan="3">🥩 Proteína</th>
-            <th colspan="3">🥑 Grasa</th>
-            <th colspan="3">🌾 Carbohidrato</th>
+            <th colspan="3" style="background:{_COL_PROT[0]};">🥩 Proteína</th>
+            <th colspan="3" style="background:{_COL_GRAS[0]};">🥑 Grasa</th>
+            <th colspan="3" style="background:{_COL_CARB[0]};">🌾 Carbohidrato</th>
         </tr>
         <tr>
-            <th>Factor</th><th>Gramos</th><th>Kcal/día</th>
-            <th>Factor</th><th>Gramos</th><th>Kcal/día</th>
-            <th>Kcal Restantes</th><th>Gramos</th><th>Kcal/día</th>
+            <th style="background:{_COL_PROT[0]};">Factor</th><th style="background:{_COL_PROT[0]};">Gramos</th><th style="background:{_COL_PROT[0]};">Kcal/día</th>
+            <th style="background:{_COL_GRAS[0]};">Factor</th><th style="background:{_COL_GRAS[0]};">Gramos</th><th style="background:{_COL_GRAS[0]};">Kcal/día</th>
+            <th style="background:{_COL_CARB[0]};">Kcal Restantes</th><th style="background:{_COL_CARB[0]};">Gramos</th><th style="background:{_COL_CARB[0]};">Kcal/día</th>
         </tr>
         </thead>
         <tbody>
@@ -5877,6 +5885,8 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     </div>
     """
     st.markdown(_html_sin_lineas_vacias(_html_tabla_niveles), unsafe_allow_html=True)
+    st.caption("⭐ La fila resaltada con borde amarillo es el nivel que corresponde a tu objetivo actual "
+               f"(**{objetivo_usuario}** → **{nivel_final}**).")
     st.caption("💡 **Kcal Restantes:** es la suma de la Kcal/día de Proteína + la Kcal/día de Grasa de "
                "ESE mismo nivel (Mínimo, Intermedio o Máximo) — por eso cambia en cada fila. "
                "**Carbohidratos:** no usan un factor de peso; se calculan cubriendo la energía "
@@ -5967,7 +5977,11 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         <tr class="fila-total">
             <td style="text-align:left;">TOTAL</td>
             <td>{total_gr_final:.1f} g</td>
-            <td>{total_kcal_final:.0f} kcal/día</td>
+            <td>{total_kcal_final:.0f} kcal/día
+                <span style="display:inline-block;margin-left:10px;background:#FFCC00;color:#5C4700;
+                    font-weight:900;font-size:0.8rem;padding:4px 12px;border-radius:999px;
+                    letter-spacing:0.02em;">→ RCD</span>
+            </td>
         </tr>
         </tbody>
     </table>
@@ -5975,7 +5989,13 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     st.markdown(_html_sin_lineas_vacias(_html_tabla_final), unsafe_allow_html=True)
 
     if abs(total_kcal_final - rcd_usuario) < 1:
-        st.success("✅ El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).")
+        st.markdown("""
+        <div style="background:linear-gradient(120deg,#34C759 0%,#1E5631 100%);color:#FFFFFF;
+                    border-radius:20px;padding:20px 26px;margin-top:14px;text-align:center;
+                    font-weight:900;font-size:1.05rem;box-shadow:0 14px 32px rgba(52,199,89,0.35);">
+            ✅ El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
 
