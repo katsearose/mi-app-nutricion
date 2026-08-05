@@ -8003,21 +8003,78 @@ elif hoja_activa == "📄 MI REPORTE":
     st.markdown("#### 🍱 Tu plan de comidas del día")
     _tiene_dieta = any(f"{pfx}_{comida}" in st.session_state
                         for comida in DIETA for pfx in ("c", "p", "g"))
+
+    # ---- Reconstrucción fiel de las 3 tablas de macronutrientes (idéntica lógica a la Hoja 9)
+    # a partir de lo que el usuario eligió en los st.selectbox (persistido en st.session_state).
+    # Este mismo cálculo se reutiliza más abajo para armar el PDF, así los datos del reporte
+    # en pantalla y los del PDF siempre coinciden. ----
+    _ICONOS_COMIDA_R9 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _PCT_MACRO_MOMENTO_PDF = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
+    _dieta_filas_pdf = []
+    _dieta_totales_pdf = {
+        "Carbohidrato": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
+        "Proteína": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
+        "Grasa": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
+    }
     if _tiene_dieta:
-        filas_r = []
         for comida in DIETA:
-            def _sel_o_defecto(prefijo, macro):
-                _v = st.session_state.get(f"{prefijo}_{comida}")
-                if _v in DIETA[comida][macro]:
-                    return _v
-                return next(iter(DIETA[comida][macro]))
-            filas_r.append({
-                "Comida": comida,
-                "Carbohidrato": _sel_o_defecto("c", "Carbohidrato"),
-                "Proteína": _sel_o_defecto("p", "Proteína"),
-                "Grasa": _sel_o_defecto("g", "Grasa"),
-            })
-        tabla_bonita(pd.DataFrame(filas_r), 9)
+            fila_macro_pdf = {"momento": comida}
+            for macro, prefijo_ss in [("Carbohidrato", "c"), ("Proteína", "p"), ("Grasa", "g")]:
+                alimento_sel = st.session_state.get(f"{prefijo_ss}_{comida}", None)
+                opciones_macro = DIETA[comida][macro]
+                if alimento_sel not in opciones_macro:
+                    alimento_sel = next(iter(opciones_macro))  # fallback: primera opción disponible
+                kcal_alimento = opciones_macro[alimento_sel]
+                porcion_kcal = round(porciones[comida]["kcal"] * _PCT_MACRO_MOMENTO_PDF[macro], 2)
+                gramos_finales = round((porcion_kcal / kcal_alimento) * 100, 1) if kcal_alimento else 0.0
+                fila_macro_pdf[macro] = {
+                    "alimento": alimento_sel, "kcal": kcal_alimento,
+                    "porcion": porcion_kcal, "gramos": gramos_finales,
+                }
+                _dieta_totales_pdf[macro]["kcal"] += kcal_alimento
+                _dieta_totales_pdf[macro]["porcion"] += porcion_kcal
+                _dieta_totales_pdf[macro]["gramos"] += gramos_finales
+            _dieta_filas_pdf.append(fila_macro_pdf)
+
+        def _tabla_reporte_macro(clase_css, icono, titulo, macro_key):
+            """Tabla de color (Carbohidrato / Proteína / Grasa) con fila TOTAL, igual que en la Hoja 9."""
+            _tot = _dieta_totales_pdf[macro_key]
+            filas_html = ""
+            for f in _dieta_filas_pdf:
+                d = f[macro_key]
+                filas_html += f"""
+                <tr>
+                    <td class="dm-momento">{_ICONOS_COMIDA_R9[f['momento']]} {f['momento']}</td>
+                    <td>{d['alimento']}</td>
+                    <td>{d['kcal']:.0f} kcal</td>
+                    <td>{d['porcion']:.1f} kcal</td>
+                    <td>{d['gramos']:.1f} g</td>
+                </tr>"""
+            filas_html += f"""
+                <tr class="dm-total">
+                    <td class="dm-momento" colspan="2">TOTAL</td>
+                    <td>{_tot['kcal']:.0f} kcal</td>
+                    <td>{_tot['porcion']:.1f} kcal</td>
+                    <td>{_tot['gramos']:.1f} g</td>
+                </tr>"""
+            html = f"""
+            <div class="dieta-menu-wrap {clase_css} print-only-report">
+            <table class="dieta-menu-table">
+                <thead>
+                <tr><th style="text-align:left;">Momento</th><th>{icono} Alimento ({titulo})</th>
+                    <th>Kcal</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
+                </thead>
+                <tbody>
+                {filas_html}
+                </tbody>
+            </table>
+            </div>
+            """
+            st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
+
+        _tabla_reporte_macro("carb", "🌾", "Carbohidrato", "Carbohidrato")
+        _tabla_reporte_macro("prot", "🥩", "Proteína", "Proteína")
+        _tabla_reporte_macro("gras", "🥑", "Grasa", "Grasa")
     else:
         st.info("Aún no armaste tu plan de comidas en la Hoja 9.-DIETA. Visítala para que aparezca aquí.")
 
@@ -8091,35 +8148,8 @@ elif hoja_activa == "📄 MI REPORTE":
         ("Colesterol", f"{coles} mg/dL", _cat_coles_r),
         ("Hierro", f"{hierro} µg/dL", _cat_hierro_r),
     ]
-    # ---- Reconstrucción fiel de las 3 tablas de macronutrientes (idéntica lógica a la Hoja 9)
-    # a partir de lo que el usuario eligió en los st.selectbox (persistido en st.session_state) ----
-    _PCT_MACRO_MOMENTO_PDF = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
-    _dieta_filas_pdf = []
-    _dieta_totales_pdf = {
-        "Carbohidrato": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
-        "Proteína": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
-        "Grasa": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
-    }
-    if _tiene_dieta:
-        for comida in DIETA:
-            fila_macro_pdf = {"momento": comida}
-            for macro, prefijo_ss in [("Carbohidrato", "c"), ("Proteína", "p"), ("Grasa", "g")]:
-                alimento_sel = st.session_state.get(f"{prefijo_ss}_{comida}", None)
-                opciones_macro = DIETA[comida][macro]
-                if alimento_sel not in opciones_macro:
-                    alimento_sel = next(iter(opciones_macro))  # fallback: primera opción disponible
-                kcal_alimento = opciones_macro[alimento_sel]
-                porcion_kcal = round(porciones[comida]["kcal"] * _PCT_MACRO_MOMENTO_PDF[macro], 2)
-                gramos_finales = round((porcion_kcal / kcal_alimento) * 100, 1) if kcal_alimento else 0.0
-                fila_macro_pdf[macro] = {
-                    "alimento": alimento_sel, "kcal": kcal_alimento,
-                    "porcion": porcion_kcal, "gramos": gramos_finales,
-                }
-                _dieta_totales_pdf[macro]["kcal"] += kcal_alimento
-                _dieta_totales_pdf[macro]["porcion"] += porcion_kcal
-                _dieta_totales_pdf[macro]["gramos"] += gramos_finales
-            _dieta_filas_pdf.append(fila_macro_pdf)
-
+    # Nota: _dieta_filas_pdf y _dieta_totales_pdf ya se calcularon arriba (Bloque 3), junto con
+    # las 3 tablas de color que se muestran en pantalla — se reutilizan aquí tal cual para el PDF.
     _datos_pdf = {
         "fecha": _fecha_reporte,
         "nombre": _nombre_saludo,
