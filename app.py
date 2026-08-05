@@ -2798,6 +2798,39 @@ EFECTOS_PARAMETRO = {
     },
 }
 
+EFECTOS_PARAMETRO_EN = {
+    "Hemoglobina": {
+        "verde": "good oxygenation of your brain and muscles",
+        "ambar": "somewhat reduced oxygenation, which can cause mild tiredness",
+        "rojo": "insufficient oxygenation due to a possible case of anemia",
+        "gris": "not enough data to evaluate your oxygenation",
+    },
+    "Triglicéridos": {
+        "verde": "a balanced fat metabolism",
+        "ambar": "a buildup of fat in the blood that is starting to become noticeable",
+        "rojo": "a cardiovascular risk from excess fat in the blood",
+        "gris": "not enough data to evaluate your triglycerides",
+    },
+    "Glucosa": {
+        "verde": "stable energy levels throughout the day",
+        "ambar": "energy fluctuations that can cause spikes and dips in concentration",
+        "rojo": "a significant imbalance in your energy and concentration",
+        "gris": "not enough data to evaluate your glucose",
+    },
+    "Colesterol": {
+        "verde": "clean arteries and good circulation",
+        "ambar": "the beginning of fat buildup in your arteries",
+        "rojo": "a risk of arterial blockage that affects your circulation",
+        "gris": "not enough data to evaluate your cholesterol",
+    },
+    "Hierro": {
+        "verde": "good energy reserves and defenses",
+        "ambar": "low iron reserves that can cause tiredness",
+        "rojo": "severely compromised iron reserves",
+        "gris": "not enough data to evaluate your iron reserves",
+    },
+}
+
 AMBITO_PLANTILLAS = {
     "Escolar/Académico": {
         "verde": "📚 En el colegio, tener {efecto} te ayuda a mantener la concentración en clase y rendir bien en tus evaluaciones. ¡Sigue así!",
@@ -2819,13 +2852,37 @@ AMBITO_PLANTILLAS = {
     },
 }
 
+AMBITO_PLANTILLAS_EN = {
+    "Escolar/Académico": {
+        "verde": "📚 At school, having {efecto} helps you stay focused in class and do well on your tests. Keep it up!",
+        "ambar": "📚 At school, {efecto} could make it a bit harder to concentrate or leave you feeling tired in the last hours of class. Pay attention to what you eat before studying.",
+        "rojo": "📚 At school, {efecto} can seriously affect your attention, memory, and academic performance. It's important to talk to a trusted adult and consult a specialist.",
+        "gris": "📚 Enter your value to see how it could affect your school performance.",
+    },
+    "Laboral": {
+        "verde": "💼 At work, having {efecto} gives you the energy you need to get your tasks done with focus and without excessive fatigue.",
+        "ambar": "💼 At work, {efecto} could translate into lower productivity toward the end of the day. It's worth adjusting your eating habits.",
+        "rojo": "💼 At work, {efecto} can cause chronic fatigue, poor performance, and a higher risk of mistakes. Professional attention is recommended before continuing with demanding activities.",
+        "gris": "💼 Enter your value to see how it could affect your work performance.",
+    },
+    "Psicológico/Emocional": {
+        "verde": "💚 Emotionally, having {efecto} contributes to a stable mood and greater resistance to daily stress.",
+        "ambar": "💚 Emotionally, {efecto} can be linked to irritability, mild mood swings, or an increased feeling of stress.",
+        "rojo": "💚 Emotionally, {efecto} is associated with greater irritability, anxiety, or low mood. Taking care of this physical aspect also supports your emotional wellbeing — don't hesitate to seek support if you need it.",
+        "gris": "💚 Enter your value to see how it could affect your emotional state.",
+    },
+}
+
 
 def generar_impacto_ambito(parametro, categoria, ambito):
     """Genera el texto dinámico de impacto de un resultado clínico según el ámbito elegido
     (Escolar/Académico, Laboral, Psicológico/Emocional), usando el color de semáforo ya calculado."""
     color = CATEGORIA_SEMAFORO.get(categoria, "gris")
-    efecto = EFECTOS_PARAMETRO.get(parametro, {}).get(color, "")
-    plantilla = AMBITO_PLANTILLAS[ambito][color]
+    _en = st.session_state.get("idioma", "Español") == "English"
+    _efectos = EFECTOS_PARAMETRO_EN if _en else EFECTOS_PARAMETRO
+    _plantillas = AMBITO_PLANTILLAS_EN if _en else AMBITO_PLANTILLAS
+    efecto = _efectos.get(parametro, {}).get(color, "")
+    plantilla = _plantillas[ambito][color]
     return plantilla.format(efecto=efecto)
 
 def clasif_percentil(imc, edad, genero):
@@ -5086,7 +5143,13 @@ if hoja_activa == "0.-DATOS":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
-    hoja_header(1, "No solo mostramos tus números: te explicamos qué significan, por qué ocurren y qué podrías hacer.")
+    hoja_header(1, T("No solo mostramos tus números: te explicamos qué significan, por qué ocurren y qué podrías hacer.",
+                     "We don't just show you your numbers: we explain what they mean, why they happen, and what you could do."))
+
+    _PARAM_EN = {"Hemoglobina": "Hemoglobin", "Triglicéridos": "Triglycerides", "Glucosa": "Glucose",
+                 "Colesterol": "Cholesterol", "Hierro": "Iron"}
+    def _pn(p):
+        return T(p, _PARAM_EN.get(p, p))
 
     _cat_hemo = clasif_hemoglobina(hemo, etapa, genero)
     _cat_trigli = clasif_trigliceridos(trigli)
@@ -5094,8 +5157,9 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
     _cat_coles = clasif_colesterol(coles)
     _cat_hierro = clasif_hierro(hierro, etapa, genero)
 
-    st.markdown("#### 🚦 Semáforo Clínico — protocolo de triaje digital")
-    st.caption(f"No solo diagnostica: te sugiere una ruta de mejora inmediata, {_nombre_saludo}. 🟢 Normal · 🟡 Alerta · 🔴 Crítico")
+    st.markdown(f"#### 🚦 {T('Semáforo Clínico — protocolo de triaje digital', 'Clinical Traffic Light — digital triage protocol')}")
+    st.caption(f"{T('No solo diagnostica: te sugiere una ruta de mejora inmediata', 'Not just a diagnosis: it suggests an immediate path to improvement')}, "
+               f"{_nombre_saludo}. 🟢 {T('Normal', 'Normal')} · 🟡 {T('Alerta', 'Alert')} · 🔴 {T('Crítico', 'Critical')}")
     sc1, sc2, sc3, sc4, sc5 = st.columns(5)
     with sc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo, valor_num=hemo, etapa=etapa, genero=genero)
     with sc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli, valor_num=trigli)
@@ -5109,57 +5173,83 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
     _INFO_PARAM = {
         "Hemoglobina": {
             "icono": "🩸", "unidad": " g/dL", "valor": hemo, "categoria": _cat_hemo,
-            "que_mide": "Proteína de los glóbulos rojos que transporta el oxígeno desde los pulmones hacia todo el cuerpo.",
-            "recomendaciones": [("🥩", "Alimentos ricos en hierro"), ("🍊", "Vitamina C (mejora la absorción)"), ("🩺", "Evaluación médica si hay síntomas")],
-            "riesgo": ["🍖 Baja ingesta de hierro", "🤰 Embarazo", "🩸 Sangrados", "🫘 Déficit nutricional"],
-            "curioso": "La hemoglobina puede disminuir durante el embarazo debido al aumento del volumen sanguíneo.",
+            "que_mide": T("Proteína de los glóbulos rojos que transporta el oxígeno desde los pulmones hacia todo el cuerpo.",
+                          "The protein in red blood cells that carries oxygen from the lungs to the rest of the body."),
+            "recomendaciones": [("🥩", T("Alimentos ricos en hierro", "Iron-rich foods")),
+                                 ("🍊", T("Vitamina C (mejora la absorción)", "Vitamin C (improves absorption)")),
+                                 ("🩺", T("Evaluación médica si hay síntomas", "Medical evaluation if symptoms occur"))],
+            "riesgo": [T("🍖 Baja ingesta de hierro", "🍖 Low iron intake"), T("🤰 Embarazo", "🤰 Pregnancy"),
+                       T("🩸 Sangrados", "🩸 Bleeding"), T("🫘 Déficit nutricional", "🫘 Nutritional deficiency")],
+            "curioso": T("La hemoglobina puede disminuir durante el embarazo debido al aumento del volumen sanguíneo.",
+                         "Hemoglobin can decrease during pregnancy due to the increase in blood volume."),
         },
         "Triglicéridos": {
             "icono": "🫒", "unidad": " mg/dL", "valor": trigli, "categoria": _cat_trigli,
-            "que_mide": "Tipo de grasa en la sangre que el cuerpo usa como reserva de energía.",
-            "recomendaciones": [("🥑", "Priorizar grasas saludables"), ("🚶", "Actividad física regular"), ("🍬", "Reducir azúcares simples")],
-            "riesgo": ["🍩 Exceso de azúcares", "🍺 Consumo de alcohol", "⚖️ Sobrepeso", "🧬 Factores genéticos"],
-            "curioso": "Los triglicéridos suben temporalmente después de comer; por eso muchas pruebas piden ayuno.",
+            "que_mide": T("Tipo de grasa en la sangre que el cuerpo usa como reserva de energía.",
+                          "A type of fat in the blood that the body uses as an energy reserve."),
+            "recomendaciones": [("🥑", T("Priorizar grasas saludables", "Prioritize healthy fats")),
+                                 ("🚶", T("Actividad física regular", "Regular physical activity")),
+                                 ("🍬", T("Reducir azúcares simples", "Reduce simple sugars"))],
+            "riesgo": [T("🍩 Exceso de azúcares", "🍩 Excess sugar"), T("🍺 Consumo de alcohol", "🍺 Alcohol consumption"),
+                       T("⚖️ Sobrepeso", "⚖️ Overweight"), T("🧬 Factores genéticos", "🧬 Genetic factors")],
+            "curioso": T("Los triglicéridos suben temporalmente después de comer; por eso muchas pruebas piden ayuno.",
+                         "Triglycerides rise temporarily after eating; that's why many tests require fasting."),
         },
         "Glucosa": {
             "icono": "🍬", "unidad": " mg/dL", "valor": gluco, "categoria": _cat_gluco,
-            "que_mide": "Nivel de azúcar disponible en la sangre, la principal fuente de energía del cuerpo.",
-            "recomendaciones": [("🥗", "Más fibra, menos azúcar simple"), ("🚶", "Actividad física"), ("⏰", "Horarios de comida regulares")],
-            "riesgo": ["🍭 Dieta alta en azúcares", "⚖️ Sobrepeso", "🧬 Antecedentes familiares", "😴 Mal descanso"],
-            "curioso": "La glucosa aumenta naturalmente después de comer; por eso muchas pruebas se hacen en ayunas.",
+            "que_mide": T("Nivel de azúcar disponible en la sangre, la principal fuente de energía del cuerpo.",
+                          "The level of sugar available in the blood, the body's main source of energy."),
+            "recomendaciones": [("🥗", T("Más fibra, menos azúcar simple", "More fiber, less simple sugar")),
+                                 ("🚶", T("Actividad física", "Physical activity")),
+                                 ("⏰", T("Horarios de comida regulares", "Regular meal times"))],
+            "riesgo": [T("🍭 Dieta alta en azúcares", "🍭 High-sugar diet"), T("⚖️ Sobrepeso", "⚖️ Overweight"),
+                       T("🧬 Antecedentes familiares", "🧬 Family history"), T("😴 Mal descanso", "😴 Poor sleep")],
+            "curioso": T("La glucosa aumenta naturalmente después de comer; por eso muchas pruebas se hacen en ayunas.",
+                         "Glucose naturally rises after eating; that's why many tests are done fasting."),
         },
         "Colesterol": {
             "icono": "🫀", "unidad": " mg/dL", "valor": coles, "categoria": _cat_coles,
-            "que_mide": "Grasa esencial para producir hormonas y formar membranas celulares, en exceso puede obstruir arterias.",
-            "recomendaciones": [("🥑", "Priorizar grasas saludables"), ("🚶", "Actividad física"), ("🥗", "Más fibra"), ("🚭", "Evitar tabaco")],
-            "riesgo": ["🍟 Grasas saturadas/trans", "🚬 Tabaco", "🧬 Factores genéticos", "⚖️ Sobrepeso"],
-            "curioso": "El colesterol no siempre es perjudicial: el organismo lo necesita para producir hormonas.",
+            "que_mide": T("Grasa esencial para producir hormonas y formar membranas celulares, en exceso puede obstruir arterias.",
+                          "A fat essential for producing hormones and forming cell membranes; in excess it can clog arteries."),
+            "recomendaciones": [("🥑", T("Priorizar grasas saludables", "Prioritize healthy fats")),
+                                 ("🚶", T("Actividad física", "Physical activity")),
+                                 ("🥗", T("Más fibra", "More fiber")), ("🚭", T("Evitar tabaco", "Avoid tobacco"))],
+            "riesgo": [T("🍟 Grasas saturadas/trans", "🍟 Saturated/trans fats"), T("🚬 Tabaco", "🚬 Tobacco"),
+                       T("🧬 Factores genéticos", "🧬 Genetic factors"), T("⚖️ Sobrepeso", "⚖️ Overweight")],
+            "curioso": T("El colesterol no siempre es perjudicial: el organismo lo necesita para producir hormonas.",
+                         "Cholesterol isn't always harmful: the body needs it to produce hormones."),
         },
         "Hierro": {
             "icono": "⚙️", "unidad": " µg/dL", "valor": hierro, "categoria": _cat_hierro,
-            "que_mide": "Mineral esencial para fabricar hemoglobina y transportar oxígeno en el cuerpo.",
-            "recomendaciones": [("🥩", "Carnes rojas y legumbres"), ("🍊", "Vitamina C junto a las comidas"), ("☕", "Evitar café/té con las comidas")],
-            "riesgo": ["🍖 Baja ingesta de hierro", "🩸 Pérdidas de sangre", "🤰 Embarazo", "🫘 Mala absorción intestinal"],
-            "curioso": "El té y el café pueden reducir la absorción de hierro si se toman junto a las comidas.",
+            "que_mide": T("Mineral esencial para fabricar hemoglobina y transportar oxígeno en el cuerpo.",
+                          "An essential mineral for making hemoglobin and transporting oxygen in the body."),
+            "recomendaciones": [("🥩", T("Carnes rojas y legumbres", "Red meat and legumes")),
+                                 ("🍊", T("Vitamina C junto a las comidas", "Vitamin C with meals")),
+                                 ("☕", T("Evitar café/té con las comidas", "Avoid coffee/tea with meals"))],
+            "riesgo": [T("🍖 Baja ingesta de hierro", "🍖 Low iron intake"), T("🩸 Pérdidas de sangre", "🩸 Blood loss"),
+                       T("🤰 Embarazo", "🤰 Pregnancy"), T("🫘 Mala absorción intestinal", "🫘 Poor intestinal absorption")],
+            "curioso": T("El té y el café pueden reducir la absorción de hierro si se toman junto a las comidas.",
+                         "Tea and coffee can reduce iron absorption if consumed with meals."),
         },
     }
-    st.markdown("#### 🔎 ¿Qué significa cada resultado?")
+    st.markdown(f"#### 🔎 {T('¿Qué significa cada resultado?', 'What does each result mean?')}")
     for _param, _info in _INFO_PARAM.items():
         _r = evaluar_estado_clinico(_param, _info["categoria"])
-        with st.expander(f"{_info['icono']} {_param} — {_info['valor']}{_info['unidad']} · {_r['emoji']} {_info['categoria']}"):
-            st.markdown(f"**🧠 ¿Qué mide?** {_info['que_mide']}")
-            st.markdown(f"**📋 ¿Qué significa tu resultado?** {_r['mensajePersonalizado']}")
+        with st.expander(f"{_info['icono']} {_pn(_param)} — {_info['valor']}{_info['unidad']} · {_r['emoji']} {_info['categoria']}"):
+            st.markdown(f"**🧠 {T('¿Qué mide?', 'What does it measure?')}** {_info['que_mide']}")
+            st.markdown(f"**📋 {T('¿Qué significa tu resultado?', 'What does your result mean?')}** {_r['mensajePersonalizado']}")
             _reco_html = " &nbsp; ".join(f"{ic} {tx}" for ic, tx in _info["recomendaciones"])
-            st.markdown(f"**✅ Recomendaciones generales (educativas, no médicas):** {_reco_html}")
+            st.markdown(f"**✅ {T('Recomendaciones generales (educativas, no médicas):', 'General recommendations (educational, not medical):')}** {_reco_html}")
             if _r["colorSemaforo"] in ("ambar", "rojo"):
-                st.markdown(f"**⚠️ Posibles factores relacionados** (no constituye diagnóstico): "
+                st.markdown(f"**⚠️ {T('Posibles factores relacionados', 'Possible related factors')}** "
+                            f"({T('no constituye diagnóstico', 'not a diagnosis')}): "
                             + " &nbsp; ".join(_info["riesgo"]))
-            st.markdown(f"**💡 ¿Sabías qué?** {_info['curioso']}")
+            st.markdown(f"**💡 {T('¿Sabías qué?', 'Did you know?')}** {_info['curioso']}")
 
     st.divider()
 
     # ===== 2. Interpretación Clínica Inteligente (reemplaza el panel de flujo anterior) =====
-    st.markdown("#### 🧠 Interpretación Clínica Inteligente")
+    st.markdown(f"#### 🧠 {T('Interpretación Clínica Inteligente', 'Smart Clinical Interpretation')}")
     _todos = [("Hemoglobina", _cat_hemo), ("Triglicéridos", _cat_trigli), ("Glucosa", _cat_gluco),
               ("Colesterol", _cat_coles), ("Hierro", _cat_hierro)]
     _con_dato = [(p, c) for p, c in _todos if c != "Introducir datos"]
@@ -5170,46 +5260,57 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
     if _con_dato:
         icol1, icol2 = st.columns(2)
         with icol1:
-            st.success(f"🟢 {len(_verdes)} parámetro(s) normal(es)")
+            st.success(f"🟢 " + T(f"{len(_verdes)} parámetro(s) normal(es)", f"{len(_verdes)} normal parameter(s)"))
             if _no_verdes:
-                st.warning(f"🟡 {len(_no_verdes)} parámetro(s) requiere(n) seguimiento")
-            st.markdown("**✔ Fortalezas**")
-            st.markdown("\n".join(f"- ✔ {p} adecuada" for p in _verdes) or "- Aún sin fortalezas identificadas.")
+                st.warning(f"🟡 " + T(f"{len(_no_verdes)} parámetro(s) requiere(n) seguimiento", f"{len(_no_verdes)} parameter(s) need follow-up"))
+            st.markdown(f"**✔ {T('Fortalezas', 'Strengths')}**")
+            st.markdown("\n".join(f"- ✔ " + T(f"{_pn(p)} adecuada", f"Adequate {_pn(p)}") for p in _verdes)
+                        or f"- {T('Aún sin fortalezas identificadas.', 'No strengths identified yet.')}")
         with icol2:
-            st.markdown("**⚠ Aspectos a mejorar**")
+            st.markdown(f"**⚠ {T('Aspectos a mejorar', 'Areas to improve')}**")
             if _no_verdes:
                 for p, c in _no_verdes:
                     _reco_corta = _INFO_PARAM[p]["recomendaciones"][0]
-                    st.markdown(f"- ⚠ {p} ({c}) — sugerencia: {_reco_corta[0]} {_reco_corta[1]}")
+                    st.markdown(f"- ⚠ {_pn(p)} ({c}) — {T('sugerencia', 'suggestion')}: {_reco_corta[0]} {_reco_corta[1]}")
             else:
-                st.markdown("- Sin aspectos pendientes por ahora. 🎉")
-        st.markdown(f"**Nivel general · Salud metabólica: {_pct_salud}%**")
+                st.markdown(f"- {T('Sin aspectos pendientes por ahora. 🎉', 'No pending issues for now. 🎉')}")
+        st.markdown(f"**{T('Nivel general · Salud metabólica', 'Overall level · Metabolic health')}: {_pct_salud}%**")
         st.progress(_pct_salud / 100)
     else:
-        st.info("Ingresa al menos un valor en la hoja 'Mis Datos' (Bloque 4) para ver tu interpretación clínica.")
+        st.info(T("Ingresa al menos un valor en la hoja 'Mis Datos' (Bloque 4) para ver tu interpretación clínica.",
+                  "Enter at least one value in the 'My Data' sheet (Block 4) to see your clinical interpretation."))
 
     # ===== Mini motor de reglas (no es IA real, solo asociaciones simples) =====
     _insights = []
     if _cat_hemo in ("Anemia leve", "Anemia moderada", "Anemia grave") and _cat_hierro == "Bajo":
-        _insights.append("Existe una posible asociación entre tu hemoglobina baja y tu hierro bajo: podría sugerir "
-                          "una deficiencia de hierro. Se recomienda acudir al profesional de salud para una valoración clínica.")
+        _insights.append(T("Existe una posible asociación entre tu hemoglobina baja y tu hierro bajo: podría sugerir "
+                          "una deficiencia de hierro. Se recomienda acudir al profesional de salud para una valoración clínica.",
+                          "There may be a link between your low hemoglobin and low iron: this could suggest an iron "
+                          "deficiency. It's recommended to see a health professional for a clinical assessment."))
     if _cat_gluco in ("Prediabetes", "Diabetes") and _cat_coles in ("Límite alto", "Alto"):
-        _insights.append("Tu glucosa y tu colesterol elevados en conjunto suelen asociarse a un mayor riesgo metabólico. "
-                          "Se recomienda una valoración médica integral.")
+        _insights.append(T("Tu glucosa y tu colesterol elevados en conjunto suelen asociarse a un mayor riesgo metabólico. "
+                          "Se recomienda una valoración médica integral.",
+                          "Your elevated glucose and cholesterol together are usually associated with a higher metabolic "
+                          "risk. A comprehensive medical assessment is recommended."))
     if _cat_trigli in ("Alto", "Muy alto") and _cat_coles in ("Límite alto", "Alto"):
-        _insights.append("Triglicéridos y colesterol elevados juntos pueden asociarse a mayor riesgo cardiovascular. "
-                          "Se recomienda consultar a un profesional de salud.")
+        _insights.append(T("Triglicéridos y colesterol elevados juntos pueden asociarse a mayor riesgo cardiovascular. "
+                          "Se recomienda consultar a un profesional de salud.",
+                          "Elevated triglycerides and cholesterol together can be associated with a higher cardiovascular "
+                          "risk. Consulting a health professional is recommended."))
     if _insights:
-        st.markdown("#### 🧠 Posibles asociaciones entre tus resultados")
+        st.markdown(f"#### 🧠 {T('Posibles asociaciones entre tus resultados', 'Possible associations between your results')}")
         for _ins in _insights:
             st.info(f"🧠 {_ins}")
 
     st.divider()
 
-    st.markdown("#### 🎯 ¿Cómo impacta esto en tu día a día? (Análisis Sanguíneo)")
+    st.markdown(f"#### 🎯 {T('¿Cómo impacta esto en tu día a día? (Análisis Sanguíneo)', 'How does this impact your daily life? (Blood Test)')}")
+    _ambito_en_map = {"Escolar/Académico": "School/Academic", "Laboral": "Work", "Psicológico/Emocional": "Psychological/Emotional"}
     ambito_seleccionado = st.selectbox(
-        "Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
-        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"], key="ambito_sangre"
+        T("Elige el ámbito en el que quieres ver reflejado el impacto de tus resultados:",
+          "Choose the area where you want to see the impact of your results reflected:"),
+        ["Escolar/Académico", "Laboral", "Psicológico/Emocional"], key="ambito_sangre",
+        format_func=lambda x: T(x, _ambito_en_map.get(x, x))
     )
     for _parametro, _categoria in _todos:
         _color_pt = CATEGORIA_SEMAFORO.get(_categoria, "gris")
@@ -5220,37 +5321,40 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
         <div style="background:{_fondo_pt};border-left:4px solid {_hex_pt};border-radius:16px;
                     padding:12px 18px;margin-bottom:8px;
                     box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);">
-        <b style="color:{_hex_pt};">{_parametro}</b> <span style="color:#1C1C1E;">({_categoria})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
+        <b style="color:{_hex_pt};">{_pn(_parametro)}</b> <span style="color:#1C1C1E;">({_categoria})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
         </div>
         """, unsafe_allow_html=True)
 
-    with st.expander("📊 Ver tablas de referencia clínica completas"):
+    with st.expander(f"📊 {T('Ver tablas de referencia clínica completas', 'View full clinical reference tables')}"):
         panel_referencia_hemo_hierro()
         panel_referencia_trigli_gluco_coles()
     recursos_externos(1, [
-        ("🩸 Anemia (MedlinePlus)", "https://medlineplus.gov/spanish/anemia.html"),
-        ("🫀 Colesterol (MedlinePlus)", "https://medlineplus.gov/spanish/cholesterol.html"),
-        ("💉 Diabetes (OMS)", "https://www.who.int/es/news-room/fact-sheets/detail/diabetes"),
+        (T("🩸 Anemia (MedlinePlus)", "🩸 Anemia (MedlinePlus)"), "https://medlineplus.gov/spanish/anemia.html"),
+        (T("🫀 Colesterol (MedlinePlus)", "🫀 Cholesterol (MedlinePlus)"), "https://medlineplus.gov/spanish/cholesterol.html"),
+        (T("💉 Diabetes (OMS)", "💉 Diabetes (WHO)"), "https://www.who.int/es/news-room/fact-sheets/detail/diabetes"),
     ])
 
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#F5F5F7;border-radius:16px;padding:12px 18px;margin-top:14px;font-size:0.8rem;color:#5C6B60;">
-    📚 <b>Fuentes consultadas:</b> Organización Mundial de la Salud (OMS) · American Diabetes Association ·
-    MedlinePlus · Mayo Clinic · Ministerio de Salud del Perú (MINSA).
+    📚 <b>{T('Fuentes consultadas:', 'Sources consulted:')}</b> {T('Organización Mundial de la Salud (OMS)', 'World Health Organization (WHO)')} · American Diabetes Association ·
+    MedlinePlus · Mayo Clinic · {T('Ministerio de Salud del Perú (MINSA)', "Peru's Ministry of Health (MINSA)")}.
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:12px 18px;margin-top:10px;font-size:0.82rem;color:#7A4A00;">
-    ⚠️ <b>Información importante:</b> esta plataforma tiene fines educativos y de apoyo para la comprensión de
-    resultados clínicos. No reemplaza el diagnóstico, tratamiento ni la valoración realizada por un médico o nutricionista.
+    ⚠️ <b>{T('Información importante:', 'Important information:')}</b> {T('esta plataforma tiene fines educativos y de apoyo para la comprensión de resultados clínicos. No reemplaza el diagnóstico, tratamiento ni la valoración realizada por un médico o nutricionista.', 'this platform is for educational purposes and to support the understanding of clinical results. It does not replace the diagnosis, treatment, or assessment made by a doctor or nutritionist.')}
     </div>
     """, unsafe_allow_html=True)
 
-    caja_util("Un análisis de sangre trae puros números y siglas difíciles de entender (¿12.5 g/dL es bueno o malo?). "
+    caja_util(T("Un análisis de sangre trae puros números y siglas difíciles de entender (¿12.5 g/dL es bueno o malo?). "
               "Esta hoja traduce esos números a un lenguaje simple: 'Normal', 'Anemia leve', 'Alto', etc., y te explica "
               "qué significan, por qué ocurren y qué podrías hacer. Así sabes de un vistazo si algún valor necesita "
               "atención médica. 🩺❤️",
+              "A blood test comes with nothing but numbers and hard-to-understand abbreviations (is 12.5 g/dL good or "
+              "bad?). This sheet translates those numbers into simple language: 'Normal', 'Mild Anemia', 'High', etc., "
+              "and explains what they mean, why they happen, and what you could do. That way you know at a glance if "
+              "any value needs medical attention. 🩺❤️"),
               emoji="🩸", color="#FFEBEE", borde="#E53935")
 
 # ---------------------------------------------------------------------------------------
@@ -5298,15 +5402,26 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     <div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFFFFF 75%);border-radius:24px;
     padding:22px 28px;margin-bottom:16px;border:1px solid rgba(224,54,54,0.15);
     box-shadow:0 6px 18px rgba(224,54,54,0.08);">
-    <p style="margin:0 0 4px 0;font-weight:900;color:#C0392B;font-size:1.85rem;letter-spacing:-0.02em;">❤️ Estado Fisiológico</p>
-    <p style="margin:0 0 8px 0;color:#5C2A26;font-weight:700;font-size:0.98rem;">Así está funcionando tu cuerpo en este momento</p>
-    <p style="margin:0;color:#7A4A44;font-size:0.88rem;line-height:1.5;">No solo mostramos tus signos vitales: te explicamos qué significan, qué pueden indicar y cuándo
-    conviene prestarles atención.</p>
+    <p style="margin:0 0 4px 0;font-weight:900;color:#C0392B;font-size:1.85rem;letter-spacing:-0.02em;">❤️ {ESTFISIO_TITULO}</p>
+    <p style="margin:0 0 8px 0;color:#5C2A26;font-weight:700;font-size:0.98rem;">{ESTFISIO_SUB}</p>
+    <p style="margin:0;color:#7A4A44;font-size:0.88rem;line-height:1.5;">{ESTFISIO_DESC}</p>
     </div>
-    """, unsafe_allow_html=True)
+    """.format(
+        ESTFISIO_TITULO=T("Estado Fisiológico", "Physiological State"),
+        ESTFISIO_SUB=T("Así está funcionando tu cuerpo en este momento", "This is how your body is functioning right now"),
+        ESTFISIO_DESC=T("No solo mostramos tus signos vitales: te explicamos qué significan, qué pueden indicar y cuándo "
+                         "conviene prestarles atención.",
+                         "We don't just show your vital signs: we explain what they mean, what they can indicate, and "
+                         "when it's worth paying attention to them."),
+    ), unsafe_allow_html=True)
+
+    _VITAL_EN = {"Presión Arterial": "Blood Pressure", "Oxigenación (SpO₂)": "Oxygenation (SpO₂)",
+                 "Temperatura": "Temperature", "Pulso": "Pulse", "Pulso en Reposo": "Resting Pulse"}
+    def _vn(v):
+        return T(v, _VITAL_EN.get(v, v))
 
     # --- 3.2 Semáforo fisiológico — dashboard de 4 tarjetas -------------------------------
-    st.markdown("##### 🚦 Una vista rápida del estado general de tus signos vitales")
+    st.markdown(f"##### 🚦 {T('Una vista rápida del estado general de tus signos vitales', 'A quick look at the overall state of your vital signs')}")
     _vitales_dash = [
         ("❤️", "Presión Arterial", f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", _cat_pa, _col_pa),
         ("🫁", "Oxigenación (SpO₂)", f"{spo2:.0f} %" if spo2 > 0 else "—", _cat_ox, _col_ox),
@@ -5320,7 +5435,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             st.markdown(f"""
             <div class="bento-card" style="border-top:4px solid {_st['hex']};text-align:center;">
             <div style="font-size:1.5rem;">{_em}</div>
-            <p style="margin:6px 0 2px 0;color:#5C6B60;font-size:0.76rem;font-weight:700;text-transform:uppercase;">{_tt}</p>
+            <p style="margin:6px 0 2px 0;color:#5C6B60;font-size:0.76rem;font-weight:700;text-transform:uppercase;">{_vn(_tt)}</p>
             <p style="margin:0 0 6px 0;font-weight:800;font-size:1.15rem;color:#17301F;">{_val}</p>
             <span style="background:{_st['fondo']};color:{_st['hex']};padding:4px 12px;border-radius:999px;
             font-size:0.74rem;font-weight:800;">{_st['emoji']} {_cat}</span>
@@ -5330,7 +5445,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.write("")
 
     # --- 3.3 Detalle: ¿Qué significa cada resultado? (4 sub-tarjetas por signo vital) -----
-    st.markdown("##### 🔎 ¿Qué significa cada resultado?")
+    st.markdown(f"##### 🔎 {T('¿Qué significa cada resultado?', 'What does each result mean?')}")
     _PASTEL_CARD = {
         "mide":  {"fondo": "#EAF4FE", "borde": "#8FC1F2", "titulo": "#1565C0"},
         "signif":{"fondo": "#F3EEFB", "borde": "#C6AEE8", "titulo": "#6A3FA0"},
@@ -5340,31 +5455,51 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _INFO_VITAL = {
         "Presión Arterial": {
             "icono": "❤️", "valor": f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", "categoria": _cat_pa, "color": _col_pa,
-            "que_mide": "Mide la fuerza con la que el corazón bombea sangre a través de las arterias hacia el resto del cuerpo.",
-            "sin_dato": "Aún no ingresaste tu presión arterial. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
-            "recomendaciones": [("🥗", "Menos sal, más frutas y verduras"), ("💧", "Buena hidratación"), ("🩺", "Consulta si persiste alta")],
-            "curioso": "La postura, el estrés y hasta hablar durante la medición pueden alterar el resultado hasta en 10 mmHg.",
+            "que_mide": T("Mide la fuerza con la que el corazón bombea sangre a través de las arterias hacia el resto del cuerpo.",
+                          "Measures the force with which the heart pumps blood through the arteries to the rest of the body."),
+            "sin_dato": T("Aún no ingresaste tu presión arterial. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
+                          "You haven't entered your blood pressure yet. Go to 'My Data' → Block 3 to record it."),
+            "recomendaciones": [("🥗", T("Menos sal, más frutas y verduras", "Less salt, more fruits and vegetables")),
+                                 ("💧", T("Buena hidratación", "Good hydration")),
+                                 ("🩺", T("Consulta si persiste alta", "See a doctor if it stays high"))],
+            "curioso": T("La postura, el estrés y hasta hablar durante la medición pueden alterar el resultado hasta en 10 mmHg.",
+                         "Posture, stress, and even talking during the measurement can alter the result by up to 10 mmHg."),
         },
         "Oxigenación (SpO₂)": {
             "icono": "🫁", "valor": f"{spo2:.0f} %" if spo2 > 0 else "—", "categoria": _cat_ox, "color": _col_ox,
-            "que_mide": "Indica el porcentaje de oxígeno que transporta tu sangre hacia órganos y músculos.",
-            "sin_dato": "Aún no ingresaste tu oxigenación. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
-            "recomendaciones": [("🫁", "Respiración profunda"), ("🚭", "Evitar el humo/tabaco"), ("🩺", "Consulta si baja de 95%")],
-            "curioso": "La altura geográfica reduce naturalmente el SpO₂; a mayor altitud, el aire tiene menos oxígeno disponible.",
+            "que_mide": T("Indica el porcentaje de oxígeno que transporta tu sangre hacia órganos y músculos.",
+                          "Indicates the percentage of oxygen your blood carries to your organs and muscles."),
+            "sin_dato": T("Aún no ingresaste tu oxigenación. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
+                          "You haven't entered your oxygenation yet. Go to 'My Data' → Block 3 to record it."),
+            "recomendaciones": [("🫁", T("Respiración profunda", "Deep breathing")),
+                                 ("🚭", T("Evitar el humo/tabaco", "Avoid smoke/tobacco")),
+                                 ("🩺", T("Consulta si baja de 95%", "See a doctor if it drops below 95%"))],
+            "curioso": T("La altura geográfica reduce naturalmente el SpO₂; a mayor altitud, el aire tiene menos oxígeno disponible.",
+                         "Altitude naturally reduces SpO₂; the higher the altitude, the less oxygen the air has available."),
         },
         "Temperatura": {
             "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", "categoria": _cat_te, "color": _col_te,
-            "que_mide": "Refleja qué tan bien tu organismo regula el calor interno para mantener sus funciones vitales.",
-            "sin_dato": "Aún no ingresaste tu temperatura. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
-            "recomendaciones": [("💧", "Hidratación constante"), ("🛌", "Reposo si hay fiebre"), ("🩺", "Consulta si persiste alta")],
-            "curioso": "El ejercicio intenso, la ropa abrigada o el ambiente caluroso pueden subir tu temperatura sin que estés enferma/o.",
+            "que_mide": T("Refleja qué tan bien tu organismo regula el calor interno para mantener sus funciones vitales.",
+                          "Reflects how well your body regulates internal heat to keep its vital functions running."),
+            "sin_dato": T("Aún no ingresaste tu temperatura. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
+                          "You haven't entered your temperature yet. Go to 'My Data' → Block 3 to record it."),
+            "recomendaciones": [("💧", T("Hidratación constante", "Stay well hydrated")),
+                                 ("🛌", T("Reposo si hay fiebre", "Rest if you have a fever")),
+                                 ("🩺", T("Consulta si persiste alta", "See a doctor if it stays high"))],
+            "curioso": T("El ejercicio intenso, la ropa abrigada o el ambiente caluroso pueden subir tu temperatura sin que estés enferma/o.",
+                         "Intense exercise, warm clothing, or a hot environment can raise your temperature even if you're not sick."),
         },
         "Pulso": {
             "icono": "💓", "valor": f"{pulso} lpm" if pulso > 0 else "—", "categoria": _cat_pu, "color": _col_pu,
-            "que_mide": "Cuenta cuántas veces late tu corazón en un minuto mientras estás en reposo.",
-            "sin_dato": "Aún no ingresaste tu pulso. Ve a 'Mis Datos' → Bloque 3 para registrarlo.",
-            "recomendaciones": [("🚶", "Actividad física regular"), ("☕", "Moderar la cafeína"), ("🩺", "Consulta si es muy alto/bajo")],
-            "curioso": "La cafeína, las emociones fuertes y la fiebre pueden acelerar tu pulso incluso en reposo.",
+            "que_mide": T("Cuenta cuántas veces late tu corazón en un minuto mientras estás en reposo.",
+                          "Counts how many times your heart beats in a minute while you're at rest."),
+            "sin_dato": T("Aún no ingresaste tu pulso. Ve a 'Mis Datos' → Bloque 3 para registrarlo.",
+                          "You haven't entered your pulse yet. Go to 'My Data' → Block 3 to record it."),
+            "recomendaciones": [("🚶", T("Actividad física regular", "Regular physical activity")),
+                                 ("☕", T("Moderar la cafeína", "Moderate caffeine")),
+                                 ("🩺", T("Consulta si es muy alto/bajo", "See a doctor if it's very high/low"))],
+            "curioso": T("La cafeína, las emociones fuertes y la fiebre pueden acelerar tu pulso incluso en reposo.",
+                         "Caffeine, strong emotions, and fever can speed up your pulse even while resting."),
         },
     }
     for _param, _info in _INFO_VITAL.items():
@@ -5374,14 +5509,15 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 14px rgba(0,0,0,0.05);">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <span style="font-size:1.3rem;">{_info['icono']}</span>
-        <b style="font-size:1.02rem;color:#17301F;">{_param}</b>
+        <b style="font-size:1.02rem;color:#17301F;">{_vn(_param)}</b>
         <span style="margin-left:auto;background:{_st['fondo']};color:{_st['hex']};padding:4px 12px;
         border-radius:999px;font-size:0.76rem;font-weight:800;">{_st['emoji']} {_info['valor']} · {_info['categoria']}</span>
         </div>
         """, unsafe_allow_html=True)
 
         _significado_txt = _info["sin_dato"] if _info["color"] == "gris" else \
-            f"Con tu resultado de <b>{_info['valor']}</b>, tu estado se clasifica como <b>{_info['categoria']}</b> {_st['emoji']}."
+            T(f"Con tu resultado de <b>{_info['valor']}</b>, tu estado se clasifica como <b>{_info['categoria']}</b> {_st['emoji']}.",
+              f"With your result of <b>{_info['valor']}</b>, your state is classified as <b>{_info['categoria']}</b> {_st['emoji']}.")
         _reco_chips_html = "".join(
             f"""<span style="display:inline-block;background:#FFFFFF;border:1px solid #D8ECDD;border-radius:999px;
             padding:5px 12px;margin:3px 5px 3px 0;font-size:0.78rem;color:#1E5631;font-weight:700;">{_ic} {_tx}</span>"""
@@ -5393,28 +5529,28 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             st.markdown(f"""
             <div style="background:{_PASTEL_CARD['mide']['fondo']};border:1px solid {_PASTEL_CARD['mide']['borde']};
             border-radius:18px;padding:14px 14px;height:170px;">
-            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['mide']['titulo']};font-size:0.84rem;">🧠 ¿Qué mide?</p>
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['mide']['titulo']};font-size:0.84rem;">🧠 {T('¿Qué mide?', 'What does it measure?')}</p>
             <p style="margin:0;font-size:0.8rem;color:#2E2E33;line-height:1.4;">{_info['que_mide']}</p>
             </div>""", unsafe_allow_html=True)
         with _c2:
             st.markdown(f"""
             <div style="background:{_PASTEL_CARD['signif']['fondo']};border:1px solid {_PASTEL_CARD['signif']['borde']};
             border-radius:18px;padding:14px 14px;height:170px;">
-            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['signif']['titulo']};font-size:0.84rem;">📋 ¿Qué significa tu resultado?</p>
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['signif']['titulo']};font-size:0.84rem;">📋 {T('¿Qué significa tu resultado?', 'What does your result mean?')}</p>
             <p style="margin:0;font-size:0.8rem;color:#2E2E33;line-height:1.4;">{_significado_txt}</p>
             </div>""", unsafe_allow_html=True)
         with _c3:
             st.markdown(f"""
             <div style="background:{_PASTEL_CARD['reco']['fondo']};border:1px solid {_PASTEL_CARD['reco']['borde']};
             border-radius:18px;padding:14px 14px;height:170px;overflow:hidden;">
-            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['reco']['titulo']};font-size:0.84rem;">✅ Recomendaciones generales</p>
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['reco']['titulo']};font-size:0.84rem;">✅ {T('Recomendaciones generales', 'General recommendations')}</p>
             <div style="line-height:1.9;">{_reco_chips_html}</div>
             </div>""", unsafe_allow_html=True)
         with _c4:
             st.markdown(f"""
             <div style="background:{_PASTEL_CARD['curio']['fondo']};border:1px solid {_PASTEL_CARD['curio']['borde']};
             border-radius:18px;padding:14px 14px;height:170px;">
-            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['curio']['titulo']};font-size:0.84rem;">💡 ¿Sabías qué?</p>
+            <p style="margin:0 0 6px 0;font-weight:800;color:{_PASTEL_CARD['curio']['titulo']};font-size:0.84rem;">💡 {T('¿Sabías qué?', 'Did you know?')}</p>
             <p style="margin:0;font-size:0.8rem;color:#2E2E33;line-height:1.4;">{_info['curioso']}</p>
             </div>""", unsafe_allow_html=True)
 
@@ -5424,7 +5560,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.write("")
 
     # --- 3.4 Interpretación Fisiológica Inteligente ---------------------------------------
-    st.markdown("##### 🧠 Interpretación Fisiológica Inteligente")
+    st.markdown(f"##### 🧠 {T('Interpretación Fisiológica Inteligente', 'Smart Physiological Interpretation')}")
     _todos_vitales = [("Presión Arterial", _col_pa), ("Oxigenación (SpO₂)", _col_ox),
                        ("Temperatura", _col_te), ("Pulso", _col_pu)]
     _con_dato_v = [(p, c) for p, c in _todos_vitales if c != "gris"]
@@ -5432,67 +5568,80 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _ambar_v = [p for p, c in _con_dato_v if c == "ambar"]
 
     if not _con_dato_v:
-        st.info("Ingresa tus signos vitales en 'Mis Datos' → Bloque 3 para ver tu interpretación fisiológica.")
+        st.info(T("Ingresa tus signos vitales en 'Mis Datos' → Bloque 3 para ver tu interpretación fisiológica.",
+                  "Enter your vital signs in 'My Data' → Block 3 to see your physiological interpretation."))
     elif _rojos_v:
-        _lista_r = ", ".join(_rojos_v)
+        _lista_r = ", ".join(T(p, _VITAL_EN.get(p, p)) for p in _rojos_v)
         st.markdown(f"""
         <div style="background:#FBEAE8;border-radius:20px;padding:18px 24px;border-left:5px solid #C0392B;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#C0392B;">🔴 Atención Requerida</p>
+        <p style="margin:0 0 6px 0;font-weight:800;color:#C0392B;">🔴 {T('Atención Requerida', 'Attention Required')}</p>
         <p style="margin:0;color:#7A2E27;font-size:0.9rem;line-height:1.5;">
-        Se detectó un valor fuera de rango en: <b>{_lista_r}</b>. Puede deberse a distintos factores fisiológicos
-        o a una lectura incorrecta del sensor. <i>Recomendación:</i> si la medición persiste o sientes malestar,
-        consulta con un profesional de salud.</p>
+        {T('Se detectó un valor fuera de rango en', 'An out-of-range value was detected in')}: <b>{_lista_r}</b>. {T('Puede deberse a distintos factores fisiológicos o a una lectura incorrecta del sensor.', 'This may be due to various physiological factors or an incorrect sensor reading.')} <i>{T('Recomendación', 'Recommendation')}:</i> {T('si la medición persiste o sientes malestar, consulta con un profesional de salud.', 'if the reading persists or you feel unwell, consult a health professional.')}</p>
         </div>
         """, unsafe_allow_html=True)
     elif _ambar_v:
-        _lista_a = ", ".join(_ambar_v)
+        _lista_a = ", ".join(T(p, _VITAL_EN.get(p, p)) for p in _ambar_v)
         st.markdown(f"""
         <div style="background:#FDF1E4;border-radius:20px;padding:18px 24px;border-left:5px solid #E67E22;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#E67E22;">🟡 Atención Ligera</p>
+        <p style="margin:0 0 6px 0;font-weight:800;color:#E67E22;">🟡 {T('Atención Ligera', 'Mild Attention')}</p>
         <p style="margin:0;color:#7A5A26;font-size:0.9rem;line-height:1.5;">
-        <b>{_lista_a}</b> se encuentra ligeramente fuera del rango habitual. No suele ser motivo de alarma,
-        pero conviene observar cómo evoluciona.</p>
+        <b>{_lista_a}</b> {T('se encuentra ligeramente fuera del rango habitual. No suele ser motivo de alarma, pero conviene observar cómo evoluciona.', 'is slightly outside the usual range. This is usually not a cause for alarm, but it is worth watching how it develops.')}</p>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
         <div style="background:#EAFAEE;border-radius:20px;padding:18px 24px;border-left:5px solid #1E5631;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#1E5631;">🟢 Estado General</p>
+        <p style="margin:0 0 6px 0;font-weight:800;color:#1E5631;">🟢 {T('Estado General', 'Overall State')}</p>
         <p style="margin:0 0 8px 0;color:#17301F;font-size:0.9rem;">
-        {" &nbsp;·&nbsp; ".join(f"{SEMAFORO_ESTILO[c]['emoji']} {p}" for p, c in _con_dato_v)}</p>
-        <p style="margin:0;color:#17301F;font-size:0.88rem;"><b>Resultado general:</b> tus signos vitales se
-        encuentran dentro de los rangos esperados para una persona en reposo.</p>
+        {" &nbsp;·&nbsp; ".join(f"{SEMAFORO_ESTILO[c]['emoji']} {_vn(p)}" for p, c in _con_dato_v)}</p>
+        <p style="margin:0;color:#17301F;font-size:0.88rem;"><b>{T('Resultado general', 'Overall result')}:</b> {T('tus signos vitales se encuentran dentro de los rangos esperados para una persona en reposo.', 'your vital signs are within the expected ranges for a person at rest.')}</p>
         </div>
         """, unsafe_allow_html=True)
 
     st.write("")
 
     # --- 3.5 Impacto en la vida diaria — segmented control --------------------------------
-    st.markdown("##### 🎯 Impacto en la vida diaria (Signos Vitales)")
+    st.markdown(f"##### 🎯 {T('Impacto en la vida diaria (Signos Vitales)', 'Impact on daily life (Vital Signs)')}")
     _IMPACTO_VITAL = {
-        "🏫 Colegio": {
-            "Presión Arterial": "Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
-            "Oxigenación (SpO₂)": "Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
-            "Temperatura": "Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
-            "Pulso": "Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
+        T("🏫 Colegio", "🏫 School"): {
+            "Presión Arterial": T("Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
+                                   "It can cause headaches, drowsiness, or trouble concentrating in class."),
+            "Oxigenación (SpO₂)": T("Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
+                                     "It causes quick fatigue when climbing stairs or walking; lower stamina in PE class."),
+            "Temperatura": T("Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
+                              "Reduced academic and cognitive performance; it's best to stay home and rest."),
+            "Pulso": T("Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
+                       "A feeling of being on edge; avoid intense physical effort and stay well hydrated."),
         },
-        "🏠 Casa": {
-            "Presión Arterial": "Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
-            "Oxigenación (SpO₂)": "Sensación de falta de aire al subir escaleras o realizar quehaceres.",
-            "Temperatura": "Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
-            "Pulso": "Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
+        T("🏠 Casa", "🏠 Home"): {
+            "Presión Arterial": T("Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
+                                   "It can cause tiredness or dizziness when doing demanding chores."),
+            "Oxigenación (SpO₂)": T("Sensación de falta de aire al subir escaleras o realizar quehaceres.",
+                                     "A feeling of shortness of breath when climbing stairs or doing chores."),
+            "Temperatura": T("Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
+                              "It's best to rest, stay well hydrated, and avoid exertion at home."),
+            "Pulso": T("Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
+                       "It may feel like palpitations; prioritize rest and avoid sudden frights or startles."),
         },
-        "🏃 Actividad Física": {
-            "Presión Arterial": "Conviene evitar ejercicio intenso hasta que el valor se normalice.",
-            "Oxigenación (SpO₂)": "El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
-            "Temperatura": "No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
-            "Pulso": "Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
+        T("🏃 Actividad Física", "🏃 Physical Activity"): {
+            "Presión Arterial": T("Conviene evitar ejercicio intenso hasta que el valor se normalice.",
+                                   "It's best to avoid intense exercise until the value returns to normal."),
+            "Oxigenación (SpO₂)": T("El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
+                                     "Physical performance drops noticeably; reduce training intensity."),
+            "Temperatura": T("No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
+                              "Exercising with a fever isn't recommended; the body is already under strain."),
+            "Pulso": T("Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
+                       "An elevated resting pulse suggests it's best to postpone intense exercise."),
         },
-        "💼 Trabajo": {
-            "Presión Arterial": "Puede afectar la concentración en tareas que requieren atención sostenida.",
-            "Oxigenación (SpO₂)": "Mayor cansancio en jornadas largas o con esfuerzo físico.",
-            "Temperatura": "Es preferible descansar en casa en vez de asistir a trabajar.",
-            "Pulso": "Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
+        T("💼 Trabajo", "💼 Work"): {
+            "Presión Arterial": T("Puede afectar la concentración en tareas que requieren atención sostenida.",
+                                   "It can affect concentration on tasks that require sustained attention."),
+            "Oxigenación (SpO₂)": T("Mayor cansancio en jornadas largas o con esfuerzo físico.",
+                                     "Greater fatigue during long workdays or physical effort."),
+            "Temperatura": T("Es preferible descansar en casa en vez de asistir a trabajar.",
+                              "It's preferable to rest at home instead of going to work."),
+            "Pulso": T("Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
+                       "Avoid high-pressure or stressful situations until the rhythm returns to normal."),
         },
     }
     _tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo = st.tabs(list(_IMPACTO_VITAL.keys()))
@@ -5503,7 +5652,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                 st.markdown(f"""
                 <div style="background:{_st['fondo']};border-left:4px solid {_st['hex']};border-radius:16px;
                 padding:10px 16px;margin-bottom:6px;">
-                <b style="color:{_st['hex']};">{_param}</b> — <span style="color:#1C1C1E;font-size:0.88rem;">
+                <b style="color:{_st['hex']};">{_vn(_param)}</b> — <span style="color:#1C1C1E;font-size:0.88rem;">
                 {_IMPACTO_VITAL[_ambito_v][_param]}</span>
                 </div>
                 """, unsafe_allow_html=True)
@@ -5511,8 +5660,9 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.write("")
 
     # --- 3.6 Tablas de referencia clínica — filas con highlight dinámico (Bento Grid) ------
-    st.markdown("##### 📊 Tablas de Referencia Clínica")
-    st.caption("Rangos clínicos oficiales. La fila que corresponde a tu valor actual se enciende con un glow.")
+    st.markdown(f"##### 📊 {T('Tablas de Referencia Clínica', 'Clinical Reference Tables')}")
+    st.caption(T("Rangos clínicos oficiales. La fila que corresponde a tu valor actual se enciende con un glow.",
+                 "Official clinical ranges. The row matching your current value lights up with a glow."))
 
     _TABLE_CSS = """
     <style>
@@ -5542,7 +5692,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             _fondo, _texto = _tono_vibrante["fondo"], _tono_vibrante["texto"]
             _borde = f"2px solid {_tono_vibrante['borde']}"
             _glow = f"box-shadow:0 0 15px {_tono_vibrante['glow']};"
-            _badge = '<span class="badge-activo">📍 TU VALOR ACTUAL</span>'
+            _badge = f'<span class="badge-activo">📍 {T("TU VALOR ACTUAL", "YOUR CURRENT VALUE")}</span>'
         else:
             _fondo, _texto = _tono_pastel["fondo"], _tono_pastel["texto"]
             _borde = "1px solid rgba(0,0,0,0.04)"
@@ -5610,11 +5760,11 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pa_activa)
         for _i, (_d, _t) in enumerate(_pa_filas_data)
     )
-    _render_tabla_html("❤️", "Presión Arterial", "Fuente: American Heart Association (AHA)",
-                        ["Categoría", "Sistólica (mmHg)", "Condición", "Diastólica (mmHg)"], _pa_html)
+    _render_tabla_html("❤️", T("Presión Arterial", "Blood Pressure"), T("Fuente: American Heart Association (AHA)", "Source: American Heart Association (AHA)"),
+                        [T("Categoría", "Category"), T("Sistólica (mmHg)", "Systolic (mmHg)"), T("Condición", "Condition"), T("Diastólica (mmHg)", "Diastolic (mmHg)")], _pa_html)
     if _pa_rango_invalido:
-        st.markdown('<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
-                     '⚠️ Valor fuera de rango clínico. Por favor verifica tus datos</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
 
     # --- 2. Saturación de Oxígeno (SpO₂) ---
     _idx_ox_activa = None
@@ -5641,8 +5791,8 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_ox_activa)
         for _i, (_d, _t) in enumerate(_ox_filas_data)
     )
-    _render_tabla_html("🫁", "Saturación de Oxígeno (SpO₂)", "Fuente: Organización Mundial de la Salud (OMS)",
-                        ["Rango de SpO₂", "Estado Clínico", "Manifestación Fisiológica"], _ox_html)
+    _render_tabla_html("🫁", T("Saturación de Oxígeno (SpO₂)", "Oxygen Saturation (SpO₂)"), T("Fuente: Organización Mundial de la Salud (OMS)", "Source: World Health Organization (WHO)"),
+                        [T("Rango de SpO₂", "SpO₂ Range"), T("Estado Clínico", "Clinical State"), T("Manifestación Fisiológica", "Physiological Manifestation")], _ox_html)
 
     # --- 3. Temperatura Corporal (°C) ---
     _idx_te_activa = None
@@ -5657,10 +5807,10 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             _idx_te_activa = 3
 
     _te_filas_data = [
-        (["Bebés (0–2 años)", "Rectal / Axilar", "36.6 – 38.0 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
-        (["Niños (3–10 años)", "Oral / Axilar", "35.5 – 37.5 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
-        (["Adolescentes y Adultos (11–65 años)", "Oral", "36.4 – 37.6 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
-        (["Adultos (&gt;65 años)", "Oral", "35.8 – 36.9 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
+        ([T("Bebés (0–2 años)", "Infants (0–2 years)"), "36.6 – 38.0 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
+        ([T("Niños (3–10 años)", "Children (3–10 years)"), "35.5 – 37.5 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
+        ([T("Adolescentes y Adultos (11–65 años)", "Adolescents and Adults (11–65 years)"), "36.4 – 37.6 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
+        ([T("Adultos (&gt;65 años)", "Adults (&gt;65 years)"), "35.8 – 36.9 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
     ]
     _te_alerta = temp_corp >= 38.0
     _te_html = "".join(
@@ -5668,11 +5818,11 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                   _i == _idx_te_activa)
         for _i, (_d, _t) in enumerate(_te_filas_data)
     )
-    _render_tabla_html("🌡️", "Temperatura Corporal (°C)", "Fuente: Rangos clínicos por grupo de edad",
-                        ["Grupo de Edad", "Tipo Lectura", "Normal (°C)", "Fiebre (°C)", "Fiebre Alta (°C)"], _te_html)
+    _render_tabla_html("🌡️", T("Temperatura Corporal (°C)", "Body Temperature (°C)"), T("Fuente: Rangos clínicos por grupo de edad", "Source: Clinical ranges by age group"),
+                        [T("Grupo de Edad", "Age Group"), T("Normal (°C)", "Normal (°C)"), T("Fiebre (°C)", "Fever (°C)"), T("Fiebre Alta (°C)", "High Fever (°C)")], _te_html)
     if _idx_te_activa is not None and _te_alerta:
-        st.markdown('<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
-                     '⚠️ ¡Atención: Fiebre detectada!</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     f'⚠️ {T("¡Atención: Fiebre detectada!", "Attention: Fever detected!")}</p>', unsafe_allow_html=True)
 
     # --- 4. Frecuencia Cardíaca (Pulso en Reposo) ---
     _idx_pu_activa = None
@@ -5699,13 +5849,13 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pu_activa, _pulse=True)
         for _i, (_d, _t) in enumerate(_pu_filas_data)
     )
-    _render_tabla_html("💓", "Frecuencia Cardíaca (Pulso en Reposo)", "Fuente: American Heart Association (AHA)",
-                        ["Grupo de Edad", "Rango Normal en Reposo", "Estado Anormal (Alerta)"], _pu_html)
+    _render_tabla_html("💓", T("Frecuencia Cardíaca (Pulso en Reposo)", "Heart Rate (Resting Pulse)"), T("Fuente: American Heart Association (AHA)", "Source: American Heart Association (AHA)"),
+                        [T("Grupo de Edad", "Age Group"), T("Rango Normal en Reposo", "Normal Resting Range"), T("Estado Anormal (Alerta)", "Abnormal State (Alert)")], _pu_html)
 
     st.write("")
 
     # --- 3.7 Fuentes científicas — chips con enlaces ---------------------------------------
-    st.markdown("##### 🔗 Fuentes de consulta médica")
+    st.markdown(f"##### 🔗 {T('Fuentes de consulta médica', 'Medical reference sources')}")
     _fuentes_vitales = [
         ("OMS", "https://www.who.int/es"), ("AHA", "https://www.heart.org/"),
         ("ESC", "https://www.escardio.org/"), ("Mayo Clinic", "https://www.mayoclinic.org/es-es"),
@@ -5717,12 +5867,17 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             st.link_button(_nom, _url, use_container_width=True)
 
     # --- 3.8 Finalidad educativa -------------------------------------------------------------
-    caja_util("Cuando recibes tus signos vitales normalmente solo ves números aislados sin saber si requieren "
+    caja_util(T("Cuando recibes tus signos vitales normalmente solo ves números aislados sin saber si requieren "
               "atención. Esta sección traduce esos valores a un lenguaje claro y accesible, explicando qué "
               "significan y cómo influyen en tu día a día. Es una herramienta informativa pensada para ayudarte "
               "a comprender mejor tu organismo antes de acudir a un profesional de la salud. ❤️🩺",
+              "When you get your vital signs, you usually just see isolated numbers without knowing if they need "
+              "attention. This section translates those values into clear, accessible language, explaining what "
+              "they mean and how they affect your daily life. It's an informational tool meant to help you better "
+              "understand your body before seeing a health professional. ❤️🩺"),
               emoji="❤️", color="#FFEBEE", borde="#C0392B")
-    st.caption("Estos signos vitales se ingresan en 'Mis Datos' → Bloque 3.")
+    st.caption(T("Estos signos vitales se ingresan en 'Mis Datos' → Bloque 3.",
+                 "These vital signs are entered in 'My Data' → Block 3."))
 
     st.divider()
 
