@@ -3626,7 +3626,7 @@ def conexion_resto_sistema():
 def ilustracion_que_es_tmb():
     """Sección 1: ilustración simple de qué es la TMB (mientras duermes, tu cuerpo sigue
     gastando energía en funciones vitales)."""
-    st.markdown("""
+    st.markdown(T("""
     <div class="tmb-ilustra-wrap">
         <div style="font-size:2.4rem;">😴</div>
         <div class="tmb-ilustra-item">Estás durmiendo</div>
@@ -3640,12 +3640,26 @@ def ilustracion_que_es_tmb():
         A esa energía la llamamos <b style="color:#E67E22;">Tasa Metabólica Basal (TMB)</b>.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div class="tmb-ilustra-wrap">
+        <div style="font-size:2.4rem;">😴</div>
+        <div class="tmb-ilustra-item">You're sleeping</div>
+        <div class="tmb-ilustra-flecha">↓</div>
+        <div class="tmb-ilustra-item">❤️ Heart keeps beating &nbsp;·&nbsp; 🫁 You keep breathing</div>
+        <div class="tmb-ilustra-item">🧠 Your brain keeps working &nbsp;·&nbsp; 🌡️ You maintain your temperature</div>
+        <div class="tmb-ilustra-flecha">↓</div>
+        <div style="font-size:1.3rem;font-weight:800;color:#E67E22;">🔥 All of that needs energy</div>
+        <div style="margin-top:14px;font-size:0.86rem;color:#5C6B60;line-height:1.6;max-width:560px;margin-left:auto;margin-right:auto;">
+        Your body never "shuts off". Even while you rest it keeps burning energy to keep you alive.
+        We call that energy your <b style="color:#E67E22;">Basal Metabolic Rate (BMR)</b>.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def tarjeta_resultado_tmb(tmb_valor):
     """Sección 2: tarjeta grande y limpia con el resultado de la TMB."""
-    st.markdown(f"""
+    st.markdown(T(f"""
     <div class="tmb-resultado-card">
         <span class="bento-eyebrow">🔥 Tu TMB</span>
         <div class="tmb-resultado-num">{tmb_valor:.0f} kcal/día</div>
@@ -3654,36 +3668,51 @@ def tarjeta_resultado_tmb(tmb_valor):
         únicamente para mantener sus funciones vitales.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div class="tmb-resultado-card">
+        <span class="bento-eyebrow">🔥 Your BMR</span>
+        <div class="tmb-resultado-num">{tmb_valor:.0f} kcal/day</div>
+        <div style="font-size:0.88rem;color:#5C6B60;max-width:420px;margin:0 auto;line-height:1.6;">
+        Your body needs approximately <b style="color:#E67E22;">{tmb_valor:.0f} kcal</b> per day
+        just to maintain its vital functions.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def formula_horizontal_tmb(peso, estatura, edad, genero_activo, tmb_valor):
     """Sección 3: fórmula de Mifflin-St Jeor mostrada de forma horizontal para Hombre y Mujer,
     cada una con su propio color (sin usar azul/rosa) y flechas apuntando a la derecha."""
+    _lbl_peso, _lbl_altura, _lbl_edad, _lbl_const = (T("Peso", "Weight"), T("Altura", "Height"),
+                                                      T("Edad", "Age"), T("Constante", "Constant"))
     _filas = [
-        ("Hombre", "🧑", "#00897B", "#E0F2F1",
-         [("Peso", f"10 × {peso:g}", f"{10*peso:.1f}"), ("Altura", f"+ 6.25 × {estatura:g}", f"{6.25*estatura:.1f}"),
-          ("Edad", f"− 5 × {edad:g}", f"−{5*edad:.1f}"), ("Constante", "+ 5", "+5")],
+        ("Hombre", T("Hombre", "Man"), "🧑", "#00897B", "#E0F2F1",
+         [(_lbl_peso, f"10 × {peso:g}", f"{10*peso:.1f}"), (_lbl_altura, f"+ 6.25 × {estatura:g}", f"{6.25*estatura:.1f}"),
+          (_lbl_edad, f"− 5 × {edad:g}", f"−{5*edad:.1f}"), (_lbl_const, "+ 5", "+5")],
          (10 * peso) + (6.25 * estatura) - (5 * edad) + 5),
-        ("Mujer", "🧑‍🦱", "#D4692B", "#FFF1E6",
-         [("Peso", f"10 × {peso:g}", f"{10*peso:.1f}"), ("Altura", f"+ 6.25 × {estatura:g}", f"{6.25*estatura:.1f}"),
-          ("Edad", f"− 5 × {edad:g}", f"−{5*edad:.1f}"), ("Constante", "− 161", "−161")],
+        ("Mujer", T("Mujer", "Woman"), "🧑‍🦱", "#D4692B", "#FFF1E6",
+         [(_lbl_peso, f"10 × {peso:g}", f"{10*peso:.1f}"), (_lbl_altura, f"+ 6.25 × {estatura:g}", f"{6.25*estatura:.1f}"),
+          (_lbl_edad, f"− 5 × {edad:g}", f"−{5*edad:.1f}"), (_lbl_const, "− 161", "−161")],
          (10 * peso) + (6.25 * estatura) - (5 * edad) - 161),
     ]
-    for _nombre, _icono, _color, _fondo, _pasos, _res in _filas:
+    for _nombre, _nombre_disp, _icono, _color, _fondo, _pasos, _res in _filas:
         _es_activo = _nombre == genero_activo
         _boxes = "".join(
             f'<div class="tmb-formula-box" style="background:{_color}1A;color:{_color};">{p}<span class="tmb-box-sub">{op}</span></div>'
             f'<span class="tmb-formula-arrow" style="color:{_color};">→</span>'
             for p, op, val in _pasos
         )
+        _txt_formula_para = T("Fórmula para", "Formula for")
+        _txt_tu_formula = T("Tu fórmula", "Your formula")
+        _txt_tmb_lbl = T("TMB", "BMR")
+        _txt_dia_lbl = T("día", "day")
         st.markdown(f"""
         <div class="tmb-formula-genero-wrap" style="{'box-shadow:0 0 0 2px ' + _color + ';' if _es_activo else ''}">
-            <div class="tmb-formula-genero-title" style="color:{_color};">{_icono} Fórmula para {_nombre}
-                {' <span class=\"bento-pill\" style=\"background:' + _color + ';color:#FFFFFF;\">Tu fórmula</span>' if _es_activo else ''}</div>
+            <div class="tmb-formula-genero-title" style="color:{_color};">{_icono} {_txt_formula_para} {_nombre_disp}
+                {' <span class=\"bento-pill\" style=\"background:' + _color + ';color:#FFFFFF;\">' + _txt_tu_formula + '</span>' if _es_activo else ''}</div>
             <div class="tmb-formula-flow">
                 {_boxes}
-                <div class="tmb-formula-box" style="background:{_color};color:#FFFFFF;">= TMB<span class="tmb-box-sub">{_res:.0f} kcal/día</span></div>
+                <div class="tmb-formula-box" style="background:{_color};color:#FFFFFF;">= {_txt_tmb_lbl}<span class="tmb-box-sub">{_res:.0f} kcal/{_txt_dia_lbl}</span></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -3692,7 +3721,7 @@ def formula_horizontal_tmb(peso, estatura, edad, genero_activo, tmb_valor):
 def tarjeta_quien_creo_formula():
     """Sección 3b (corregida): Mifflin-St Jeor no es una persona, sino el nombre de la
     ecuación publicada en 1990 por un equipo de investigadores."""
-    st.markdown("""
+    st.markdown(T("""
     <div class="tmb-quien-card">
         <div style="font-weight:800;color:#5856D6;margin-bottom:6px;">👨‍🔬 ¿Quién desarrolló esta fórmula?</div>
         <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
@@ -3702,17 +3731,30 @@ def tarjeta_quien_creo_formula():
         Basal, por su buena precisión en adultos.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div class="tmb-quien-card">
+        <div style="font-weight:800;color:#5856D6;margin-bottom:6px;">👨‍🔬 Who developed this formula?</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
+        The <b>Mifflin–St Jeor</b> equation was published in 1990 by researchers
+        <b>Mark D. Mifflin</b>, <b>Sachiko T. St Jeor</b> and their team. It is currently one of the
+        formulas most widely used by nutritionists and hospitals to estimate Basal Metabolic
+        Rate, due to its good accuracy in adults.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def tarjeta_por_que_mifflin():
     """Sección 4: mini comparación de por qué se usa Mifflin-St Jeor."""
-    _items = ["Mayor precisión que fórmulas antiguas.", "Recomendada en nutrición clínica.",
-              "Utilizada por profesionales de la salud.", "Sirve para calcular las calorías que necesita el cuerpo en reposo."]
+    _items = [T("Mayor precisión que fórmulas antiguas.", "Higher accuracy than older formulas."),
+              T("Recomendada en nutrición clínica.", "Recommended in clinical nutrition."),
+              T("Utilizada por profesionales de la salud.", "Used by healthcare professionals."),
+              T("Sirve para calcular las calorías que necesita el cuerpo en reposo.",
+                "Used to calculate the calories the body needs at rest.")]
     _lis = "".join(f'<div class="tmb-porque-item"><span>✔</span><span>{it}</span></div>' for it in _items)
     st.markdown(f"""
     <div class="tmb-porque-card">
-        <div style="font-weight:800;color:#0E6B4F;margin-bottom:2px;">📚 ¿Por qué usamos Mifflin-St Jeor?</div>
+        <div style="font-weight:800;color:#0E6B4F;margin-bottom:2px;">📚 {T("¿Por qué usamos Mifflin-St Jeor?", "Why do we use Mifflin-St Jeor?")}</div>
         {_lis}
     </div>
     """, unsafe_allow_html=True)
@@ -3720,7 +3762,7 @@ def tarjeta_por_que_mifflin():
 
 def flujo_modulos_tmb():
     """Sección 5: flujo horizontal (flechas a la derecha) de los módulos que usan la TMB."""
-    st.markdown("""
+    st.markdown(T("""
     <div class="tmb-flujo-wrap">
         <span class="bento-eyebrow">🔗 ¿Qué módulos usan la TMB?</span>
         <div class="tmb-flujo-row">
@@ -3738,19 +3780,39 @@ def flujo_modulos_tmb():
         Toda la plataforma utiliza este cálculo como punto de partida.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div class="tmb-flujo-wrap">
+        <span class="bento-eyebrow">🔗 Which modules use BMR?</span>
+        <div class="tmb-flujo-row">
+            <div class="tmb-flujo-chip" style="background:#FFF3E0;color:#E67E22;">🔥 BMR</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">⚡ DCR</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">🥗 Diet</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">🍚 Macronutrients</div>
+            <span class="tmb-formula-arrow" style="color:#8A94A6;">→</span>
+            <div class="tmb-flujo-chip">📈 Projection</div>
+        </div>
+        <div style="margin-top:14px;font-size:0.84rem;color:#5C6B60;">
+        The whole platform uses this calculation as its starting point.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def central_energetica_tmb(tmb_valor):
     """Ilustración alternativa tipo 'central eléctrica': la TMB alimenta los órganos vitales,
     cada uno con un pequeño indicador luminoso."""
-    _organos = [("❤️", "Corazón"), ("🧠", "Cerebro"), ("🫁", "Pulmones"), ("🌡️", "Temperatura"), ("🩸", "Circulación")]
+    _organos = [("❤️", T("Corazón", "Heart")), ("🧠", T("Cerebro", "Brain")), ("🫁", T("Pulmones", "Lungs")),
+                ("🌡️", T("Temperatura", "Temperature")), ("🩸", T("Circulación", "Circulation"))]
     _leds = "".join(f'<div class="tmb-central-organo"><div style="font-size:1.6rem;">{ic}</div>'
                      f'<div class="tmb-central-led"></div><div class="tmb-central-label">{lb}</div></div>' for ic, lb in _organos)
+    _txt_central = T("CENTRAL ENERGÉTICA", "ENERGY POWER PLANT")
     st.markdown(f"""
     <div class="tmb-central-wrap">
         <div style="font-size:1.6rem;">⚡</div>
-        <div style="font-weight:800;letter-spacing:0.06em;font-size:0.85rem;color:#C7CBE0;">CENTRAL ENERGÉTICA</div>
+        <div style="font-weight:800;letter-spacing:0.06em;font-size:0.85rem;color:#C7CBE0;">{_txt_central}</div>
         <div class="tmb-central-kcal">🔥 {tmb_valor:.0f} kcal</div>
         <div class="tmb-central-organos">{_leds}</div>
     </div>
@@ -3759,7 +3821,7 @@ def central_energetica_tmb(tmb_valor):
 
 def interpretacion_inteligente_tmb(tmb_valor):
     """Sección 6: resumen inteligente breve, dejando claro que la TMB no incluye actividad física."""
-    st.markdown(f"""
+    st.markdown(T(f"""
     <div style="background:#FFF3E0;border-radius:18px;padding:16px 20px;margin-top:6px;">
         <div style="font-weight:800;color:#B8860B;margin-bottom:6px;">🧠 Interpretación Inteligente</div>
         <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
@@ -3768,7 +3830,16 @@ def interpretacion_inteligente_tmb(tmb_valor):
         Es la energía mínima necesaria para vivir.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div style="background:#FFF3E0;border-radius:18px;padding:16px 20px;margin-top:6px;">
+        <div style="font-weight:800;color:#B8860B;margin-bottom:6px;">🧠 Smart Interpretation</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
+        Your body needs approximately <b>{tmb_valor:.0f} kcal</b> per day to maintain its vital functions.<br>
+        This value does <b>NOT</b> represent the calories you need to exercise, walk, or study.<br>
+        It is the minimum energy necessary to live.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def nombre_display(nombre, genero="Mujer"):
@@ -5996,23 +6067,25 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
-    hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
-                   "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
+    hoja_header(3, T("Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
+                   "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.",
+                   "Biologically, men tend to have more muscle mass and women a higher body fat percentage; "
+                   "since muscle burns more energy, the result changes based on sex."))
 
     # --- 1. ¿Qué es la TMB? -------------------------------------------------------------
-    st.markdown("#### 😴 ¿Qué es la TMB?")
+    st.markdown(T("#### 😴 ¿Qué es la TMB?", "#### 😴 What is BMR?"))
     ilustracion_que_es_tmb()
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
     # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
-    st.markdown("#### 🔥 ¿Cuál es tu resultado?")
+    st.markdown(T("#### 🔥 ¿Cuál es tu resultado?", "#### 🔥 What is your result?"))
     tarjeta_resultado_tmb(tmb)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
     # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
-    st.markdown("#### 🧪 ¿Cómo se calculó?")
+    st.markdown(T("#### 🧪 ¿Cómo se calculó?", "#### 🧪 How was it calculated?"))
     formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
     tarjeta_quien_creo_formula()
 
@@ -6045,12 +6118,11 @@ elif hoja_activa == "3.-TMB":
 
     if genero == "Mujer" and embarazada:
         st.divider()
-        st.markdown("""
+        st.markdown(f"""
         <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
         margin-bottom:14px;border:1px solid rgba(186,104,200,0.18);">
-        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 Complemento: TMB durante el Embarazo</h3>
-        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">El embarazo cambia las necesidades de energía
-        del cuerpo. Aquí ajustamos tu TMB según tu etapa de gestación.</p>
+        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Complemento: TMB durante el Embarazo", "Supplement: BMR during Pregnancy")}</h3>
+        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("El embarazo cambia las necesidades de energía del cuerpo. Aquí ajustamos tu TMB según tu etapa de gestación.", "Pregnancy changes the body's energy needs. Here we adjust your BMR based on your stage of pregnancy.")}</p>
         </div>
         """, unsafe_allow_html=True)
         # =================================================================================
@@ -6059,27 +6131,33 @@ elif hoja_activa == "3.-TMB":
         # de RCD se complementa con el ajuste de Clima Chiclayo cuando aplica.
         # =================================================================================
         st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-            "TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
+            T("TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
+              "BMR(woman) + trimester adjustment: 1st trim. +0 kcal · 2nd trim. +340 kcal/day · 3rd trim. +452 kcal/day"),
             autor="MD Mifflin, ST St Jeor et al. (1990)",
-            referencia="Ecuación de Mifflin-St Jeor + ajuste gestacional")}</div>""", unsafe_allow_html=True)
+            referencia=T("Ecuación de Mifflin-St Jeor + ajuste gestacional", "Mifflin-St Jeor equation + gestational adjustment"))}</div>""", unsafe_allow_html=True)
 
-        st.markdown("""
+        st.markdown(T("""
         <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
         border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
         📌 Esta sección usa tus datos ya registrados (edad, peso, altura) y el trimestre que seleccionaste
         en "Mis Datos", pensada exclusivamente para mujeres embarazadas.</div>
-        """, unsafe_allow_html=True)
+        """, """
+        <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
+        border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
+        📌 This section uses the data you already entered (age, weight, height) and the trimester you selected
+        in "My Data", designed exclusively for pregnant women.</div>
+        """), unsafe_allow_html=True)
 
-        _nombre_disp = nombre_usuario.strip() if nombre_usuario.strip() else "ti"
+        _nombre_disp = nombre_usuario.strip() if nombre_usuario.strip() else T("ti", "you")
 
         # --- Flujo visual: datos → trimestre → TMB → aporte → resultado ---------------------
-        st.markdown("#### 🔎 De tus datos a tu resultado")
+        st.markdown(T("#### 🔎 De tus datos a tu resultado", "#### 🔎 From your data to your result"))
         _pasos_emb = [
-            ("#5AC8FA", "👩", "Datos ingresados", f"{edad:.0f} años · {peso:.0f} kg · {estatura:.0f} cm"),
-            ("#BA68C8", "🤰", "Trimestre", trimestre),
-            ("#FF9500", "🔥", "TMB calculada", f"{tmb_base_gestacion:.0f} kcal/día"),
-            ("#34C759", "🍽️", "Calorías adicionales", f"+{ajuste_gestacion} kcal"),
-            ("#FF2D55", "❤️", "Resultado recomendado", f"{tmb:.0f} kcal/día"),
+            ("#5AC8FA", "👩", T("Datos ingresados", "Data entered"), f"{edad:.0f} {T('años','years')} · {peso:.0f} kg · {estatura:.0f} cm"),
+            ("#BA68C8", "🤰", T("Trimestre", "Trimester"), trimestre),
+            ("#FF9500", "🔥", T("TMB calculada", "Calculated BMR"), f"{tmb_base_gestacion:.0f} kcal/{T('día','day')}"),
+            ("#34C759", "🍽️", T("Calorías adicionales", "Additional calories"), f"+{ajuste_gestacion} kcal"),
+            ("#FF2D55", "❤️", T("Resultado recomendado", "Recommended result"), f"{tmb:.0f} kcal/{T('día','day')}"),
         ]
         _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
         for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
@@ -6098,7 +6176,7 @@ elif hoja_activa == "3.-TMB":
         st.markdown(_html_sin_lineas_vacias("".join(_html_pasos_emb)), unsafe_allow_html=True)
 
         # --- ¿Qué significa este resultado? --------------------------------------------------
-        st.markdown(f"""
+        st.markdown(T(f"""
         <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
         <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 ¿Qué significa este resultado?</p>
         <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
@@ -6106,23 +6184,37 @@ elif hoja_activa == "3.-TMB":
         (respirar, mantener la temperatura corporal, funcionamiento de órganos, etc.), sin considerar la
         actividad física.</p>
         </div>
-        """, unsafe_allow_html=True)
+        """, f"""
+        <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 What does this result mean?</p>
+        <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
+        Your body needs approximately <b>{tmb:.0f} kcal per day</b> to maintain its vital functions
+        (breathing, maintaining body temperature, organ function, etc.), without considering
+        physical activity.</p>
+        </div>
+        """), unsafe_allow_html=True)
 
         st.write("")
 
         # --- ¿Por qué cambia según el trimestre? — tres tarjetas -----------------------------
-        st.markdown("#### 🤰 ¿Por qué cambia según el trimestre?")
+        st.markdown(T("#### 🤰 ¿Por qué cambia según el trimestre?", "#### 🤰 Why does it change by trimester?"))
         _tri_data = [
-            ("Primer trimestre", "#4CAF50", "#EAFAEE", "🌱", "Primer trimestre",
-             "No suelen necesitarse calorías adicionales. Lo más importante es mantener una alimentación "
-             "equilibrada y cubrir todos los nutrientes esenciales."),
-            ("Segundo trimestre", "#FF9500", "#FFF3E5", "👶", "Segundo trimestre",
-             "El bebé comienza un crecimiento más rápido. Generalmente se requieren alrededor de "
-             "340 kcal adicionales al día."),
-            ("Tercer trimestre", "#FF2D55", "#FFEBF0", "❤️", "Tercer trimestre",
-             "Es la etapa de mayor crecimiento fetal. Las necesidades energéticas aumentan aproximadamente "
-             "452 kcal por día."),
+            ("Primer trimestre", "#4CAF50", "#EAFAEE", "🌱", T("Primer trimestre", "First trimester"),
+             T("No suelen necesitarse calorías adicionales. Lo más importante es mantener una alimentación "
+             "equilibrada y cubrir todos los nutrientes esenciales.",
+             "Additional calories usually aren't needed. The most important thing is to maintain a "
+             "balanced diet and cover all essential nutrients.")),
+            ("Segundo trimestre", "#FF9500", "#FFF3E5", "👶", T("Segundo trimestre", "Second trimester"),
+             T("El bebé comienza un crecimiento más rápido. Generalmente se requieren alrededor de "
+             "340 kcal adicionales al día.",
+             "The baby begins growing faster. Around 340 additional kcal per day are generally needed.")),
+            ("Tercer trimestre", "#FF2D55", "#FFEBF0", "❤️", T("Tercer trimestre", "Third trimester"),
+             T("Es la etapa de mayor crecimiento fetal. Las necesidades energéticas aumentan aproximadamente "
+             "452 kcal por día.",
+             "This is the stage of greatest fetal growth. Energy needs increase by approximately "
+             "452 kcal per day.")),
         ]
+        _txt_etapa_actual = T("✓ TU ETAPA ACTUAL", "✓ YOUR CURRENT STAGE")
         _cols_tri = st.columns(3)
         for _col, (_clave, _borde, _fondo, _emoji, _titulo, _texto) in zip(_cols_tri, _tri_data):
             _sel = (_clave == trimestre)
@@ -6136,19 +6228,19 @@ elif hoja_activa == "3.-TMB":
                 <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
                 <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
                 <p style="margin:0;color:#3C3C43;font-size:0.8rem;line-height:1.45;">{_texto}</p>
-                {'<p style="margin:8px 0 0 0;font-weight:800;color:'+_borde+';font-size:0.72rem;">✓ TU ETAPA ACTUAL</p>' if _sel else ''}
+                {'<p style="margin:8px 0 0 0;font-weight:800;color:'+_borde+';font-size:0.72rem;">'+_txt_etapa_actual+'</p>' if _sel else ''}
                 </div>
                 """, unsafe_allow_html=True)
 
         st.write("")
 
         # --- ¿Por qué aumentan las calorías? — mini infografía -------------------------------
-        st.markdown("#### 🔥 ¿Por qué aumentan las calorías?")
+        st.markdown(T("#### 🔥 ¿Por qué aumentan las calorías?", "#### 🔥 Why do calories increase?"))
         _pasos_porque = [
-            ("#BA68C8", "🤰", "El bebé crece"),
-            ("#FF9500", "🦴", "Se forman nuevos tejidos"),
-            ("#FF2D55", "❤️", "Trabaja más el organismo"),
-            ("#FF3B30", "🔥", "Se necesita más energía"),
+            ("#BA68C8", "🤰", T("El bebé crece", "The baby grows")),
+            ("#FF9500", "🦴", T("Se forman nuevos tejidos", "New tissues form")),
+            ("#FF2D55", "❤️", T("Trabaja más el organismo", "The body works harder")),
+            ("#FF3B30", "🔥", T("Se necesita más energía", "More energy is needed")),
         ]
         _cols_porque = st.columns(len(_pasos_porque) * 2 - 1)
         for _i, (_bc, _em, _tt) in enumerate(_pasos_porque):
@@ -6168,8 +6260,10 @@ elif hoja_activa == "3.-TMB":
         st.write("")
 
         # --- Comparación: TMB Base → Aporte → Resultado ---------------------------------------
-        st.markdown("#### 📊 Antes y después del ajuste")
-        st.markdown(f"""
+        st.markdown(T("#### 📊 Antes y después del ajuste", "#### 📊 Before and after the adjustment"))
+        _trimestre_disp_lower = T(trimestre.lower(), {"primer trimestre": "1st trimester",
+            "segundo trimestre": "2nd trimester", "tercer trimestre": "3rd trimester"}.get(trimestre.lower(), trimestre.lower()))
+        st.markdown(T(f"""
         <div class="cp5-glass-flow">
             <div class="cp5-flow-card">
                 <div class="cp5-flow-label">🔥 TMB Base</div>
@@ -6189,13 +6283,33 @@ elif hoja_activa == "3.-TMB":
                 <div class="cp5-flow-legend">Tu gasto energético recomendado hoy.</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """, f"""
+        <div class="cp5-glass-flow">
+            <div class="cp5-flow-card">
+                <div class="cp5-flow-label">🔥 Base BMR</div>
+                <div class="cp5-flow-value">{tmb_base_gestacion:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your energy expenditure without gestational adjustment.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
+                <div class="cp5-flow-label">👶 Pregnancy contribution</div>
+                <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
+                <div class="cp5-flow-legend">Extra energy for the {_trimestre_disp_lower}.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
+                <div class="cp5-flow-label">❤️ Result for {_nombre_disp}</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{tmb:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your recommended energy expenditure today.</div>
+            </div>
+        </div>
+        """), unsafe_allow_html=True)
 
         st.divider()
 
         # --- 🍽 Recuerda: prioriza calidad, no solo cantidad ----------------------------------
-        st.markdown("#### 🍽️ Recuerda")
-        st.markdown("""
+        st.markdown(T("#### 🍽️ Recuerda", "#### 🍽️ Remember"))
+        st.markdown(T("""
         <div class="bento-card" style="border-left:5px solid #FF9500;">
         <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">No todas las calorías son iguales. Durante
         el embarazo es importante priorizar alimentos ricos en:</p>
@@ -6208,18 +6322,31 @@ elif hoja_activa == "3.-TMB":
         </div>
         <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">No solo aumentar la cantidad de comida.</p>
         </div>
-        """, unsafe_allow_html=True)
+        """, """
+        <div class="bento-card" style="border-left:5px solid #FF9500;">
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">Not all calories are equal. During
+        pregnancy it's important to prioritize foods rich in:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Protein</span>
+        <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcium</span>
+        <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Iron</span>
+        <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Folic acid</span>
+        <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fiber</span>
+        </div>
+        <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">Not just increasing the amount of food.</p>
+        </div>
+        """), unsafe_allow_html=True)
 
         st.write("")
 
         # --- ¿Qué puedes hacer desde hoy? -----------------------------------------------------
-        st.markdown("#### ✅ ¿Qué puedes hacer desde hoy?")
+        st.markdown(T("#### ✅ ¿Qué puedes hacer desde hoy?", "#### ✅ What can you do starting today?"))
         _acciones_emb = [
-            ("#0277BD", "#E9F8FF", "🥛", "Consumir lácteos"),
-            ("#137333", "#EAFAEE", "🥬", "Incluir verduras diariamente"),
-            ("#1976D2", "#E3F2FD", "🐟", "Proteínas de buena calidad"),
-            ("#00B8D9", "#E1FBF9", "💧", "Mantener buena hidratación"),
-            ("#FF9500", "#FFF3E5", "🚶", "Actividad física autorizada"),
+            ("#0277BD", "#E9F8FF", "🥛", T("Consumir lácteos", "Consume dairy")),
+            ("#137333", "#EAFAEE", "🥬", T("Incluir verduras diariamente", "Include vegetables daily")),
+            ("#1976D2", "#E3F2FD", "🐟", T("Proteínas de buena calidad", "Good quality protein")),
+            ("#00B8D9", "#E1FBF9", "💧", T("Mantener buena hidratación", "Stay well hydrated")),
+            ("#FF9500", "#FFF3E5", "🚶", T("Actividad física autorizada", "Authorized physical activity")),
         ]
         _cols_acc = st.columns(5)
         for _col, (_borde, _fondo, _emoji, _texto) in zip(_cols_acc, _acciones_emb):
@@ -6234,45 +6361,62 @@ elif hoja_activa == "3.-TMB":
         st.write("")
 
         # --- ⚠️ Importante ----------------------------------------------------------------------
-        st.markdown("""
+        st.markdown(T("""
         <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
         <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Importante</p>
         <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
         Las necesidades nutricionales durante el embarazo varían entre cada mujer. Este cálculo es una
         estimación educativa y no reemplaza la evaluación realizada por un obstetra o nutricionista.</p>
         </div>
-        """, unsafe_allow_html=True)
+        """, """
+        <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
+        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Important</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
+        Nutritional needs during pregnancy vary from woman to woman. This calculation is an
+        educational estimate and does not replace an evaluation by an obstetrician or nutritionist.</p>
+        </div>
+        """), unsafe_allow_html=True)
 
-        caja_util("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
+        caja_util(T("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
                   "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
                   "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
+                  "During pregnancy the body needs extra energy so the baby can develop healthily. "
+                  "This calculator tells you how many additional calories you need based on your current trimester, "
+                  "without having to guess or risk your nutrition or your baby's. 🤰💕"),
                   emoji="👶", color="#F8ECFB", borde="#BA68C8")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
-    hoja_header(4, subtitulo="El Requerimiento Calórico Diario (RCD) es la cantidad de energía que tu cuerpo "
+    hoja_header(4, subtitulo=T("El Requerimiento Calórico Diario (RCD) es la cantidad de energía que tu cuerpo "
                              "necesita cada día para funcionar y moverte según tu nivel de actividad actual. "
-                             "Se calcula multiplicando tu metabolismo basal (TMB) por un factor de actividad física.")
+                             "Se calcula multiplicando tu metabolismo basal (TMB) por un factor de actividad física.",
+                             "The Daily Caloric Requirement (DCR) is the amount of energy your body needs "
+                             "each day to function and move based on your current activity level. "
+                             "It's calculated by multiplying your basal metabolism (BMR) by a physical activity factor."))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "RCD = TMB × Factor de Actividad Física",
-        autor="OMS / FAO / UNU", referencia="Factor de Actividad Física")}</div>""", unsafe_allow_html=True)
+        T("RCD = TMB × Factor de Actividad Física", "DCR = BMR × Physical Activity Factor"),
+        autor="OMS / FAO / UNU", referencia=T("Factor de Actividad Física", "Physical Activity Factor"))}</div>""", unsafe_allow_html=True)
+
+    _txt_nivel_actividad = {"Sedentario": T("Sedentario", "Sedentary"), "Ligero": T("Ligero", "Light"),
+                             "Moderado": T("Moderado", "Moderate"), "Intenso": T("Intenso", "Intense")}
+    _actividad_disp = _txt_nivel_actividad.get(actividad, actividad)
 
     # ===== 4 tarjetas grandes: TMB → Nivel de actividad → Factor aplicado → RCD =====
     _desc_nivel_rcd = {
-        "Sedentario": "Realizas muy poca actividad física durante el día.",
-        "Ligero": "Realizas actividad física ligera durante el día.",
-        "Moderado": "Realizas actividad física moderada durante el día.",
-        "Intenso": "Realizas actividad física intensa durante el día.",
+        "Sedentario": T("Realizas muy poca actividad física durante el día.", "You do very little physical activity during the day."),
+        "Ligero": T("Realizas actividad física ligera durante el día.", "You do light physical activity during the day."),
+        "Moderado": T("Realizas actividad física moderada durante el día.", "You do moderate physical activity during the day."),
+        "Intenso": T("Realizas actividad física intensa durante el día.", "You do intense physical activity during the day."),
     }
     _tarjetas_grandes_rcd = [
-        ("🧍", "Tu metabolismo basal (TMB)", f"{tmb:.0f} kcal/día",
-         "La energía que tu cuerpo necesita incluso en reposo.", "#34C759", "#EAFAEE"),
-        ("🏃", "Tu nivel de actividad", f"{actividad}",
-         _desc_nivel_rcd.get(actividad, "Tu nivel de actividad física habitual durante el día."), "#007AFF", "#EAF3FF"),
-        ("📈", "Factor aplicado", f"{factor:.2f}",
-         "Coeficiente utilizado para calcular tu gasto diario.", "#AF52DE", "#F6ECFC"),
-        ("🔥", "RCD base (antes del clima)" if vive_en_chiclayo else "Tu RCD", f"{rcd_base:.0f} kcal/día",
-         "Las calorías aproximadas que necesitas consumir para mantener tu peso.", "#FF9500", "#FFF3E5"),
+        ("🧍", T("Tu metabolismo basal (TMB)", "Your basal metabolism (BMR)"), f"{tmb:.0f} kcal/{T('día','day')}",
+         T("La energía que tu cuerpo necesita incluso en reposo.", "The energy your body needs even at rest."), "#34C759", "#EAFAEE"),
+        ("🏃", T("Tu nivel de actividad", "Your activity level"), f"{_actividad_disp}",
+         _desc_nivel_rcd.get(actividad, T("Tu nivel de actividad física habitual durante el día.", "Your usual physical activity level during the day.")), "#007AFF", "#EAF3FF"),
+        ("📈", T("Factor aplicado", "Factor applied"), f"{factor:.2f}",
+         T("Coeficiente utilizado para calcular tu gasto diario.", "Coefficient used to calculate your daily expenditure."), "#AF52DE", "#F6ECFC"),
+        ("🔥", T("RCD base (antes del clima)", "Base DCR (before climate)") if vive_en_chiclayo else T("Tu RCD", "Your DCR"), f"{rcd_base:.0f} kcal/{T('día','day')}",
+         T("Las calorías aproximadas que necesitas consumir para mantener tu peso.", "The approximate calories you need to eat to maintain your weight."), "#FF9500", "#FFF3E5"),
     ]
     _tarjetas_html_rcd = ""
     for i, (icono_g, titulo_g, valor_g, desc_g, color_g, fondo_g) in enumerate(_tarjetas_grandes_rcd):
@@ -6294,16 +6438,17 @@ elif hoja_activa == "4.-RCD":
     </div>"""), unsafe_allow_html=True)
 
     # ===== Tarjeta informativa: Nivel · Coeficiente · Sexo · Fórmula · Referencia =====
-    st.markdown(f"""
+    _genero_disp = T(genero, "Man" if genero == "Hombre" else "Woman")
+    st.markdown(T(f"""
     <div class="bento-card" style="margin-bottom:18px;">
         <div class="bento-eyebrow">Resumen del cálculo aplicado</div>
         <div style="display:flex;flex-wrap:wrap;gap:22px;margin-top:10px;">
             <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">🏃 Nivel de actividad</div>
-                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{actividad}</div></div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{_actividad_disp}</div></div>
             <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📈 Coeficiente aplicado</div>
                  <div style="font-size:1.15rem;font-weight:800;color:#34C759;">{factor:.2f}</div></div>
             <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">🚻 Sexo del paciente</div>
-                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{genero}</div></div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{_genero_disp}</div></div>
             <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📖 Fórmula</div>
                  <div style="font-size:1.0rem;font-weight:700;color:#17301F;">RCD = TMB × Factor de actividad</div></div>
             <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📚 Referencia</div>
@@ -6316,10 +6461,32 @@ elif hoja_activa == "4.-RCD":
             total que tu cuerpo gasta en un día normal, sumando tanto el reposo como el movimiento.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div class="bento-card" style="margin-bottom:18px;">
+        <div class="bento-eyebrow">Summary of the applied calculation</div>
+        <div style="display:flex;flex-wrap:wrap;gap:22px;margin-top:10px;">
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">🏃 Activity level</div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{_actividad_disp}</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📈 Coefficient applied</div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#34C759;">{factor:.2f}</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">🚻 Patient's sex</div>
+                 <div style="font-size:1.15rem;font-weight:800;color:#17301F;">{_genero_disp}</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📖 Formula</div>
+                 <div style="font-size:1.0rem;font-weight:700;color:#17301F;">DCR = BMR × Activity factor</div></div>
+            <div><div style="font-size:0.72rem;color:#8A94A6;font-weight:800;text-transform:uppercase;">📚 Reference</div>
+                 <div style="font-size:1.0rem;font-weight:700;color:#17301F;">World Health Organization (WHO)</div></div>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06);
+                    font-size:0.85rem;color:#5C6B60;line-height:1.5;">
+            We start from your <b>BMR</b> (calculated on the previous sheet) and multiply it by the <b>coefficient</b>
+            that matches your sex and your physical activity level. The result is your <b>DCR</b>: the total
+            energy your body spends in a normal day, combining both rest and movement.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
     # ===== 4 tarjetas de nivel de actividad (reemplazan la tabla), con la seleccionada iluminada =====
-    st.markdown("#### 🏋️ Nivel de Actividad Física")
+    st.markdown(T("#### 🏋️ Nivel de Actividad Física", "#### 🏋️ Physical Activity Level"))
     _NIVELES_RCD = [
         ("Sedentario", "Sedentaria", "🪑", 1.2, "#8E8E93", "#F2F2F7"),
         ("Ligero",     "Ligero",     "🚶", FACTOR_ACTIVIDAD["Ligero"][genero],   "#34C759", "#EAFAEE"),
@@ -6329,19 +6496,20 @@ elif hoja_activa == "4.-RCD":
     cols_niv = st.columns(4)
     for col_n, (nombre_niv, clave_niv, icono_niv, factor_niv, color_niv, fondo_niv) in zip(cols_niv, _NIVELES_RCD):
         _es_sel = (clave_niv == actividad)
+        _nombre_niv_disp = _txt_nivel_actividad.get(nombre_niv, nombre_niv)
         with col_n:
             _estilo_sel = (f"background:linear-gradient(150deg,{color_niv}22 0%,#FFFFFF 75%);"
                            f"border:2.5px solid {color_niv};box-shadow:0 10px 26px {color_niv}40;transform:translateY(-3px);"
                            if _es_sel else
                            f"background:{fondo_niv};border:1.5px solid rgba(0,0,0,0.05);")
             _badge_sel = (f'<div style="margin-top:8px;background:{color_niv};color:#FFFFFF;font-size:0.68rem;'
-                          f'font-weight:800;padding:3px 10px;border-radius:999px;display:inline-block;">✓ SELECCIONADO</div>'
+                          f'font-weight:800;padding:3px 10px;border-radius:999px;display:inline-block;">✓ {T("SELECCIONADO","SELECTED")}</div>'
                           if _es_sel else "")
             st.markdown(f"""
             <div style="{_estilo_sel}border-radius:20px;padding:16px 14px;text-align:center;transition:all 0.2s ease;">
                 <div style="font-size:1.7rem;">{icono_niv}</div>
-                <div style="font-weight:800;color:{color_niv};font-size:0.92rem;margin-top:4px;">{nombre_niv}</div>
-                <div style="font-size:0.72rem;color:#8A94A6;font-weight:700;text-transform:uppercase;margin-top:2px;">Factor</div>
+                <div style="font-weight:800;color:{color_niv};font-size:0.92rem;margin-top:4px;">{_nombre_niv_disp}</div>
+                <div style="font-size:0.72rem;color:#8A94A6;font-weight:700;text-transform:uppercase;margin-top:2px;">{T("Factor","Factor")}</div>
                 <div style="font-size:1.5rem;font-weight:900;color:{color_niv};letter-spacing:-0.02em;">{factor_niv:.2f}</div>
                 {_badge_sel}
             </div>
@@ -6350,7 +6518,7 @@ elif hoja_activa == "4.-RCD":
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
     # ===== ¿Qué significa tu RCD? =====
-    st.markdown(f"""
+    st.markdown(T(f"""
     <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
         <div style="font-weight:800;color:#C06000;font-size:1rem;margin-bottom:6px;">💡 ¿Qué significa tu RCD?</div>
         <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
@@ -6359,10 +6527,19 @@ elif hoja_activa == "4.-RCD":
             la misma energía que gastas, así que no ganas ni pierdes peso.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
+        <div style="font-weight:800;color:#C06000;font-size:1rem;margin-bottom:6px;">💡 What does your DCR mean?</div>
+        <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
+            If you eat approximately 🔥 <b>{rcd_base:.0f} kcal per day</b> and keep the same activity
+            level, ⚖️ <b>your weight will tend to stay stable</b>. This is your caloric balance point: you eat
+            the same energy you burn, so you neither gain nor lose weight.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
     # ===== ¿Qué representa el factor de actividad? =====
-    st.markdown(f"""
+    st.markdown(T(f"""
     <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
         <div style="font-weight:800;color:#0B4DA8;font-size:1rem;margin-bottom:6px;">📈 ¿Qué representa el factor de actividad?</div>
         <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
@@ -6371,10 +6548,19 @@ elif hoja_activa == "4.-RCD":
             reflejar la energía extra que gastas al trabajar, caminar, hacer ejercicio y todas tus actividades diarias.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
+        <div style="font-weight:800;color:#0B4DA8;font-size:1rem;margin-bottom:6px;">📈 What does the activity factor represent?</div>
+        <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
+            The more you move during the day, the more energy your body needs. That's why the calculation uses a
+            coefficient that increases caloric expenditure based on your physical activity level: it multiplies your BMR to
+            reflect the extra energy you spend working, walking, exercising, and doing all your daily activities.
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
     # ===== ¿Quién recomienda este método? =====
-    st.markdown("""
+    st.markdown(T("""
     <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
         <div style="font-weight:800;color:#1E5631;font-size:1rem;margin-bottom:10px;">📚 ¿Quién recomienda este método?</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
@@ -6389,11 +6575,26 @@ elif hoja_activa == "4.-RCD":
                 validación científica de los factores de actividad física utilizados en este cálculo.</div></div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
+        <div style="font-weight:800;color:#1E5631;font-size:1rem;margin-bottom:10px;">📚 Who recommends this method?</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div><b style="color:#17301F;">🇺🇳 World Health Organization (WHO)</b>
+                <div style="color:#5C6B60;font-size:0.85rem;">Sets the international guidelines on
+                energy and nutrition requirements used as a reference in this app.</div></div>
+            <div><b style="color:#17301F;">🌾 FAO (Food and Agriculture Organization of the United Nations)</b>
+                <div style="color:#5C6B60;font-size:0.85rem;">Together with WHO, produces the technical reports with
+                the human energy needs tables used worldwide.</div></div>
+            <div><b style="color:#17301F;">🎓 UNU (United Nations University)</b>
+                <div style="color:#5C6B60;font-size:0.85rem;">Collaborates with WHO and FAO on the research and
+                scientific validation of the physical activity factors used in this calculation.</div></div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
     # ===== Diagrama del cálculo: TMB → × Factor → = RCD =====
-    st.markdown("#### 🧮 Diagrama del Cálculo")
-    st.markdown(f"""
+    st.markdown(T("#### 🧮 Diagrama del Cálculo", "#### 🧮 Calculation Diagram"))
+    st.markdown(T(f"""
     <div class="cp5-glass-flow" style="margin-top:6px;">
         <div class="cp5-flow-card">
             <div class="cp5-flow-label">⚡ TMB</div>
@@ -6413,7 +6614,27 @@ elif hoja_activa == "4.-RCD":
             <div class="cp5-flow-legend">kcal/día — antes del ajuste por clima</div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div class="cp5-glass-flow" style="margin-top:6px;">
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">⚡ BMR</div>
+            <div class="cp5-flow-value">{tmb:.2f}</div>
+            <div class="cp5-flow-legend">kcal/day — your resting expenditure (Sheet 3)</div>
+        </div>
+        <div class="cp5-flow-arrow">×</div>
+        <div class="cp5-flow-card">
+            <div class="cp5-flow-label">🏃 Activity factor</div>
+            <div class="cp5-flow-value">{factor:.2f}</div>
+            <div class="cp5-flow-legend">{_actividad_disp} · {_genero_disp}</div>
+        </div>
+        <div class="cp5-flow-arrow">=</div>
+        <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.35);">
+            <div class="cp5-flow-label">🔥 Base DCR</div>
+            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_base:.2f}</div>
+            <div class="cp5-flow-legend">kcal/day — before climate adjustment</div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
     # ===== Fórmula desarrollada, con los números reales del usuario =====
     st.markdown(f"""
@@ -6434,10 +6655,11 @@ elif hoja_activa == "4.-RCD":
         _ajuste_kcal = rcd_base - rcd
         st.markdown(f"""<div class="formula-badge-row">{formula_badge(
             "RCD = RCD_base × 0.95",
-            referencia="Corrección Térmica de Clima Cálido — factor 5% por temperatura ambiental promedio")}</div>""",
+            referencia=T("Corrección Térmica de Clima Cálido — factor 5% por temperatura ambiental promedio",
+                          "Warm Climate Thermal Correction — 5% factor for average ambient temperature"))}</div>""",
             unsafe_allow_html=True)
 
-        st.markdown("""
+        st.markdown(T("""
         <div style="background:linear-gradient(120deg,#FFF6E0 0%,#FFFFFF 75%);border-radius:22px;
         padding:20px 24px;margin:6px 0 18px 0;border:1px solid rgba(255,179,0,0.25);
         box-shadow:0 6px 18px rgba(255,179,0,0.10);">
@@ -6448,10 +6670,21 @@ elif hoja_activa == "4.-RCD":
         producir un poco menos de calor interno para mantener su temperatura, por lo que el gasto energético
         diario puede disminuir ligeramente. Eso es justo lo que este cálculo tiene en cuenta.</p>
         </div>
-        """, unsafe_allow_html=True)
+        """, """
+        <div style="background:linear-gradient(120deg,#FFF6E0 0%,#FFFFFF 75%);border-radius:22px;
+        padding:20px 24px;margin:6px 0 18px 0;border:1px solid rgba(255,179,0,0.25);
+        box-shadow:0 6px 18px rgba(255,179,0,0.10);">
+        <p style="margin:0 0 8px 0;font-weight:800;color:#B06000;font-size:1.05rem;">
+        🌤️ Does climate affect the calories your body burns?</p>
+        <p style="margin:0;color:#5C4A1E;line-height:1.55;">
+        <b>Yes, although the change is usually small.</b> In warm places like Chiclayo, your body needs to
+        produce slightly less internal heat to maintain its temperature, so daily energy expenditure
+        can decrease slightly. That's exactly what this calculation takes into account.</p>
+        </div>
+        """), unsafe_allow_html=True)
 
-        st.markdown("#### 📊 De tu cálculo general al resultado para Chiclayo")
-        st.markdown(f"""
+        st.markdown(T("#### 📊 De tu cálculo general al resultado para Chiclayo", "#### 📊 From your general calculation to the result for Chiclayo"))
+        st.markdown(T(f"""
         <div class="cp5-glass-flow">
             <div class="cp5-flow-card">
                 <div class="cp5-flow-label">🌍 RCD base</div>
@@ -6471,39 +6704,76 @@ elif hoja_activa == "4.-RCD":
                 <div class="cp5-flow-legend">Tu gasto energético ya ajustado al clima. ☀️</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """, f"""
+        <div class="cp5-glass-flow">
+            <div class="cp5-flow-card">
+                <div class="cp5-flow-label">🌍 Base DCR</div>
+                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your daily expenditure without considering local climate.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,179,0,0.10);border-color:rgba(255,179,0,0.35);">
+                <div class="cp5-flow-label">☀️ Warm climate adjustment</div>
+                <div class="cp5-flow-value" style="color:#B06000;">−{_ajuste_kcal:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your body produces slightly less internal heat.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.4);">
+                <div class="cp5-flow-label">📍 Result for Chiclayo</div>
+                <div class="cp5-flow-value" style="color:#E67E22;">{rcd:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your energy expenditure already adjusted for climate. ☀️</div>
+            </div>
+        </div>
+        """), unsafe_allow_html=True)
 
         col_signif, col_duda = st.columns(2)
         with col_signif:
-            st.markdown("""
+            st.markdown(T("""
             <div class="bento-card" style="border-left:5px solid #FFB300;">
             <p style="margin:0 0 6px 0;font-weight:800;color:#B06000;">🤔 ¿Qué significa esto?</p>
             <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
             Debido al clima cálido de Chiclayo, tu cuerpo gasta ligeramente menos energía para mantener
             su temperatura. Por eso el cálculo ajusta aproximadamente un <b>5%</b> de tu gasto energético diario.</p>
             </div>
-            """, unsafe_allow_html=True)
+            """, """
+            <div class="bento-card" style="border-left:5px solid #FFB300;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:#B06000;">🤔 What does this mean?</p>
+            <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
+            Because of Chiclayo's warm climate, your body spends slightly less energy maintaining
+            its temperature. That's why the calculation adjusts approximately <b>5%</b> of your daily energy expenditure.</p>
+            </div>
+            """), unsafe_allow_html=True)
         with col_duda:
-            st.markdown("""
+            st.markdown(T("""
             <div class="bento-card" style="border-left:5px solid #34C759;">
             <p style="margin:0 0 6px 0;font-weight:800;color:#137333;">❓ ¿Debo comer menos porque hace calor?</p>
             <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
             <b>No necesariamente.</b> Este ajuste solo mejora la precisión del cálculo. La diferencia suele ser
             pequeña y no significa que debas dejar de alimentarte ni hacer dietas por vivir en un clima cálido.</p>
             </div>
-            """, unsafe_allow_html=True)
+            """, """
+            <div class="bento-card" style="border-left:5px solid #34C759;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:#137333;">❓ Should I eat less because it's hot?</p>
+            <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
+            <b>Not necessarily.</b> This adjustment only improves the accuracy of the calculation. The difference is usually
+            small and doesn't mean you should stop eating properly or diet just because you live in a warm climate.</p>
+            </div>
+            """), unsafe_allow_html=True)
 
         st.write("")
 
-        st.markdown("#### 🌴 ¿Cómo aprovechar este conocimiento?")
+        st.markdown(T("#### 🌴 ¿Cómo aprovechar este conocimiento?", "#### 🌴 How to make the most of this knowledge?"))
         col_h, col_c, col_a = st.columns(3)
         _tarjetas_clima = [
-            (col_h, "#5AC8FA", "#E9F8FF", "💧", "Mantente hidratado",
-             "Las altas temperaturas aumentan la pérdida de agua mediante el sudor."),
-            (col_c, "#34C759", "#EAFAEE", "🥗", "Prefiere comidas ligeras",
-             "Las frutas y verduras ayudan a mantener una buena hidratación."),
-            (col_a, "#FF9500", "#FFF3E5", "🚶", "Sigue activo",
-             "Aunque haga calor, caminar y hacer actividad física sigue siendo importante para tu salud."),
+            (col_h, "#5AC8FA", "#E9F8FF", "💧", T("Mantente hidratado", "Stay hydrated"),
+             T("Las altas temperaturas aumentan la pérdida de agua mediante el sudor.",
+               "High temperatures increase water loss through sweat.")),
+            (col_c, "#34C759", "#EAFAEE", "🥗", T("Prefiere comidas ligeras", "Prefer light meals"),
+             T("Las frutas y verduras ayudan a mantener una buena hidratación.",
+               "Fruits and vegetables help maintain good hydration.")),
+            (col_a, "#FF9500", "#FFF3E5", "🚶", T("Sigue activo", "Stay active"),
+             T("Aunque haga calor, caminar y hacer actividad física sigue siendo importante para tu salud.",
+               "Even in hot weather, walking and physical activity remain important for your health.")),
         ]
         for _col, _borde, _fondo, _emoji, _titulo, _texto in _tarjetas_clima:
             with _col:
@@ -6517,13 +6787,13 @@ elif hoja_activa == "4.-RCD":
 
         st.write("")
 
-        st.markdown("#### ☀️ ¿Cómo responde tu cuerpo cuando hace calor?")
+        st.markdown(T("#### ☀️ ¿Cómo responde tu cuerpo cuando hace calor?", "#### ☀️ How does your body respond when it's hot?"))
         _pasos_calor = [
-            ("#FFB300", "☀️", "Hace más calor", "La temperatura ambiental sube en tu entorno."),
-            ("#5AC8FA", "💧", "Sudas más", "Tu piel libera calor a través del sudor."),
-            ("#FF3B30", "❤️", "Tu cuerpo trabaja para mantener su temperatura", "El organismo regula su termostato interno."),
-            ("#34C759", "🍉", "Necesitas hidratarte correctamente", "Repones el agua que pierdes con el calor."),
-            ("#FF9500", "📊", "El cálculo ajusta ligeramente tu gasto", "Aproximadamente un 5% menos de energía diaria."),
+            ("#FFB300", "☀️", T("Hace más calor", "It gets hotter"), T("La temperatura ambiental sube en tu entorno.", "The ambient temperature rises around you.")),
+            ("#5AC8FA", "💧", T("Sudas más", "You sweat more"), T("Tu piel libera calor a través del sudor.", "Your skin releases heat through sweat.")),
+            ("#FF3B30", "❤️", T("Tu cuerpo trabaja para mantener su temperatura", "Your body works to maintain its temperature"), T("El organismo regula su termostato interno.", "Your body regulates its internal thermostat.")),
+            ("#34C759", "🍉", T("Necesitas hidratarte correctamente", "You need to hydrate properly"), T("Repones el agua que pierdes con el calor.", "You replenish the water you lose from the heat.")),
+            ("#FF9500", "📊", T("El cálculo ajusta ligeramente tu gasto", "The calculation slightly adjusts your expenditure"), T("Aproximadamente un 5% menos de energía diaria.", "Approximately 5% less daily energy.")),
         ]
         _html_pasos = ['<div style="max-width:520px;margin:0 auto;">']
         for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_calor):
@@ -6541,7 +6811,7 @@ elif hoja_activa == "4.-RCD":
 
         st.divider()
 
-        st.markdown("""
+        st.markdown(T("""
         <div style="background:#FFF6E0;border-radius:18px;padding:16px 20px;margin-bottom:10px;
         border-left:5px solid #FFB300;">
         <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">📖 Base científica</p>
@@ -6549,17 +6819,26 @@ elif hoja_activa == "4.-RCD":
         Este cálculo utiliza información sobre adaptación fisiológica al clima cálido descrita por organismos
         internacionales como la FAO y estudios sobre gasto energético humano.</p>
         </div>
-        """, unsafe_allow_html=True)
+        """, """
+        <div style="background:#FFF6E0;border-radius:18px;padding:16px 20px;margin-bottom:10px;
+        border-left:5px solid #FFB300;">
+        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">📖 Scientific basis</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.9rem;line-height:1.5;">
+        This calculation uses information on physiological adaptation to warm climates described by
+        international bodies such as the FAO and studies on human energy expenditure.</p>
+        </div>
+        """), unsafe_allow_html=True)
         recursos_externos(4, [
-            ("📄 Ver referencias (FAO/OMS/UNU)", "https://www.fao.org/"),
-            ("☀️ Clima de Chiclayo (Senamhi)", "https://www.senamhi.gob.pe/"),
+            (T("📄 Ver referencias (FAO/OMS/UNU)", "📄 View references (FAO/WHO/UNU)"), "https://www.fao.org/"),
+            (T("☀️ Clima de Chiclayo (Senamhi)", "☀️ Chiclayo climate (Senamhi)"), "https://www.senamhi.gob.pe/"),
         ])
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     # ===== Resultado final destacado, con fondo degradado naranja-rojo =====
-    _sub_hero_rcd = (f"Factor aplicado: <b>{actividad}</b> ({factor:.2f}) · Sexo: <b>{genero}</b>"
-                      + (" · ☀️ Ajuste de clima Chiclayo (−5%) aplicado" if vive_en_chiclayo else ""))
-    st.markdown(f"""
+    _sub_hero_rcd = (T(f"Factor aplicado: <b>{actividad}</b> ({factor:.2f}) · Sexo: <b>{genero}</b>",
+                        f"Factor applied: <b>{_actividad_disp}</b> ({factor:.2f}) · Sex: <b>{_genero_disp}</b>")
+                      + (T(" · ☀️ Ajuste de clima Chiclayo (−5%) aplicado", " · ☀️ Chiclayo climate adjustment (−5%) applied") if vive_en_chiclayo else ""))
+    st.markdown(T(f"""
     <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#FF9500 0%,#FF6B35 55%,#FF3B30 100%);
                 border-radius:26px;padding:30px 34px;text-align:center;color:#FFFFFF;
                 box-shadow:0 18px 40px rgba(255,111,0,0.35);">
@@ -6569,20 +6848,31 @@ elif hoja_activa == "4.-RCD":
         <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.2f} <span style="font-size:1.2rem;font-weight:700;">kcal/día</span></div>
         <div style="font-size:0.86rem;opacity:0.92;">{_sub_hero_rcd}</div>
     </div>
-    """, unsafe_allow_html=True)
+    """, f"""
+    <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#FF9500 0%,#FF6B35 55%,#FF3B30 100%);
+                border-radius:26px;padding:30px 34px;text-align:center;color:#FFFFFF;
+                box-shadow:0 18px 40px rgba(255,111,0,0.35);">
+        <div style="position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:0.16;">🔥</div>
+        <div style="font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.95;">
+            Final Result · Daily Caloric Requirement</div>
+        <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.2f} <span style="font-size:1.2rem;font-weight:700;">kcal/day</span></div>
+        <div style="font-size:0.86rem;opacity:0.92;">{_sub_hero_rcd}</div>
+    </div>
+    """), unsafe_allow_html=True)
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    with st.expander("📋 Ver tabla completa de factores de actividad (Hombres / Mujeres)"):
+    with st.expander(T("📋 Ver tabla completa de factores de actividad (Hombres / Mujeres)",
+                        "📋 View full activity factor table (Men / Women)")):
         _FILAS_FACTOR_TABLA = [
-            ("🪑 Sedentaria", "#8E8E93", "#F2F2F7", 1.2, 1.2),
-            ("🚶 Ligero",     "#34C759", "#EAFAEE", FACTOR_ACTIVIDAD["Ligero"]["Hombre"],   FACTOR_ACTIVIDAD["Ligero"]["Mujer"]),
-            ("🏃 Moderada",   "#007AFF", "#EAF3FF", FACTOR_ACTIVIDAD["Moderada"]["Hombre"], FACTOR_ACTIVIDAD["Moderada"]["Mujer"]),
-            ("🔥 Intensa",    "#FF3B30", "#FFEDEC", FACTOR_ACTIVIDAD["Intensa"]["Hombre"],  FACTOR_ACTIVIDAD["Intensa"]["Mujer"]),
+            (T("🪑 Sedentaria", "🪑 Sedentary"), "#8E8E93", "#F2F2F7", 1.2, 1.2, "Sedentaria"),
+            (T("🚶 Ligero", "🚶 Light"),     "#34C759", "#EAFAEE", FACTOR_ACTIVIDAD["Ligero"]["Hombre"],   FACTOR_ACTIVIDAD["Ligero"]["Mujer"], "Ligero"),
+            (T("🏃 Moderada", "🏃 Moderate"),   "#007AFF", "#EAF3FF", FACTOR_ACTIVIDAD["Moderada"]["Hombre"], FACTOR_ACTIVIDAD["Moderada"]["Mujer"], "Moderada"),
+            (T("🔥 Intensa", "🔥 Intense"),    "#FF3B30", "#FFEDEC", FACTOR_ACTIVIDAD["Intensa"]["Hombre"],  FACTOR_ACTIVIDAD["Intensa"]["Mujer"], "Intensa"),
         ]
         _filas_tabla_html = ""
-        for _nom, _col, _fon, _fh, _fm in _FILAS_FACTOR_TABLA:
-            _es_fila_activa = (_nom.split(" ", 1)[1] == actividad)
+        for _nom, _col, _fon, _fh, _fm, _clave_orig in _FILAS_FACTOR_TABLA:
+            _es_fila_activa = (_clave_orig == actividad)
             _resalte = f"box-shadow:inset 0 0 0 2px {_col};" if _es_fila_activa else ""
             _filas_tabla_html += f"""
             <tr style="background:{_fon};{_resalte}">
@@ -6590,20 +6880,26 @@ elif hoja_activa == "4.-RCD":
                 <td style="text-align:center;font-weight:800;color:#1976D2;padding:12px 16px;">♂ {_fh:.2f}</td>
                 <td style="text-align:center;font-weight:800;color:#C2185B;padding:12px 16px;border-radius:0 12px 12px 0;">♀ {_fm:.2f}</td>
             </tr>"""
+        _th_actividad = T("Actividad", "Activity")
+        _th_hombres = T("Hombres", "Men")
+        _th_mujeres = T("Mujeres", "Women")
         st.markdown(_html_sin_lineas_vacias(f"""
         <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-family:var(--font-round);">
             <thead><tr>
-                <th style="text-align:left;padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">Actividad</th>
-                <th style="padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">Hombres</th>
-                <th style="padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">Mujeres</th>
+                <th style="text-align:left;padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">{_th_actividad}</th>
+                <th style="padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">{_th_hombres}</th>
+                <th style="padding:0 16px;color:#5C6B60;font-size:0.75rem;text-transform:uppercase;">{_th_mujeres}</th>
             </tr></thead>
             <tbody>{_filas_tabla_html}</tbody>
         </table>
         """), unsafe_allow_html=True)
 
-    caja_util("Este es el número más importante de toda la app: son las calorías reales que gastas en un día "
+    caja_util(T("Este es el número más importante de toda la app: son las calorías reales que gastas en un día "
               "normal, sumando tu TMB (Hoja 3) más el movimiento que haces según tu nivel de actividad. "
               "Es tu 'punto de equilibrio' calórico. 🏃‍♀️🔥",
+              "This is the most important number in the whole app: it's the real calories you burn on a "
+              "normal day, adding your BMR (Sheet 3) to the movement you do based on your activity level. "
+              "It's your caloric 'balance point'. 🏃‍♀️🔥"),
               emoji="🔥", color="#E8F5E9", borde="#43A047")
 
 # ---------------------------------------------------------------------------------------
