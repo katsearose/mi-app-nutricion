@@ -3692,41 +3692,40 @@ def _img_b64(path):
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
 
-# --- 1. MEMBRETE INSTITUCIONAL — tarjeta grande y exclusiva, con el escudo protagonista ---
-st.markdown("""
-<div style="background:linear-gradient(120deg,#FFFFFF 0%,#F4F9F4 100%);border-radius:26px;
-padding:26px 34px;margin-bottom:14px;box-shadow:0 6px 20px rgba(30,86,49,0.10);
-border:1.5px solid rgba(30,86,49,0.14);">
-""", unsafe_allow_html=True)
-_col_esc, _col_memb = st.columns([1, 4])
+# --- 1. MEMBRETE INSTITUCIONAL — banner ancho del colegio, arriba de todo ---
+if _LOGO_ANCHO.exists():
+    st.markdown('<div style="text-align:center;margin-bottom:14px;">', unsafe_allow_html=True)
+    st.image(str(_LOGO_ANCHO), use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- 2. LOGO (escudo) a la izquierda + HERO CIAM&SUNI (bloque verde) a la derecha, más ancho ---
+_col_esc, _col_hero = st.columns([1, 2.2])
 with _col_esc:
-    if _ESCUDO.exists():
-        st.image(str(_ESCUDO), width=150)
-    elif _logo_b64:
-        st.image(str(_LOGO_ANCHO), use_container_width=True)
-with _col_memb:
-    st.markdown("""
-    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;padding-top:6px;">
-    <p style="margin:0;font-weight:800;color:#1E5631;font-size:1.55rem;letter-spacing:-0.01em;
+    _escudo_b64 = _img_b64(_ESCUDO) if _ESCUDO.exists() else None
+    _escudo_img_tag = (f'<img src="data:image/png;base64,{_escudo_b64}" '
+                        f'style="max-width:78%;max-height:210px;object-fit:contain;" />') if _escudo_b64 else ""
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#FFFFFF 0%,#F4F9F4 100%);border-radius:26px;
+    padding:20px;margin-bottom:14px;box-shadow:0 6px 20px rgba(30,86,49,0.10);
+    border:1.5px solid rgba(30,86,49,0.14);height:100%;min-height:260px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+    {_escudo_img_tag}
+    <p style="margin:12px 0 0 0;font-weight:800;color:#1E5631;font-size:1.05rem;letter-spacing:-0.01em;
        font-family:Georgia,'Times New Roman',serif;">🏫 C.E.P. "Santa María Reina"</p>
-    <p style="margin:2px 0 12px 0;color:#5C6B60;font-size:0.95rem;font-weight:600;">Chiclayo</p>
-    <p style="margin:0;color:#8A94A6;font-size:0.82rem;">Proyecto desarrollado para <b style="color:#1E5631;">5.º "C"</b>
-    &nbsp;·&nbsp; Área de Ciencia y Tecnología &nbsp;·&nbsp; Grupo N.° 04</p>
+    <p style="margin:2px 0 0 0;color:#5C6B60;font-size:0.85rem;font-weight:600;">Chiclayo</p>
     </div>
     """, unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --- 2. HERO CIAM&SUNI — logotipo único (sin duplicados), descripción clara e ilustración ---
-st.markdown("""
-<div class="hero-card">
-    <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
-    <h1>🥗 CIAM&SUNI</h1>
-    <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">Tu Salud, Personalizada</p>
-    <p class="hero-sub">CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu
-    requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante
-    explicaciones sencillas y visuales.</p>
-</div>
-""", unsafe_allow_html=True)
+with _col_hero:
+    st.markdown("""
+    <div class="hero-card" style="height:100%;min-height:260px;box-sizing:border-box;">
+        <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
+        <h1>🥗 CIAM&SUNI</h1>
+        <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">Tu Salud, Personalizada</p>
+        <p class="hero-sub">CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu
+        requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante
+        explicaciones sencillas y visuales.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- Tarjetas de características (reemplazan los chips: 4 tarjetas claras) ---
 st.markdown("""
@@ -7577,7 +7576,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     <style>
     .team-card {
         position: relative; border-radius: 24px; padding: 24px 20px 20px 20px; text-align: center;
-        background: #FFFFFF; border: 1.5px solid rgba(0,0,0,0.05);
+        background: var(--tc-bg); border: 1.5px solid var(--tc-color);
         box-shadow: 0 4px 14px rgba(0,0,0,0.06);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         overflow: hidden; height: 100%;
@@ -7591,23 +7590,23 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-card:hover::after { transform: scaleX(1); }
     .team-avatar {
         width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 2.1rem; margin: 0 auto 12px auto; background: var(--tc-bg); border: 2px solid var(--tc-color);
+        font-size: 2.1rem; margin: 0 auto 12px auto; background: #FFFFFF; border: 2px solid var(--tc-color);
         transition: transform 0.35s ease;
     }
     .team-card:hover .team-avatar { transform: rotate(-8deg) scale(1.08); }
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
     .team-badge {
-        display: inline-flex; align-items: center; gap: 6px; background: var(--tc-bg); color: var(--tc-color);
+        display: inline-flex; align-items: center; gap: 6px; background: #FFFFFF; color: var(--tc-color);
         font-weight: 800; font-size: 0.78rem; padding: 7px 16px; border-radius: 999px; margin-bottom: 12px;
         border: 1px solid var(--tc-color);
     }
-    .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #8A94A6; text-transform: uppercase;
+    .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     .team-chip {
-        background: var(--tc-bg); color: var(--tc-color); font-weight: 700; font-size: 0.74rem;
-        padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.04);
+        background: #FFFFFF; color: var(--tc-color); font-weight: 700; font-size: 0.74rem;
+        padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06);
     }
     .about-hero-card {
         border-radius: 24px; padding: 22px 24px; text-align: center; background: #FFFFFF;
@@ -7634,8 +7633,8 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== 2. Tarjeta de logo + 3. Misión / Objetivo =====
-    col_logo, col_mision, col_obj = st.columns([1, 1.3, 1.3])
+    # ===== 2. Tarjeta de logo + 3. Misión / Objetivo (apiladas) =====
+    col_logo, col_mision_obj = st.columns([1, 2])
     with col_logo:
         _logo_img_tag = ""
         _logo_path = _LOGO_CIRCULAR if _LOGO_CIRCULAR.exists() else (_ESCUDO if _ESCUDO.exists() else None)
@@ -7654,16 +7653,13 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         </div>
         </div>
         """, unsafe_allow_html=True)
-    with col_mision:
+    with col_mision_obj:
         st.markdown("""
-        <div class="about-hero-card" style="text-align:left;">
+        <div class="about-hero-card" style="text-align:left;margin-bottom:14px;">
         <p style="margin:0 0 8px 0;font-weight:900;color:#137333;font-size:1rem;">🌿 Nuestra misión</p>
         <p style="margin:0;color:#3C3C43;font-size:0.9rem;line-height:1.55;font-style:italic;">
         "Crear herramientas digitales gratuitas que promuevan hábitos saludables."</p>
         </div>
-        """, unsafe_allow_html=True)
-    with col_obj:
-        st.markdown("""
         <div class="about-hero-card" style="text-align:left;">
         <p style="margin:0 0 8px 0;font-weight:900;color:#0B4DA8;font-size:1rem;">🎯 Nuestro objetivo</p>
         <p style="margin:0;color:#3C3C43;font-size:0.9rem;line-height:1.55;font-style:italic;">
@@ -7706,29 +7702,6 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     col_a, col_b = st.columns(2)
     col_a.metric("Grado y sección", '5° "C" Secundaria')
     col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
-
-    st.write("")
-
-    # ===== 11. Estadísticas del proyecto =====
-    st.markdown("""
-    <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:24px;
-                padding:22px 26px;box-shadow:0 10px 26px rgba(30,86,49,0.25);">
-    <p style="margin:0 0 14px 0;color:#FFFFFF;font-weight:900;text-align:center;font-size:1rem;
-              text-transform:uppercase;letter-spacing:0.05em;opacity:0.95;">📊 El Proyecto en Números</p>
-    </div>
-    """, unsafe_allow_html=True)
-    _stats = [("💻", "15", "Módulos"), ("🥗", "40+", "Cálculos nutricionales"),
-              ("📄", "Sí", "Reporte automático"), ("👩‍💻", "4", "Desarrolladoras"), ("📅", "2026", "Año")]
-    cols_stats = st.columns(len(_stats))
-    for c, (icono_s, valor_s, etiqueta_s) in zip(cols_stats, _stats):
-        with c:
-            st.markdown(f"""
-            <div class="about-stat" style="background:#EAFAEE;border:1px solid rgba(30,86,49,0.10);">
-            <div style="font-size:1.5rem;">{icono_s}</div>
-            <div style="font-size:1.3rem;font-weight:900;color:#1E5631;">{valor_s}</div>
-            <div style="font-size:0.72rem;color:#5C6B60;font-weight:700;">{etiqueta_s}</div>
-            </div>
-            """, unsafe_allow_html=True)
 
     st.write("")
 
