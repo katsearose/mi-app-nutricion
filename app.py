@@ -31,7 +31,7 @@ from reportlab.lib import colors as rl_colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether, Image
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether, Image, PageBreak
 )
 from reportlab.lib.utils import ImageReader
 
@@ -1628,49 +1628,64 @@ def _rl_hex(hexcolor):
 
 
 def generar_pdf_reporte(datos):
-    """Genera el Informe de Resultados en un PDF real con estilo de informe médico/clínico
-    (encabezado tipo consultorio, tablas de valores, semáforo de resultados en colores,
-    plan de comidas y recomendaciones) — listo para imprimir o entregar al usuario.
+    """Genera el 'Informe de Orientación Nutricional Clínica' en 2 páginas A4, con el diseño
+    modular tipo ficha clínica (encabezado institucional, semáforos de signos vitales y
+    análisis sanguíneo, módulos de antropometría/energía/macronutrientes en grillas de 2
+    columnas, y en la página 2 las 3 tablas cromáticas del plan alimentario + recomendaciones
+    y aviso médico-legal) — listo para imprimir o entregar al usuario.
     `datos` es un diccionario con toda la información necesaria (ver llamada en Hoja 14)."""
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
-        topMargin=16 * mm, bottomMargin=16 * mm, leftMargin=16 * mm, rightMargin=16 * mm,
-        title="Informe de Resultados - CIAM&SUNI",
+        topMargin=14 * mm, bottomMargin=12 * mm, leftMargin=16 * mm, rightMargin=16 * mm,
+        title="Informe de Orientación Nutricional Clínica - CIAM&SUNI",
     )
 
-    VERDE = "#1E5631"
-    GRIS_TXT = "#3C3C43"
-    GRIS_SUAVE = "#6C6C70"
-    LINEA = "#E3E8E3"
+    CONTENT_W = 178 * mm
+    MOD_W = 87 * mm
+    GAP_W = 4 * mm
+
+    AZUL_TXT    = "#17324A"
+    VERDE       = "#1E5631"
+    GRIS_TXT    = "#3C3C43"
+    GRIS_SUAVE  = "#6C6C70"
+    LINEA       = "#E3E8E3"
+    GRIS_MOD    = "#F1F4F2"
+    AZUL_CARB, AZUL_CARB_CLARO       = "#2980b9", "#ebf5fb"
+    MORADO_PROT, MORADO_PROT_CLARO   = "#8e44ad", "#f4ecf7"
+    NARANJA_GRA, NARANJA_GRA_CLARO   = "#d35400", "#fbeee6"
 
     styles = getSampleStyleSheet()
     estilo_titulo = ParagraphStyle("TituloInforme", parent=styles["Title"], fontName="Helvetica-Bold",
-                                    fontSize=17, textColor=_rl_hex(VERDE), spaceAfter=2, alignment=TA_LEFT)
+                                    fontSize=15, textColor=_rl_hex(AZUL_TXT), spaceAfter=1, alignment=TA_LEFT, leading=17.5)
     estilo_subtitulo = ParagraphStyle("SubtituloInforme", parent=styles["Normal"], fontName="Helvetica",
-                                       fontSize=9, textColor=_rl_hex(GRIS_SUAVE), alignment=TA_LEFT)
-    estilo_fecha = ParagraphStyle("FechaInforme", parent=styles["Normal"], fontName="Helvetica",
-                                   fontSize=9, textColor=_rl_hex(GRIS_SUAVE), alignment=TA_RIGHT)
-    estilo_seccion = ParagraphStyle("Seccion", parent=styles["Heading2"], fontName="Helvetica-Bold",
-                                     fontSize=12.5, textColor=_rl_hex(VERDE), spaceBefore=14, spaceAfter=6)
+                                       fontSize=8.6, textColor=_rl_hex(GRIS_SUAVE), alignment=TA_LEFT)
+    estilo_meta = ParagraphStyle("MetaInforme", parent=styles["Normal"], fontName="Helvetica",
+                                  fontSize=8.2, textColor=_rl_hex(GRIS_TXT), alignment=TA_RIGHT, leading=11.6)
+    estilo_modulo = ParagraphStyle("ModuloHeader", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                    fontSize=9.2, textColor=_rl_hex(AZUL_TXT))
     estilo_texto = ParagraphStyle("Texto", parent=styles["Normal"], fontName="Helvetica",
-                                   fontSize=9.5, textColor=_rl_hex(GRIS_TXT), leading=13.5)
+                                   fontSize=8.5, textColor=_rl_hex(GRIS_TXT), leading=12.2)
     estilo_texto_bold = ParagraphStyle("TextoBold", parent=estilo_texto, fontName="Helvetica-Bold")
+    estilo_explic = ParagraphStyle("Explicacion", parent=estilo_texto, fontSize=8.3, leading=11.8,
+                                    spaceBefore=3, spaceAfter=11)
+    estilo_pill = ParagraphStyle("Pill", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                  fontSize=7.4, alignment=TA_CENTER)
+    estilo_pagina2_tit = ParagraphStyle("Pag2Tit", parent=styles["Heading1"], fontName="Helvetica-Bold",
+                                         fontSize=13, textColor=_rl_hex(AZUL_TXT), spaceAfter=1)
+    estilo_seccion2 = ParagraphStyle("Seccion2", parent=styles["Heading2"], fontName="Helvetica-Bold",
+                                      fontSize=10.2, textColor=_rl_hex(AZUL_TXT), spaceBefore=10, spaceAfter=5)
+    estilo_recom_tit = ParagraphStyle("RecomTit", parent=estilo_texto_bold, fontSize=8.7, textColor=_rl_hex(VERDE))
+    estilo_recom_txt = ParagraphStyle("RecomTxt", parent=estilo_texto, leftIndent=2, spaceAfter=7, leading=11.8)
     estilo_aviso = ParagraphStyle("Aviso", parent=styles["Normal"], fontName="Helvetica",
-                                   fontSize=8.5, textColor=_rl_hex("#8A5A00"), leading=12)
-    estilo_recomendacion = ParagraphStyle("Recom", parent=estilo_texto, leftIndent=8, spaceAfter=4)
+                                   fontSize=6.5, textColor=_rl_hex("#6C6C70"), leading=9)
 
     story = []
-
     _embarazada_pdf = bool(datos.get("embarazada", False))
-    _titulo_pdf = "🤰 Reporte de Orientación Nutricional Gestacional" if _embarazada_pdf else \
-                  "📄 Informe de Resultados — CIAM&amp;SUNI"
 
-    # ---------------- LOGO Y MEMBRETE INSTITUCIONAL (tamaño mediano) ----------------
+    # ---------------- helper: imagen con alto fijo (mm) y ancho proporcional ----------------
     def _imagen_flowable(ruta, alto_mm):
-        """Crea un Image de reportlab con alto fijo (mm) y ancho proporcional a partir
-        de un archivo en disco. Devuelve None si el archivo no existe o falla la lectura."""
         try:
             if not Path(ruta).exists():
                 return None
@@ -1682,217 +1697,371 @@ def generar_pdf_reporte(datos):
         except Exception:
             return None
 
-    _img_escudo_pdf = _imagen_flowable(_ESCUDO, 20)      # escudo (logo institucional) — tamaño mediano
-    _img_membrete_pdf = _imagen_flowable(_LOGO_ANCHO, 16)  # membrete (banner de escudos) — tamaño mediano
-
-    if _img_escudo_pdf is not None or _img_membrete_pdf is not None:
-        _celda_escudo = _img_escudo_pdf if _img_escudo_pdf is not None else ""
-        _celda_membrete = _img_membrete_pdf if _img_membrete_pdf is not None else ""
-        membrete_tbl = Table([[_celda_escudo, _celda_membrete]], colWidths=[30 * mm, 144 * mm])
-        membrete_tbl.setStyle(TableStyle([
+    def _membrete_institucional():
+        img_escudo = _imagen_flowable(_ESCUDO, 18)
+        img_membrete = _imagen_flowable(_LOGO_ANCHO, 14)
+        if img_escudo is None and img_membrete is None:
+            return
+        t = Table([[img_escudo or "", img_membrete or ""]], colWidths=[30 * mm, CONTENT_W - 30 * mm])
+        t.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ALIGN", (0, 0), (0, 0), "LEFT"),
-            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-            ("LEFTPADDING", (0, 0), (-1, -1), 0),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("ALIGN", (0, 0), (0, 0), "LEFT"), ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
-        story.append(membrete_tbl)
+        story.append(t)
         story.append(Spacer(1, 4))
 
-    # ---------------- ENCABEZADO TIPO CONSULTORIO ----------------
-    header_tbl = Table([
-        [Paragraph(_titulo_pdf, estilo_titulo),
-         Paragraph(f"Generado: {datos['fecha']}", estilo_fecha)],
-        [Paragraph('C.E.P. "Santa María Reina", Chiclayo — Programa de Salud Escolar', estilo_subtitulo), ""],
-    ], colWidths=[130 * mm, 44 * mm])
-    header_tbl.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("SPAN", (0, 1), (1, 1)),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
-    ]))
-    story.append(header_tbl)
-    story.append(Spacer(1, 6))
-    story.append(HRFlowable(width="100%", thickness=1.3, color=_rl_hex(VERDE)))
-    story.append(Spacer(1, 10))
-
-    if _embarazada_pdf:
-        # Bloque obligatorio por Ley Sanitaria: visible en la primera página.
-        _aviso_legal_tbl = Table([[Paragraph(
-            "<b>Este informe es un modelo de distribución de porciones y energía automatizado con fines "
-            "educativos.</b> No sustituye la evaluación, control prenatal, ni las indicaciones específicas "
-            "de su médico ginecólogo-obstetra o nutricionista clínico certificado.", estilo_aviso)]],
-            colWidths=[174 * mm])
-        _aviso_legal_tbl.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), _rl_hex("#FFF4DE")),
-            ("BOX", (0, 0), (-1, -1), 0.8, _rl_hex("#E0A800")),
-            ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ]))
-        story.append(_aviso_legal_tbl)
-        story.append(Spacer(1, 10))
-
-    # ---------------- DATOS DEL PACIENTE ----------------
-    datos_paciente = Table([[
-        Paragraph(f"<b>Paciente:</b> {datos['nombre']}", estilo_texto),
-        Paragraph(f"<b>Edad:</b> {datos['edad']} años ({datos['etapa']})", estilo_texto),
-        Paragraph(f"<b>Género:</b> {datos['genero']}", estilo_texto),
-    ]], colWidths=[58 * mm, 58 * mm, 58 * mm])
-    datos_paciente.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex("#F4F9F4")),
-        ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex(LINEA)),
-        ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-    ]))
-    story.append(datos_paciente)
-    story.append(Spacer(1, 4))
-
-    def _tabla_datos(filas, col_widths=(75 * mm, 99 * mm)):
-        t = Table(filas, colWidths=list(col_widths))
+    # ---------------- helpers de módulo (grilla 2 columnas, semáforos y tablas clave/valor) ----------------
+    def _cab_modulo(titulo, ancho=MOD_W):
+        t = Table([[Paragraph(titulo, estilo_modulo)]], colWidths=[ancho])
         t.setStyle(TableStyle([
-            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9.5),
-            ("TEXTCOLOR", (0, 0), (-1, -1), _rl_hex(GRIS_TXT)),
-            ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
+            ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(GRIS_MOD)),
+            ("LINEBEFORE", (0, 0), (0, -1), 2.6, _rl_hex(AZUL_TXT)),
             ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
         ]))
         return t
 
-    # ---------------- 1. DATOS ANTROPOMÉTRICOS ----------------
-    story.append(Paragraph("📏 Datos antropométricos", estilo_seccion))
-    story.append(_tabla_datos([
-        ["Peso", f"{datos['peso']:.2f} kg"],
-        ["Estatura", f"{datos['estatura']} cm"],
-        ["IMC", f"{datos['imc']}  —  {datos['categoria_imc']}" + (f"  (Percentil {datos['percentil']})" if datos.get("percentil") else "")],
-    ]))
-
-    # ---------------- 2. REQUERIMIENTO ENERGÉTICO ----------------
-    story.append(Paragraph("🔥 Requerimiento energético", estilo_seccion))
-    _obj_label_pdf = (f"Automático por trimestre ({datos.get('trimestre', '')}) — sin déficit ni superávit "
-                       "tipo fitness") if _embarazada_pdf else datos['objetivo']
-    story.append(_tabla_datos([
-        ["TMB (Tasa Metabólica Basal)", f"{datos['tmb']:.2f} kcal/día"],
-        ["RCD (Gasto calórico diario)", f"{datos['rcd']:.2f} kcal/día"],
-        ["Meta calórica (según objetivo)" if not _embarazada_pdf else "Meta calórica gestacional",
-         f"{datos['rcd_final']:.2f} kcal/día"],
-        ["Objetivo nutricional", _obj_label_pdf],
-    ]))
-
-    # ---------------- 3. MACRONUTRIENTES ----------------
-    _titulo_macros_pdf = "🍽️ Distribución de porciones y energía (diaria)" if _embarazada_pdf else \
-                          "🍽️ Macronutrientes recomendados (diarios)"
-    story.append(Paragraph(_titulo_macros_pdf, estilo_seccion))
-    _total_kcal_macros = max(datos['cal_prot'] + datos['cal_carb'] + datos['cal_gras'], 1)
-    _pct_prot_pdf = datos['cal_prot'] / _total_kcal_macros * 100
-    _pct_carb_pdf = datos['cal_carb'] / _total_kcal_macros * 100
-    _pct_gras_pdf = datos['cal_gras'] / _total_kcal_macros * 100
-    tabla_macros = Table([
-        ["Macronutriente", "Gramos", "Kcal/día", "% del total"],
-        ["Proteínas", f"{datos['gr_prot']:.2f} g", f"{datos['cal_prot']:.2f}", f"{_pct_prot_pdf:.0f}%"],
-        ["Carbohidratos", f"{datos['gr_carb']:.2f} g", f"{datos['cal_carb']:.2f}", f"{_pct_carb_pdf:.0f}%"],
-        ["Grasas", f"{datos['gr_gras']:.2f} g", f"{datos['cal_gras']:.2f}", f"{_pct_gras_pdf:.0f}%"],
-    ], colWidths=(58 * mm, 39 * mm, 39 * mm, 38 * mm))
-    tabla_macros.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
-        ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9.3),
-        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [rl_colors.white, _rl_hex("#F7F9F7")]),
-        ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
-        ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-    ]))
-    story.append(tabla_macros)
-
-    # ---------------- 4. ANÁLISIS SANGUÍNEO (semáforo clínico) ----------------
-    story.append(Paragraph("🩸 Análisis sanguíneo — semáforo clínico", estilo_seccion))
-    if datos["tiene_examen"]:
-        filas_examen = [["Parámetro", "Valor", "Resultado", "Estado"]]
-        estilos_extra = []
-        for i, (parametro, valor_txt, categoria) in enumerate(datos["examen"], start=1):
-            color_sem = CATEGORIA_SEMAFORO.get(categoria, "gris")
-            estilo_sem = SEMAFORO_ESTILO[color_sem]
-            filas_examen.append([parametro, valor_txt, categoria, estilo_sem["etiqueta"]])
-            estilos_extra.append(("BACKGROUND", (3, i), (3, i), _rl_hex(estilo_sem["fondo"])))
-            estilos_extra.append(("TEXTCOLOR", (3, i), (3, i), _rl_hex(estilo_sem["hex"])))
-            estilos_extra.append(("FONTNAME", (3, i), (3, i), "Helvetica-Bold"))
-        tabla_examen = Table(filas_examen, colWidths=(46 * mm, 34 * mm, 40 * mm, 34 * mm))
-        base_style = [
-            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-            ("ROWBACKGROUNDS", (0, 1), (2, -1), [rl_colors.white, _rl_hex("#F7F9F7")]),
-            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ] + estilos_extra
-        tabla_examen.setStyle(TableStyle(base_style))
-        story.append(tabla_examen)
-    else:
-        story.append(Paragraph("No se ingresaron valores de análisis sanguíneo en esta sesión.", estilo_texto))
-
-    # ---------------- 5. PLAN DE COMIDAS ----------------
-    story.append(Paragraph("🍱 Plan de comidas del día", estilo_seccion))
-    if datos["tiene_dieta"]:
-        filas_dieta = [["Comida", "Carbohidrato", "Proteína", "Grasa"]]
-        for comida, alimentos in datos["dieta"].items():
-            filas_dieta.append([comida, alimentos["Carbohidrato"], alimentos["Proteína"], alimentos["Grasa"]])
-        tabla_dieta = Table(filas_dieta, colWidths=(30 * mm, 48 * mm, 48 * mm, 28 * mm))
-        tabla_dieta.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(VERDE)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8.6),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [rl_colors.white, _rl_hex("#F7F9F7")]),
-            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5.5),
+    def _pill(texto, color_key, ancho=38 * mm):
+        est = SEMAFORO_ESTILO[color_key]
+        p = Paragraph(f"{est['emoji']} {texto}",
+                      ParagraphStyle("PillTxt", parent=estilo_pill, textColor=_rl_hex(est["hex"])))
+        t = Table([[p]], colWidths=[ancho])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(est["fondo"])),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
-        story.append(tabla_dieta)
+        return t
+
+    def _tabla_kv(filas, ancho=MOD_W, col1=46 * mm):
+        celdas = [[Paragraph(f"<b>{k}</b>", estilo_texto),
+                   v if not isinstance(v, str) else Paragraph(v, estilo_texto)] for k, v in filas]
+        t = Table(celdas, colWidths=[col1, ancho - col1])
+        t.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        return t
+
+    def _tabla_vitales(filas_vitales, ancho=MOD_W, col1=46 * mm):
+        celdas = [[Paragraph(label, estilo_texto), _pill(etiqueta, color, ancho=ancho - col1 - 2)]
+                  for label, etiqueta, color in filas_vitales]
+        t = Table(celdas, colWidths=[col1, ancho - col1])
+        t.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        return t
+
+    def _fila_doble(izq_flows, der_flows):
+        t = Table([[izq_flows, "", der_flows]], colWidths=[MOD_W, GAP_W, MOD_W])
+        t.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        return t
+
+    # ==========================================================================================
+    # PÁGINA 1 — EVALUACIÓN Y PARÁMETROS CLÍNICOS
+    # ==========================================================================================
+    _membrete_institucional()
+
+    _grupo_txt = datos.get("grupo", 'N°04 - 5° "C"')
+    header_tbl = Table([
+        [Paragraph("INFORME DE ORIENTACIÓN NUTRICIONAL CLÍNICA", estilo_titulo),
+         Paragraph(f"<b>PACIENTE:</b> {datos['nombre'].upper()}", estilo_meta)],
+        [Paragraph('Programa de Salud Escolar CIAM&amp;SUNI | C.E.P. "Santa María Reina", Chiclayo', estilo_subtitulo),
+         Paragraph(f"<b>Edad:</b> {datos['edad']} años ({datos['etapa']})", estilo_meta)],
+        ["", Paragraph(f"<b>Fecha:</b> {datos['fecha']} | <b>Grupo:</b> {_grupo_txt}", estilo_meta)],
+    ], colWidths=[CONTENT_W - 55 * mm, 55 * mm])
+    header_tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    story.append(header_tbl)
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(AZUL_TXT)))
+    story.append(Spacer(1, 9))
+
+    # ---------------- MÓDULO 1 / 2: Información personal + Signos vitales ----------------
+    _sexo_txt = "Femenino" if datos["genero"] == "Mujer" else "Masculino"
+    _estado_fisio_txt = (f"Gestacional ({datos.get('trimestre', '').replace('Primer', '1°').replace('Segundo', '2°').replace('Tercer', '3°')})"
+                          if _embarazada_pdf else "No gestante")
+    mod1 = [_cab_modulo("1. INFORMACIÓN PERSONAL Y FISIOLÓGICA"), Spacer(1, 2),
+            _tabla_kv([
+                ("Etapa de Vida", f"{datos['etapa']} ({datos['edad']} años)"),
+                ("Sexo Biológico", _sexo_txt),
+                ("Estado Fisiológico", _estado_fisio_txt),
+                ("Nivel de Actividad", datos.get("actividad", "—")),
+            ])]
+
+    def _clasif_pa_pdf(_pas, _pad):
+        if _pas <= 0 or _pad <= 0: return "Sin datos", "gris"
+        if _pas < 90 or _pad < 60: return "Baja / Hipotensión", "ambar"
+        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return "Normal / Óptima", "verde"
+        if 120 <= _pas <= 129 and _pad < 80: return "Elevado", "ambar"
+        if _pas > 180 or _pad > 120: return "Emergencia Hipertensiva", "rojo"
+        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return "Hipertensión Estadio 2", "rojo"
+        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return "Hipertensión Estadio 1", "rojo"
+        return "Normal / Óptima", "verde"
+
+    def _clasif_spo2_pdf(_s):
+        if _s <= 0: return "Sin datos", "gris"
+        if _s < 90: return "Hipoxia", "rojo"
+        if _s < 95: return "Aceptable", "ambar"
+        return "Excelente", "verde"
+
+    def _clasif_temp_pdf(_t):
+        if _t <= 34.0: return "Sin datos", "gris"
+        if _t < 35.0: return "Hipotermia", "rojo"
+        if _t < 36.1: return "Temperatura baja", "ambar"
+        if _t <= 37.2: return "Normal", "verde"
+        if _t <= 37.9: return "Febrícula", "ambar"
+        if _t <= 39.5: return "Fiebre", "rojo"
+        return "Fiebre alta", "rojo"
+
+    def _clasif_pulso_pdf(_p):
+        if _p <= 0: return "Sin datos", "gris"
+        if _p < 60: return "Bradicardia", "ambar"
+        if _p <= 100: return "Normal", "verde"
+        return "Taquicardia", "ambar"
+
+    _pas, _pad = datos.get("pas", 0), datos.get("pad", 0)
+    _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 34.0), datos.get("pulso", 0)
+    _cat_pa, _col_pa = _clasif_pa_pdf(_pas, _pad)
+    _cat_ox, _col_ox = _clasif_spo2_pdf(_spo2)
+    _cat_te, _col_te = _clasif_temp_pdf(_temp)
+    _cat_pu, _col_pu = _clasif_pulso_pdf(_pulso)
+    _hay_algun_vital = any(c != "gris" for c in (_col_pa, _col_ox, _col_te, _col_pu))
+
+    mod2 = [_cab_modulo("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)"), Spacer(1, 2),
+            _tabla_vitales([
+                ("Presión Arterial", SEMAFORO_ESTILO[_col_pa]["etiqueta"], _col_pa),
+                ("Oxigenación (SpO₂)", SEMAFORO_ESTILO[_col_ox]["etiqueta"], _col_ox),
+                ("Temperatura", SEMAFORO_ESTILO[_col_te]["etiqueta"], _col_te),
+                ("Pulso en Reposo", SEMAFORO_ESTILO[_col_pu]["etiqueta"], _col_pu),
+            ])]
+    story.append(_fila_doble(mod1, mod2))
+
+    _explic1 = (
+        "En el segundo/tercer trimestre gestacional se incrementan las demandas hemodinámicas. "
+        + ("La monitorización periódica de la presión arterial, SpO₂, pulso y temperatura es crucial "
+           "para descartar trastornos hipertensivos del embarazo." if _hay_algun_vital else
+           "La ausencia de registros de signos vitales (presión arterial, SpO₂, pulso y temperatura) "
+           "requiere control prenatal presencial para descartar desórdenes hipertensivos o "
+           "alteraciones hemodinámicas.")
+    ) if _embarazada_pdf else (
+        "Los signos vitales permiten una primera aproximación al estado fisiológico general. "
+        + ("Los valores registrados se encuentran dentro de los parámetros esperables; continúa con "
+           "controles periódicos." if _hay_algun_vital else
+           "No se registraron signos vitales en esta sesión; se recomienda completarlos para un "
+           "seguimiento clínico más preciso.")
+    )
+    story.append(Paragraph(f"<b>Explicación Clínica:</b> {_explic1}", estilo_explic))
+
+    # ---------------- MÓDULO 3 / 4: Antropometría + Requerimiento energético ----------------
+    _peso_delta = datos["peso_proyectado"] - datos["peso"]
+    _bono_gestacional = datos["rcd_final"] - datos["rcd"]
+    mod3 = [_cab_modulo("3. ANTROPOMETRÍA Y PROYECCIÓN"), Spacer(1, 2),
+            _tabla_kv([
+                ("Peso Actual", f"{datos['peso']:.2f} kg"),
+                ("Estatura", f"{datos['estatura']} cm ({datos['estatura']/100:.2f} m)"),
+                ("IMC Actual", f"{datos['imc']} kg/m²  —  {datos['categoria_imc']}"
+                 + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
+                ("Proyección (60 días)", f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)"),
+            ])]
+    _limite_cafeina_txt = "Máx. 200 mg/día" if _embarazada_pdf else "No aplica"
+    mod4 = [_cab_modulo("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES"), Spacer(1, 2),
+            _tabla_kv([
+                ("Tasa Metabólica (TMB)", f"{datos['tmb']:.2f} kcal/día"),
+                ("Gasto Calórico Diario", f"{datos['rcd']:.2f} kcal/día"),
+                ("Meta Gestacional Total" if _embarazada_pdf else "Meta Calórica",
+                 f"{datos['rcd_final']:.2f} kcal/día" + (f"  (+{_bono_gestacional:.0f} kcal)" if _embarazada_pdf and _bono_gestacional > 0 else "")),
+                ("Límite de Cafeína", _limite_cafeina_txt),
+            ])]
+    story.append(_fila_doble(mod3, mod4))
+
+    if _embarazada_pdf:
+        _explic2 = (f"Tu IMC actual de {datos['imc']} se clasifica en un rango {datos['categoria_imc'].lower()}"
+                     + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
+                     f"Para el {datos.get('trimestre', 'trimestre gestacional').lower()} se suma un bono calórico de "
+                     f"+{_bono_gestacional:.0f} kcal sobre tu tasa basal para garantizar el desarrollo fetal adecuado. "
+                     f"La ganancia ponderal estimada en 60 días ({datos['peso_proyectado']:.2f} kg) sigue una curva "
+                     "saludable, sin restricciones calóricas severas. La cafeína debe mantenerse estrictamente "
+                     "<200 mg/día para mitigar riesgos gestacionales.")
     else:
-        story.append(Paragraph("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.", estilo_texto))
+        _explic2 = (f"Tu IMC actual de {datos['imc']} se clasifica como {datos['categoria_imc'].lower()}"
+                     + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
+                     f"Tu meta calórica diaria de {datos['rcd_final']:.2f} kcal/día se calculó según tu objetivo "
+                     f"nutricional ({datos['objetivo']}), a partir de tu Tasa Metabólica Basal y tu nivel de "
+                     "actividad física.")
+    story.append(Paragraph(f"<b>Explicación Clínica:</b> {_explic2}", estilo_explic))
 
-    # ---------------- 6. PROYECCIÓN A 60 DÍAS ----------------
-    story.append(Paragraph("📈 Proyección estimada (60 días)", estilo_seccion))
-    story.append(_tabla_datos([
-        ["Peso actual", f"{datos['peso']:.2f} kg"],
-        ["Peso estimado en 60 días", f"{datos['peso_proyectado']:.2f} kg"],
+    # ---------------- MÓDULO 5 / 6: Análisis sanguíneo + Macronutrientes ----------------
+    _examen_map = {p: (v, c) for p, v, c in datos.get("examen", [])}
+    _v_hemo, _c_hemo = _examen_map.get("Hemoglobina", ("Sin datos", "Sin datos"))
+    _v_gluco, _c_gluco = _examen_map.get("Glucosa", ("Sin datos", "Sin datos"))
+    _v_hierro, _c_hierro = _examen_map.get("Hierro", ("Sin datos", "Sin datos"))
+    _v_trigli, _c_trigli = _examen_map.get("Triglicéridos", ("Sin datos", "Sin datos"))
+    _v_coles, _c_coles = _examen_map.get("Colesterol", ("Sin datos", "Sin datos"))
+    _col_hemo = CATEGORIA_SEMAFORO.get(_c_hemo, "gris")
+    _col_gluco = CATEGORIA_SEMAFORO.get(_c_gluco, "gris")
+    _col_hierro = CATEGORIA_SEMAFORO.get(_c_hierro, "gris")
+    _col_trigli = CATEGORIA_SEMAFORO.get(_c_trigli, "gris")
+    _col_coles = CATEGORIA_SEMAFORO.get(_c_coles, "gris")
+    _ORDEN_RIESGO = {"gris": 0, "verde": 1, "ambar": 2, "rojo": 3}
+    _col_lipidico = max([_col_trigli, _col_coles], key=lambda c: _ORDEN_RIESGO.get(c, 0))
+    _et_lipidico = "Sin datos" if _col_lipidico == "gris" else SEMAFORO_ESTILO[_col_lipidico]["etiqueta"]
+
+    mod5 = [_cab_modulo("5. ANÁLISIS SANGUÍNEO (SEMÁFORO)"), Spacer(1, 2),
+            _tabla_vitales([
+                ("Hemoglobina", SEMAFORO_ESTILO[_col_hemo]["etiqueta"] if datos["tiene_examen"] else "Sin datos", _col_hemo),
+                ("Glucosa Basal", SEMAFORO_ESTILO[_col_gluco]["etiqueta"] if datos["tiene_examen"] else "Sin datos", _col_gluco),
+                ("Hierro Sérico", SEMAFORO_ESTILO[_col_hierro]["etiqueta"] if datos["tiene_examen"] else "Sin datos", _col_hierro),
+                ("Perfil Lipídico", _et_lipidico, _col_lipidico),
+            ])]
+
+    _total_kcal_macros = max(datos["cal_prot"] + datos["cal_carb"] + datos["cal_gras"], 1)
+    _pct_prot_pdf = datos["cal_prot"] / _total_kcal_macros * 100
+    _pct_carb_pdf = datos["cal_carb"] / _total_kcal_macros * 100
+    _pct_gras_pdf = datos["cal_gras"] / _total_kcal_macros * 100
+    mod6 = [_cab_modulo("6. DISTRIBUCIÓN DE MACRONUTRIENTES"), Spacer(1, 2),
+            _tabla_kv([
+                (f"Proteínas ({_pct_prot_pdf:.0f}%)", f"{datos['gr_prot']:.2f} g  |  {datos['cal_prot']:.2f} kcal"),
+                (f"Carbohidratos ({_pct_carb_pdf:.0f}%)", f"{datos['gr_carb']:.2f} g  |  {datos['cal_carb']:.2f} kcal"),
+                (f"Grasas ({_pct_gras_pdf:.0f}%)", f"{datos['gr_gras']:.2f} g  |  {datos['cal_gras']:.2f} kcal"),
+                ("Energía Total", f"{datos['rcd_final']:.2f} kcal/día"),
+            ])]
+    story.append(_fila_doble(mod5, mod6))
+
+    if datos["tiene_examen"]:
+        _explic3 = ("Se registraron analíticas sanguíneas en esta sesión. "
+                     + ("En el embarazo es prioritario evaluar la Hemoglobina (descarte de anemia gestacional) y la "
+                        "Glucosa en ayunas (descarte de diabetes gestacional). " if _embarazada_pdf else
+                        "Se recomienda revisar junto a un profesional de salud cualquier valor fuera del rango normal. ")
+                     + "La distribución de macronutrientes asigna un "
+                     f"{_pct_prot_pdf:.0f}% de proteínas para el aporte estructural"
+                     + (" fetal y placentario." if _embarazada_pdf else " y de mantenimiento muscular."))
+    else:
+        _explic3 = ("No se registraron analíticas sanguíneas en esta sesión. "
+                     + ("En el embarazo es prioritario evaluar la Hemoglobina (descarte de anemia gestacional) y la "
+                        "Glucosa en ayunas (descarte de diabetes gestacional). " if _embarazada_pdf else
+                        "Se recomienda completar un panel básico (hemoglobina, glucosa, hierro y perfil lipídico) "
+                        "para un seguimiento clínico más completo. ")
+                     + "La distribución de macronutrientes asigna un "
+                     f"{_pct_prot_pdf:.0f}% de proteínas para el aporte estructural"
+                     + (" fetal y placentario." if _embarazada_pdf else " y de mantenimiento muscular."))
+    story.append(Paragraph(f"<b>Explicación Clínica:</b> {_explic3}", estilo_explic))
+
+    # ==========================================================================================
+    # PÁGINA 2 — PLAN ALIMENTARIO DETALLADO Y RECOMENDACIONES CLÍNICAS
+    # ==========================================================================================
+    story.append(PageBreak())
+    _membrete_institucional()
+
+    header2 = Table([
+        [Paragraph("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", estilo_pagina2_tit),
+         Paragraph("Página 2 de 2", estilo_meta)],
+        [Paragraph(f"Programa de Salud Escolar CIAM&amp;SUNI | Paciente: {datos['nombre'].upper()} ({datos['edad']} años)",
+                    estilo_subtitulo),
+         Paragraph(f"<b>Meta:</b> {datos['rcd_final']:.2f} kcal/día", estilo_meta)],
+    ], colWidths=[CONTENT_W - 45 * mm, 45 * mm])
+    header2.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
     ]))
-
-    # ---------------- 7. RESUMEN CLÍNICO Y RECOMENDACIONES ----------------
-    story.append(Paragraph("🩺 Resumen clínico y recomendaciones", estilo_seccion))
-    for r in datos["recomendaciones"]:
-        story.append(Paragraph(f"•  {r}", estilo_recomendacion))
-
-    # ---------------- AVISO MÉDICO ----------------
+    story.append(header2)
+    story.append(Spacer(1, 5))
+    story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(AZUL_TXT)))
     story.append(Spacer(1, 8))
-    aviso_tbl = Table([[Paragraph(
-        "<b>Recordar:</b> hable sobre su categoría de IMC y sus resultados con su proveedor de atención "
-        "médica, ya que estos valores pueden estar relacionados con su salud y bienestar general. Este "
-        "informe es una herramienta de detección orientativa y educativa; no reemplaza una evaluación "
-        "médica o nutricional profesional y no pretende diagnosticar enfermedades ni dolencias.",
-        estilo_aviso)]], colWidths=[178 * mm])
-    aviso_tbl.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex("#FFF3E5")),
-        ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex("#FFD59E")),
-        ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-    ]))
-    story.append(aviso_tbl)
 
+    # ---------------- 7. PLAN ALIMENTARIO (3 tablas cromáticas, datos reales seleccionados) ----------------
+    story.append(Paragraph("7. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", estilo_seccion2))
+
+    def _tabla_macro_color(macro_key, titulo_col, color_cab, color_fila):
+        filas_html = [["Momento", f"Alimento ({titulo_col})", "Kcal", "Porción Corregida", "Gramos Finales"]]
+        for fila in datos["dieta_filas"]:
+            d = fila[macro_key]
+            filas_html.append([fila["momento"], d["alimento"], f"{d['kcal']:.0f} kcal",
+                                f"{d['porcion']:.1f} kcal", f"{d['gramos']:.1f} g"])
+        _tot = datos["dieta_totales"][macro_key]
+        filas_html.append(["TOTAL", "", f"{_tot['kcal']:.0f} kcal", f"{_tot['porcion']:.1f} kcal", "—"])
+        t = Table(filas_html, colWidths=[24 * mm, 62 * mm, 24 * mm, 38 * mm, 30 * mm])
+        n = len(filas_html)
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(color_cab)),
+            ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("ALIGN", (2, 0), (-1, -1), "CENTER"),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -2), [rl_colors.white, _rl_hex(color_fila)]),
+            ("SPAN", (0, n - 1), (1, n - 1)),
+            ("BACKGROUND", (0, n - 1), (-1, n - 1), _rl_hex(color_cab)),
+            ("TEXTCOLOR", (0, n - 1), (-1, n - 1), rl_colors.white),
+            ("FONTNAME", (0, n - 1), (-1, n - 1), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        return t
+
+    if datos["tiene_dieta"]:
+        story.append(_tabla_macro_color("Carbohidrato", "Carbohidrato", AZUL_CARB, AZUL_CARB_CLARO))
+        story.append(Spacer(1, 8))
+        story.append(_tabla_macro_color("Proteína", "Proteína", MORADO_PROT, MORADO_PROT_CLARO))
+        story.append(Spacer(1, 8))
+        story.append(_tabla_macro_color("Grasa", "Grasa", NARANJA_GRA, NARANJA_GRA_CLARO))
+        story.append(Spacer(1, 6))
+    else:
+        story.append(Paragraph("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
+                                estilo_texto))
+        story.append(Spacer(1, 6))
+
+    # ---------------- 8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL ----------------
+    story.append(Paragraph("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", estilo_seccion2))
+    for r in datos["recomendaciones"]:
+        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+
+    if _embarazada_pdf:
+        story.append(Paragraph(
+            "•  <b>Seguridad e Inocuidad Alimentaria (Norma ACOG):</b> Durante la gestación, todos los lácteos "
+            "deben ser pasteurizados. Consumir carnes y huevos completamente cocidos para prevenir infecciones "
+            "por <i>Listeria monocytogenes</i> o <i>Toxoplasma gondii</i>.", estilo_recom_txt))
+        story.append(Paragraph(
+            "•  <b>Micronutrientes Clave:</b> Acompañar el plan con la suplementación indicada por su "
+            "ginecólogo-obstetra (Sulfato Ferroso + Ácido Fólico). Consumir cítricos (vitamina C) junto con las "
+            "proteínas para optimizar la absorción del hierro vegetal.", estilo_recom_txt))
+        story.append(Paragraph(
+            "•  <b>Hidratación:</b> Mantener un consumo de 2.5 a 3.0 litros de agua al día para sostener el "
+            "volumen plasmático y el líquido amniótico.", estilo_recom_txt))
+    else:
+        story.append(Paragraph(
+            "•  <b>Hidratación:</b> Mantener un consumo adecuado de agua a lo largo del día (aprox. 30-35 ml "
+            "por kg de peso corporal).", estilo_recom_txt))
+        story.append(Paragraph(
+            "•  <b>Fraccionamiento:</b> Respetar el esquema de 5 comidas diarias (3 principales y 2 meriendas) "
+            "para evitar fluctuaciones de glucosa y favorecer la saciedad.", estilo_recom_txt))
+
+    # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
     story.append(Spacer(1, 10))
     story.append(HRFlowable(width="100%", thickness=0.6, color=_rl_hex(LINEA)))
     story.append(Spacer(1, 4))
     story.append(Paragraph(
-        "Informe generado por CIAM&amp;SUNI — Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
-        "C.E.P. Santa María Reina, Chiclayo. Ningún dato se almacena en servidores externos.",
-        estilo_subtitulo))
+        "<b>AVISO MÉDICO-LEGAL IMPORTANTE:</b> Este documento representa un informe automatizado de "
+        "distribución de porciones y energía generado por el aplicativo CIAM&amp;SUNI con fines estrictamente "
+        "educativos y de investigación escolar (Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
+        "C.E.P. \"Santa María Reina\", Chiclayo). NO SUSTITUYE LA EVALUACIÓN CLÍNICA PRENATAL, EL DIAGNÓSTICO "
+        "MÉDICO NI LAS INDICACIONES PRESCRIPTIVAS DE UN MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA CLÍNICO "
+        "COLEGIADO. Ningún dato personal o de salud es almacenado en servidores externos.", estilo_aviso))
 
     doc.build(story)
     buffer.seek(0)
@@ -7910,14 +8079,33 @@ elif hoja_activa == "📄 MI REPORTE":
         ("Colesterol", f"{coles} mg/dL", _cat_coles_r),
         ("Hierro", f"{hierro} µg/dL", _cat_hierro_r),
     ]
-    _dieta_pdf = {}
+    # ---- Reconstrucción fiel de las 3 tablas de macronutrientes (idéntica lógica a la Hoja 9)
+    # a partir de lo que el usuario eligió en los st.selectbox (persistido en st.session_state) ----
+    _PCT_MACRO_MOMENTO_PDF = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
+    _dieta_filas_pdf = []
+    _dieta_totales_pdf = {
+        "Carbohidrato": {"kcal": 0.0, "porcion": 0.0},
+        "Proteína": {"kcal": 0.0, "porcion": 0.0},
+        "Grasa": {"kcal": 0.0, "porcion": 0.0},
+    }
     if _tiene_dieta:
         for comida in DIETA:
-            _dieta_pdf[comida] = {
-                "Carbohidrato": st.session_state.get(f"c_{comida}", "—"),
-                "Proteína": st.session_state.get(f"p_{comida}", "—"),
-                "Grasa": st.session_state.get(f"g_{comida}", "—"),
-            }
+            fila_macro_pdf = {"momento": comida}
+            for macro, prefijo_ss in [("Carbohidrato", "c"), ("Proteína", "p"), ("Grasa", "g")]:
+                alimento_sel = st.session_state.get(f"{prefijo_ss}_{comida}", None)
+                opciones_macro = DIETA[comida][macro]
+                if alimento_sel not in opciones_macro:
+                    alimento_sel = next(iter(opciones_macro))  # fallback: primera opción disponible
+                kcal_alimento = opciones_macro[alimento_sel]
+                porcion_kcal = round(porciones[comida]["kcal"] * _PCT_MACRO_MOMENTO_PDF[macro], 2)
+                gramos_finales = round((porcion_kcal / kcal_alimento) * 100, 1) if kcal_alimento else 0.0
+                fila_macro_pdf[macro] = {
+                    "alimento": alimento_sel, "kcal": kcal_alimento,
+                    "porcion": porcion_kcal, "gramos": gramos_finales,
+                }
+                _dieta_totales_pdf[macro]["kcal"] += kcal_alimento
+                _dieta_totales_pdf[macro]["porcion"] += porcion_kcal
+            _dieta_filas_pdf.append(fila_macro_pdf)
 
     _datos_pdf = {
         "fecha": _fecha_reporte,
@@ -7925,6 +8113,8 @@ elif hoja_activa == "📄 MI REPORTE":
         "edad": edad,
         "etapa": etapa,
         "genero": genero,
+        "grupo": 'N°04 - 5° "C"',
+        "actividad": actividad,
         "peso": peso,
         "estatura": estatura,
         "imc": imc,
@@ -7941,8 +8131,11 @@ elif hoja_activa == "📄 MI REPORTE":
         "gr_gras": gr_gras, "cal_gras": cal_gras,
         "tiene_examen": _tiene_examen,
         "examen": _examen_pdf,
+        "hemo": hemo, "gluco": gluco, "hierro": hierro, "trigli": trigli, "coles": coles,
+        "pas": pas, "pad": pad, "spo2": spo2, "temp_corp": temp_corp, "pulso": pulso,
         "tiene_dieta": _tiene_dieta,
-        "dieta": _dieta_pdf,
+        "dieta_filas": _dieta_filas_pdf,
+        "dieta_totales": _dieta_totales_pdf,
         "peso_proyectado": _peso_proyectado_r,
         "recomendaciones": _recomendaciones,
     }
