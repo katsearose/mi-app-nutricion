@@ -7244,6 +7244,12 @@ elif hoja_activa == "9.-DIETA":
             "Grasa": gras_sel,
         }
 
+    # Guardado explícito y estable del plan elegido: no dependemos de que las claves individuales
+    # c_/p_/g_ de cada selectbox sigan existiendo o coincidiendo con las opciones filtradas (p.ej.
+    # si el modo Embarazo se activa/desactiva y cambia la lista de alimentos disponibles). Este
+    # diccionario es la única fuente de verdad que usan luego "Mi Reporte" y el PDF.
+    st.session_state["dieta_guardada"] = seleccion
+
     # % de cada macronutriente dentro del total de calorías de CADA momento (igual que N/S/X del Excel: 50/20/30%)
     PCT_MACRO_MOMENTO = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
 
@@ -7997,17 +8003,17 @@ elif hoja_activa == "📄 MI REPORTE":
         _cat_hemo_r = _cat_trigli_r = _cat_gluco_r = _cat_coles_r = _cat_hierro_r = "Introducir datos"
 
     # --- Bloque 3: Plan de dieta armado (si el usuario visitó la Hoja 9) ---
-    # Antes exigía que las 15 claves (c_/p_/g_ x 5 comidas) estuvieran en session_state con `all(...)`,
-    # lo que ocultaba todo el bloque si faltaba una sola. Ahora basta con que exista AL MENOS una
-    # selección (`any(...)`) y se completan las comidas faltantes con su primera opción disponible.
+    # Usamos st.session_state["dieta_guardada"], que la Hoja 9 escribe de forma explícita cada vez
+    # que se renderiza (ver comentario allá). Es una única fuente de verdad — no depende de que las
+    # 15 claves sueltas de los selectbox (c_/p_/g_ x 5 comidas) sigan existiendo o siendo válidas,
+    # por lo que el plan ya NO se reinicia al cambiar de hoja dentro de la misma sesión.
     st.markdown("#### 🍱 Tu plan de comidas del día")
-    _tiene_dieta = any(f"{pfx}_{comida}" in st.session_state
-                        for comida in DIETA for pfx in ("c", "p", "g"))
+    _dieta_guardada_r = st.session_state.get("dieta_guardada")
+    _tiene_dieta = bool(_dieta_guardada_r)
 
     # ---- Reconstrucción fiel de las 3 tablas de macronutrientes (idéntica lógica a la Hoja 9)
-    # a partir de lo que el usuario eligió en los st.selectbox (persistido en st.session_state).
-    # Este mismo cálculo se reutiliza más abajo para armar el PDF, así los datos del reporte
-    # en pantalla y los del PDF siempre coinciden. ----
+    # a partir del plan guardado. Este mismo cálculo se reutiliza más abajo para armar el PDF,
+    # así los datos del reporte en pantalla y los del PDF siempre coinciden. ----
     _ICONOS_COMIDA_R9 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
     _PCT_MACRO_MOMENTO_PDF = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
     _dieta_filas_pdf = []
@@ -8019,8 +8025,9 @@ elif hoja_activa == "📄 MI REPORTE":
     if _tiene_dieta:
         for comida in DIETA:
             fila_macro_pdf = {"momento": comida}
+            _sel_comida = _dieta_guardada_r.get(comida, {})
             for macro, prefijo_ss in [("Carbohidrato", "c"), ("Proteína", "p"), ("Grasa", "g")]:
-                alimento_sel = st.session_state.get(f"{prefijo_ss}_{comida}", None)
+                alimento_sel = _sel_comida.get(macro)
                 opciones_macro = DIETA[comida][macro]
                 if alimento_sel not in opciones_macro:
                     alimento_sel = next(iter(opciones_macro))  # fallback: primera opción disponible
