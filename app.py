@@ -1994,7 +1994,7 @@ def generar_pdf_reporte(datos):
             filas_html.append([fila["momento"], d["alimento"], f"{d['kcal']:.0f} kcal",
                                 f"{d['porcion']:.1f} kcal", f"{d['gramos']:.1f} g"])
         _tot = datos["dieta_totales"][macro_key]
-        filas_html.append(["TOTAL", "", f"{_tot['kcal']:.0f} kcal", f"{_tot['porcion']:.1f} kcal", "—"])
+        filas_html.append(["TOTAL", "", f"{_tot['kcal']:.0f} kcal", f"{_tot['porcion']:.1f} kcal", f"{_tot['gramos']:.1f} g"])
         t = Table(filas_html, colWidths=[24 * mm, 62 * mm, 24 * mm, 38 * mm, 30 * mm])
         n = len(filas_html)
         t.setStyle(TableStyle([
@@ -7250,6 +7250,7 @@ elif hoja_activa == "9.-DIETA":
     filas = []
     suma_kcal_carb = suma_kcal_prot = suma_kcal_gras = 0
     suma_porcion_carb = suma_porcion_prot = suma_porcion_gras = 0
+    suma_gramos_carb = suma_gramos_prot = suma_gramos_gras = 0
 
     for comida, alimentos in seleccion.items():
         fila = {"Momento": comida}
@@ -7266,6 +7267,8 @@ elif hoja_activa == "9.-DIETA":
         suma_kcal_carb += fila["kcal (Carb)"]; suma_porcion_carb += fila["Porción corregida (Carb)"]
         suma_kcal_prot += fila["kcal (Prot)"]; suma_porcion_prot += fila["Porción corregida (Prot)"]
         suma_kcal_gras += fila["kcal (Gras)"]; suma_porcion_gras += fila["Porción corregida (Gras)"]
+        suma_gramos_carb += fila["Gramos (Carb)"]; suma_gramos_prot += fila["Gramos (Prot)"]
+        suma_gramos_gras += fila["Gramos (Gras)"]
 
     total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
 
@@ -7274,7 +7277,7 @@ elif hoja_activa == "9.-DIETA":
     # =====================================================================================
     st.markdown('<div class="menu-titulo-grande">🍽️ MUESTRA DE TU DIETA TIPO MENÚ</div>', unsafe_allow_html=True)
 
-    def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion):
+    def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
         """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
         _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
         filas_html = ""
@@ -7292,7 +7295,7 @@ elif hoja_activa == "9.-DIETA":
                 <td class="dm-momento" colspan="2">TOTAL</td>
                 <td>{suma_kcal:.0f} kcal</td>
                 <td>{suma_porcion:.1f} kcal</td>
-                <td>—</td>
+                <td>{suma_gramos:.1f} g</td>
             </tr>"""
         html = f"""
         <div class="dieta-menu-wrap {clase_css}">
@@ -7309,9 +7312,9 @@ elif hoja_activa == "9.-DIETA":
         """
         st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
 
-    _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb)
-    _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot)
-    _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras)
+    _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
+    _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
+    _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras, suma_gramos_gras)
 
     # ---- Barra final destacada: suma total = RCD ----
     _diferencia_total = abs(total_general - rcd_final)
@@ -7994,16 +7997,25 @@ elif hoja_activa == "📄 MI REPORTE":
         _cat_hemo_r = _cat_trigli_r = _cat_gluco_r = _cat_coles_r = _cat_hierro_r = "Introducir datos"
 
     # --- Bloque 3: Plan de dieta armado (si el usuario visitó la Hoja 9) ---
+    # Antes exigía que las 15 claves (c_/p_/g_ x 5 comidas) estuvieran en session_state con `all(...)`,
+    # lo que ocultaba todo el bloque si faltaba una sola. Ahora basta con que exista AL MENOS una
+    # selección (`any(...)`) y se completan las comidas faltantes con su primera opción disponible.
     st.markdown("#### 🍱 Tu plan de comidas del día")
-    _tiene_dieta = all(f"c_{comida}" in st.session_state for comida in DIETA)
+    _tiene_dieta = any(f"{pfx}_{comida}" in st.session_state
+                        for comida in DIETA for pfx in ("c", "p", "g"))
     if _tiene_dieta:
         filas_r = []
         for comida in DIETA:
+            def _sel_o_defecto(prefijo, macro):
+                _v = st.session_state.get(f"{prefijo}_{comida}")
+                if _v in DIETA[comida][macro]:
+                    return _v
+                return next(iter(DIETA[comida][macro]))
             filas_r.append({
                 "Comida": comida,
-                "Carbohidrato": st.session_state.get(f"c_{comida}", "—"),
-                "Proteína": st.session_state.get(f"p_{comida}", "—"),
-                "Grasa": st.session_state.get(f"g_{comida}", "—"),
+                "Carbohidrato": _sel_o_defecto("c", "Carbohidrato"),
+                "Proteína": _sel_o_defecto("p", "Proteína"),
+                "Grasa": _sel_o_defecto("g", "Grasa"),
             })
         tabla_bonita(pd.DataFrame(filas_r), 9)
     else:
@@ -8084,9 +8096,9 @@ elif hoja_activa == "📄 MI REPORTE":
     _PCT_MACRO_MOMENTO_PDF = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
     _dieta_filas_pdf = []
     _dieta_totales_pdf = {
-        "Carbohidrato": {"kcal": 0.0, "porcion": 0.0},
-        "Proteína": {"kcal": 0.0, "porcion": 0.0},
-        "Grasa": {"kcal": 0.0, "porcion": 0.0},
+        "Carbohidrato": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
+        "Proteína": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
+        "Grasa": {"kcal": 0.0, "porcion": 0.0, "gramos": 0.0},
     }
     if _tiene_dieta:
         for comida in DIETA:
@@ -8105,6 +8117,7 @@ elif hoja_activa == "📄 MI REPORTE":
                 }
                 _dieta_totales_pdf[macro]["kcal"] += kcal_alimento
                 _dieta_totales_pdf[macro]["porcion"] += porcion_kcal
+                _dieta_totales_pdf[macro]["gramos"] += gramos_finales
             _dieta_filas_pdf.append(fila_macro_pdf)
 
     _datos_pdf = {
