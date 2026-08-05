@@ -31,8 +31,9 @@ from reportlab.lib import colors as rl_colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether, Image
 )
+from reportlab.lib.utils import ImageReader
 
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
 
@@ -1665,6 +1666,40 @@ def generar_pdf_reporte(datos):
     _embarazada_pdf = bool(datos.get("embarazada", False))
     _titulo_pdf = "🤰 Reporte de Orientación Nutricional Gestacional" if _embarazada_pdf else \
                   "📄 Informe de Resultados — CIAM&amp;SUNI"
+
+    # ---------------- LOGO Y MEMBRETE INSTITUCIONAL (tamaño mediano) ----------------
+    def _imagen_flowable(ruta, alto_mm):
+        """Crea un Image de reportlab con alto fijo (mm) y ancho proporcional a partir
+        de un archivo en disco. Devuelve None si el archivo no existe o falla la lectura."""
+        try:
+            if not Path(ruta).exists():
+                return None
+            lector = ImageReader(str(ruta))
+            ancho_px, alto_px = lector.getSize()
+            alto = alto_mm * mm
+            ancho = alto * (ancho_px / alto_px) if alto_px else alto
+            return Image(str(ruta), width=ancho, height=alto)
+        except Exception:
+            return None
+
+    _img_escudo_pdf = _imagen_flowable(_ESCUDO, 20)      # escudo (logo institucional) — tamaño mediano
+    _img_membrete_pdf = _imagen_flowable(_LOGO_ANCHO, 16)  # membrete (banner de escudos) — tamaño mediano
+
+    if _img_escudo_pdf is not None or _img_membrete_pdf is not None:
+        _celda_escudo = _img_escudo_pdf if _img_escudo_pdf is not None else ""
+        _celda_membrete = _img_membrete_pdf if _img_membrete_pdf is not None else ""
+        membrete_tbl = Table([[_celda_escudo, _celda_membrete]], colWidths=[30 * mm, 144 * mm])
+        membrete_tbl.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (0, 0), (0, 0), "LEFT"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        story.append(membrete_tbl)
+        story.append(Spacer(1, 4))
 
     # ---------------- ENCABEZADO TIPO CONSULTORIO ----------------
     header_tbl = Table([
