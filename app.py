@@ -1542,10 +1542,13 @@ def formula_badge(formula, autor="", referencia="", icono="ℹ️", texto="Ver f
             f'<span class="formula-badge-txt">{texto}</span></span>')
 
 
+@st.cache_data(show_spinner=False)
 def _resolver_imagen(ruta):
     """Busca una imagen probando varias ubicaciones (la ruta indicada, directamente en /assets,
     y en /assets/hojas) y varias extensiones/mayúsculas (.jpg, .JPG, .jpeg, .png, etc.).
-    Devuelve la primera ruta que exista, o None si no encuentra nada."""
+    Devuelve la primera ruta que exista, o None si no encuentra nada.
+    Cacheado: el sistema de archivos de /assets no cambia durante la sesión, así que evitamos
+    repetir estas búsquedas en disco en cada rerun (mejora notable la velocidad de la app)."""
     ruta = Path(ruta)
     nombre_base = ruta.stem
     carpetas_candidatas = [ruta.parent, ASSETS_DIR, ASSETS_DIR / "hojas"]
@@ -1565,8 +1568,10 @@ def _resolver_imagen(ruta):
     return None
 
 
+@st.cache_data(show_spinner=False)
 def _img_to_b64(ruta):
-    """Convierte una imagen (ruta en disco) a base64. Devuelve None si no existe o falla."""
+    """Convierte una imagen (ruta en disco) a base64. Devuelve None si no existe o falla.
+    Cacheado para no releer/recodificar el mismo archivo en cada rerun."""
     try:
         return base64.b64encode(Path(ruta).read_bytes()).decode()
     except Exception:
@@ -2022,40 +2027,29 @@ PERCENTIL_HOMBRE = {
 # Alimentos por comida y macronutriente: {alimento: kcal base} — EXACTOS del Excel (Hoja 9)
 DIETA = {
     "Desayuno": {
-        "Carbohidrato": {"Avena cocida": 150, "Pan integral": 70, "Cereal integral": 110, "Manzana": 95,
-                          "Tostada de pan de centeno": 65, "Pera": 100, "Batata cocida": 90, "Mandarina": 45},
-        "Proteína": {"Huevo hervido": 155, "Claras de huevo": 52, "Leche descremada": 34,
-                     "Queso cottage": 98, "Queso ricotta": 174, "Jamón serrano": 241},
-        "Grasa": {"Palta": 160, "Almendras": 79, "Mantequilla de maní": 88,
-                  "Semillas de chía": 86, "Nueces": 64, "Crema de almendra": 64},
+        "Carbohidrato": {"Avena cocida": 150, "Pan integral": 70, "Cereal integral": 110, "Manzana": 95, "Tostada de pan de centeno": 65, "Pera": 100, "Batata cocida": 90, "Mandarina": 45, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
+        "Proteína": {"Huevo hervido": 155, "Claras de huevo": 52, "Leche descremada": 34, "Queso cottage": 98, "Queso ricotta": 174, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
+        "Grasa": {"Palta": 160, "Almendras": 573.33, "Mantequilla de maní": 88, "Semillas de chía": 86, "Nueces": 653.57, "Crema de almendra": 64, "Mayonesa": 316.67, "Maní": 500, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Merienda 1": {
-        "Carbohidrato": {"Piña": 50, "Manzana verde": 52, "Uvas": 69, "Kiwi": 61,
-                          "Pan pita integral": 275, "Zanahoria cruda": 41},
-        "Proteína": {"Yogur natural": 61, "Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241},
-        "Grasa": {"Pistachos": 52, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 104},
+        "Carbohidrato": {"Piña": 50, "Manzana verde": 52, "Uvas": 69, "Kiwi": 61, "Pan pita integral": 275, "Zanahoria cruda": 41, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
+        "Proteína": {"Yogur natural": 61, "Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
+        "Grasa": {"Pistachos": 52, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 104, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Almuerzo": {
-        "Carbohidrato": {"Arroz integral": 123, "Quinoa cocida": 120, "Couscous cocido": 112,
-                          "Garbanzos cocidos": 164, "Lentejas": 116},
-        "Proteína": {"Pechuga de pollo": 165, "Fillete de res magra": 217, "Pescado blanco": 96,
-                     "Salmón a la plancha": 208, "Pavo al horno": 135, "Bacalao a la plancha": 105},
-        "Grasa": {"Aceite de oliva": 104, "Aceitunas verdes": 45, "Queso parmesano": 91,
-                  "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 84},
+        "Carbohidrato": {"Arroz integral": 123, "Quinoa cocida": 120, "Couscous cocido": 112, "Garbanzos cocidos": 164, "Lentejas": 116, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
+        "Proteína": {"Pechuga de pollo": 165, "Fillete de res magra": 217, "Pescado blanco": 96, "Salmón a la plancha": 208, "Pavo al horno": 135, "Bacalao a la plancha": 105, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
+        "Grasa": {"Aceite de oliva": 104, "Aceitunas verdes": 45, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 84, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Merienda 2": {
-        "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89,
-                         "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266},
-        "Proteína": {"Queso ricotta": 174, "Yogurt griego": 97, "Pollo desmenuzado": 165,
-                     "Yogur descremado": 34, "Clara de huevo": 52},
-        "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94},
+        "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89, "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
+        "Proteína": {"Queso ricotta": 174, "Yogurt griego": 97, "Pollo desmenuzado": 165, "Yogur descremado": 34, "Clara de huevo": 52, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
+        "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Cena": {
-        "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Verduras mixtas": 65, "Palomitas de maíz": 387,
-                          "Calabaza asada": 45, "Brócoli cocido": 35, "Tomates cherry": 18, "Espinaca salteada": 41},
-        "Proteína": {"Huevos revueltos": 148, "Sardinas": 208, "Pechuga de pavo": 135,
-                     "Pechuga de pollo": 165, "Filete de pescado blanco": 96},
-        "Grasa": {"Aceitunas": 55, "Queso crema": 202, "Aceite de aguacate": 84, "Semillas de girasol": 54},
+        "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Verduras mixtas": 65, "Palomitas de maíz": 387, "Calabaza asada": 45, "Brócoli cocido": 35, "Tomates cherry": 18, "Espinaca salteada": 41, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
+        "Proteína": {"Huevos revueltos": 148, "Sardinas": 208, "Pechuga de pavo": 135, "Pechuga de pollo": 165, "Filete de pescado blanco": 96, "Pechuga de pollo (sin piel)": 165, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
+        "Grasa": {"Aceitunas": 55, "Queso crema": 202, "Aceite de aguacate": 84, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
 }
 
@@ -3684,7 +3678,10 @@ def mostrar_sticker(ruta, ancho=170):
     if ruta.exists():
         st.image(str(ruta), width=ancho)
 
+@st.cache_data(show_spinner=False)
 def _img_b64(path):
+    """Codifica una imagen a base64 UNA sola vez (cacheado) — evita releer/recodificar
+    el mismo archivo en cada rerun de Streamlit, lo que agiliza el cambio entre pestañas."""
     try:
         return base64.b64encode(Path(path).read_bytes()).decode()
     except Exception:
@@ -3692,10 +3689,12 @@ def _img_b64(path):
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
 
-# --- 1. MEMBRETE INSTITUCIONAL — banner ancho del colegio, arriba de todo ---
+# --- 1. MEMBRETE INSTITUCIONAL — banner ancho del colegio, arriba de todo (tamaño moderado) ---
 if _LOGO_ANCHO.exists():
     st.markdown('<div style="text-align:center;margin-bottom:14px;">', unsafe_allow_html=True)
-    st.image(str(_LOGO_ANCHO), use_container_width=True)
+    _col_memb_l, _col_memb_c, _col_memb_r = st.columns([1, 3, 1])
+    with _col_memb_c:
+        st.image(str(_LOGO_ANCHO), use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 2. LOGO (escudo) a la izquierda + HERO CIAM&SUNI (bloque verde) a la derecha, más ancho ---
@@ -4410,27 +4409,36 @@ if hoja_activa == "0.-DATOS":
 
     st.divider()
 
-    st.markdown("""
-    <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#007AFF 0%,#5AC8FA 45%,#34C759 100%);
-                border-radius:28px;padding:30px 34px;color:#FFFFFF;margin-bottom:18px;
-                box-shadow:0 18px 40px rgba(0,122,255,0.28);">
-        <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:5.5rem;opacity:0.18;">📝✨</div>
-        <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">Paso 1 de tu plan</div>
-        <h1 style="margin:6px 0 6px 0;font-weight:900;letter-spacing:-0.02em;">📝 ¡Introduce tus datos!</h1>
-        <p style="margin:0;font-size:1rem;opacity:0.96;max-width:600px;">El punto de partida: llena el formulario "📝 Llenar / Editar Mis Datos" en el panel lateral izquierdo (sidebar) — se mantiene visible en todas las hojas. Aquí abajo verás un resumen de lo que ya registraste. 🌈</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    col_priv, col_escudo = st.columns([3, 1])
-    with col_priv:
-        st.markdown("""
-        <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:12px 20px;height:100%;">
-        🔒 <b style="color:#007AFF;">Tus datos son privados:</b> solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.
+    col_escudo_intro, col_intro_hero = st.columns([1, 3.2])
+    with col_escudo_intro:
+        _escudo_b64_intro = _img_b64(_ESCUDO) if _ESCUDO.exists() else None
+        _escudo_intro_tag = (f'<img src="data:image/png;base64,{_escudo_b64_intro}" '
+                              f'style="max-width:80%;max-height:170px;object-fit:contain;" />') if _escudo_b64_intro else ""
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#FFFFFF 0%,#F4F9F4 100%);border-radius:26px;
+        padding:18px;box-shadow:0 6px 20px rgba(30,86,49,0.10);border:1.5px solid rgba(30,86,49,0.14);
+        height:100%;min-height:210px;display:flex;align-items:center;justify-content:center;">
+        {_escudo_intro_tag}
         </div>
         """, unsafe_allow_html=True)
-    with col_escudo:
-        if _ESCUDO.exists():
-            st.image(str(_ESCUDO), width=90)
+    with col_intro_hero:
+        st.markdown("""
+        <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#007AFF 0%,#5AC8FA 45%,#34C759 100%);
+                    border-radius:28px;padding:30px 34px;color:#FFFFFF;height:100%;min-height:210px;box-sizing:border-box;
+                    box-shadow:0 18px 40px rgba(0,122,255,0.28);">
+            <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:5.5rem;opacity:0.18;">📝✨</div>
+            <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">Paso 1 de tu plan</div>
+            <h1 style="margin:6px 0 6px 0;font-weight:900;letter-spacing:-0.02em;">📝 ¡Introduce tus datos!</h1>
+            <p style="margin:0;font-size:1rem;opacity:0.96;max-width:600px;">El punto de partida: llena el formulario "📝 Llenar / Editar Mis Datos" en el panel lateral izquierdo (sidebar) — se mantiene visible en todas las hojas. Aquí abajo verás un resumen de lo que ya registraste. 🌈</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
+    st.markdown("""
+    <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:12px 20px;">
+    🔒 <b style="color:#007AFF;">Tus datos son privados:</b> solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.
+    </div>
+    """, unsafe_allow_html=True)
 
 
     st.divider()
@@ -7639,7 +7647,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         _logo_img_tag = ""
         _logo_path = _LOGO_CIRCULAR if _LOGO_CIRCULAR.exists() else (_ESCUDO if _ESCUDO.exists() else None)
         if _logo_path is not None:
-            _logo_b64 = base64.b64encode(_logo_path.read_bytes()).decode()
+            _logo_b64 = _img_b64(_logo_path)
             _logo_img_tag = f'<img src="data:image/png;base64,{_logo_b64}" style="width:88px;height:88px;border-radius:50%;object-fit:cover;margin-bottom:10px;box-shadow:0 4px 14px rgba(0,0,0,0.10);" />'
         st.markdown(f"""
         <div class="about-hero-card">
