@@ -3862,21 +3862,21 @@ OPCIONES_HOJAS = [
 
 # Ícono + etiqueta corta para cada píldora del sidebar (15 secciones, siempre visibles)
 ETIQUETAS_NAV = {
-    "0.-DATOS":                    ("⚙️", "Mis Datos"),
-    "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Análisis Sanguíneo"),
+    "0.-DATOS":                    ("👤", "Información Personal"),
+    "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Análisis de Sangre"),
     "1B.-ESTADO FISIOLÓGICO":      ("❤️", "Estado Fisiológico"),
-    "2.-IMC Y PERCENTIL":          ("⚖️", "IMC y Percentil"),
-    "3.-TMB":                      ("🔥", "TMB"),
-    "4.-RCD":                      ("⚡", "RCD"),
+    "2.-IMC Y PERCENTIL":          ("⚖️", "Índice de Masa Corporal (IMC)"),
+    "3.-TMB":                      ("🔥", "Tasa Metabólica Basal"),
+    "4.-RCD":                      ("⚡", "Requerimiento Calórico Diario"),
     "5.-CONTROL DE PESO":          ("📈", "Control de Peso"),
-    "6.-MACRONUTRIENTES":          ("🥗", "Macronutrientes"),
-    "7.-PORCIONES":                ("🍎", "Porciones del Día"),
-    "8.-FATSECRET":                ("🇵🇪", "Base de Alimentos"),
-    "9.-DIETA":                    ("📝", "Dieta"),
-    "12.-APORTE 2: CAFEÍNA":       ("☕", "Límite de Cafeína"),
-    "13.-LÍNEA DE TIEMPO":         ("🎯", "¿Cómo cambia tu peso?"),
-    "📄 MI REPORTE":               ("📄", "Mi Reporte"),
-    "🎓 SOBRE NOSOTRAS":           ("👥", "Sobre Nosotros"),
+    "6.-MACRONUTRIENTES":          ("🥗", "Distribución de Macronutrientes"),
+    "7.-PORCIONES":                ("🍎", "Porciones Diarias Recomendadas"),
+    "8.-FATSECRET":                ("🥬", "Base de Alimentos"),
+    "9.-DIETA":                    ("📝", "Plan de Alimentación"),
+    "12.-APORTE 2: CAFEÍNA":       ("☕", "Límite de Consumo de Cafeína"),
+    "13.-LÍNEA DE TIEMPO":         ("📊", "Proyección del Peso"),
+    "📄 MI REPORTE":               ("📄", "Reporte Nutricional"),
+    "🎓 SOBRE NOSOTRAS":           ("👥", "Acerca de Nosotros"),
 }
 
 _DEFAULTS_SESION = {
@@ -5233,59 +5233,68 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
-    if not (genero == "Mujer" and embarazada):
-        hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
-                       "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
+    hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
+                   "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
 
-        # --- 1. ¿Qué es la TMB? -------------------------------------------------------------
-        st.markdown("#### 😴 ¿Qué es la TMB?")
-        ilustracion_que_es_tmb()
+    # --- 1. ¿Qué es la TMB? -------------------------------------------------------------
+    st.markdown("#### 😴 ¿Qué es la TMB?")
+    ilustracion_que_es_tmb()
 
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
-        st.markdown("#### 🔥 ¿Cuál es tu resultado?")
-        tarjeta_resultado_tmb(tmb)
+    # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
+    st.markdown("#### 🔥 ¿Cuál es tu resultado?")
+    tarjeta_resultado_tmb(tmb)
 
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
-        st.markdown("#### 🧪 ¿Cómo se calculó?")
-        formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
-        tarjeta_quien_creo_formula()
+    # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
+    st.markdown("#### 🧪 ¿Cómo se calculó?")
+    formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
+    tarjeta_quien_creo_formula()
 
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        # --- 4. ¿Por qué usamos esta fórmula? -------------------------------------------------
-        tarjeta_por_que_mifflin()
+    # --- 4. ¿Por qué usamos esta fórmula? -------------------------------------------------
+    tarjeta_por_que_mifflin()
 
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        # --- Ilustración "central energética" (opcional, muy visual) --------------------------
-        central_energetica_tmb(tmb)
+    # --- Ilustración "central energética" (opcional, muy visual) --------------------------
+    central_energetica_tmb(tmb)
 
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        # --- 5. ¿Qué módulos usan la TMB? — flujo horizontal ----------------------------------
-        flujo_modulos_tmb()
+    # --- 5. ¿Qué módulos usan la TMB? — flujo horizontal ----------------------------------
+    flujo_modulos_tmb()
 
-        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        # --- 6. Resumen Inteligente -------------------------------------------------------------
-        interpretacion_inteligente_tmb(tmb)
+    # --- 6. Resumen Inteligente -------------------------------------------------------------
+    interpretacion_inteligente_tmb(tmb)
 
-        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-        caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
-                  "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
-                  "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
-                  emoji="⚡", color="#FFF3E0", borde="#FB8C00")
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
+              "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
+              "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
+              emoji="⚡", color="#FFF3E0", borde="#FB8C00")
 
-    else:
+
+    if genero == "Mujer" and embarazada:
+        st.divider()
+        st.markdown("""
+        <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
+        margin-bottom:14px;border:1px solid rgba(186,104,200,0.18);">
+        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 Complemento: TMB durante el Embarazo</h3>
+        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">El embarazo cambia las necesidades de energía
+        del cuerpo. Aquí ajustamos tu TMB según tu etapa de gestación.</p>
+        </div>
+        """, unsafe_allow_html=True)
         # =================================================================================
         # RAMA: TMB durante el Embarazo (usa perfil global: peso, estatura, edad, trimestre)
+        # Se muestra como COMPLEMENTO de la TMB normal (no la reemplaza), igual que la hoja
+        # de RCD se complementa con el ajuste de Clima Chiclayo cuando aplica.
         # =================================================================================
-        hoja_header(3, subtitulo="El embarazo cambia las necesidades de energía del cuerpo. Aquí calculamos "
-                                  "cuántas calorías necesitas según tu etapa de gestación.", tip="🤰 Por trimestre")
         st.markdown(f"""<div class="formula-badge-row">{formula_badge(
             "TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
             autor="MD Mifflin, ST St Jeor et al. (1990)",
@@ -7563,55 +7572,182 @@ elif hoja_activa == "📄 MI REPORTE":
               emoji="📄", color="#E0F2F1", borde="#00695C")
 
 elif hoja_activa == "🎓 SOBRE NOSOTRAS":
-    _, titulo13, emoji13, borde13, fondo13 = COLORES[15]
-    st.markdown(f"""
-    <div style="background:{fondo13};border-left:10px solid {borde13};border-radius:16px;
-                padding:16px 26px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,0.10);">
-    <h2 style="margin:0;color:{borde13};font-weight:800;">{emoji13} {titulo13}</h2>
-    <p style="margin:4px 0 0 0;color:{borde13};font-size:0.95rem;font-weight:500;">
-    Conoce a las personas detrás de esta calculadora — ahora que ya la usaste, ¡es hora de conocer al equipo! 🎉
-    </p>
+    # ===== Estilos exclusivos de esta hoja: tarjetas de equipo con hover animado =====
+    st.markdown("""
+    <style>
+    .team-card {
+        position: relative; border-radius: 24px; padding: 24px 20px 20px 20px; text-align: center;
+        background: #FFFFFF; border: 1.5px solid rgba(0,0,0,0.05);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        overflow: hidden; height: 100%;
+    }
+    .team-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.14); }
+    .team-card::after {
+        content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+        background: var(--tc-color); transform: scaleX(0); transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+    .team-card:hover::after { transform: scaleX(1); }
+    .team-avatar {
+        width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 2.1rem; margin: 0 auto 12px auto; background: var(--tc-bg); border: 2px solid var(--tc-color);
+        transition: transform 0.35s ease;
+    }
+    .team-card:hover .team-avatar { transform: rotate(-8deg) scale(1.08); }
+    .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
+    .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+    .team-badge {
+        display: inline-flex; align-items: center; gap: 6px; background: var(--tc-bg); color: var(--tc-color);
+        font-weight: 800; font-size: 0.78rem; padding: 7px 16px; border-radius: 999px; margin-bottom: 12px;
+        border: 1px solid var(--tc-color);
+    }
+    .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #8A94A6; text-transform: uppercase;
+        letter-spacing: 0.06em; margin-bottom: 6px; }
+    .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .team-chip {
+        background: var(--tc-bg); color: var(--tc-color); font-weight: 700; font-size: 0.74rem;
+        padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.04);
+    }
+    .about-hero-card {
+        border-radius: 24px; padding: 22px 24px; text-align: center; background: #FFFFFF;
+        border: 1.5px solid rgba(0,0,0,0.05); box-shadow: 0 4px 14px rgba(0,0,0,0.06); height: 100%;
+    }
+    .about-mini-badge {
+        display: inline-block; background: #EAFAEE; color: #1E5631; font-weight: 800; font-size: 0.72rem;
+        padding: 5px 12px; border-radius: 999px; margin: 3px;
+    }
+    .about-stat {
+        text-align: center; background: rgba(255,255,255,0.10); border-radius: 18px; padding: 14px 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ===== 1. Encabezado premium =====
+    st.markdown("""
+    <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFEBF0 55%,#FFFFFF 100%);border-radius:24px;
+                padding:26px 30px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.06);
+                border:1px solid rgba(255,45,85,0.08);">
+    <h2 style="margin:0;color:#8E24AA;font-weight:900;letter-spacing:-0.02em;">👩‍💻 Conoce al Equipo CIAM&amp;SUNI</h2>
+    <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.98rem;font-weight:500;">
+    Las estudiantes que hicieron posible este proyecto 💚</p>
     </div>
     """, unsafe_allow_html=True)
 
-    col_escudo, col_texto = st.columns([1, 3])
-    with col_escudo:
-        if _LOGO_CIRCULAR.exists():
-            st.image(str(_LOGO_CIRCULAR), width=190)
-        elif _ESCUDO.exists():
-            st.image(str(_ESCUDO), width=190)
-    with col_texto:
+    # ===== 2. Tarjeta de logo + 3. Misión / Objetivo =====
+    col_logo, col_mision, col_obj = st.columns([1, 1.3, 1.3])
+    with col_logo:
+        _logo_img_tag = ""
+        _logo_path = _LOGO_CIRCULAR if _LOGO_CIRCULAR.exists() else (_ESCUDO if _ESCUDO.exists() else None)
+        if _logo_path is not None:
+            _logo_b64 = base64.b64encode(_logo_path.read_bytes()).decode()
+            _logo_img_tag = f'<img src="data:image/png;base64,{_logo_b64}" style="width:88px;height:88px;border-radius:50%;object-fit:cover;margin-bottom:10px;box-shadow:0 4px 14px rgba(0,0,0,0.10);" />'
+        st.markdown(f"""
+        <div class="about-hero-card">
+        {_logo_img_tag}
+        <p style="margin:2px 0 0 0;font-weight:900;color:#1E5631;font-size:1.05rem;">🌱 CIAM&amp;SUNI</p>
+        <p style="margin:0 0 10px 0;color:#5C6B60;font-size:0.85rem;">Calculadora Nutricional</p>
+        <div>
+            <span class="about-mini-badge">💚 Tecnología</span>
+            <span class="about-mini-badge">🥗 Nutrición</span>
+            <span class="about-mini-badge">💻 Programación</span>
+        </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_mision:
         st.markdown("""
-        <div style="background:#FFEBF0;border-left:5px solid #FF2D55;border-radius:20px;
-                    padding:18px 22px;
-                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-        <b style="color:#FF2D55;">📖 Sobre nosotras</b><br><br>
-        <span style="color:#1C1C1E;">Somos un grupo de estudiantes de 5to de secundaria de la I.E. Santa María Reina, apasionadas
-        por la tecnología y la salud. Este proyecto nace con el objetivo de fomentar hábitos saludables
-        mediante herramientas digitales accesibles, aplicando conocimientos de nutrición y programación
-        para mejorar el bienestar de nuestra comunidad escolar.</span>
+        <div class="about-hero-card" style="text-align:left;">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#137333;font-size:1rem;">🌿 Nuestra misión</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.9rem;line-height:1.55;font-style:italic;">
+        "Crear herramientas digitales gratuitas que promuevan hábitos saludables."</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_obj:
+        st.markdown("""
+        <div class="about-hero-card" style="text-align:left;">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#0B4DA8;font-size:1rem;">🎯 Nuestro objetivo</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.9rem;line-height:1.55;font-style:italic;">
+        "Facilitar el cálculo nutricional para cualquier persona."</p>
         </div>
         """, unsafe_allow_html=True)
 
-    caja_titulo("👩‍🎓 Integrantes", 13)
-    EQUIPO = ["Diana Chavez", "Kathia Paz", "Sofia Suarez", "Ariana Farro"]
+    st.write("")
+
+    # ===== 4. Tarjetas de integrantes (perfil, color propio, carrera como insignia, hobbies en chips) =====
+    caja_titulo("👩‍🎓 Las Integrantes", 13)
+
+    EQUIPO = [
+        {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩", "icono_rol": "🧠 Psicología", "rol": "Psicología",
+         "color": "#F9A825", "fondo": "#FFF8E1", "chips": ["🎵 Tocar instrumentos"]},
+        {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩", "icono_rol": "⚡ Ingeniería Electrónica", "rol": "Ingeniería Electrónica",
+         "color": "#E91E8C", "fondo": "#FCE4EC", "chips": ["🕵️ Criminología", "🎨 Dibujo"]},
+        {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩", "icono_rol": "🏛️ Arquitectura", "rol": "Arquitectura",
+         "color": "#8E6FCE", "fondo": "#EDE7F6", "chips": ["🎨 Dibujar", "🍳 Cocinar", "🎵 Música"]},
+        {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩", "icono_rol": "🧬 Biología", "rol": "Biología",
+         "color": "#29B6F6", "fondo": "#E1F5FE", "chips": ["🎮 Videojuegos", "🎬 Terror"]},
+    ]
     cols_equipo = st.columns(len(EQUIPO))
-    for c, nombre in zip(cols_equipo, EQUIPO):
+    for c, miembro in zip(cols_equipo, EQUIPO):
         with c:
+            _chips_html = "".join(f'<span class="team-chip">{ch}</span>' for ch in miembro["chips"])
             st.markdown(f"""
-            <div class="equipo-card" style="text-align:center;">
-                <div class="nombre">👤 {nombre}</div>
+            <div class="team-card" style="--tc-color:{miembro['color']};--tc-bg:{miembro['fondo']};">
+                <div class="team-avatar">{miembro['avatar']}</div>
+                <div class="team-name">{miembro['nombre'].upper()}</div>
+                <div class="team-icon-role">Integrante CIAM&amp;SUNI</div>
+                <div class="team-badge">{miembro['icono_rol']}</div>
+                <div class="team-chips-label">⭐ Intereses &amp; Hobbies</div>
+                <div class="team-chips">{_chips_html}</div>
             </div>
             """, unsafe_allow_html=True)
+
+    st.write("")
 
     col_a, col_b = st.columns(2)
     col_a.metric("Grado y sección", '5° "C" Secundaria')
     col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
 
+    st.write("")
+
+    # ===== 11. Estadísticas del proyecto =====
+    st.markdown("""
+    <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:24px;
+                padding:22px 26px;box-shadow:0 10px 26px rgba(30,86,49,0.25);">
+    <p style="margin:0 0 14px 0;color:#FFFFFF;font-weight:900;text-align:center;font-size:1rem;
+              text-transform:uppercase;letter-spacing:0.05em;opacity:0.95;">📊 El Proyecto en Números</p>
+    </div>
+    """, unsafe_allow_html=True)
+    _stats = [("💻", "15", "Módulos"), ("🥗", "40+", "Cálculos nutricionales"),
+              ("📄", "Sí", "Reporte automático"), ("👩‍💻", "4", "Desarrolladoras"), ("📅", "2026", "Año")]
+    cols_stats = st.columns(len(_stats))
+    for c, (icono_s, valor_s, etiqueta_s) in zip(cols_stats, _stats):
+        with c:
+            st.markdown(f"""
+            <div class="about-stat" style="background:#EAFAEE;border:1px solid rgba(30,86,49,0.10);">
+            <div style="font-size:1.5rem;">{icono_s}</div>
+            <div style="font-size:1.3rem;font-weight:900;color:#1E5631;">{valor_s}</div>
+            <div style="font-size:0.72rem;color:#5C6B60;font-weight:700;">{etiqueta_s}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.write("")
+
     caja_util("Este proyecto fue construido en equipo: cada integrante desarrolló y explicó una parte "
               "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
               "cualquier persona —sin saber de Excel ni de nutrición— pueda usarla fácilmente. 🤝🌱",
               emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
+
+    # ===== 12. Cierre bonito, con fondo degradado =====
+    st.markdown("""
+    <div style="margin-top:8px;background:linear-gradient(120deg,#EAFAEE 0%,#F8ECFB 100%);border-radius:24px;
+                padding:26px 30px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+    <div style="font-size:1.8rem;">🌱</div>
+    <p style="margin:8px 0 4px 0;color:#3C3C43;font-size:0.98rem;font-style:italic;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto;">
+    "Pequeños cambios generan grandes resultados. Esperamos que esta herramienta te ayude
+    a cuidar tu salud de una forma sencilla."</p>
+    <p style="margin:10px 0 0 0;color:#1E5631;font-weight:900;">💚 Equipo CIAM&amp;SUNI</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # =========================================================================================
 # PIE DE PÁGINA — navegación "Anterior / Siguiente" entre secciones
