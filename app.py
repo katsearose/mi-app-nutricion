@@ -4340,22 +4340,24 @@ def _panel_llenar_datos():
     # ===== BLOQUE 1: Perfil Básico =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAF3FF 0%,#D6EBFF 100%);border-radius:20px;'
                 'padding:18px 22px;margin-bottom:14px;border:1px solid #007AFF22;">'
-                '<h4 style="margin:0 0 8px 0;color:#007AFF;">👤 Bloque 1 · Tu Perfil Básico</h4>'
-                '<p style="margin:0;color:#3C6E9E;font-size:0.82rem;">Con tu peso, estatura, edad y género '
-                'calculamos tu metabolismo (TMB) y detectamos tu etapa de vida — la base de todo tu plan.</p></div>',
+                f'<h4 style="margin:0 0 8px 0;color:#007AFF;">👤 {T("Bloque 1 · Tu Perfil Básico", "Block 1 · Your Basic Profile")}</h4>'
+                f'<p style="margin:0;color:#3C6E9E;font-size:0.82rem;">{T("Con tu peso, estatura, edad y género "
+                "calculamos tu metabolismo (TMB) y detectamos tu etapa de vida — la base de todo tu plan.",
+                "With your weight, height, age and gender we calculate your metabolism (BMR) and detect your "
+                "life stage — the foundation of your whole plan.")}</p></div>',
                 unsafe_allow_html=True)
     b1c1, b1c2 = st.columns(2)
     with b1c1:
         nombre_usuario = st.text_input(T("¿Cómo te llamas?", "What's your name?"), value=st.session_state.get("nombre_usuario", ""),
-                                        key="nombre_usuario", help="Tu plan se sentirá hecho a tu medida.")
+                                        key="nombre_usuario", help=T("Tu plan se sentirá hecho a tu medida.", "Your plan will feel tailor-made for you."))
     with b1c2:
-        genero = st.radio("Género:", ["Hombre", "Mujer"], horizontal=True, key="genero",
-                           format_func=lambda g: ("♂ Hombre" if g == "Hombre" else "♀ Mujer"))
+        genero = st.radio(T("Género:", "Gender:"), ["Hombre", "Mujer"], horizontal=True, key="genero",
+                           format_func=lambda g: (T("♂ Hombre", "♂ Male") if g == "Hombre" else T("♀ Mujer", "♀ Female")))
     _nombre_saludo = nombre_display(nombre_usuario, genero)
     if nombre_usuario.strip():
-        st.success(f"¡Paz y bien, {_nombre_saludo}! 🌟")
+        st.success(T(f"¡Paz y bien, {_nombre_saludo}! 🌟", f"Welcome, {_nombre_saludo}! 🌟"))
     else:
-        st.caption("✍️ Escribe tu nombre.")
+        st.caption(T("✍️ Escribe tu nombre.", "✍️ Enter your name."))
 
     peso_max_actual = PESO_MAX[genero]
     estatura_max_actual = ESTATURA_MAX[genero]
@@ -4370,33 +4372,43 @@ def _panel_llenar_datos():
 
     b1c3, b1c4, b1c5 = st.columns(3)
     with b1c3:
-        peso = st.number_input("Peso (kg):", min_value=20.0, max_value=min(300.0, peso_max_actual),
+        peso = st.number_input(T("Peso (kg):", "Weight (kg):"), min_value=20.0, max_value=min(300.0, peso_max_actual),
                                 value=min(75.0, peso_max_actual), step=0.1, key="peso",
-                                help="Rango válido: 20 a 300 kg.")
+                                help=T("Rango válido: 20 a 300 kg.", "Valid range: 20 to 300 kg."))
     with b1c4:
-        estatura = st.number_input("Estatura (cm):", min_value=50, max_value=min(250, estatura_max_actual),
+        estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
                                     value=min(168, estatura_max_actual), step=1, key="estatura",
-                                    help="Rango válido: 50 a 250 cm.")
+                                    help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
     with b1c5:
-        edad = st.number_input("Edad (años):", min_value=1, max_value=min(120, edad_max_actual),
-                                value=9, step=1, key="edad", help="Rango válido: 1 a 120 años.")
+        edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
+                                value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
     etapa = etapa_desde_edad(edad)
-    st.info(f"🔎 Etapa detectada automáticamente: **{etapa}**")
+    _ETAPA_EN = {"Niñez": "Childhood", "Adolescencia": "Adolescence", "Adultez": "Adulthood", "Vejez": "Old Age"}
+    st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
+              f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
 
     embarazada = False
     trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
     if genero == "Mujer":
-        embarazada = st.checkbox("🤰 ¿Estás embarazada?", key="embarazada",
-                                  help="Si activas esto, tu TMB se calculará con la fórmula de gestación "
-                                       "en vez de Mifflin-St Jeor, y se reflejará en toda la app.")
+        embarazada = st.checkbox(T("🤰 ¿Estás embarazada?", "🤰 Are you pregnant?"), key="embarazada",
+                                  help=T("Si activas esto, tu TMB se calculará con la fórmula de gestación "
+                                       "en vez de Mifflin-St Jeor, y se reflejará en toda la app.",
+                                       "If you enable this, your BMR will be calculated with the gestational "
+                                       "formula instead of Mifflin-St Jeor, and it will be reflected across the app."))
         if embarazada:
-            trimestre = st.selectbox("Trimestre de embarazo:",
+            trimestre = st.selectbox(T("Trimestre de embarazo:", "Trimester of pregnancy:"),
                                       ["Primer trimestre", "Segundo trimestre", "Tercer trimestre"],
-                                      key="trimestre_emb")
-    vive_en_chiclayo = st.checkbox("🌤️ ¿Vives en Chiclayo?", key="vive_en_chiclayo",
-                                    help="Ajusta tu RCD según el clima cálido de la ciudad (−5%)." if not embarazada
-                                    else "Desactivado en Modo Embarazo: el gasto cardiovascular gestacional "
+                                      key="trimestre_emb",
+                                      format_func=lambda x: T(x, {"Primer trimestre": "First trimester",
+                                                                   "Segundo trimestre": "Second trimester",
+                                                                   "Tercer trimestre": "Third trimester"}[x]))
+    vive_en_chiclayo = st.checkbox(T("🌤️ ¿Vives en Chiclayo?", "🌤️ Do you live in Chiclayo?"), key="vive_en_chiclayo",
+                                    help=(T("Ajusta tu RCD según el clima cálido de la ciudad (−5%).",
+                                            "Adjusts your DCR for the city's warm climate (−5%).") if not embarazada
+                                    else T("Desactivado en Modo Embarazo: el gasto cardiovascular gestacional "
                                          "anula cualquier ahorro energético por clima (ACOG).",
+                                         "Disabled in Pregnancy Mode: gestational cardiovascular expenditure "
+                                         "overrides any climate-based energy saving (ACOG).")),
                                     disabled=embarazada)
     if embarazada:
         vive_en_chiclayo = False
