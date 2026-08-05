@@ -550,12 +550,38 @@ COLORES = {
     15: ("", "Sobre Nosotras",                                 "🎓", "#FF2D55", "#FFEBF0"),  # systemPink
 }
 
+COLORES_EN = {
+    0:  ("0", "Enter your data!",                            "📝", "#007AFF", "#EAF3FF"),
+    1:  ("1", "Blood Test",                                  "🩸", "#FF3B30", "#FFEDEC"),
+    2:  ("2", "Body Mass Index and Percentile",              "⚖️", "#AF52DE", "#F6ECFC"),
+    3:  ("3", "Basal Metabolic Rate (BMR)",                  "⚡", "#FF9500", "#FFF3E5"),
+    4:  ("4", "Daily Caloric Requirement (DCR)",             "🔥", "#34C759", "#EAFAEE"),
+    5:  ("5", "Weight Control",                              "🎯", "#FF2D55", "#FFEBF0"),
+    6:  ("6", "WHO-Based Nutritional Plan",                  "⚖️", "#FFCC00", "#FFFAE0"),
+    7:  ("7", "Daily Portions Calculation",                  "⏰", "#30B0C7", "#E6F7FA"),
+    8:  ("8", "Food Library",                                "🥗", "#00C7BE", "#E1FBF9"),
+    9:  ("9", "Weekly Diet Plan",                             "🍱", "#FF6B35", "#FFEEE6"),
+    10: ("10", "Does Climate Affect Your Energy Expenditure?", "🌤️", "#FFB300", "#FFF6E0"),
+    11: ("Bonus 1", "Energy During Pregnancy",                 "👶", "#BF5AF2", "#F7ECFD"),
+    12: ("Bonus 2", "Caffeine Cut-Off Time",                  "🌙", "#1B2A4A", "#FFF4DE"),
+    13: ("13", "How Would Your Weight Change?",               "🎯", "#5AC8FA", "#E9F8FF"),
+    14: ("14", "My Results Report",                           "📄", "#32ADE6", "#E7F6FD"),
+    15: ("", "About Us",                                       "🎓", "#FF2D55", "#FFEBF0"),
+}
+
 # Etiqueta/badge corta que acompaña cada encabezado de sección (reemplaza el prefijo "Hoja N:")
 BADGE_HOJAS = {
     0: "Configuración", 1: "Módulo Clínico", 2: "Módulo Clínico", 3: "Módulo Energético",
     4: "Módulo Energético", 5: "Control de Peso", 6: "Módulo Nutricional", 7: "Módulo Nutricional",
     8: "Recurso Externo", 9: "Plan Alimenticio", 10: "Módulo Climático", 11: "Aporte Especial",
     12: "Aporte Especial", 13: "Proyección", 14: "Reporte Final", 15: "Equipo",
+}
+
+BADGE_HOJAS_EN = {
+    0: "Setup", 1: "Clinical Module", 2: "Clinical Module", 3: "Energy Module",
+    4: "Energy Module", 5: "Weight Control", 6: "Nutrition Module", 7: "Nutrition Module",
+    8: "External Resource", 9: "Meal Plan", 10: "Climate Module", 11: "Special Bonus",
+    12: "Special Bonus", 13: "Projection", 14: "Final Report", 15: "Team",
 }
 
 # Colores base del sistema iOS, reutilizados para mantener coherencia visual en toda la app.
@@ -1426,8 +1452,8 @@ def hoja_header(idx, subtitulo=None, ilustracion=None, tip=None):
     'Hoja N:', subtítulo descriptivo y un badge de color al costado (p. ej. 'Módulo Clínico').
     Admite opcionalmente una ilustración SVG decorativa a la derecha y una burbuja de
     'tip' tipo chat, para las hojas con hero enriquecido (Bento Grid)."""
-    numero, titulo, emoji, borde, fondo = COLORES[idx]
-    badge = BADGE_HOJAS.get(idx, "Módulo")
+    numero, titulo, emoji, borde, fondo = (COLORES_EN if st.session_state.get("idioma", "Español") == "English" else COLORES)[idx]
+    badge = (BADGE_HOJAS_EN if st.session_state.get("idioma", "Español") == "English" else BADGE_HOJAS).get(idx, "Módulo")
     sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;max-width:480px;'>{subtitulo}</p>" if subtitulo else ""
     ilustracion_html = f'<div style="flex-shrink:0;position:relative;">{ilustracion}</div>' if ilustracion else ""
     tip_html = (
@@ -8499,22 +8525,27 @@ _idx_actual = OPCIONES_HOJAS.index(hoja_activa)
 col_prev, col_mid, col_next = st.columns([1, 2, 1])
 with col_prev:
     if _idx_actual > 0:
-        if st.button("← Sección Anterior", use_container_width=True, key="btn_anterior_footer"):
+        if st.button(T("← Sección Anterior", "← Previous Section"), use_container_width=True, key="btn_anterior_footer"):
             st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual - 1]
             st.rerun()
 with col_mid:
     st.markdown(
         f"<div style='text-align:center;color:#8E8E93;font-size:0.85rem;padding-top:10px;'>"
-        f"Sección {_idx_actual + 1} de {len(OPCIONES_HOJAS)}"
+        f"{T(f'Sección {_idx_actual + 1} de {len(OPCIONES_HOJAS)}', f'Section {_idx_actual + 1} of {len(OPCIONES_HOJAS)}')}"
         f"</div>", unsafe_allow_html=True
     )
 with col_next:
     if _idx_actual < len(OPCIONES_HOJAS) - 1:
-        if st.button("Siguiente Sección →", use_container_width=True, type="primary", key="btn_siguiente_footer"):
+        if st.button(T("Siguiente Sección →", "Next Section →"), use_container_width=True, type="primary", key="btn_siguiente_footer"):
             st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual + 1]
             st.rerun()
 
 st.markdown("---")
-st.caption("Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
-           "Alimentación) para el proyecto de tesis escolar sobre salud pública en Lambayeque, Grupo N°04. "
-           "🔒 Ningún dato ingresado se almacena: toda la información vive solo en tu sesión actual.")
+st.caption(T(
+    "Aplicación desarrollada en Streamlit — réplica fiel del Excel 'Grupo n°4 VER.2' (Proyecto Sana "
+    "Alimentación) para el proyecto de tesis escolar sobre salud pública en Lambayeque, Grupo N°04. "
+    "🔒 Ningún dato ingresado se almacena: toda la información vive solo en tu sesión actual.",
+    "Application built with Streamlit — a faithful replica of the 'Grupo n°4 VER.2' Excel sheet (Healthy "
+    "Eating Project) for the school thesis project on public health in Lambayeque, Grupo N°04. "
+    "🔒 No data you enter is stored: all information lives only in your current session."
+))
