@@ -50,6 +50,24 @@ def T(es, en=None):
         return en
     return es
 
+
+# Diccionarios de traducción compartidos entre el panel de datos (sidebar) y otras hojas
+# (p.ej. el resumen de la Hoja 0) que necesitan mostrar los mismos valores ya traducidos.
+_ETAPA_EN = {"Niñez": "Childhood", "Adolescencia": "Adolescence", "Adultez": "Adulthood", "Vejez": "Old Age"}
+_ACT_LABEL_ES = {
+    "Sedentaria": "🪑 Sedentario o Poco Activo (Factor 1.2)",
+    "Ligero": "🚶 Ligeramente Activo (Factor 1.375-1.55)",
+    "Moderada": "🏃 Moderadamente Activo (Factor 1.55-1.75)",
+    "Intensa": "🔥 Muy Activo / Intenso (Factor 1.8-2.1)",
+}
+_ACT_LABEL_EN = {
+    "Sedentaria": "🪑 Sedentary or Low Activity (Factor 1.2)",
+    "Ligero": "🚶 Lightly Active (Factor 1.375-1.55)",
+    "Moderada": "🏃 Moderately Active (Factor 1.55-1.75)",
+    "Intensa": "🔥 Very Active / Intense (Factor 1.8-2.1)",
+}
+_OBJ_EN = {"Bajar de peso": "Lose weight", "Subir de peso": "Gain weight", "Mantenerse": "Maintain weight"}
+
 # =========================================================================================
 # BASE PERUANA DE ALIMENTOS — datos reales extraídos de las Tablas Peruanas de Composición
 # de Alimentos (INS/CENAN, 11.ª edición digital, marzo 2025, ISBN 978-612-310-178-7).
@@ -4094,59 +4112,67 @@ if _EN_PORTADA:
         </div>
         """, unsafe_allow_html=True)
     with _col_hero:
-        st.markdown("""
+        st.markdown(f"""
         <div class="hero-card" style="height:100%;min-height:260px;box-sizing:border-box;">
             <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
             <h1>🥗 CIAM&SUNI</h1>
-            <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">Tu Salud, Personalizada</p>
-            <p class="hero-sub">CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu
-            requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante
-            explicaciones sencillas y visuales.</p>
+            <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">{T("Tu Salud, Personalizada", "Your Health, Personalized")}</p>
+            <p class="hero-sub">{T("CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu "
+            "requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante "
+            "explicaciones sencillas y visuales.",
+            "CIAM&SUNI analyzes your information to estimate your nutritional status, calculate your energy "
+            "requirement, and help you understand how nutrition affects your health, through simple, visual "
+            "explanations.")}</p>
         </div>
         """, unsafe_allow_html=True)
 
     # --- Tarjetas de características (reemplazan los chips: 4 tarjetas claras) ---
-    st.markdown("""
+    st.markdown(f"""
     <div class="feature-row">
         <div class="feature-card">
             <div class="fc-emoji">🍎</div>
-            <div class="fc-title">Nutrición personalizada</div>
-            <div class="fc-text">Cálculos adaptados a tus propios datos: edad, peso, altura y etapa de vida.</div>
+            <div class="fc-title">{T("Nutrición personalizada", "Personalized nutrition")}</div>
+            <div class="fc-text">{T("Cálculos adaptados a tus propios datos: edad, peso, altura y etapa de vida.",
+            "Calculations tailored to your own data: age, weight, height and life stage.")}</div>
         </div>
         <div class="feature-card">
             <div class="fc-emoji">🧮</div>
-            <div class="fc-title">Basado en evidencia científica</div>
-            <div class="fc-text">Fórmulas reconocidas (Mifflin-St Jeor, FAO/OMS/UNU) aplicadas paso a paso.</div>
+            <div class="fc-title">{T("Basado en evidencia científica", "Based on scientific evidence")}</div>
+            <div class="fc-text">{T("Fórmulas reconocidas (Mifflin-St Jeor, FAO/OMS/UNU) aplicadas paso a paso.",
+            "Recognized formulas (Mifflin-St Jeor, FAO/WHO/UNU) applied step by step.")}</div>
         </div>
         <div class="feature-card">
             <div class="fc-emoji">🌡️</div>
-            <div class="fc-title">Adaptado al clima de Chiclayo</div>
-            <div class="fc-text">Un ajuste extra que considera el clima cálido de nuestra región.</div>
+            <div class="fc-title">{T("Adaptado al clima de Chiclayo", "Adapted to Chiclayo's climate")}</div>
+            <div class="fc-text">{T("Un ajuste extra que considera el clima cálido de nuestra región.",
+            "An extra adjustment that accounts for our region's warm climate.")}</div>
         </div>
         <div class="feature-card">
             <div class="fc-emoji">📊</div>
-            <div class="fc-title">Resultados fáciles de comprender</div>
-            <div class="fc-text">Cada cálculo se explica en lenguaje simple: qué significa y qué hacer con él.</div>
+            <div class="fc-title">{T("Resultados fáciles de comprender", "Easy-to-understand results")}</div>
+            <div class="fc-text">{T("Cada cálculo se explica en lenguaje simple: qué significa y qué hacer con él.",
+            "Every calculation is explained in simple language: what it means and what to do about it.")}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     # --- 3. "Comienza aquí" — Onboarding Steps rediseñado (Cards Grid + Callout) -------------
-    st.markdown("""
+    st.markdown(f"""
     <div style="margin:18px 0 0 0;">
-    <p style="margin:0 0 2px 0;font-weight:700;color:#1E5631;font-size:1.35rem;">🚀 ¿Cómo empezar?</p>
-    <p style="margin:0 0 16px 0;color:#5C6B60;font-size:0.92rem;">Sigue estos simples pasos para obtener tu diagnóstico personalizado.</p>
+    <p style="margin:0 0 2px 0;font-weight:700;color:#1E5631;font-size:1.35rem;">🚀 {T("¿Cómo empezar?", "How to get started?")}</p>
+    <p style="margin:0 0 16px 0;color:#5C6B60;font-size:0.92rem;">{T("Sigue estos simples pasos para obtener tu diagnóstico personalizado.",
+    "Follow these simple steps to get your personalized diagnosis.")}</p>
     </div>
     """, unsafe_allow_html=True)
 
     _ONBOARD_STEPS = [
-        ("1", "📝", "Ingresa tus datos", "Completa tu información personal en el panel izquierdo.",
+        ("1", "📝", T("Ingresa tus datos", "Enter your data"), T("Completa tu información personal en el panel izquierdo.", "Fill in your personal information in the left-hand panel."),
          "#EAF4FE", "#8FC1F2", "#1565C0"),
-        ("2", "🧩", "Explora las secciones", "Navega libremente por las 17 áreas del centro de control.",
+        ("2", "🧩", T("Explora las secciones", "Explore the sections"), T("Navega libremente por las 17 áreas del centro de control.", "Freely browse the 17 areas of the control center."),
          "#F3EEFB", "#C6AEE8", "#6A3FA0"),
-        ("3", "🔍", "Revisa tus resultados", "Descubre tus indicadores explicados paso a paso.",
+        ("3", "🔍", T("Revisa tus resultados", "Review your results"), T("Descubre tus indicadores explicados paso a paso.", "Discover your indicators explained step by step."),
          "#EAFAEE", "#9BD8AE", "#1E5631"),
-        ("4", "📄", "Descarga tu PDF", "Obtén tu reporte final completo y listo para guardar.",
+        ("4", "📄", T("Descarga tu PDF", "Download your PDF"), T("Obtén tu reporte final completo y listo para guardar.", "Get your complete final report, ready to save."),
          "#FFF6E0", "#F4D27A", "#B8860B"),
     ]
     _cols_onboard = st.columns(4)
@@ -4164,33 +4190,40 @@ if _EN_PORTADA:
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("""
+    st.markdown(f"""
     <div style="display:flex;align-items:center;gap:10px;background:#F2F7F3;border:1px solid #D8E6DA;
     border-radius:999px;padding:12px 22px;margin:14px 0 4px 0;">
     <span style="font-size:1.1rem;">🔒</span>
-    <span style="color:#3C4A3F;font-size:0.85rem;">Solo tendrás que ingresar tus datos una vez durante esta sesión.
-    Luego podrás moverte libremente entre todas las secciones cuando quieras.</span>
+    <span style="color:#3C4A3F;font-size:0.85rem;">{T("Solo tendrás que ingresar tus datos una vez durante esta sesión. "
+    "Luego podrás moverte libremente entre todas las secciones cuando quieras.",
+    "You'll only need to enter your data once during this session. Afterwards you can move freely "
+    "between all sections whenever you like.")}</span>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
+    st.markdown(f"""
     <p style="text-align:center;color:#5C6B60;font-size:0.9rem;font-style:italic;margin:0 0 18px 0;">
-    "Cada persona tiene necesidades nutricionales diferentes. Esta aplicación adapta los cálculos utilizando
-    la información que ingreses, para brindarte resultados personalizados y fáciles de interpretar."</p>
+    "{T("Cada persona tiene necesidades nutricionales diferentes. Esta aplicación adapta los cálculos utilizando "
+    "la información que ingreses, para brindarte resultados personalizados y fáciles de interpretar.",
+    "Every person has different nutritional needs. This application adapts its calculations using the "
+    "information you enter, to give you personalized, easy-to-interpret results.")}"</p>
     """, unsafe_allow_html=True)
 
     # --- Aviso médico: esta app es educativa y no reemplaza la consulta profesional ---
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
                 padding:16px 24px;margin-bottom:18px;
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-    <b style="color:#FF9500;">⚕️ Aviso importante:</b> esta aplicación es una herramienta educativa y orientativa.
-    No reemplaza la consulta con un médico, nutricionista u otro profesional de la salud.
-    Ante cualquier duda o resultado fuera de lo normal, acude siempre a un especialista.
+    <b style="color:#FF9500;">⚕️ {T("Aviso importante:", "Important notice:")}</b> {T("esta aplicación es una herramienta educativa y orientativa. "
+    "No reemplaza la consulta con un médico, nutricionista u otro profesional de la salud. "
+    "Ante cualquier duda o resultado fuera de lo normal, acude siempre a un especialista.",
+    "this application is an educational, informational tool. It does not replace consultation with a "
+    "doctor, nutritionist or other health professional. If you have any doubts or abnormal results, "
+    "always see a specialist.")}
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<p class="frase-motivadora">🍎 "Comer bien no es una dieta, es un acto de amor hacia ti mismo" 💚</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="frase-motivadora">🍎 "{T("Comer bien no es una dieta, es un acto de amor hacia ti mismo", "Eating well is not a diet, it is an act of love toward yourself")}" 💚</p>', unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -4383,7 +4416,6 @@ def _panel_llenar_datos():
         edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
                                 value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
     etapa = etapa_desde_edad(edad)
-    _ETAPA_EN = {"Niñez": "Childhood", "Adolescencia": "Adolescence", "Adultez": "Adulthood", "Vejez": "Old Age"}
     st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
               f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
 
@@ -4416,35 +4448,46 @@ def _panel_llenar_datos():
     # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #1E563122;">'
-                '<h4 style="margin:0 0 8px 0;color:#1E5631;">🏃 Bloque 2 · Estilo de Vida y Objetivos</h4>'
-                '<p style="margin:0;color:#3E7050;font-size:0.82rem;">Tu nivel de actividad y tu meta definen '
-                'cuántas calorías gastas al día (RCD) y a qué ritmo ajustamos tu alimentación.</p></div>',
+                f'<h4 style="margin:0 0 8px 0;color:#1E5631;">🏃 {T("Bloque 2 · Estilo de Vida y Objetivos", "Block 2 · Lifestyle and Goals")}</h4>'
+                f'<p style="margin:0;color:#3E7050;font-size:0.82rem;">{T("Tu nivel de actividad y tu meta definen "
+                "cuántas calorías gastas al día (RCD) y a qué ritmo ajustamos tu alimentación.",
+                "Your activity level and your goal determine how many calories you burn per day (DCR) and at "
+                "what pace we adjust your nutrition.")}</p></div>',
                 unsafe_allow_html=True)
-    st.caption("🏃 Nivel de Actividad Física (selecciona la que mejor describa tu día a día):")
+    st.caption(T("🏃 Nivel de Actividad Física (selecciona la que mejor describa tu día a día):",
+                 "🏃 Physical Activity Level (choose the one that best describes your day-to-day):"))
     actividad = st.radio(
-        "Actividad:", ["Sedentaria", "Ligero", "Moderada", "Intensa"],
+        T("Actividad:", "Activity:"), ["Sedentaria", "Ligero", "Moderada", "Intensa"],
         index=1, key="actividad", label_visibility="collapsed",
-        format_func=lambda a: {
-            "Sedentaria": "🪑 Sedentario o Poco Activo (Factor 1.2)",
-            "Ligero": "🚶 Ligeramente Activo (Factor 1.375-1.55)",
-            "Moderada": "🏃 Moderadamente Activo (Factor 1.55-1.75)",
-            "Intensa": "🔥 Muy Activo / Intenso (Factor 1.8-2.1)",
-        }[a],
+        format_func=lambda a: T(_ACT_LABEL_ES[a], _ACT_LABEL_EN[a]),
     )
     _DESC_ACTIVIDAD = [
-        ("Sedentaria", "🪑", "#8E8E93", "#F2F2F7", "Sedentario o Poco Activo (Factor 1.2)",
-         "Días en 'modo reposo'. Pasas la mayor parte del día sentado (oficina, estudio, manejo) y tu "
-         "movilidad fuera de estar sentado es mínima o nula."),
-        ("Ligero", "🚶", "#34C759", "#EAFAEE", "Ligeramente Activo (Factor 1.375 - 1.55)",
-         "Movimiento cotidiano acumulado. Trabajas sentado, pero caminas distancias razonables a diario, "
-         "usas transporte público activo, haces compras a pie o labores del hogar de forma constante."),
-        ("Moderada", "🏃", "#007AFF", "#EAF3FF", "Moderadamente Activo (Factor 1.55 - 1.75)",
-         "Cuerpo en acción la mitad del día. Tienes un trabajo de pie o con desplazamiento constante "
-         "(maestro, vendedor, salud) O tu trabajo es sentado pero realizas actividades físicas dinámicas "
-         "de forma regular."),
-        ("Intensa", "🔥", "#FF3B30", "#FFEDEC", "Muy Activo / Intenso (Factor 1.8 - 2.1)",
-         "Alto esfuerzo físico diario. Entrenamientos intensos diarios o trabajos de alta exigencia física "
-         "(construcción, agricultura, atletas)."),
+        ("Sedentaria", "🪑", "#8E8E93", "#F2F2F7",
+         T("Sedentario o Poco Activo (Factor 1.2)", "Sedentary or Low Activity (Factor 1.2)"),
+         T("Días en 'modo reposo'. Pasas la mayor parte del día sentado (oficina, estudio, manejo) y tu "
+           "movilidad fuera de estar sentado es mínima o nula.",
+           "Days in 'rest mode'. You spend most of the day seated (office, studying, driving) and your "
+           "movement outside of sitting is minimal or none.")),
+        ("Ligero", "🚶", "#34C759", "#EAFAEE",
+         T("Ligeramente Activo (Factor 1.375 - 1.55)", "Lightly Active (Factor 1.375 - 1.55)"),
+         T("Movimiento cotidiano acumulado. Trabajas sentado, pero caminas distancias razonables a diario, "
+           "usas transporte público activo, haces compras a pie o labores del hogar de forma constante.",
+           "Accumulated everyday movement. You work seated, but you walk reasonable distances daily, use "
+           "active public transport, walk to run errands, or do household chores regularly.")),
+        ("Moderada", "🏃", "#007AFF", "#EAF3FF",
+         T("Moderadamente Activo (Factor 1.55 - 1.75)", "Moderately Active (Factor 1.55 - 1.75)"),
+         T("Cuerpo en acción la mitad del día. Tienes un trabajo de pie o con desplazamiento constante "
+           "(maestro, vendedor, salud) O tu trabajo es sentado pero realizas actividades físicas dinámicas "
+           "de forma regular.",
+           "Body in motion for half the day. You have a job that's standing or constantly moving "
+           "(teacher, salesperson, healthcare) OR your job is seated but you do dynamic physical "
+           "activities regularly.")),
+        ("Intensa", "🔥", "#FF3B30", "#FFEDEC",
+         T("Muy Activo / Intenso (Factor 1.8 - 2.1)", "Very Active / Intense (Factor 1.8 - 2.1)"),
+         T("Alto esfuerzo físico diario. Entrenamientos intensos diarios o trabajos de alta exigencia física "
+           "(construcción, agricultura, atletas).",
+           "High daily physical effort. Intense daily training or physically demanding jobs "
+           "(construction, farming, athletes).")),
     ]
     for _clave, _ic, _col, _fon, _tit, _desc in _DESC_ACTIVIDAD:
         _sel = (_clave == actividad)
@@ -4465,117 +4508,144 @@ def _panel_llenar_datos():
         # y aditivo por trimestre e IMC previo (IOM / FAO-OMS / ACOG).
         objetivo = "Mantenerse"
         ajuste_txt = None
-        st.info("🤰 En Modo Embarazo no se elige objetivo ni ritmo: tus calorías se calculan automáticamente "
-                "sumando el bloque energético de tu trimestre a tu TMB gestacional. Nunca se resta energía.")
+        st.info(T("🤰 En Modo Embarazo no se elige objetivo ni ritmo: tus calorías se calculan automáticamente "
+                "sumando el bloque energético de tu trimestre a tu TMB gestacional. Nunca se resta energía.",
+                "🤰 In Pregnancy Mode you don't choose a goal or pace: your calories are calculated automatically "
+                "by adding your trimester's energy block to your gestational BMR. Energy is never subtracted."))
     else:
-        objetivo = st.selectbox("🎯 ¿Cuál es tu objetivo principal?", ["Bajar de peso", "Subir de peso", "Mantenerse"],
-                                 key="objetivo")
+        objetivo = st.selectbox(T("🎯 ¿Cuál es tu objetivo principal?", "🎯 What's your main goal?"),
+                                 ["Bajar de peso", "Subir de peso", "Mantenerse"],
+                                 key="objetivo", format_func=lambda o: T(o, _OBJ_EN[o]))
 
-        st.caption("⚙️ Ajuste del Ritmo (Velocidad del proceso):")
+        st.caption(T("⚙️ Ajuste del Ritmo (Velocidad del proceso):", "⚙️ Pace Adjustment (Process speed):"))
+        _AJ_EN = {
+            "Gradual (-10%)": "Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado": "Balanced (-20%) ⭐ Recommended",
+            "Intensivo (-30%)": "Intensive (-30%)", "Gradual (+10%)": "Gradual (+10%)",
+            "Equilibrado (+15%) ⭐ Recomendado": "Balanced (+15%) ⭐ Recommended", "Acelerado (+20%)": "Accelerated (+20%)",
+        }
         if objetivo == "Bajar de peso":
-            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-                options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1, key="ajuste_bajar_sel")
+            ajuste_txt = st.selectbox(T("Ajuste del Ritmo:", "Pace Adjustment:"), label_visibility="collapsed",
+                options=["Gradual (-10%)", "Equilibrado (-20%) ⭐ Recomendado", "Intensivo (-30%)"], index=1,
+                key="ajuste_bajar_sel", format_func=lambda o: T(o, _AJ_EN[o]))
         elif objetivo == "Subir de peso":
-            ajuste_txt = st.selectbox("Ajuste del Ritmo:", label_visibility="collapsed",
-                options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1, key="ajuste_subir_sel")
+            ajuste_txt = st.selectbox(T("Ajuste del Ritmo:", "Pace Adjustment:"), label_visibility="collapsed",
+                options=["Gradual (+10%)", "Equilibrado (+15%) ⭐ Recomendado", "Acelerado (+20%)"], index=1,
+                key="ajuste_subir_sel", format_func=lambda o: T(o, _AJ_EN[o]))
         else:
             ajuste_txt = None
-            st.caption("Sin ajuste calórico: se mantiene tu RCD.")
+            st.caption(T("Sin ajuste calórico: se mantiene tu RCD.", "No caloric adjustment: your DCR stays the same."))
 
         if objetivo in ("Bajar de peso", "Subir de peso"):
             _DESC_AJUSTE = {
                 "Bajar de peso": [
                     ("Gradual (-10%)", "🌱", "#34C759", "#EAFAEE",
-                     "Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles."),
+                     T("Ideal para quienes están cerca de su peso objetivo o prefieren cambios lentos y sostenibles.",
+                       "Ideal for those close to their target weight or who prefer slow, sustainable changes.")),
                     ("Equilibrado (-20%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
-                     "La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables."),
+                     T("La opción ideal para la mayoría. Permite una pérdida de peso constante manteniendo hábitos saludables.",
+                       "The ideal option for most people. Allows steady weight loss while keeping healthy habits.")),
                     ("Intensivo (-30%)", "🚀", "#FF3B30", "#FFEDEC",
-                     "Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
-                     "periodos cortos y con seguimiento."),
+                     T("Produce cambios más rápidos. Se recomienda principalmente en personas con obesidad o por "
+                       "periodos cortos y con seguimiento.",
+                       "Produces faster changes. Mainly recommended for people with obesity or for short periods "
+                       "with supervision.")),
                 ],
                 "Subir de peso": [
                     ("Gradual (+10%)", "🌱", "#34C759", "#EAFAEE",
-                     "Aumenta las calorías de forma moderada para favorecer una ganancia progresiva."),
+                     T("Aumenta las calorías de forma moderada para favorecer una ganancia progresiva.",
+                       "Increases calories moderately to favor progressive weight gain.")),
                     ("Equilibrado (+15%) ⭐ Recomendado", "⚡", "#007AFF", "#EAF3FF",
-                     "La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa."),
+                     T("La opción ideal para la mayoría. Favorece una ganancia constante con menor acumulación de grasa.",
+                       "The ideal option for most people. Favors steady gain with less fat accumulation.")),
                     ("Acelerado (+20%)", "🚀", "#FF3B30", "#FFEDEC",
-                     "Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
-                     "Requiere una alimentación bien planificada."),
+                     T("Pensado para personas con metabolismo muy rápido o que necesitan aumentar peso rápidamente. "
+                       "Requiere una alimentación bien planificada.",
+                       "Designed for people with a very fast metabolism or who need to gain weight quickly. "
+                       "Requires a well-planned diet.")),
                 ],
             }[objetivo]
             for _tit_a, _ic_a, _col_a, _fon_a, _desc_a in _DESC_AJUSTE:
                 _sel_a = (_tit_a == ajuste_txt)
+                _tit_a_disp = T(_tit_a, _AJ_EN[_tit_a])
                 _estilo_a = (f"border:2.5px solid {_col_a};box-shadow:0 8px 20px {_col_a}40;transform:translateX(4px);"
                              if _sel_a else "border:1px solid rgba(0,0,0,0.06);")
                 st.markdown(f"""
                 <div style="background:{_fon_a};border-radius:16px;padding:12px 18px;margin-bottom:8px;{_estilo_a}
                             transition:all 0.2s ease;display:flex;gap:12px;align-items:flex-start;">
                     <div style="font-size:1.4rem;">{_ic_a}</div>
-                    <div><b style="color:{_col_a};">{_tit_a}</b>{' ✓' if _sel_a else ''}<br>
+                    <div><b style="color:{_col_a};">{_tit_a_disp}</b>{' ✓' if _sel_a else ''}<br>
                     <span style="font-size:0.84rem;color:#3C3C43;">{_desc_a}</span></div>
                 </div>
                 """, unsafe_allow_html=True)
             if (objetivo == "Bajar de peso" and ajuste_txt == "Intensivo (-30%)") or \
                (objetivo == "Subir de peso" and ajuste_txt == "Acelerado (+20%)"):
-                st.warning("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.")
+                st.warning(T("🟨 Este ritmo produce cambios más rápidos: úsalo solo bajo seguimiento o en casos específicos.",
+                              "🟨 This pace produces faster changes: use it only under supervision or in specific cases."))
 
-        st.caption("ℹ️ **¿Qué significa este ajuste?** Define qué tan rápido deseas alcanzar tu objetivo, adaptando "
+        st.caption(T("ℹ️ **¿Qué significa este ajuste?** Define qué tan rápido deseas alcanzar tu objetivo, adaptando "
                    "tus calorías diarias a partir de tu Requerimiento Calórico Diario (RCD). ⚡ El ritmo Equilibrado "
-                   "suele ser la opción recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.")
+                   "suele ser la opción recomendada, ya que combina buenos resultados con una mejor adherencia a largo plazo.",
+                   "ℹ️ **What does this adjustment mean?** It defines how fast you want to reach your goal, adapting "
+                   "your daily calories from your Daily Caloric Requirement (DCR). ⚡ The Balanced pace is usually "
+                   "the recommended option, since it combines good results with better long-term adherence."))
 
     # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
     st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #C0392B22;">'
-                '<h4 style="margin:0 0 8px 0;color:#C0392B;">💓 Bloque 3 · Monitoreo de Signos Vitales</h4>'
-                '<p style="margin:0;color:#8A5252;font-size:0.82rem;">Estos indicadores muestran cómo está '
-                'funcionando tu cuerpo en este momento, y ayudan a detectar señales de alerta a tiempo.</p></div>',
+                f'<h4 style="margin:0 0 8px 0;color:#C0392B;">💓 {T("Bloque 3 · Monitoreo de Signos Vitales", "Block 3 · Vital Signs Monitoring")}</h4>'
+                f'<p style="margin:0;color:#8A5252;font-size:0.82rem;">{T("Estos indicadores muestran cómo está "
+                "funcionando tu cuerpo en este momento, y ayudan a detectar señales de alerta a tiempo.",
+                "These indicators show how your body is functioning right now, and help detect warning "
+                "signs early.")}</p></div>',
                 unsafe_allow_html=True)
-    spo2 = st.number_input("Oxigenación SpO2 (%):", min_value=0.0, max_value=100.0, value=0.0, step=1.0,
-                            key="spo2", help="Normal: 95% a 100%.")
+    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=0.0, max_value=100.0, value=0.0, step=1.0,
+                            key="spo2", help=T("Normal: 95% a 100%.", "Normal: 95% to 100%."))
     if spo2 > 0:
         _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
-        _badge_vital(spo2, "%", _c, "Normal" if _c == "verde" else ("Bajo" if _c == "rojo" else "Atención"))
+        _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
 
-    pulso = st.number_input("Pulso (lpm):", min_value=0, max_value=220, value=0, step=1,
-                             key="pulso", help="Ideal en reposo: 60 a 100 lpm.")
+    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=0, max_value=220, value=0, step=1,
+                             key="pulso", help=T("Ideal en reposo: 60 a 100 lpm.", "Ideal at rest: 60 to 100 bpm."))
     if pulso > 0:
         _c = "verde" if 60 <= pulso <= 100 else "ambar"
-        _badge_vital(pulso, " lpm", _c, "Normal" if _c == "verde" else "Atención")
+        _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
-    temp_corp = st.number_input("Temperatura (°C):", min_value=34.0, max_value=42.0, value=34.0, step=0.1,
-                                 key="temp_corp", help="Normal: 36.5°C a 37.5°C.")
+    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=34.0, max_value=42.0, value=34.0, step=0.1,
+                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C.", "Normal: 36.5°C to 37.5°C."))
     if temp_corp > 34.0:
         _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
-        _badge_vital(temp_corp, "°C", _c, "Normal" if _c == "verde" else "Atención")
+        _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
-    st.markdown("**Presión Arterial (mmHg):**")
-    pas = st.number_input("Sistólica:", min_value=0, max_value=250, value=0, step=1, key="pas")
-    pad = st.number_input("Diastólica:", min_value=0, max_value=150, value=0, step=1, key="pad")
+    st.markdown(f"**{T('Presión Arterial (mmHg):', 'Blood Pressure (mmHg):')}**")
+    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=0, max_value=250, value=0, step=1, key="pas")
+    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=0, max_value=150, value=0, step=1, key="pad")
     if pas > 0 and pad > 0:
         if pas < 50 or pas > 300 or pad < 30 or pad > 200:
-            st.markdown('<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                         '⚠️ Valor fuera de rango clínico. Por favor verifica tus datos</p>', unsafe_allow_html=True)
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
         else:
             _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
-            _badge_vital(f"{pas}/{pad}", "", _c, "Normal" if _c == "verde" else "Atención")
+            _badge_vital(f"{pas}/{pad}", "", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
     st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #7B1FA222;">'
-                '<h4 style="margin:0 0 8px 0;color:#7B1FA2;">🩸 Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)</h4>'
-                '<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">Con tus valores de sangre identificamos '
-                'riesgos como anemia, colesterol alto o glucosa elevada, para darte recomendaciones más precisas.</p></div>',
+                f'<h4 style="margin:0 0 8px 0;color:#7B1FA2;">🩸 {T("Bloque 4 · Perfil Bioquímico (Análisis Sanguíneo)", "Block 4 · Biochemical Profile (Blood Test)")}</h4>'
+                f'<p style="margin:0;color:#8E5FA3;font-size:0.82rem;">{T("Con tus valores de sangre identificamos "
+                "riesgos como anemia, colesterol alto o glucosa elevada, para darte recomendaciones más precisas.",
+                "With your blood values we identify risks such as anemia, high cholesterol or elevated glucose, "
+                "to give you more precise recommendations.")}</p></div>',
                 unsafe_allow_html=True)
-    hemo = st.number_input("Hemoglobina (g/dL):", min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
-                            key="hemo", help="Normal: 12-17 g/dL, varía por género.")
-    gluco = st.number_input("Glucosa (mg/dL):", min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
-                             key="gluco", help="Normal en ayunas: 70-100 mg/dL.")
-    coles = st.number_input("Colesterol (mg/dL):", min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
-                             key="coles", help="Ideal: menor a 200 mg/dL.")
-    trigli = st.number_input("Triglicéridos (mg/dL):", min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
-                              key="trigli", help="Ideal: menor a 150 mg/dL.")
-    hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
-                              key="hierro", help="Normal: 60-170 µg/dL.")
+    hemo = st.number_input(T("Hemoglobina (g/dL):", "Hemoglobin (g/dL):"), min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
+                            key="hemo", help=T("Normal: 12-17 g/dL, varía por género.", "Normal: 12-17 g/dL, varies by gender."))
+    gluco = st.number_input(T("Glucosa (mg/dL):", "Glucose (mg/dL):"), min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
+                             key="gluco", help=T("Normal en ayunas: 70-100 mg/dL.", "Normal fasting: 70-100 mg/dL."))
+    coles = st.number_input(T("Colesterol (mg/dL):", "Cholesterol (mg/dL):"), min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
+                             key="coles", help=T("Ideal: menor a 200 mg/dL.", "Ideal: less than 200 mg/dL."))
+    trigli = st.number_input(T("Triglicéridos (mg/dL):", "Triglycerides (mg/dL):"), min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
+                              key="trigli", help=T("Ideal: menor a 150 mg/dL.", "Ideal: less than 150 mg/dL."))
+    hierro = st.number_input(T("Hierro Sérico (µg/dL):", "Serum Iron (µg/dL):"), min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
+                              key="hierro", help=T("Normal: 60-170 µg/dL.", "Normal: 60-170 µg/dL."))
 
 with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
     _panel_llenar_datos()
@@ -4614,7 +4684,7 @@ _nombre_saludo = nombre_display(nombre_usuario, genero)
 
 # ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 15 secciones siempre visibles ----
 st.sidebar.markdown(
-    '<div class="sidebar-nav-title">🧭 Navegación · 15 secciones</div>',
+    f'<div class="sidebar-nav-title">🧭 {T("Navegación · 15 secciones", "Navigation · 15 sections")}</div>',
     unsafe_allow_html=True,
 )
 
@@ -4865,31 +4935,39 @@ st.markdown("---")
 # ---------------------------------------------------------------------------------------
 if hoja_activa == "0.-DATOS":
     # --- Bloque destacado: por qué descargar el Excel original (va antes del formulario) ---
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:linear-gradient(135deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
                 padding:28px 30px;color:white;margin-bottom:18px;
                 box-shadow:0 14px 34px rgba(30,86,49,0.28);">
         <div style="font-size:0.8rem;letter-spacing:0.03em;text-transform:uppercase;font-weight:700;opacity:0.9;">
-            📂 Antes de empezar</div>
+            📂 {T("Antes de empezar", "Before you start")}</div>
         <div style="font-size:1.5rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.01em;">
-            ¿Por qué deberías descargar el Excel original?</div>
+            {T("¿Por qué deberías descargar el Excel original?", "Why should you download the original Excel file?")}</div>
         <div style="font-size:0.98rem;line-height:1.55;opacity:0.97;max-width:760px;">
-            Esta app es una réplica bonita y fácil de usar, pero el Excel es la herramienta completa: es tuya,
-            para siempre, y puedes llevarla contigo a donde quieras.
+            {T("Esta app es una réplica bonita y fácil de usar, pero el Excel es la herramienta completa: es tuya, "
+            "para siempre, y puedes llevarla contigo a donde quieras.",
+            "This app is a nice, easy-to-use replica, but the Excel file is the complete tool: it's yours, "
+            "forever, and you can take it with you anywhere.")}
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     ra1, ra2, ra3, ra4 = st.columns(4)
     _razones_excel = [
-        ("🎨", "Personalízalo a tu gusto", "Cambia colores, agrega tus propias comidas o ajusta las "
-         "fórmulas exactamente como tú quieras — es 100% tuyo para editar."),
-        ("📴", "Úsalo sin internet", "No necesitas conexión ni esta página abierta: el Excel funciona "
-         "perfecto en tu computadora aunque no tengas WiFi ni datos."),
-        ("🧮", "Fórmulas a la mano", "Todas las fórmulas están visibles y editables en cada celda, así "
-         "puedes revisarlas, aprenderlas o adaptarlas a otro caso."),
-        ("📋", "Con las indicaciones incluidas", "Cada hoja trae sus propias notas e instrucciones, para "
-         "que sepas exactamente cómo usarla paso a paso."),
+        ("🎨", T("Personalízalo a tu gusto", "Customize it to your taste"), T("Cambia colores, agrega tus propias comidas o ajusta las "
+         "fórmulas exactamente como tú quieras — es 100% tuyo para editar.",
+         "Change colors, add your own foods, or adjust the formulas exactly as you like — it's 100% yours to edit.")),
+        ("📴", T("Úsalo sin internet", "Use it without internet"), T("No necesitas conexión ni esta página abierta: el Excel funciona "
+         "perfecto en tu computadora aunque no tengas WiFi ni datos.",
+         "You don't need a connection or this page open: the Excel file works perfectly on your computer "
+         "even without WiFi or data.")),
+        ("🧮", T("Fórmulas a la mano", "Formulas at hand"), T("Todas las fórmulas están visibles y editables en cada celda, así "
+         "puedes revisarlas, aprenderlas o adaptarlas a otro caso.",
+         "All formulas are visible and editable in every cell, so you can review them, learn them, or "
+         "adapt them to another case.")),
+        ("📋", T("Con las indicaciones incluidas", "With instructions included"), T("Cada hoja trae sus propias notas e instrucciones, para "
+         "que sepas exactamente cómo usarla paso a paso.",
+         "Each sheet comes with its own notes and instructions, so you know exactly how to use it step by step.")),
     ]
     for col, (emoji_r, titulo_r, texto_r) in zip([ra1, ra2, ra3, ra4], _razones_excel):
         with col:
@@ -4908,7 +4986,7 @@ if hoja_activa == "0.-DATOS":
     if _ruta_excel is not None:
         with open(_ruta_excel, "rb") as _f:
             st.download_button(
-                "📥 Descargar el Excel original ahora",
+                T("📥 Descargar el Excel original ahora", "📥 Download the original Excel file now"),
                 data=_f.read(),
                 file_name=_ruta_excel.name,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -4916,9 +4994,12 @@ if hoja_activa == "0.-DATOS":
                 type="primary",
             )
     else:
-        st.info("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
+        st.info(T("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
                 "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
-                "`app.py` antes de ejecutarlo.")
+                "`app.py` antes de ejecutarlo.",
+                "To enable this button, place the Excel file (e.g. "
+                "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) in the same folder as this "
+                "`app.py` script before running it."))
 
     st.divider()
 
@@ -4935,65 +5016,72 @@ if hoja_activa == "0.-DATOS":
         </div>
         """, unsafe_allow_html=True)
     with col_intro_hero:
-        st.markdown("""
+        st.markdown(f"""
         <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#007AFF 0%,#5AC8FA 45%,#34C759 100%);
                     border-radius:28px;padding:30px 34px;color:#FFFFFF;height:100%;min-height:210px;box-sizing:border-box;
                     box-shadow:0 18px 40px rgba(0,122,255,0.28);">
             <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:5.5rem;opacity:0.18;">📝✨</div>
-            <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">Paso 1 de tu plan</div>
-            <h1 style="margin:6px 0 6px 0;font-weight:900;letter-spacing:-0.02em;">📝 ¡Introduce tus datos!</h1>
-            <p style="margin:0;font-size:1rem;opacity:0.96;max-width:600px;">El punto de partida: llena el formulario "📝 Llenar / Editar Mis Datos" en el panel lateral izquierdo (sidebar) — se mantiene visible en todas las hojas. Aquí abajo verás un resumen de lo que ya registraste. 🌈</p>
+            <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">{T("Paso 1 de tu plan", "Step 1 of your plan")}</div>
+            <h1 style="margin:6px 0 6px 0;font-weight:900;letter-spacing:-0.02em;">📝 {T("¡Introduce tus datos!", "Enter your data!")}</h1>
+            <p style="margin:0;font-size:1rem;opacity:0.96;max-width:600px;">{T('El punto de partida: llena el formulario "📝 Llenar / Editar Mis Datos" en el panel lateral izquierdo (sidebar) — se mantiene visible en todas las hojas. Aquí abajo verás un resumen de lo que ya registraste. 🌈',
+            'The starting point: fill in the "📝 Fill In / Edit My Data" form in the left sidebar panel — it stays visible on every sheet. Below you\'ll see a summary of what you\'ve already entered. 🌈')}</p>
         </div>
         """, unsafe_allow_html=True)
 
     st.write("")
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#EAF3FF;border-left:5px solid #007AFF;border-radius:16px;padding:12px 20px;">
-    🔒 <b style="color:#007AFF;">Tus datos son privados:</b> solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.
+    🔒 <b style="color:#007AFF;">{T("Tus datos son privados:", "Your data is private:")}</b> {T("solo se usan mientras tienes esta página abierta y no se guardan en ningún servidor.",
+    "it is only used while you have this page open and is never stored on any server.")}
     </div>
     """, unsafe_allow_html=True)
 
 
     st.divider()
-    st.markdown("#### 📋 Resumen de tus datos ingresados")
+    st.markdown(f"#### 📋 {T('Resumen de tus datos ingresados', 'Summary of your entered data')}")
 
     col_datos, col_sticker = st.columns([2, 1])
     with col_datos:
+        _sd = lambda v: T("Sin dato", "No data") if v is None else v
         _tablas_resumen = [
-            (0, "👤 Bloque 1 · Perfil Básico", [
-                ("Nombre", _nombre_saludo), ("Género", genero), ("Peso", f"{peso:.2f} kg"),
-                ("Estatura", f"{estatura} cm ({estatura_m:.2f} m)"), ("Edad", f"{edad} años"),
-                ("Etapa detectada", etapa),
+            (0, T("👤 Bloque 1 · Perfil Básico", "👤 Block 1 · Basic Profile"), [
+                (T("Nombre", "Name"), _nombre_saludo), (T("Género", "Gender"), T(genero, "Male" if genero == "Hombre" else "Female")), (T("Peso", "Weight"), f"{peso:.2f} kg"),
+                (T("Estatura", "Height"), f"{estatura} cm ({estatura_m:.2f} m)"), (T("Edad", "Age"), T(f"{edad} años", f"{edad} years")),
+                (T("Etapa detectada", "Detected life stage"), T(etapa, _ETAPA_EN.get(etapa, etapa))),
             ]),
-            (4, "🏃 Bloque 2 · Estilo de Vida y Objetivos", [
-                ("Actividad física", actividad), ("Objetivo", objetivo),
-                ("Ajuste (bajar)", f"{ajuste_bajar*100:.0f}%"), ("Ajuste (subir)", f"{ajuste_subir*100:.0f}%"),
+            (4, T("🏃 Bloque 2 · Estilo de Vida y Objetivos", "🏃 Block 2 · Lifestyle and Goals"), [
+                (T("Actividad física", "Physical activity"), T(_ACT_LABEL_ES.get(actividad, actividad), _ACT_LABEL_EN.get(actividad, actividad))),
+                (T("Objetivo", "Goal"), T(objetivo, _OBJ_EN.get(objetivo, objetivo))),
+                (T("Ajuste (bajar)", "Adjustment (lose)"), f"{ajuste_bajar*100:.0f}%"), (T("Ajuste (subir)", "Adjustment (gain)"), f"{ajuste_subir*100:.0f}%"),
             ]),
-            (1, "💓 Bloque 3 · Signos Vitales", [
-                ("SpO2", f"{spo2:.2f}%" if spo2 > 0 else "Sin dato"),
-                ("Pulso", f"{pulso} lpm" if pulso > 0 else "Sin dato"),
-                ("Temperatura", f"{temp_corp:.2f}°C" if temp_corp > 34.0 else "Sin dato"),
-                ("Presión arterial", f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "Sin dato"),
+            (1, T("💓 Bloque 3 · Signos Vitales", "💓 Block 3 · Vital Signs"), [
+                (T("SpO2", "SpO2"), f"{spo2:.2f}%" if spo2 > 0 else T("Sin dato", "No data")),
+                (T("Pulso", "Pulse"), f"{pulso} lpm" if pulso > 0 else T("Sin dato", "No data")),
+                (T("Temperatura", "Temperature"), f"{temp_corp:.2f}°C" if temp_corp > 34.0 else T("Sin dato", "No data")),
+                (T("Presión arterial", "Blood pressure"), f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else T("Sin dato", "No data")),
             ]),
-            (1, "🩸 Bloque 4 · Perfil Bioquímico", [
-                ("Hemoglobina", f"{hemo:.2f} g/dL" if hemo > 0 else "Sin dato"),
-                ("Glucosa", f"{gluco:.2f} mg/dL" if gluco > 0 else "Sin dato"),
-                ("Colesterol", f"{coles:.2f} mg/dL" if coles > 0 else "Sin dato"),
-                ("Triglicéridos", f"{trigli:.2f} mg/dL" if trigli > 0 else "Sin dato"),
-                ("Hierro", f"{hierro:.2f} µg/dL" if hierro > 0 else "Sin dato"),
+            (1, T("🩸 Bloque 4 · Perfil Bioquímico", "🩸 Block 4 · Biochemical Profile"), [
+                (T("Hemoglobina", "Hemoglobin"), f"{hemo:.2f} g/dL" if hemo > 0 else T("Sin dato", "No data")),
+                (T("Glucosa", "Glucose"), f"{gluco:.2f} mg/dL" if gluco > 0 else T("Sin dato", "No data")),
+                (T("Colesterol", "Cholesterol"), f"{coles:.2f} mg/dL" if coles > 0 else T("Sin dato", "No data")),
+                (T("Triglicéridos", "Triglycerides"), f"{trigli:.2f} mg/dL" if trigli > 0 else T("Sin dato", "No data")),
+                (T("Hierro", "Iron"), f"{hierro:.2f} µg/dL" if hierro > 0 else T("Sin dato", "No data")),
             ]),
         ]
         for _idx_col, _titulo_tabla, _filas_tabla in _tablas_resumen:
             caja_titulo(_titulo_tabla, _idx_col)
-            tabla_bonita(pd.DataFrame({"Variable": [f[0] for f in _filas_tabla],
-                                        "Valor": [f[1] for f in _filas_tabla]}), _idx_col)
+            tabla_bonita(pd.DataFrame({T("Variable", "Variable"): [f[0] for f in _filas_tabla],
+                                        T("Valor", "Value"): [f[1] for f in _filas_tabla]}), _idx_col)
     with col_sticker:
-        st.caption(f"¡Bienvenid@, {_nombre_saludo}! 👋")
+        st.caption(T(f"¡Bienvenid@, {_nombre_saludo}! 👋", f"Welcome, {_nombre_saludo}! 👋"))
 
     st.divider()
-    caja_util(f"¡Paz y bien, {_nombre_saludo}! Aquí registras tus datos básicos una sola vez, y toda la app se ajusta "
+    caja_util(T(f"¡Paz y bien, {_nombre_saludo}! Aquí registras tus datos básicos una sola vez, y toda la app se ajusta "
               "automáticamente a ti: desde tus calorías diarias hasta tu plan de comidas. La etapa de vida se "
               "detecta sola apenas escribes tu edad. ¡Es el punto de partida de todo tu plan personalizado! 🌟",
+              f"Welcome, {_nombre_saludo}! Here you enter your basic data just once, and the whole app adjusts "
+              "automatically to you: from your daily calories to your meal plan. Your life stage is detected "
+              "automatically as soon as you enter your age. It's the starting point of your whole personalized plan! 🌟"),
               emoji="📝", color="#E3F2FD", borde="#2196F3")
 
 # ---------------------------------------------------------------------------------------
