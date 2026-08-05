@@ -1698,14 +1698,14 @@ def generar_pdf_reporte(datos):
             return None
 
     def _membrete_institucional():
-        img_escudo = _imagen_flowable(_ESCUDO, 18)
-        img_membrete = _imagen_flowable(_LOGO_ANCHO, 14)
-        if img_escudo is None and img_membrete is None:
+        img_membrete = _imagen_flowable(_LOGO_ANCHO, 20)
+        if img_membrete is None:
+            img_membrete = _imagen_flowable(_ESCUDO, 20)
+        if img_membrete is None:
             return
-        t = Table([[img_escudo or "", img_membrete or ""]], colWidths=[30 * mm, CONTENT_W - 30 * mm])
+        t = Table([[img_membrete]], colWidths=[CONTENT_W])
         t.setStyle(TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ALIGN", (0, 0), (0, 0), "LEFT"), ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
             ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
@@ -1841,6 +1841,7 @@ def generar_pdf_reporte(datos):
     _cat_te, _col_te = _clasif_temp_pdf(_temp)
     _cat_pu, _col_pu = _clasif_pulso_pdf(_pulso)
     _hay_algun_vital = any(c != "gris" for c in (_col_pa, _col_ox, _col_te, _col_pu))
+    _hay_alerta_vital = any(c in ("rojo", "ambar") for c in (_col_pa, _col_ox, _col_te, _col_pu))
 
     mod2 = [_cab_modulo("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)"), Spacer(1, 2),
             _tabla_vitales([
@@ -1853,14 +1854,19 @@ def generar_pdf_reporte(datos):
 
     _explic1 = (
         "En el segundo/tercer trimestre gestacional se incrementan las demandas hemodinámicas. "
-        + ("La monitorización periódica de la presión arterial, SpO₂, pulso y temperatura es crucial "
+        + ("Se detectaron valores fuera de rango en los signos vitales (ver etiquetas en alerta o crítico "
+           "en la tabla); se recomienda evaluación médica presencial para descartar trastornos "
+           "hipertensivos del embarazo." if _hay_alerta_vital else
+           "La monitorización periódica de la presión arterial, SpO₂, pulso y temperatura es crucial "
            "para descartar trastornos hipertensivos del embarazo." if _hay_algun_vital else
            "La ausencia de registros de signos vitales (presión arterial, SpO₂, pulso y temperatura) "
            "requiere control prenatal presencial para descartar desórdenes hipertensivos o "
            "alteraciones hemodinámicas.")
     ) if _embarazada_pdf else (
         "Los signos vitales permiten una primera aproximación al estado fisiológico general. "
-        + ("Los valores registrados se encuentran dentro de los parámetros esperables; continúa con "
+        + ("Se detectaron valores fuera de rango (ver etiquetas en alerta o crítico en la tabla); se "
+           "recomienda evaluación médica para precisar el hallazgo." if _hay_alerta_vital else
+           "Los valores registrados se encuentran dentro de los parámetros esperables; continúa con "
            "controles periódicos." if _hay_algun_vital else
            "No se registraron signos vitales en esta sesión; se recomienda completarlos para un "
            "seguimiento clínico más preciso.")
@@ -1878,7 +1884,15 @@ def generar_pdf_reporte(datos):
                  + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
                 ("Proyección (60 días)", f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)"),
             ])]
-    _limite_cafeina_txt = "Máx. 200 mg/día" if _embarazada_pdf else "No aplica"
+    _edad_pdf = datos.get("edad", 0) or 0
+    if _embarazada_pdf:
+        _limite_cafeina_txt = "Máx. 200 mg/día (embarazo)"
+    elif _edad_pdf < 12:
+        _limite_cafeina_txt = "Evitar (no recomendado en niños)"
+    elif _edad_pdf < 18:
+        _limite_cafeina_txt = "Máx. 100 mg/día (adolescente)"
+    else:
+        _limite_cafeina_txt = "Máx. 400 mg/día"
     mod4 = [_cab_modulo("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES"), Spacer(1, 2),
             _tabla_kv([
                 ("Tasa Metabólica (TMB)", f"{datos['tmb']:.2f} kcal/día"),
@@ -1988,13 +2002,13 @@ def generar_pdf_reporte(datos):
     story.append(Paragraph("7. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", estilo_seccion2))
 
     def _tabla_macro_color(macro_key, titulo_col, color_cab, color_fila):
-        filas_html = [["Momento", f"Alimento ({titulo_col})", "Kcal", "Porción Corregida", "Gramos Finales"]]
+        filas_html = [["Momento", f"Alimento ({titulo_col})", "Kcal/100g", "Porción Corregida", "Gramos Finales"]]
         for fila in datos["dieta_filas"]:
             d = fila[macro_key]
             filas_html.append([fila["momento"], d["alimento"], f"{d['kcal']:.0f} kcal",
                                 f"{d['porcion']:.1f} kcal", f"{d['gramos']:.1f} g"])
         _tot = datos["dieta_totales"][macro_key]
-        filas_html.append(["TOTAL", "", f"{_tot['kcal']:.0f} kcal", f"{_tot['porcion']:.1f} kcal", f"{_tot['gramos']:.1f} g"])
+        filas_html.append(["TOTAL", "", "—", f"{_tot['porcion']:.1f} kcal", f"{_tot['gramos']:.1f} g"])
         t = Table(filas_html, colWidths=[24 * mm, 62 * mm, 24 * mm, 38 * mm, 30 * mm])
         n = len(filas_html)
         t.setStyle(TableStyle([
@@ -2028,28 +2042,76 @@ def generar_pdf_reporte(datos):
 
     # ---------------- 8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL ----------------
     story.append(Paragraph("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", estilo_seccion2))
-    for r in datos["recomendaciones"]:
-        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+
+    estilo_subcat = ParagraphStyle("SubcatRecom", parent=estilo_seccion2, fontSize=10.5,
+                                    spaceBefore=6, spaceAfter=3)
+
+    def _dedup(lst):
+        vistos, out = set(), []
+        for x in lst:
+            if x not in vistos:
+                vistos.add(x); out.append(x)
+        return out
+
+    _alimentos_recom, _acciones_recom, _evitar_recom = [], [], []
+
+    _cat_imc_pdf = datos.get("categoria_imc", "")
+    if _cat_imc_pdf == "Peso Saludable":
+        _acciones_recom.append("Mantén tus hábitos actuales de alimentación balanceada y actividad física regular.")
+    elif _cat_imc_pdf == "Bajo Peso":
+        _alimentos_recom.append("Incluye fuentes calóricas densas y saludables (frutos secos, palta, aceite de oliva, cereales integrales) para favorecer una ganancia de peso segura.")
+        _acciones_recom.append("Aumenta la frecuencia de comidas y consulta con tu médico o nutricionista para evaluar tu ingesta calórica.")
+    elif _cat_imc_pdf in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]:
+        _alimentos_recom.append("Prioriza verduras, frutas enteras, proteínas magras y granos integrales; reduce el tamaño de las porciones de forma gradual.")
+        _evitar_recom.append("Evita bebidas azucaradas, frituras y alimentos ultraprocesados de alta densidad calórica.")
+
+    for _param, _valtxt, _cat in datos.get("examen", []):
+        _color_e = CATEGORIA_SEMAFORO.get(_cat, "gris")
+        if _color_e not in ("ambar", "rojo"):
+            continue
+        if _param == "Hemoglobina":
+            _alimentos_recom.append("Prioriza alimentos ricos en hierro (carnes rojas, legumbres, espinaca) junto con vitamina C para mejorar su absorción.")
+            _evitar_recom.append("Evita el té o café junto con las comidas principales, ya que reducen la absorción del hierro.")
+        elif _param == "Triglicéridos":
+            _alimentos_recom.append("Aumenta el consumo de fibra (avena, legumbres, verduras) y grasas saludables (pescado, aceite de oliva).")
+            _evitar_recom.append("Reduce azúcares simples, harinas refinadas, grasas saturadas y alcohol.")
+        elif _param == "Glucosa" and _cat == "Hipoglucemia":
+            _alimentos_recom.append("Combina carbohidratos de absorción compleja con proteína en cada comida para estabilizar tu glucosa.")
+            _acciones_recom.append("Evita el ayuno prolongado; realiza comidas y meriendas frecuentes a lo largo del día.")
+        elif _param == "Glucosa":
+            _alimentos_recom.append("Prioriza carbohidratos de absorción lenta (granos integrales, legumbres) y aumenta el consumo de fibra.")
+            _evitar_recom.append("Reduce azúcares simples y controla el tamaño de tus porciones de carbohidratos.")
+        elif _param == "Colesterol":
+            _alimentos_recom.append("Prioriza grasas saludables como el aceite de oliva, la palta y el pescado.")
+            _evitar_recom.append("Reduce frituras, grasas saturadas y alimentos ultraprocesados.")
+        elif _param == "Hierro":
+            _alimentos_recom.append("Aumenta el consumo de alimentos ricos en hierro (carnes, legumbres, vegetales verdes).")
 
     if _embarazada_pdf:
-        story.append(Paragraph(
-            "•  <b>Seguridad e Inocuidad Alimentaria (Norma ACOG):</b> Durante la gestación, todos los lácteos "
-            "deben ser pasteurizados. Consumir carnes y huevos completamente cocidos para prevenir infecciones "
-            "por <i>Listeria monocytogenes</i> o <i>Toxoplasma gondii</i>.", estilo_recom_txt))
-        story.append(Paragraph(
-            "•  <b>Micronutrientes Clave:</b> Acompañar el plan con la suplementación indicada por su "
-            "ginecólogo-obstetra (Sulfato Ferroso + Ácido Fólico). Consumir cítricos (vitamina C) junto con las "
-            "proteínas para optimizar la absorción del hierro vegetal.", estilo_recom_txt))
-        story.append(Paragraph(
-            "•  <b>Hidratación:</b> Mantener un consumo de 2.5 a 3.0 litros de agua al día para sostener el "
-            "volumen plasmático y el líquido amniótico.", estilo_recom_txt))
+        _alimentos_recom.append("Incluye lácteos pasteurizados, carnes y huevos bien cocidos, y cítricos junto con las proteínas.")
+        _acciones_recom.append("Mantén un consumo de 2.5 a 3.0 litros de agua al día y sigue la suplementación indicada por tu ginecólogo-obstetra (Sulfato Ferroso + Ácido Fólico).")
+        _evitar_recom.append("Evita pescados/carnes crudos o poco cocidos, embutidos sin cocer, lácteos no pasteurizados y el exceso de cafeína (máx. 200 mg/día).")
     else:
-        story.append(Paragraph(
-            "•  <b>Hidratación:</b> Mantener un consumo adecuado de agua a lo largo del día (aprox. 30-35 ml "
-            "por kg de peso corporal).", estilo_recom_txt))
-        story.append(Paragraph(
-            "•  <b>Fraccionamiento:</b> Respetar el esquema de 5 comidas diarias (3 principales y 2 meriendas) "
-            "para evitar fluctuaciones de glucosa y favorecer la saciedad.", estilo_recom_txt))
+        _acciones_recom.append("Mantén un consumo adecuado de agua a lo largo del día (aprox. 30-35 ml por kg de peso corporal) y respeta el esquema de 5 comidas diarias.")
+        _evitar_recom.append("Evita saltarte comidas y el exceso de alimentos ultraprocesados.")
+        if _edad_pdf < 18:
+            _evitar_recom.append("Evita bebidas energizantes y limita la cafeína (máx. 100 mg/día en adolescentes).")
+
+    _alimentos_recom = _dedup(_alimentos_recom)
+    _acciones_recom = _dedup(_acciones_recom)
+    _evitar_recom = _dedup(_evitar_recom)
+
+    story.append(Paragraph("🥦 Alimentos Recomendados", estilo_subcat))
+    for r in (_alimentos_recom or ["Mantén una alimentación variada y balanceada según tu plan asignado."]):
+        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+
+    story.append(Paragraph("✅ Acciones / Conductas Saludables", estilo_subcat))
+    for r in (_acciones_recom or ["Continúa con tus hábitos actuales de alimentación y actividad física."]):
+        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+
+    story.append(Paragraph("⚠️ Alimentos y Conductas a Evitar", estilo_subcat))
+    for r in (_evitar_recom or ["No se detectaron alertas específicas con la información ingresada."]):
+        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
 
     # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
     story.append(Spacer(1, 10))
@@ -2280,7 +2342,7 @@ DIETA = {
         "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Cena": {
-        "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Verduras mixtas": 65, "Palomitas de maíz": 387, "Calabaza asada": 45, "Brócoli cocido": 35, "Tomates cherry": 18, "Espinaca salteada": 41, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
+        "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Palomitas de maíz": 387, "Camote": 86, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Huevos revueltos": 148, "Sardinas": 208, "Pechuga de pavo": 135, "Pechuga de pollo": 165, "Filete de pescado blanco": 96, "Pechuga de pollo (sin piel)": 165, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
         "Grasa": {"Aceitunas": 55, "Queso crema": 202, "Aceite de aguacate": 84, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
@@ -2462,12 +2524,22 @@ MENSAJES_TRIAJE = {
 }
 
 
+MENSAJES_TRIAJE_CATEGORIA = {
+    # Excepciones donde dos categorías comparten color de semáforo pero requieren mensajes
+    # clínicos opuestos (p.ej. Hipoglucemia y Prediabetes son ambas "ambar" en Glucosa, pero
+    # la Hipoglucemia NO debe recibir el consejo de "reducir azúcares").
+    "Hipoglucemia": ("Tu glucosa está por debajo de lo recomendado. Evita el ayuno prolongado, realiza "
+                      "comidas y meriendas frecuentes, y combina carbohidratos de absorción compleja con "
+                      "proteína para estabilizar tus niveles."),
+}
+
+
 def evaluar_estado_clinico(parametro, categoria):
     """Función de triaje digital: toma la categoría clínica ya calculada (ej. 'Anemia leve') y
     retorna el color de semáforo, su estilo visual y un mensaje de recomendación personalizado."""
     color = CATEGORIA_SEMAFORO.get(categoria, "gris")
     estilo = SEMAFORO_ESTILO[color]
-    mensaje = MENSAJES_TRIAJE.get(parametro, {}).get(color, "Sin recomendación disponible.")
+    mensaje = MENSAJES_TRIAJE_CATEGORIA.get(categoria) or MENSAJES_TRIAJE.get(parametro, {}).get(color, "Sin recomendación disponible.")
     return {
         "colorSemaforo": color,
         "hex": estilo["hex"],
@@ -7264,7 +7336,7 @@ elif hoja_activa == "9.-DIETA":
             alimento = alimentos[macro]
             kcal_alimento = DIETA[comida][macro][alimento]
             porcion_kcal = round(porciones[comida]["kcal"] * PCT_MACRO_MOMENTO[macro], 2)
-            gramos = round((porcion_kcal / kcal_alimento) * 100, 1)
+            gramos = min(round((porcion_kcal / kcal_alimento) * 100, 1), 400.0)
             fila[macro] = alimento
             fila[f"kcal ({col_prefix})"] = kcal_alimento
             fila[f"Porción corregida ({col_prefix})"] = porcion_kcal
@@ -7299,7 +7371,7 @@ elif hoja_activa == "9.-DIETA":
         filas_html += f"""
             <tr class="dm-total">
                 <td class="dm-momento" colspan="2">TOTAL</td>
-                <td>{suma_kcal:.0f} kcal</td>
+                <td>—</td>
                 <td>{suma_porcion:.1f} kcal</td>
                 <td>{suma_gramos:.1f} g</td>
             </tr>"""
@@ -7308,7 +7380,7 @@ elif hoja_activa == "9.-DIETA":
         <table class="dieta-menu-table">
             <thead>
             <tr><th style="text-align:left;">Momento</th><th>{icono} Alimento ({titulo})</th>
-                <th>Kcal</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
+                <th>Kcal/100g</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
             </thead>
             <tbody>
             {filas_html}
@@ -7403,8 +7475,8 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 
     # --- PASO 1: ¿A qué hora sueles dormir? (selector amigable AM/PM) --------------------
     st.markdown("##### ① 🛏️ ¿A qué hora sueles dormir?")
-    _opciones_hora, _t_cursor = [], datetime.strptime("19:00", "%H:%M")
-    for _ in range(15):
+    _opciones_hora, _t_cursor = [], datetime.strptime("00:00", "%H:%M")
+    for _ in range(48):
         _opciones_hora.append(_t_cursor)
         _t_cursor += timedelta(minutes=30)
     _etiquetas_hora = [f"🌙 {t.strftime('%I:%M %p').lstrip('0')}" for t in _opciones_hora]
@@ -7489,29 +7561,40 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 
     st.write("")
 
-    # --- PASO 5: ¿Qué cambia si modifico mi hora de dormir? — mini tabla -----------------
-    st.markdown("##### ⑤ 🔄 ¿Qué cambia si modifico mi hora de dormir?")
-    _tabla_ejemplos = [("9:00 PM", "1:00 PM"), ("10:00 PM", "2:00 PM"),
-                        ("11:00 PM", "3:00 PM"), ("12:00 AM", "4:00 PM")]
-    _hora_actual_txt = _fmt(dt_dormir)
-    _filas_html = []
-    for _dormir_txt, _cafe_txt in _tabla_ejemplos:
-        _es_actual = _dormir_txt == _hora_actual_txt
-        _bg = "background:rgba(255,179,0,0.18);font-weight:800;" if _es_actual else ""
-        _filas_html.append(f"""<tr style="{_bg}">
-            <td style="padding:10px 16px;border-bottom:1px solid #F0E9DC;">🛏️ {_dormir_txt}</td>
-            <td style="padding:10px 16px;border-bottom:1px solid #F0E9DC;">☕ {_cafe_txt}</td>
-            </tr>""")
+    # --- PASO 5: 🌈 Comparación personalizada --------------------------------------------
+    st.markdown("##### ⑤ 🌈 Comparación personalizada")
+    _hora_verde = dt_limite - timedelta(hours=3)
+    _hora_ambar = dt_limite - timedelta(minutes=30)
+    _hora_roja = dt_limite + timedelta(hours=3)
+    _comparaciones = [
+        ("🟢", _hora_verde, "Muy recomendable",
+         "Hay tiempo de sobra para que tu cuerpo elimine la cafeína antes de dormir."),
+        ("🟡", _hora_ambar, "Aún aceptable",
+         "Está muy cerca del límite; en personas sensibles a la cafeína podría retrasar el sueño."),
+        ("🔴", _hora_roja, "Puede afectar el sueño",
+         "La cafeína seguiría activa en tu organismo a la hora de dormir, reduciendo la calidad del descanso."),
+    ]
+    _filas_comp = "".join(f"""
+    <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:16px;
+    padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);margin-bottom:8px;">
+        <div style="font-size:1.3rem;">{_ic}</div>
+        <div style="flex:1;">
+            <p style="margin:0;font-weight:800;color:#17301F;font-size:0.95rem;">{_fmt(_hh)} → {_tt}</p>
+            <p style="margin:2px 0 0 0;color:#5C6B60;font-size:0.8rem;line-height:1.4;">{_txt}</p>
+        </div>
+    </div>""" for _ic, _hh, _tt, _txt in _comparaciones)
     st.markdown(_html_sin_lineas_vacias(f"""
-    <div style="background:#FFFFFF;border-radius:18px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.05);
-    border:1px solid rgba(27,42,74,0.08);">
-    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;color:#17301F;">
-    <thead><tr style="background:#1B2A4A;color:#FFFFFF;">
-    <th style="padding:10px 16px;text-align:left;">Si duermes...</th>
-    <th style="padding:10px 16px;text-align:left;">Último café recomendado</th>
-    </tr></thead>
-    <tbody>{"".join(_filas_html)}</tbody>
-    </table></div>
+    <div style="background:#F4F6FB;border-radius:20px;padding:18px 20px;border:1px solid rgba(27,42,74,0.08);">
+        <p style="margin:0 0 4px 0;font-weight:900;color:#1B2A4A;font-size:1rem;">☕ Tu horario</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px;">
+            <div><span style="color:#5C6B60;font-size:0.8rem;">Hora de dormir</span><br>
+            <span style="font-weight:800;color:#1B2A4A;font-size:1.05rem;">{_fmt(dt_dormir)}</span></div>
+            <div><span style="color:#5C6B60;font-size:0.8rem;">Último café recomendado</span><br>
+            <span style="font-weight:800;color:#B06000;font-size:1.05rem;">{_fmt(dt_limite)}</span></div>
+        </div>
+        <p style="margin:0 0 8px 0;font-weight:700;color:#17301F;font-size:0.9rem;">Si tomas café a las...</p>
+        {_filas_comp}
+    </div>
     """), unsafe_allow_html=True)
 
     st.write("")
@@ -8033,7 +8116,7 @@ elif hoja_activa == "📄 MI REPORTE":
                     alimento_sel = next(iter(opciones_macro))  # fallback: primera opción disponible
                 kcal_alimento = opciones_macro[alimento_sel]
                 porcion_kcal = round(porciones[comida]["kcal"] * _PCT_MACRO_MOMENTO_PDF[macro], 2)
-                gramos_finales = round((porcion_kcal / kcal_alimento) * 100, 1) if kcal_alimento else 0.0
+                gramos_finales = min(round((porcion_kcal / kcal_alimento) * 100, 1), 400.0) if kcal_alimento else 0.0
                 fila_macro_pdf[macro] = {
                     "alimento": alimento_sel, "kcal": kcal_alimento,
                     "porcion": porcion_kcal, "gramos": gramos_finales,
@@ -8060,7 +8143,7 @@ elif hoja_activa == "📄 MI REPORTE":
             filas_html += f"""
                 <tr class="dm-total">
                     <td class="dm-momento" colspan="2">TOTAL</td>
-                    <td>{_tot['kcal']:.0f} kcal</td>
+                    <td>—</td>
                     <td>{_tot['porcion']:.1f} kcal</td>
                     <td>{_tot['gramos']:.1f} g</td>
                 </tr>"""
@@ -8069,7 +8152,7 @@ elif hoja_activa == "📄 MI REPORTE":
             <table class="dieta-menu-table">
                 <thead>
                 <tr><th style="text-align:left;">Momento</th><th>{icono} Alimento ({titulo})</th>
-                    <th>Kcal</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
+                    <th>Kcal/100g</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
                 </thead>
                 <tbody>
                 {filas_html}
@@ -8115,7 +8198,8 @@ elif hoja_activa == "📄 MI REPORTE":
                               ("Glucosa", _cat_gluco_r), ("Colesterol", _cat_coles_r), ("Hierro", _cat_hierro_r)]:
             _color_r = CATEGORIA_SEMAFORO.get(_cat, "gris")
             if _color_r in ["ambar", "rojo"]:
-                _recomendaciones.append(f"**{_param}** ({_cat}): {MENSAJES_TRIAJE.get(_param, {}).get(_color_r, '')}")
+                _msg_r = MENSAJES_TRIAJE_CATEGORIA.get(_cat) or MENSAJES_TRIAJE.get(_param, {}).get(_color_r, '')
+                _recomendaciones.append(f"**{_param}** ({_cat}): {_msg_r}")
 
     if not _recomendaciones:
         _recomendaciones.append("No se detectaron alertas con la información ingresada hasta el momento.")
