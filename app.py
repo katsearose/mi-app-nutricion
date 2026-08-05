@@ -722,7 +722,7 @@ div[data-testid="stButton"] button[kind="primary"] {
     line-height: 1.2 !important;
 }
 
-/* ---------- Navegación lateral tipo "Pills" (sidebar, 17 secciones siempre visibles) ---------- */
+/* ---------- Navegación lateral tipo "Pills" (sidebar, 15 secciones siempre visibles) ---------- */
 .sidebar-nav-title {
     font-weight: 800; color: var(--brand-green); font-size: 0.72rem; text-transform: uppercase;
     letter-spacing: 0.06em; margin: 2px 0 6px 4px; display:flex; align-items:center; gap:6px;
@@ -3839,7 +3839,7 @@ _ruta_excel = _buscar_excel_original()
 st.markdown("---")
 
 # =========================================================================================
-# NAVEGACIÓN — 17 secciones en un panel lateral fijo (Sidebar Pill Navigation)
+# NAVEGACIÓN — 15 secciones en un panel lateral fijo (Sidebar Pill Navigation)
 # Todas las secciones existen simultáneamente en la app; el sidebar decide cuál se pinta.
 # =========================================================================================
 OPCIONES_HOJAS = [
@@ -3854,15 +3854,13 @@ OPCIONES_HOJAS = [
     "7.-PORCIONES",
     "8.-FATSECRET",
     "9.-DIETA",
-    "10.-CLIMA CHICLAYO",
-    "11.-APORTE 1: EMBARAZO",
     "12.-APORTE 2: CAFEÍNA",
     "13.-LÍNEA DE TIEMPO",
     "📄 MI REPORTE",
     "🎓 SOBRE NOSOTRAS",
 ]
 
-# Ícono + etiqueta corta para cada píldora del sidebar (17 secciones, siempre visibles)
+# Ícono + etiqueta corta para cada píldora del sidebar (15 secciones, siempre visibles)
 ETIQUETAS_NAV = {
     "0.-DATOS":                    ("⚙️", "Mis Datos"),
     "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Análisis Sanguíneo"),
@@ -3875,8 +3873,6 @@ ETIQUETAS_NAV = {
     "7.-PORCIONES":                ("🍎", "Porciones del Día"),
     "8.-FATSECRET":                ("🇵🇪", "Base de Alimentos"),
     "9.-DIETA":                    ("📝", "Dieta"),
-    "10.-CLIMA CHICLAYO":          ("🌤️", "Clima Chiclayo"),
-    "11.-APORTE 1: EMBARAZO":      ("🤰", "TMB en Embarazo"),
     "12.-APORTE 2: CAFEÍNA":       ("☕", "Límite de Cafeína"),
     "13.-LÍNEA DE TIEMPO":         ("🎯", "¿Cómo cambia tu peso?"),
     "📄 MI REPORTE":               ("📄", "Mi Reporte"),
@@ -3890,6 +3886,7 @@ _DEFAULTS_SESION = {
     "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
     "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
+    "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -3968,6 +3965,19 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
                                 value=9, step=1, key="edad", help="Rango válido: 1 a 120 años.")
     etapa = etapa_desde_edad(edad)
     st.info(f"🔎 Etapa detectada automáticamente: **{etapa}**")
+
+    embarazada = False
+    trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
+    if genero == "Mujer":
+        embarazada = st.checkbox("🤰 ¿Estás embarazada?", key="embarazada",
+                                  help="Si activas esto, tu TMB se calculará con la fórmula de gestación "
+                                       "en vez de Mifflin-St Jeor, y se reflejará en toda la app.")
+        if embarazada:
+            trimestre = st.selectbox("Trimestre de embarazo:",
+                                      ["Primer trimestre", "Segundo trimestre", "Tercer trimestre"],
+                                      key="trimestre_emb")
+    vive_en_chiclayo = st.checkbox("🌤️ ¿Vives en Chiclayo?", key="vive_en_chiclayo",
+                                    help="Ajusta tu RCD según el clima cálido de la ciudad (−5%).")
 
     # ===== BLOQUE 2: Estilo de Vida y Objetivos =====
     st.markdown('<div style="background:linear-gradient(120deg,#EAFAEE 0%,#D2F5DC 100%);border-radius:20px;'
@@ -4124,9 +4134,9 @@ with st.sidebar.expander("📝 Llenar / Editar Mis Datos", expanded=True):
     hierro = st.number_input("Hierro Sérico (µg/dL):", min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
                               key="hierro", help="Normal: 60-170 µg/dL.")
 
-# ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 16 secciones siempre visibles ----
+# ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 15 secciones siempre visibles ----
 st.sidebar.markdown(
-    '<div class="sidebar-nav-title">🧭 Navegación · 17 secciones</div>',
+    '<div class="sidebar-nav-title">🧭 Navegación · 15 secciones</div>',
     unsafe_allow_html=True,
 )
 
@@ -4142,8 +4152,6 @@ NAV_COLORES = {
     "7.-PORCIONES":                ("#30B0C7", "#E6F7FA"),
     "8.-FATSECRET":                ("#00C7BE", "#E1FBF9"),
     "9.-DIETA":                    ("#FF6B35", "#FFEEE6"),
-    "10.-CLIMA CHICLAYO":          ("#FFB300", "#FFF6E0"),
-    "11.-APORTE 1: EMBARAZO":      ("#BF5AF2", "#F7ECFD"),
     "12.-APORTE 2: CAFEÍNA":       ("#5856D6", "#ECEBFB"),
     "13.-LÍNEA DE TIEMPO":         ("#5AC8FA", "#E9F8FF"),
     "📄 MI REPORTE":               ("#32ADE6", "#E7F6FD"),
@@ -4243,13 +4251,25 @@ hierro = st.session_state["hierro"]
 estatura_m = estatura / 100.0
 imc = round(peso / (estatura_m ** 2))  # =REDONDEAR(D30/F30) -> 0 decimales, igual que el Excel
 
-if genero == "Hombre":
-    tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
+if genero == "Mujer" and embarazada:
+    _AJUSTE_TRIMESTRE = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 452}
+    tmb_base_gestacion = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
+    ajuste_gestacion = _AJUSTE_TRIMESTRE.get(trimestre, 0)
+    tmb = tmb_base_gestacion + ajuste_gestacion
+    tmb_fuente = "embarazo_" + trimestre.split(" ")[0].lower()
 else:
-    tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
+    tmb_base_gestacion = None
+    ajuste_gestacion = 0
+    if genero == "Hombre":
+        tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
+    else:
+        tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
+    tmb_fuente = "mifflin_st_jeor"
 
 factor = FACTOR_ACTIVIDAD[actividad][genero]
-rcd = tmb * factor  # Hoja 4: RCD = TMB x Factor de actividad
+rcd_base = tmb * factor  # RCD base = TMB x Factor de actividad
+rcd = rcd_base * 0.95 if vive_en_chiclayo else rcd_base  # RCD (con ajuste de clima si vive en Chiclayo)
+ajuste_clima_aplicado = vive_en_chiclayo
 
 # Hoja 5: ajuste según objetivo (Control de Peso) — respetando el límite fisiológico de no bajar de la TMB
 if objetivo == "Bajar de peso":
@@ -4308,8 +4328,7 @@ porciones = {
     "Cena":       {"pct": 0.25, "kcal": rcd_final * 0.25},
 }
 
-# Hoja 10: Gasto energético ajustado al clima de Chiclayo
-rcd_chiclayo = rcd * 0.95
+# RCD ya incluye el ajuste de clima de Chiclayo si corresponde (ver cálculo de `rcd` arriba)
 
 # Categoría IMC del usuario (para reutilizar en Hoja 2 y en el Reporte)
 if etapa in ["Niñez", "Adolescencia"]:
@@ -5214,51 +5233,248 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
-    hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
-                   "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
+    if not (genero == "Mujer" and embarazada):
+        hoja_header(3, "Biológicamente, los hombres suelen tener más masa muscular y las mujeres más porcentaje "
+                       "de grasa; como el músculo quema más energía, el resultado cambia según el sexo.")
 
-    # --- 1. ¿Qué es la TMB? -------------------------------------------------------------
-    st.markdown("#### 😴 ¿Qué es la TMB?")
-    ilustracion_que_es_tmb()
+        # --- 1. ¿Qué es la TMB? -------------------------------------------------------------
+        st.markdown("#### 😴 ¿Qué es la TMB?")
+        ilustracion_que_es_tmb()
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
-    st.markdown("#### 🔥 ¿Cuál es tu resultado?")
-    tarjeta_resultado_tmb(tmb)
+        # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
+        st.markdown("#### 🔥 ¿Cuál es tu resultado?")
+        tarjeta_resultado_tmb(tmb)
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
-    st.markdown("#### 🧪 ¿Cómo se calculó?")
-    formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
-    tarjeta_quien_creo_formula()
+        # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
+        st.markdown("#### 🧪 ¿Cómo se calculó?")
+        formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
+        tarjeta_quien_creo_formula()
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 4. ¿Por qué usamos esta fórmula? -------------------------------------------------
-    tarjeta_por_que_mifflin()
+        # --- 4. ¿Por qué usamos esta fórmula? -------------------------------------------------
+        tarjeta_por_que_mifflin()
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- Ilustración "central energética" (opcional, muy visual) --------------------------
-    central_energetica_tmb(tmb)
+        # --- Ilustración "central energética" (opcional, muy visual) --------------------------
+        central_energetica_tmb(tmb)
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 5. ¿Qué módulos usan la TMB? — flujo horizontal ----------------------------------
-    flujo_modulos_tmb()
+        # --- 5. ¿Qué módulos usan la TMB? — flujo horizontal ----------------------------------
+        flujo_modulos_tmb()
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 6. Resumen Inteligente -------------------------------------------------------------
-    interpretacion_inteligente_tmb(tmb)
+        # --- 6. Resumen Inteligente -------------------------------------------------------------
+        interpretacion_inteligente_tmb(tmb)
 
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
-              "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
-              "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
-              emoji="⚡", color="#FFF3E0", borde="#FB8C00")
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+        caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
+                  "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
+                  "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
+                  emoji="⚡", color="#FFF3E0", borde="#FB8C00")
+
+    else:
+        # =================================================================================
+        # RAMA: TMB durante el Embarazo (usa perfil global: peso, estatura, edad, trimestre)
+        # =================================================================================
+        hoja_header(3, subtitulo="El embarazo cambia las necesidades de energía del cuerpo. Aquí calculamos "
+                                  "cuántas calorías necesitas según tu etapa de gestación.", tip="🤰 Por trimestre")
+        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+            "TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
+            autor="MD Mifflin, ST St Jeor et al. (1990)",
+            referencia="Ecuación de Mifflin-St Jeor + ajuste gestacional")}</div>""", unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
+        border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
+        📌 Esta sección usa tus datos ya registrados (edad, peso, altura) y el trimestre que seleccionaste
+        en "Mis Datos", pensada exclusivamente para mujeres embarazadas.</div>
+        """, unsafe_allow_html=True)
+
+        _nombre_disp = nombre_usuario.strip() if nombre_usuario.strip() else "ti"
+
+        # --- Flujo visual: datos → trimestre → TMB → aporte → resultado ---------------------
+        st.markdown("#### 🔎 De tus datos a tu resultado")
+        _pasos_emb = [
+            ("#5AC8FA", "👩", "Datos ingresados", f"{edad:.0f} años · {peso:.0f} kg · {estatura:.0f} cm"),
+            ("#BA68C8", "🤰", "Trimestre", trimestre),
+            ("#FF9500", "🔥", "TMB calculada", f"{tmb_base_gestacion:.0f} kcal/día"),
+            ("#34C759", "🍽️", "Calorías adicionales", f"+{ajuste_gestacion} kcal"),
+            ("#FF2D55", "❤️", "Resultado recomendado", f"{tmb:.0f} kcal/día"),
+        ]
+        _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
+        for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
+            _es_ultimo = _i == len(_pasos_emb) - 1
+            _fondo_paso = "rgba(255,45,85,0.08)" if _es_ultimo else "#FFFFFF"
+            _html_pasos_emb.append(f"""
+            <div style="display:flex;align-items:center;gap:14px;background:{_fondo_paso};border-radius:18px;
+            padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
+            <div style="font-size:1.5rem;">{_em}</div>
+            <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.02em;">{_tt}</p>
+            <p style="margin:0;color:#17301F;font-size:1rem;font-weight:700;">{_tx}</p></div>
+            </div>""")
+            if not _es_ultimo:
+                _html_pasos_emb.append('<div style="text-align:center;font-size:1.3rem;color:#BA68C8;opacity:0.7;margin:2px 0;">↓</div>')
+        _html_pasos_emb.append('</div>')
+        st.markdown(_html_sin_lineas_vacias("".join(_html_pasos_emb)), unsafe_allow_html=True)
+
+        # --- ¿Qué significa este resultado? --------------------------------------------------
+        st.markdown(f"""
+        <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 ¿Qué significa este resultado?</p>
+        <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
+        Tu cuerpo necesita aproximadamente <b>{tmb:.0f} kcal al día</b> para mantener sus funciones vitales
+        (respirar, mantener la temperatura corporal, funcionamiento de órganos, etc.), sin considerar la
+        actividad física.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ¿Por qué cambia según el trimestre? — tres tarjetas -----------------------------
+        st.markdown("#### 🤰 ¿Por qué cambia según el trimestre?")
+        _tri_data = [
+            ("Primer trimestre", "#4CAF50", "#EAFAEE", "🌱", "Primer trimestre",
+             "No suelen necesitarse calorías adicionales. Lo más importante es mantener una alimentación "
+             "equilibrada y cubrir todos los nutrientes esenciales."),
+            ("Segundo trimestre", "#FF9500", "#FFF3E5", "👶", "Segundo trimestre",
+             "El bebé comienza un crecimiento más rápido. Generalmente se requieren alrededor de "
+             "340 kcal adicionales al día."),
+            ("Tercer trimestre", "#FF2D55", "#FFEBF0", "❤️", "Tercer trimestre",
+             "Es la etapa de mayor crecimiento fetal. Las necesidades energéticas aumentan aproximadamente "
+             "452 kcal por día."),
+        ]
+        _cols_tri = st.columns(3)
+        for _col, (_clave, _borde, _fondo, _emoji, _titulo, _texto) in zip(_cols_tri, _tri_data):
+            _sel = (_clave == trimestre)
+            _op = "1" if _sel else "0.45"
+            _borde_w = "2.5px solid " + _borde if _sel else f"1px solid {_borde}33"
+            _sombra = f"0 10px 24px {_borde}44" if _sel else "0 2px 8px rgba(0,0,0,0.03)"
+            with _col:
+                st.markdown(f"""
+                <div class="bento-card" style="background:{_fondo};border:{_borde_w};text-align:center;
+                opacity:{_op};box-shadow:{_sombra};transition:all 0.25s ease;">
+                <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
+                <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
+                <p style="margin:0;color:#3C3C43;font-size:0.8rem;line-height:1.45;">{_texto}</p>
+                {'<p style="margin:8px 0 0 0;font-weight:800;color:'+_borde+';font-size:0.72rem;">✓ TU ETAPA ACTUAL</p>' if _sel else ''}
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ¿Por qué aumentan las calorías? — mini infografía -------------------------------
+        st.markdown("#### 🔥 ¿Por qué aumentan las calorías?")
+        _pasos_porque = [
+            ("#BA68C8", "🤰", "El bebé crece"),
+            ("#FF9500", "🦴", "Se forman nuevos tejidos"),
+            ("#FF2D55", "❤️", "Trabaja más el organismo"),
+            ("#FF3B30", "🔥", "Se necesita más energía"),
+        ]
+        _cols_porque = st.columns(len(_pasos_porque) * 2 - 1)
+        for _i, (_bc, _em, _tt) in enumerate(_pasos_porque):
+            with _cols_porque[_i * 2]:
+                st.markdown(f"""
+                <div style="text-align:center;">
+                <div style="width:56px;height:56px;border-radius:50%;background:{_bc}22;display:flex;
+                align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 6px auto;">{_em}</div>
+                <p style="margin:0;font-size:0.72rem;font-weight:700;color:#17301F;">{_tt}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            if _i < len(_pasos_porque) - 1:
+                with _cols_porque[_i * 2 + 1]:
+                    st.markdown('<div style="text-align:center;font-size:1.4rem;color:#BA68C8;opacity:0.6;margin-top:16px;">→</div>',
+                                unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- Comparación: TMB Base → Aporte → Resultado ---------------------------------------
+        st.markdown("#### 📊 Antes y después del ajuste")
+        st.markdown(f"""
+        <div class="cp5-glass-flow">
+            <div class="cp5-flow-card">
+                <div class="cp5-flow-label">🔥 TMB Base</div>
+                <div class="cp5-flow-value">{tmb_base_gestacion:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu gasto energético sin ajuste gestacional.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
+                <div class="cp5-flow-label">👶 Aporte por embarazo</div>
+                <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
+                <div class="cp5-flow-legend">Energía extra para {trimestre.lower()}.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
+                <div class="cp5-flow-label">❤️ Resultado para {_nombre_disp}</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{tmb:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu gasto energético recomendado hoy.</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # --- 🍽 Recuerda: prioriza calidad, no solo cantidad ----------------------------------
+        st.markdown("#### 🍽️ Recuerda")
+        st.markdown("""
+        <div class="bento-card" style="border-left:5px solid #FF9500;">
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">No todas las calorías son iguales. Durante
+        el embarazo es importante priorizar alimentos ricos en:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Proteínas</span>
+        <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcio</span>
+        <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Hierro</span>
+        <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Ácido fólico</span>
+        <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fibra</span>
+        </div>
+        <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">No solo aumentar la cantidad de comida.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ¿Qué puedes hacer desde hoy? -----------------------------------------------------
+        st.markdown("#### ✅ ¿Qué puedes hacer desde hoy?")
+        _acciones_emb = [
+            ("#0277BD", "#E9F8FF", "🥛", "Consumir lácteos"),
+            ("#137333", "#EAFAEE", "🥬", "Incluir verduras diariamente"),
+            ("#1976D2", "#E3F2FD", "🐟", "Proteínas de buena calidad"),
+            ("#00B8D9", "#E1FBF9", "💧", "Mantener buena hidratación"),
+            ("#FF9500", "#FFF3E5", "🚶", "Actividad física autorizada"),
+        ]
+        _cols_acc = st.columns(5)
+        for _col, (_borde, _fondo, _emoji, _texto) in zip(_cols_acc, _acciones_emb):
+            with _col:
+                st.markdown(f"""
+                <div class="bento-card" style="background:{_fondo};text-align:center;padding:14px 10px;">
+                <div style="font-size:1.4rem;margin-bottom:4px;">{_emoji}</div>
+                <p style="margin:0;color:{_borde};font-weight:700;font-size:0.72rem;line-height:1.3;">{_texto}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ⚠️ Importante ----------------------------------------------------------------------
+        st.markdown("""
+        <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
+        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Importante</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
+        Las necesidades nutricionales durante el embarazo varían entre cada mujer. Este cálculo es una
+        estimación educativa y no reemplaza la evaluación realizada por un obstetra o nutricionista.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        caja_util("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
+                  "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
+                  "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
+                  emoji="👶", color="#F8ECFB", borde="#BA68C8")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
@@ -5283,7 +5499,7 @@ elif hoja_activa == "4.-RCD":
          _desc_nivel_rcd.get(actividad, "Tu nivel de actividad física habitual durante el día."), "#007AFF", "#EAF3FF"),
         ("📈", "Factor aplicado", f"{factor:.2f}",
          "Coeficiente utilizado para calcular tu gasto diario.", "#AF52DE", "#F6ECFC"),
-        ("🔥", "Tu RCD", f"{rcd:.0f} kcal/día",
+        ("🔥", "RCD base (antes del clima)" if vive_en_chiclayo else "Tu RCD", f"{rcd_base:.0f} kcal/día",
          "Las calorías aproximadas que necesitas consumir para mantener tu peso.", "#FF9500", "#FFF3E5"),
     ]
     _tarjetas_html_rcd = ""
@@ -5366,7 +5582,7 @@ elif hoja_activa == "4.-RCD":
     <div style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:16px;padding:16px 20px;margin-bottom:18px;">
         <div style="font-weight:800;color:#C06000;font-size:1rem;margin-bottom:6px;">💡 ¿Qué significa tu RCD?</div>
         <div style="color:#1C1C1E;font-size:0.9rem;line-height:1.6;">
-            Si consumes aproximadamente 🔥 <b>{rcd:.0f} kcal al día</b> y mantienes el mismo nivel de actividad
+            Si consumes aproximadamente 🔥 <b>{rcd_base:.0f} kcal al día</b> y mantienes el mismo nivel de actividad
             física, ⚖️ <b>tu peso tenderá a mantenerse estable</b>. Este es tu punto de equilibrio calórico: comes
             la misma energía que gastas, así que no ganas ni pierdes peso.
         </div>
@@ -5420,9 +5636,9 @@ elif hoja_activa == "4.-RCD":
         </div>
         <div class="cp5-flow-arrow">=</div>
         <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.35);">
-            <div class="cp5-flow-label">🔥 RCD</div>
-            <div class="cp5-flow-value" style="color:#E67E22;">{rcd:.2f}</div>
-            <div class="cp5-flow-legend">kcal/día — tu gasto calórico diario</div>
+            <div class="cp5-flow-label">🔥 RCD base</div>
+            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_base:.2f}</div>
+            <div class="cp5-flow-legend">kcal/día — antes del ajuste por clima</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -5435,13 +5651,142 @@ elif hoja_activa == "4.-RCD":
         <span style="font-size:1.1rem;color:#8A94A6;margin:0 10px;">×</span>
         <span style="font-size:1.3rem;font-weight:800;color:#34C759;">{factor:.2f}</span>
         <span style="font-size:1.1rem;color:#8A94A6;margin:0 10px;">=</span>
-        <span style="font-size:1.5rem;font-weight:900;color:#E67E22;">{rcd:.2f} kcal</span>
+        <span style="font-size:1.5rem;font-weight:900;color:#E67E22;">{rcd_base:.2f} kcal</span>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
+    # ===== Ajuste por clima cálido de Chiclayo (solo si el usuario vive en Chiclayo) =====
+    if vive_en_chiclayo:
+        _ajuste_kcal = rcd_base - rcd
+        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+            "RCD = RCD_base × 0.95",
+            referencia="Corrección Térmica de Clima Cálido — factor 5% por temperatura ambiental promedio")}</div>""",
+            unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="background:linear-gradient(120deg,#FFF6E0 0%,#FFFFFF 75%);border-radius:22px;
+        padding:20px 24px;margin:6px 0 18px 0;border:1px solid rgba(255,179,0,0.25);
+        box-shadow:0 6px 18px rgba(255,179,0,0.10);">
+        <p style="margin:0 0 8px 0;font-weight:800;color:#B06000;font-size:1.05rem;">
+        🌤️ ¿El clima influye en las calorías que gasta tu cuerpo?</p>
+        <p style="margin:0;color:#5C4A1E;line-height:1.55;">
+        <b>Sí, aunque el cambio suele ser pequeño.</b> En lugares cálidos como Chiclayo, tu cuerpo necesita
+        producir un poco menos de calor interno para mantener su temperatura, por lo que el gasto energético
+        diario puede disminuir ligeramente. Eso es justo lo que este cálculo tiene en cuenta.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("#### 📊 De tu cálculo general al resultado para Chiclayo")
+        st.markdown(f"""
+        <div class="cp5-glass-flow">
+            <div class="cp5-flow-card">
+                <div class="cp5-flow-label">🌍 RCD base</div>
+                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu gasto diario sin considerar el clima local.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,179,0,0.10);border-color:rgba(255,179,0,0.35);">
+                <div class="cp5-flow-label">☀️ Ajuste por clima cálido</div>
+                <div class="cp5-flow-value" style="color:#B06000;">−{_ajuste_kcal:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu cuerpo produce un poco menos de calor interno.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.4);">
+                <div class="cp5-flow-label">📍 Resultado para Chiclayo</div>
+                <div class="cp5-flow-value" style="color:#E67E22;">{rcd:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu gasto energético ya ajustado al clima. ☀️</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_signif, col_duda = st.columns(2)
+        with col_signif:
+            st.markdown("""
+            <div class="bento-card" style="border-left:5px solid #FFB300;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:#B06000;">🤔 ¿Qué significa esto?</p>
+            <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
+            Debido al clima cálido de Chiclayo, tu cuerpo gasta ligeramente menos energía para mantener
+            su temperatura. Por eso el cálculo ajusta aproximadamente un <b>5%</b> de tu gasto energético diario.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_duda:
+            st.markdown("""
+            <div class="bento-card" style="border-left:5px solid #34C759;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:#137333;">❓ ¿Debo comer menos porque hace calor?</p>
+            <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
+            <b>No necesariamente.</b> Este ajuste solo mejora la precisión del cálculo. La diferencia suele ser
+            pequeña y no significa que debas dejar de alimentarte ni hacer dietas por vivir en un clima cálido.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.write("")
+
+        st.markdown("#### 🌴 ¿Cómo aprovechar este conocimiento?")
+        col_h, col_c, col_a = st.columns(3)
+        _tarjetas_clima = [
+            (col_h, "#5AC8FA", "#E9F8FF", "💧", "Mantente hidratado",
+             "Las altas temperaturas aumentan la pérdida de agua mediante el sudor."),
+            (col_c, "#34C759", "#EAFAEE", "🥗", "Prefiere comidas ligeras",
+             "Las frutas y verduras ayudan a mantener una buena hidratación."),
+            (col_a, "#FF9500", "#FFF3E5", "🚶", "Sigue activo",
+             "Aunque haga calor, caminar y hacer actividad física sigue siendo importante para tu salud."),
+        ]
+        for _col, _borde, _fondo, _emoji, _titulo, _texto in _tarjetas_clima:
+            with _col:
+                st.markdown(f"""
+                <div class="bento-card" style="background:{_fondo};border:1px solid {_borde}33;text-align:center;height:auto;">
+                <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
+                <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
+                <p style="margin:0;color:#3C3C43;font-size:0.82rem;line-height:1.45;">{_texto}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.write("")
+
+        st.markdown("#### ☀️ ¿Cómo responde tu cuerpo cuando hace calor?")
+        _pasos_calor = [
+            ("#FFB300", "☀️", "Hace más calor", "La temperatura ambiental sube en tu entorno."),
+            ("#5AC8FA", "💧", "Sudas más", "Tu piel libera calor a través del sudor."),
+            ("#FF3B30", "❤️", "Tu cuerpo trabaja para mantener su temperatura", "El organismo regula su termostato interno."),
+            ("#34C759", "🍉", "Necesitas hidratarte correctamente", "Repones el agua que pierdes con el calor."),
+            ("#FF9500", "📊", "El cálculo ajusta ligeramente tu gasto", "Aproximadamente un 5% menos de energía diaria."),
+        ]
+        _html_pasos = ['<div style="max-width:520px;margin:0 auto;">']
+        for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_calor):
+            _html_pasos.append(f"""
+            <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:18px;
+            padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
+            <div style="font-size:1.5rem;">{_em}</div>
+            <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.9rem;">{_tt}</p>
+            <p style="margin:0;color:#5C6B60;font-size:0.78rem;">{_tx}</p></div>
+            </div>""")
+            if _i < len(_pasos_calor) - 1:
+                _html_pasos.append('<div style="text-align:center;font-size:1.3rem;color:#FFB300;opacity:0.7;margin:2px 0;">↓</div>')
+        _html_pasos.append('</div>')
+        st.markdown(_html_sin_lineas_vacias("".join(_html_pasos)), unsafe_allow_html=True)
+
+        st.divider()
+
+        st.markdown("""
+        <div style="background:#FFF6E0;border-radius:18px;padding:16px 20px;margin-bottom:10px;
+        border-left:5px solid #FFB300;">
+        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">📖 Base científica</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.9rem;line-height:1.5;">
+        Este cálculo utiliza información sobre adaptación fisiológica al clima cálido descrita por organismos
+        internacionales como la FAO y estudios sobre gasto energético humano.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        recursos_externos(4, [
+            ("📄 Ver referencias (FAO/OMS/UNU)", "https://www.fao.org/"),
+            ("☀️ Clima de Chiclayo (Senamhi)", "https://www.senamhi.gob.pe/"),
+        ])
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
     # ===== Resultado final destacado, con fondo degradado naranja-rojo =====
+    _sub_hero_rcd = (f"Factor aplicado: <b>{actividad}</b> ({factor:.2f}) · Sexo: <b>{genero}</b>"
+                      + (" · ☀️ Ajuste de clima Chiclayo (−5%) aplicado" if vive_en_chiclayo else ""))
     st.markdown(f"""
     <div style="position:relative;overflow:hidden;background:linear-gradient(120deg,#FF9500 0%,#FF6B35 55%,#FF3B30 100%);
                 border-radius:26px;padding:30px 34px;text-align:center;color:#FFFFFF;
@@ -5450,7 +5795,7 @@ elif hoja_activa == "4.-RCD":
         <div style="font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.95;">
             Resultado Final · Requerimiento Calórico Diario</div>
         <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.2f} <span style="font-size:1.2rem;font-weight:700;">kcal/día</span></div>
-        <div style="font-size:0.86rem;opacity:0.92;">Factor aplicado: <b>{actividad}</b> ({factor:.2f}) · Sexo: <b>{genero}</b></div>
+        <div style="font-size:0.86rem;opacity:0.92;">{_sub_hero_rcd}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -6638,355 +6983,6 @@ elif hoja_activa == "9.-DIETA":
               "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
               emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
-# ---------------------------------------------------------------------------------------
-elif hoja_activa == "10.-CLIMA CHICLAYO":
-    hoja_header(10, subtitulo="Sí, aunque el cambio suele ser pequeño: así ajusta la app tu gasto calórico "
-                               "según el clima cálido de tu ciudad.", tip="☀️ Ajuste de −5%")
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "RCD_Ajustado = TMB × Factor_Actividad × 0.95",
-        referencia="Corrección Térmica de Clima Cálido — factor 5% por temperatura ambiental promedio")}</div>""",
-        unsafe_allow_html=True)
-
-    _ajuste_kcal = rcd - rcd_chiclayo
-
-    # --- 1. ¿El clima influye en las calorías que gasta tu cuerpo? ---------------------
-    st.markdown("""
-    <div style="background:linear-gradient(120deg,#FFF6E0 0%,#FFFFFF 75%);border-radius:22px;
-    padding:20px 24px;margin:6px 0 18px 0;border:1px solid rgba(255,179,0,0.25);
-    box-shadow:0 6px 18px rgba(255,179,0,0.10);">
-    <p style="margin:0 0 8px 0;font-weight:800;color:#B06000;font-size:1.05rem;">
-    🌤️ ¿El clima influye en las calorías que gasta tu cuerpo?</p>
-    <p style="margin:0;color:#5C4A1E;line-height:1.55;">
-    <b>Sí, aunque el cambio suele ser pequeño.</b> En lugares cálidos como Chiclayo, tu cuerpo necesita
-    producir un poco menos de calor interno para mantener su temperatura, por lo que el gasto energético
-    diario puede disminuir ligeramente. Eso es justo lo que este cálculo tiene en cuenta.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- 2. Comparación visual: Antes → Ajuste → Resultado -----------------------------
-    st.markdown("#### 📊 De tu cálculo general al resultado para Chiclayo")
-    st.markdown(f"""
-    <div class="cp5-glass-flow">
-        <div class="cp5-flow-card">
-            <div class="cp5-flow-label">🌍 Cálculo general</div>
-            <div class="cp5-flow-value">{rcd:.0f} kcal</div>
-            <div class="cp5-flow-legend">Tu gasto diario sin considerar el clima local.</div>
-        </div>
-        <div class="cp5-flow-arrow">→</div>
-        <div class="cp5-flow-card" style="background:rgba(255,179,0,0.10);border-color:rgba(255,179,0,0.35);">
-            <div class="cp5-flow-label">☀️ Ajuste por clima cálido</div>
-            <div class="cp5-flow-value" style="color:#B06000;">−{_ajuste_kcal:.0f} kcal</div>
-            <div class="cp5-flow-legend">Tu cuerpo produce un poco menos de calor interno.</div>
-        </div>
-        <div class="cp5-flow-arrow">→</div>
-        <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.4);">
-            <div class="cp5-flow-label">📍 Resultado para Chiclayo</div>
-            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_chiclayo:.0f} kcal</div>
-            <div class="cp5-flow-legend">Tu gasto energético ya ajustado al clima. ☀️</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    st.caption("Este cálculo usa el RCD base de la Hoja 4 (antes del ajuste por objetivo).")
-
-    # --- 3. ¿Qué significa esto? + ¿Debo comer menos? -----------------------------------
-    col_signif, col_duda = st.columns(2)
-    with col_signif:
-        st.markdown("""
-        <div class="bento-card" style="border-left:5px solid #FFB300;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#B06000;">🤔 ¿Qué significa esto?</p>
-        <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
-        Debido al clima cálido de Chiclayo, tu cuerpo gasta ligeramente menos energía para mantener
-        su temperatura. Por eso el cálculo ajusta aproximadamente un <b>5%</b> de tu gasto energético diario.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_duda:
-        st.markdown("""
-        <div class="bento-card" style="border-left:5px solid #34C759;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#137333;">❓ ¿Debo comer menos porque hace calor?</p>
-        <p style="margin:0;color:#3C3C43;line-height:1.5;font-size:0.92rem;">
-        <b>No necesariamente.</b> Este ajuste solo mejora la precisión del cálculo. La diferencia suele ser
-        pequeña y no significa que debas dejar de alimentarte ni hacer dietas por vivir en un clima cálido.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- 4. ¿Cómo aprovechar este conocimiento? — tres tarjetas -------------------------
-    st.markdown("#### 🌴 ¿Cómo aprovechar este conocimiento?")
-    col_h, col_c, col_a = st.columns(3)
-    _tarjetas_clima = [
-        (col_h, "#5AC8FA", "#E9F8FF", "💧", "Mantente hidratado",
-         "Las altas temperaturas aumentan la pérdida de agua mediante el sudor."),
-        (col_c, "#34C759", "#EAFAEE", "🥗", "Prefiere comidas ligeras",
-         "Las frutas y verduras ayudan a mantener una buena hidratación."),
-        (col_a, "#FF9500", "#FFF3E5", "🚶", "Sigue activo",
-         "Aunque haga calor, caminar y hacer actividad física sigue siendo importante para tu salud."),
-    ]
-    for _col, _borde, _fondo, _emoji, _titulo, _texto in _tarjetas_clima:
-        with _col:
-            st.markdown(f"""
-            <div class="bento-card" style="background:{_fondo};border:1px solid {_borde}33;text-align:center;height:auto;">
-            <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
-            <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
-            <p style="margin:0;color:#3C3C43;font-size:0.82rem;line-height:1.45;">{_texto}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- 5. ¿Cómo responde tu cuerpo cuando hace calor? — mini infografía ---------------
-    st.markdown("#### ☀️ ¿Cómo responde tu cuerpo cuando hace calor?")
-    _pasos_calor = [
-        ("#FFB300", "☀️", "Hace más calor", "La temperatura ambiental sube en tu entorno."),
-        ("#5AC8FA", "💧", "Sudas más", "Tu piel libera calor a través del sudor."),
-        ("#FF3B30", "❤️", "Tu cuerpo trabaja para mantener su temperatura", "El organismo regula su termostato interno."),
-        ("#34C759", "🍉", "Necesitas hidratarte correctamente", "Repones el agua que pierdes con el calor."),
-        ("#FF9500", "📊", "El cálculo ajusta ligeramente tu gasto", "Aproximadamente un 5% menos de energía diaria."),
-    ]
-    _html_pasos = ['<div style="max-width:520px;margin:0 auto;">']
-    for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_calor):
-        _html_pasos.append(f"""
-        <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:18px;
-        padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
-        <div style="font-size:1.5rem;">{_em}</div>
-        <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.9rem;">{_tt}</p>
-        <p style="margin:0;color:#5C6B60;font-size:0.78rem;">{_tx}</p></div>
-        </div>""")
-        if _i < len(_pasos_calor) - 1:
-            _html_pasos.append('<div style="text-align:center;font-size:1.3rem;color:#FFB300;opacity:0.7;margin:2px 0;">↓</div>')
-    _html_pasos.append('</div>')
-    st.markdown(_html_sin_lineas_vacias("".join(_html_pasos)), unsafe_allow_html=True)
-
-    st.divider()
-
-    # --- 6. Base científica ---------------------------------------------------------------
-    st.markdown("""
-    <div style="background:#FFF6E0;border-radius:18px;padding:16px 20px;margin-bottom:10px;
-    border-left:5px solid #FFB300;">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">📖 Base científica</p>
-    <p style="margin:0;color:#5C4A1E;font-size:0.9rem;line-height:1.5;">
-    Este cálculo utiliza información sobre adaptación fisiológica al clima cálido descrita por organismos
-    internacionales como la FAO y estudios sobre gasto energético humano.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    recursos_externos(10, [
-        ("📄 Ver referencias (FAO/OMS/UNU)", "https://www.fao.org/"),
-        ("☀️ Clima de Chiclayo (Senamhi)", "https://www.senamhi.gob.pe/"),
-    ])
-    caja_util("Vivir en un lugar caluroso como Chiclayo también afecta cuántas calorías gasta tu cuerpo. Este "
-              "dato extra te da una versión más realista y localizada de tu gasto calórico, pensada "
-              "específicamente para nuestra región. ☀️🌴",
-              emoji="🌡️", color="#FFF8E1", borde="#F9A825")
-
-# ---------------------------------------------------------------------------------------
-elif hoja_activa == "11.-APORTE 1: EMBARAZO":
-    hoja_header(11, subtitulo="El embarazo cambia las necesidades de energía del cuerpo. Aquí calculamos "
-                               "cuántas calorías necesitas según tu etapa de gestación.", tip="🤰 Por trimestre")
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
-        autor="MD Mifflin, ST St Jeor et al. (1990)",
-        referencia="Ecuación de Mifflin-St Jeor + ajuste gestacional")}</div>""", unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
-    border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
-    📌 Esta calculadora está pensada exclusivamente para mujeres embarazadas y utiliza recomendaciones
-    específicas para esta etapa.</div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("##### 👩 Tus datos")
-    nombre_emb = st.text_input("Nombre:", "")
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        edad_emb = st.number_input("Edad:", min_value=10, max_value=60, value=27, step=1, key="edad_emb")
-    with c2:
-        peso_emb = st.number_input("Peso (kg):", min_value=30.0, max_value=PESO_MAX["Mujer"], value=68.0, step=0.1, key="peso_emb")
-    with c3:
-        altura_emb = st.number_input("Altura (cm):", min_value=100, max_value=ESTATURA_MAX["Mujer"], value=162, step=1, key="altura_emb")
-    trimestre = st.selectbox("🤰 Selecciona tu trimestre:", ["Primer trimestre", "Segundo trimestre", "Tercer trimestre"])
-    ajuste_trim = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 452}[trimestre]
-
-    tmb_base_emb = (10 * peso_emb) + (6.25 * altura_emb) - (5 * edad_emb) - 161
-    tmb_emb = tmb_base_emb + ajuste_trim
-    _nombre_disp = nombre_emb.strip() if nombre_emb.strip() else "ti"
-
-    # --- Flujo visual: datos → trimestre → TMB → aporte → resultado ---------------------
-    st.markdown("#### 🔎 De tus datos a tu resultado")
-    _pasos_emb = [
-        ("#5AC8FA", "👩", "Datos ingresados", f"{edad_emb:.0f} años · {peso_emb:.0f} kg · {altura_emb:.0f} cm"),
-        ("#BA68C8", "🤰", "Trimestre", trimestre),
-        ("#FF9500", "🔥", "TMB calculada", f"{tmb_base_emb:.0f} kcal/día"),
-        ("#34C759", "🍽️", "Calorías adicionales", f"+{ajuste_trim} kcal"),
-        ("#FF2D55", "❤️", "Resultado recomendado", f"{tmb_emb:.0f} kcal/día"),
-    ]
-    _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
-    for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
-        _es_ultimo = _i == len(_pasos_emb) - 1
-        _fondo_paso = "rgba(255,45,85,0.08)" if _es_ultimo else "#FFFFFF"
-        _html_pasos_emb.append(f"""
-        <div style="display:flex;align-items:center;gap:14px;background:{_fondo_paso};border-radius:18px;
-        padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
-        <div style="font-size:1.5rem;">{_em}</div>
-        <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.02em;">{_tt}</p>
-        <p style="margin:0;color:#17301F;font-size:1rem;font-weight:700;">{_tx}</p></div>
-        </div>""")
-        if not _es_ultimo:
-            _html_pasos_emb.append('<div style="text-align:center;font-size:1.3rem;color:#BA68C8;opacity:0.7;margin:2px 0;">↓</div>')
-    _html_pasos_emb.append('</div>')
-    st.markdown(_html_sin_lineas_vacias("".join(_html_pasos_emb)), unsafe_allow_html=True)
-
-    # --- ¿Qué significa este resultado? --------------------------------------------------
-    st.markdown(f"""
-    <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
-    <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 ¿Qué significa este resultado?</p>
-    <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
-    Tu cuerpo necesita aproximadamente <b>{tmb_emb:.0f} kcal al día</b> para mantener sus funciones vitales
-    (respirar, mantener la temperatura corporal, funcionamiento de órganos, etc.), sin considerar la
-    actividad física.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- ¿Por qué cambia según el trimestre? — tres tarjetas -----------------------------
-    st.markdown("#### 🤰 ¿Por qué cambia según el trimestre?")
-    _tri_data = [
-        ("Primer trimestre", "#4CAF50", "#EAFAEE", "🌱", "Primer trimestre",
-         "No suelen necesitarse calorías adicionales. Lo más importante es mantener una alimentación "
-         "equilibrada y cubrir todos los nutrientes esenciales."),
-        ("Segundo trimestre", "#FF9500", "#FFF3E5", "👶", "Segundo trimestre",
-         "El bebé comienza un crecimiento más rápido. Generalmente se requieren alrededor de "
-         "340 kcal adicionales al día."),
-        ("Tercer trimestre", "#FF2D55", "#FFEBF0", "❤️", "Tercer trimestre",
-         "Es la etapa de mayor crecimiento fetal. Las necesidades energéticas aumentan aproximadamente "
-         "452 kcal por día."),
-    ]
-    _cols_tri = st.columns(3)
-    for _col, (_clave, _borde, _fondo, _emoji, _titulo, _texto) in zip(_cols_tri, _tri_data):
-        _sel = (_clave == trimestre)
-        _op = "1" if _sel else "0.45"
-        _borde_w = "2.5px solid " + _borde if _sel else f"1px solid {_borde}33"
-        _sombra = f"0 10px 24px {_borde}44" if _sel else "0 2px 8px rgba(0,0,0,0.03)"
-        with _col:
-            st.markdown(f"""
-            <div class="bento-card" style="background:{_fondo};border:{_borde_w};text-align:center;
-            opacity:{_op};box-shadow:{_sombra};transition:all 0.25s ease;">
-            <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
-            <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
-            <p style="margin:0;color:#3C3C43;font-size:0.8rem;line-height:1.45;">{_texto}</p>
-            {'<p style="margin:8px 0 0 0;font-weight:800;color:'+_borde+';font-size:0.72rem;">✓ TU ETAPA ACTUAL</p>' if _sel else ''}
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- ¿Por qué aumentan las calorías? — mini infografía -------------------------------
-    st.markdown("#### 🔥 ¿Por qué aumentan las calorías?")
-    _pasos_porque = [
-        ("#BA68C8", "🤰", "El bebé crece"),
-        ("#FF9500", "🦴", "Se forman nuevos tejidos"),
-        ("#FF2D55", "❤️", "Trabaja más el organismo"),
-        ("#FF3B30", "🔥", "Se necesita más energía"),
-    ]
-    _cols_porque = st.columns(len(_pasos_porque) * 2 - 1)
-    for _i, (_bc, _em, _tt) in enumerate(_pasos_porque):
-        with _cols_porque[_i * 2]:
-            st.markdown(f"""
-            <div style="text-align:center;">
-            <div style="width:56px;height:56px;border-radius:50%;background:{_bc}22;display:flex;
-            align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 6px auto;">{_em}</div>
-            <p style="margin:0;font-size:0.72rem;font-weight:700;color:#17301F;">{_tt}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        if _i < len(_pasos_porque) - 1:
-            with _cols_porque[_i * 2 + 1]:
-                st.markdown('<div style="text-align:center;font-size:1.4rem;color:#BA68C8;opacity:0.6;margin-top:16px;">→</div>',
-                            unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- Comparación: TMB Base → Aporte → Resultado ---------------------------------------
-    st.markdown("#### 📊 Antes y después del ajuste")
-    st.markdown(f"""
-    <div class="cp5-glass-flow">
-        <div class="cp5-flow-card">
-            <div class="cp5-flow-label">🔥 TMB Base</div>
-            <div class="cp5-flow-value">{tmb_base_emb:.0f} kcal</div>
-            <div class="cp5-flow-legend">Tu gasto energético sin ajuste gestacional.</div>
-        </div>
-        <div class="cp5-flow-arrow">→</div>
-        <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
-            <div class="cp5-flow-label">👶 Aporte por embarazo</div>
-            <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_trim} kcal</div>
-            <div class="cp5-flow-legend">Energía extra para {trimestre.lower()}.</div>
-        </div>
-        <div class="cp5-flow-arrow">→</div>
-        <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
-            <div class="cp5-flow-label">❤️ Resultado para {_nombre_disp}</div>
-            <div class="cp5-flow-value" style="color:#C2185B;">{tmb_emb:.0f} kcal</div>
-            <div class="cp5-flow-legend">Tu gasto energético recomendado hoy.</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
-    # --- 🍽 Recuerda: prioriza calidad, no solo cantidad ----------------------------------
-    st.markdown("#### 🍽️ Recuerda")
-    st.markdown("""
-    <div class="bento-card" style="border-left:5px solid #FF9500;">
-    <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">No todas las calorías son iguales. Durante
-    el embarazo es importante priorizar alimentos ricos en:</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">
-    <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Proteínas</span>
-    <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcio</span>
-    <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Hierro</span>
-    <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Ácido fólico</span>
-    <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fibra</span>
-    </div>
-    <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">No solo aumentar la cantidad de comida.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- ¿Qué puedes hacer desde hoy? -----------------------------------------------------
-    st.markdown("#### ✅ ¿Qué puedes hacer desde hoy?")
-    _acciones_emb = [
-        ("#0277BD", "#E9F8FF", "🥛", "Consumir lácteos"),
-        ("#137333", "#EAFAEE", "🥬", "Incluir verduras diariamente"),
-        ("#1976D2", "#E3F2FD", "🐟", "Proteínas de buena calidad"),
-        ("#00B8D9", "#E1FBF9", "💧", "Mantener buena hidratación"),
-        ("#FF9500", "#FFF3E5", "🚶", "Actividad física autorizada"),
-    ]
-    _cols_acc = st.columns(5)
-    for _col, (_borde, _fondo, _emoji, _texto) in zip(_cols_acc, _acciones_emb):
-        with _col:
-            st.markdown(f"""
-            <div class="bento-card" style="background:{_fondo};text-align:center;padding:14px 10px;">
-            <div style="font-size:1.4rem;margin-bottom:4px;">{_emoji}</div>
-            <p style="margin:0;color:{_borde};font-weight:700;font-size:0.72rem;line-height:1.3;">{_texto}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # --- ⚠️ Importante ----------------------------------------------------------------------
-    st.markdown("""
-    <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Importante</p>
-    <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
-    Las necesidades nutricionales durante el embarazo varían entre cada mujer. Este cálculo es una
-    estimación educativa y no reemplaza la evaluación realizada por un obstetra o nutricionista.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    caja_util("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
-              "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
-              "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
-              emoji="👶", color="#F8ECFB", borde="#BA68C8")
-
-# ---------------------------------------------------------------------------------------
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     hoja_header(12, subtitulo="Dormir bien también ayuda a cuidar tu alimentación. La cafeína puede permanecer "
                                "varias horas en el organismo. Esta herramienta calcula hasta qué hora puedes "
