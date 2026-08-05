@@ -7324,9 +7324,17 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
-    hoja_header(13, "En Modo Embarazo esta hoja ya no proyecta pérdida/ganancia de grasa: muestra el Canal "
-                    "de Ganancia de Peso Gestacional del IOM, según tu IMC previo al embarazo, para que "
-                    "registres tu peso semana a semana y verifiques que te mantienes dentro del rango saludable.")
+    # ===== 🌸 Encabezado con degradado suave =====
+    st.markdown("""
+    <div style="background:linear-gradient(120deg,#FFE1EC 0%,#E1F3FF 55%,#FFFFFF 100%);border-radius:22px;
+                padding:26px 28px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+        <div style="font-size:1.35rem;font-weight:900;color:#B0205A;margin-bottom:4px;">
+            🤰 Seguimiento del Peso durante el Embarazo</div>
+        <div style="color:#5C6B78;font-size:0.92rem;line-height:1.5;max-width:640px;">
+            Conoce si tu aumento de peso está dentro del rango recomendado para la etapa de
+            embarazo que seleccionaste.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Canal de Ganancia de Peso Gestacional (IOM / National Research Council — Weight Gain During Pregnancy)
     _CANALES_IOM = [
@@ -7341,55 +7349,151 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
             _canal_etiqueta, _canal_min, _canal_max, _canal_color = _etq, _min_kg, _max_kg, _color_canal
             break
 
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        f"Meta total IOM: {_canal_min:.1f} a {_canal_max:.1f} kg ganados al final del embarazo — {_canal_etiqueta}",
-        referencia="Instituto de Medicina (IOM) y National Research Council (US), Weight Gain During Pregnancy")}</div>""",
-        unsafe_allow_html=True)
+    _semanas_totales = 40
+    _RANGO_TRIMESTRE = {"Primer trimestre": (1, 13), "Segundo trimestre": (14, 27), "Tercer trimestre": (28, 40)}
+    _sem_min_tri, _sem_max_tri = _RANGO_TRIMESTRE.get(trimestre, (1, 13))
+    _semana_default = st.session_state.get("semana_embarazo_exacta", (_sem_min_tri + _sem_max_tri) // 2)
+    _semana_default = min(max(_semana_default, 1), _semanas_totales)
+
+    _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso)
+
+    # ===== 📋 Tarjetas resumen (fila única) =====
+    def _tarjeta_resumen(icono, titulo, valor, sub, color):
+        st.markdown(f"""
+        <div style="background:#FFFFFF;border-radius:18px;padding:16px 14px;height:118px;
+        border:1.5px solid {color}33;box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        display:flex;flex-direction:column;justify-content:center;">
+        <div style="font-size:1.3rem;">{icono}</div>
+        <p style="margin:4px 0 0 0;color:#8E8E93;font-size:0.72rem;font-weight:800;text-transform:uppercase;">{titulo}</p>
+        <p style="margin:0;color:{color};font-size:1.15rem;font-weight:800;">{valor}</p>
+        <p style="margin:0;color:#8E8E93;font-size:0.7rem;">{sub}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    _c1, _c2, _c3, _c4 = st.columns(4)
+    with _c1:
+        _tarjeta_resumen("🤰", "Etapa actual", trimestre, f"Semanas {_sem_min_tri}–{_sem_max_tri}", "#B0205A")
+    with _c2:
+        st.markdown('<p style="margin:0 0 4px 0;color:#8E8E93;font-size:0.72rem;font-weight:800;'
+                     'text-transform:uppercase;">📅 Semana del embarazo</p>', unsafe_allow_html=True)
+        semana_exacta = st.number_input("Semana del embarazo:", min_value=1, max_value=_semanas_totales,
+                                         value=_semana_default, step=1, key="semana_embarazo_exacta",
+                                         label_visibility="collapsed")
+    with _c3:
+        _tarjeta_resumen("⚖️", "Peso actual", f"{_peso_hoy:.1f} kg", "Tu último registro", "#007AFF")
+
+    _kg_ganados = _peso_hoy - peso
+    _min_esperado_hoy = (_canal_min / _semanas_totales) * semana_exacta
+    _max_esperado_hoy = (_canal_max / _semanas_totales) * semana_exacta
+    if _kg_ganados < _min_esperado_hoy - 1:
+        _estado_txt, _estado_color, _estado_icono = "Por debajo del rango", "#FF9500", "🟡"
+    elif _kg_ganados > _max_esperado_hoy + 1:
+        _estado_txt, _estado_color, _estado_icono = "Por encima del rango", "#FF3B30", "🔴"
+    else:
+        _estado_txt, _estado_color, _estado_icono = "Dentro del rango", "#34C759", "🟢"
+    with _c4:
+        _tarjeta_resumen(_estado_icono, "Estado", _estado_txt, "Según tu semana", _estado_color)
+
     st.write("")
 
-    _semanas_totales = 40
-    _semana_actual = {"Primer trimestre": 8, "Segundo trimestre": 20, "Tercer trimestre": 34}.get(trimestre, 8)
+    # ===== 💡 Caja informativa =====
+    st.markdown("""
+    <div style="background:#E9F3FF;border-radius:16px;padding:16px 20px;margin-bottom:16px;
+                border:1px solid #B9DBFF;">
+    <p style="margin:0 0 6px 0;font-weight:800;color:#0B4DA8;font-size:0.92rem;">
+        ℹ️ ¿Cómo funciona este gráfico?</p>
+    <p style="margin:0;color:#31465F;font-size:0.85rem;line-height:1.55;">
+        El gráfico utiliza la semana exacta de embarazo que registraste.<br>
+        Aunque hayas seleccionado el trimestre, el seguimiento del peso se realiza semana por
+        semana para ser más preciso.<br>
+        Por eso el punto aparece en la semana correspondiente.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 📈 Título + badges =====
+    st.markdown("##### 📈 Comparación de tu peso con el rango recomendado")
+    st.caption("Basado en las recomendaciones del Instituto de Medicina (IOM).")
+    _b1, _b2, _b3, _b4 = st.columns(4)
+    with _b1:
+        st.markdown('<span style="background:#EAF3FF;color:#007AFF;font-weight:800;font-size:0.76rem;'
+                     'padding:5px 10px;border-radius:999px;">🔵 Tu peso</span>', unsafe_allow_html=True)
+    with _b2:
+        st.markdown(f'<span style="background:{_canal_color}22;color:{_canal_color};font-weight:800;'
+                     f'font-size:0.76rem;padding:5px 10px;border-radius:999px;">🟩 Zona saludable</span>',
+                     unsafe_allow_html=True)
+    with _b3:
+        st.markdown('<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
+                     'padding:5px 10px;border-radius:999px;">⬇️ Mínimo recomendado</span>', unsafe_allow_html=True)
+    with _b4:
+        st.markdown('<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
+                     'padding:5px 10px;border-radius:999px;">⬆️ Máximo recomendado</span>', unsafe_allow_html=True)
+
+    st.write("")
+
     _sem_eje = list(range(0, _semanas_totales + 1))
     _linea_min = [round((_canal_min / _semanas_totales) * s, 2) for s in _sem_eje]
     _linea_max = [round((_canal_max / _semanas_totales) * s, 2) for s in _sem_eje]
-    _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso)
 
     fig_iom = go.Figure()
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_max], mode="lines",
-                                  name="Límite máximo IOM", line=dict(color=_canal_color, width=2, dash="dash")))
+                                  name="Máximo recomendado", line=dict(color=_canal_color, width=2, dash="dash")))
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_min], mode="lines",
-                                  name="Límite mínimo IOM", line=dict(color=_canal_color, width=2, dash="dash"),
+                                  name="Mínimo recomendado", line=dict(color=_canal_color, width=2, dash="dash"),
                                   fill="tonexty", fillcolor=_hex_a_rgba(_canal_color, 0.14)))
-    fig_iom.add_trace(go.Scatter(x=[_semana_actual], y=[_peso_hoy], mode="markers+text",
-                                  name="Tu peso actual", marker=dict(size=14, color="#FFFFFF",
-                                  line=dict(color="#1E5631", width=4)),
-                                  text=[f"Hoy: {_peso_hoy:.1f} kg"], textposition="top center",
+    fig_iom.add_trace(go.Scatter(x=[semana_exacta], y=[_peso_hoy], mode="markers+text",
+                                  name="Tu peso", marker=dict(size=14, color="#007AFF",
+                                  line=dict(color="#FFFFFF", width=3)),
+                                  text=[f"Semana {semana_exacta}: {_peso_hoy:.1f} kg"], textposition="top center",
                                   textfont=dict(size=13, color="#17301F")))
     fig_iom.update_layout(
-        title=dict(text="Canal de Ganancia de Peso Gestacional (IOM)", x=0.02, xanchor="left",
-                   font=dict(size=18, color="#17301F", family="-apple-system")),
+        title=dict(text="📈 Comparación de tu peso con el rango saludable", x=0.02, xanchor="left",
+                   font=dict(size=17, color="#17301F", family="-apple-system")),
         xaxis_title="Semana de embarazo", yaxis_title="Peso (kg)",
         height=420, margin=dict(t=60, l=10, r=10, b=10),
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig_iom, use_container_width=True)
 
+    # ===== 🌈 Barra visual tipo progreso =====
+    st.markdown("##### 🌈 Tu posición dentro del rango")
+    _rango_barra = max(_max_esperado_hoy - _min_esperado_hoy, 0.1)
+    _pct_barra = (_kg_ganados - _min_esperado_hoy) / _rango_barra
+    _pct_barra = min(max(_pct_barra, -0.3), 1.3)
+    _pos_pct = round((_pct_barra + 0.3) / 1.6 * 100, 1)
+    st.markdown(f"""
+    <div style="position:relative;background:linear-gradient(90deg,#FFCC00 0%,#FFCC00 22%,#34C759 22%,
+                #34C759 78%,#FFCC00 78%,#FFCC00 100%);border-radius:999px;height:22px;margin:10px 0 6px 0;">
+        <div style="position:absolute;left:{_pos_pct}%;top:-6px;transform:translateX(-50%);
+                    width:14px;height:34px;background:#007AFF;border-radius:8px;border:3px solid #FFFFFF;
+                    box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;color:#8E8E93;font-size:0.76rem;font-weight:700;">
+        <span>⬇️ Debajo</span><span>🟩 Saludable</span><span>Encima ⬆️</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # ===== 📚 Sección desplegable =====
+    with st.expander("❓ ¿Por qué cambia el gráfico? — Más información"):
+        st.markdown("""
+        Durante el embarazo el aumento de peso no ocurre de golpe. Cada semana existe un rango
+        recomendado. Por eso esta herramienta compara tu peso con la semana que registraste y no
+        únicamente con el trimestre.
+
+        El aumento de peso en el embarazo no sigue un patrón estético: mantenerte dentro de este
+        rango médico ayuda a evitar partos prematuros (ganar muy poco) o diabetes gestacional
+        (ganar demasiado).
+        """)
+
     st.write("")
     st.markdown("##### 📝 Registra tu peso de esta semana")
     _peso_registro = st.number_input("Tu peso actual (kg):", min_value=20.0, max_value=300.0,
                                       value=float(_peso_hoy), step=0.1, key="peso_gestacional_hoy")
-    _kg_ganados = _peso_registro - peso
-    if _kg_ganados < (_canal_min / _semanas_totales) * _semana_actual - 1:
-        st.warning("🟨 Vas por debajo del canal saludable para tu semana de embarazo. Coméntalo con tu "
-                   "médico ginecólogo-obstetra o nutricionista.")
-    elif _kg_ganados > (_canal_max / _semanas_totales) * _semana_actual + 1:
-        st.warning("🟨 Vas por encima del canal saludable para tu semana de embarazo. Coméntalo con tu "
-                   "médico ginecólogo-obstetra o nutricionista.")
-    else:
+    if _estado_txt == "Dentro del rango":
         st.success("🟢 Tu ganancia de peso está dentro del canal saludable IOM para tu semana de embarazo.")
-
-    st.info("El aumento de peso en el embarazo no sigue un patrón estético: mantenerte dentro de este rango "
-            "médico ayuda a evitar partos prematuros (ganar muy poco) o diabetes gestacional (ganar demasiado).")
+    else:
+        st.warning(f"🟨 {_estado_txt}. Coméntalo con tu médico ginecólogo-obstetra o nutricionista.")
 
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hoja_header(13, "Manteniendo tus hábitos actuales y el plan de calorías calculado, esta es una estimación "
