@@ -1459,7 +1459,7 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
     <div style="background-color:{color};padding:18px 22px;border-radius:20px;
                 border-left:5px solid {borde};margin-top:14px;margin-bottom:6px;
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-    <b style="color:{borde};">{emoji} ¿Para qué te sirve esto?</b><br>
+    <b style="color:{borde};">{emoji} {T("¿Para qué te sirve esto?", "What is this useful for?")}</b><br>
     <span style="color:#1C1C1E;">{texto}</span>
     </div>
     """, unsafe_allow_html=True)
@@ -1585,16 +1585,18 @@ def _html_sin_lineas_vacias(html):
     return "\n".join(linea for linea in html.split("\n") if linea.strip() != "")
 
 
-def formula_badge(formula, autor="", referencia="", icono="ℹ️", texto="Ver fórmula"):
+def formula_badge(formula, autor="", referencia="", icono="ℹ️", texto=None):
     """Insignia discreta tipo 'chip' que muestra, al pasar el cursor (tooltip nativo del
     navegador vía atributo `title`), la fórmula clínica exacta junto con su autor y su
     referencia científica — cumpliendo la norma clínica 4.1 sin saturar visualmente la
     pantalla. Se usa junto a títulos, métricas o resultados en cada hoja de la app."""
-    partes = [f"Fórmula: {formula}"]
+    if texto is None:
+        texto = T("Ver fórmula", "View Formula")
+    partes = [f"{T('Fórmula', 'Formula')}: {formula}"]
     if autor:
-        partes.append(f"Autor: {autor}")
+        partes.append(f"{T('Autor', 'Author')}: {autor}")
     if referencia:
-        partes.append(f"Referencia: {referencia}")
+        partes.append(f"{T('Referencia', 'Reference')}: {referencia}")
     tooltip = " · ".join(partes).replace('"', "'").replace("\n", " ")
     return (f'<span class="formula-badge" title="{tooltip}">{icono} '
             f'<span class="formula-badge-txt">{texto}</span></span>')
@@ -2889,7 +2891,7 @@ def clasif_percentil(imc, edad, genero):
     """Réplica EXACTA de la fórmula del Excel (Hoja 2, celda K17:L17)."""
     tabla = PERCENTIL_HOMBRE if genero == "Hombre" else PERCENTIL_MUJER
     if edad not in tabla:
-        return None, "Edad fuera de tabla (2-20 años)"
+        return None, T("Edad fuera de tabla (2-20 años)", "Age out of table range (2-20 years)")
     p5, p50, p85, p95 = tabla[edad]
     if imc < p5: percentil, cat = "< 5", "Bajo Peso"
     elif imc < p85: percentil, cat = "50", "Peso Saludable"
@@ -2951,36 +2953,46 @@ def grafico_percentil_bandas(genero_tabla, edad_usuario=None, imc_usuario=None, 
     fig.add_trace(go.Scatter(x=edades, y=[y_max] * len(edades), fill="tonexty", fillcolor="rgba(239,83,80,0.25)",
                               line=dict(width=0), showlegend=False, hoverinfo="skip"))
 
+    _en_graf = st.session_state.get("idioma", "Español") == "English"
+    _lbl_p5 = "Percentile 5" if _en_graf else "Percentil 5"
+    _lbl_p50 = "Percentile 50" if _en_graf else "Percentil 50"
+    _lbl_p85 = "Percentile 85" if _en_graf else "Percentil 85"
+    _lbl_p95 = "Percentile 95" if _en_graf else "Percentil 95"
+
     # ---- Líneas con etiquetas de dato en cada punto ----
-    fig.add_trace(go.Scatter(x=edades, y=p5, mode="lines+markers+text", name="Percentil 5",
+    fig.add_trace(go.Scatter(x=edades, y=p5, mode="lines+markers+text", name=_lbl_p5,
                               line=dict(color="#1E88E5", width=3), marker=dict(size=5),
                               text=[f"{v:.1f}" for v in p5], textposition="bottom center",
                               textfont=dict(color="#1E88E5", size=9)))
-    fig.add_trace(go.Scatter(x=edades, y=p50, mode="lines+markers+text", name="Percentil 50",
+    fig.add_trace(go.Scatter(x=edades, y=p50, mode="lines+markers+text", name=_lbl_p50,
                               line=dict(color="#43A047", width=3), marker=dict(size=5),
                               text=[f"{v:.1f}" for v in p50], textposition="top center",
                               textfont=dict(color="#2E7D32", size=9)))
-    fig.add_trace(go.Scatter(x=edades, y=p85, mode="lines+markers+text", name="Percentil 85",
+    fig.add_trace(go.Scatter(x=edades, y=p85, mode="lines+markers+text", name=_lbl_p85,
                               line=dict(color="#FBC02D", width=3), marker=dict(size=5),
                               text=[f"{v:.1f}" for v in p85], textposition="top center",
                               textfont=dict(color="#F9A825", size=9)))
-    fig.add_trace(go.Scatter(x=edades, y=p95, mode="lines+markers+text", name="Percentil 95",
+    fig.add_trace(go.Scatter(x=edades, y=p95, mode="lines+markers+text", name=_lbl_p95,
                               line=dict(color="#E53935", width=3), marker=dict(size=5),
                               text=[f"{v:.1f}" for v in p95], textposition="top center",
                               textfont=dict(color="#E53935", size=9)))
 
     if genero_usuario == genero_tabla and edad_usuario in tabla and imc_usuario is not None:
         fig.add_trace(go.Scatter(x=[edad_usuario], y=[imc_usuario], mode="markers+text",
-                                  name="Tú estás aquí", text=["Tú"], textposition="bottom center",
+                                  name=("You are here" if _en_graf else "Tú estás aquí"),
+                                  text=[("You" if _en_graf else "Tú")], textposition="bottom center",
                                   marker=dict(color="#1565C0", size=16, symbol="star",
                                               line=dict(color="white", width=1))))
 
-    titulo_txt = "Percentil Niñas" if genero_tabla == "Mujer" else "Percentil Niños"
+    if _en_graf:
+        titulo_txt = "Girls Percentile" if genero_tabla == "Mujer" else "Boys Percentile"
+    else:
+        titulo_txt = "Percentil Niñas" if genero_tabla == "Mujer" else "Percentil Niños"
     titulo_color = "#E53935" if genero_tabla == "Mujer" else "#00838F"
 
     fig.update_layout(
         title=dict(text=titulo_txt, font=dict(color=titulo_color, size=24, family="Arial Black"), x=0.5, xanchor="center"),
-        xaxis_title="Edad (años)", yaxis_title="IMC",
+        xaxis_title=("Age (years)" if _en_graf else "Edad (años)"), yaxis_title=("BMI" if _en_graf else "IMC"),
         yaxis=dict(range=[y_min, y_max]),
         xaxis=dict(dtick=1),
         height=430, margin=dict(t=60, l=10, r=10, b=10),
@@ -3118,16 +3130,16 @@ def tarjeta_categoria_imc(titulo, categoria):
     estilo = color_categoria_imc(categoria)
     es_alerta = estilo["colorSemaforo"] in ("ambar", "rojo")
     badge_alerta = (
-        f'<div class="bento-pill" style="background:{estilo["hex"]};color:#FFFFFF;margin-top:8px;">⚠️ Requiere atención</div>'
+        f'<div class="bento-pill" style="background:{estilo["hex"]};color:#FFFFFF;margin-top:8px;">⚠️ {T("Requiere atención", "Needs attention")}</div>'
         if es_alerta else
-        f'<div class="bento-pill" style="background:{estilo["hex"]}1A;color:{estilo["hex"]};margin-top:8px;">✅ En buen camino</div>'
+        f'<div class="bento-pill" style="background:{estilo["hex"]}1A;color:{estilo["hex"]};margin-top:8px;">✅ {T("En buen camino", "On track")}</div>'
     )
     st.markdown(f"""
     <div class="bento-card" style="background:{estilo['fondo']};text-align:center;
                 border:1.5px solid {estilo['hex']}33;">
         <div class="bento-eyebrow" style="text-align:center;">{titulo}</div>
         <div style="font-size:2.2rem;margin-top:6px;">{_ILUSTRA_CATEGORIA.get(estilo['colorSemaforo'], '⚪')}</div>
-        <div style="font-weight:800;font-size:1.15rem;color:{estilo['hex']};letter-spacing:-0.01em;margin-top:2px;">{categoria}</div>
+        <div style="font-weight:800;font-size:1.15rem;color:{estilo['hex']};letter-spacing:-0.01em;margin-top:2px;">{_cat_imc_txt(categoria)}</div>
         {badge_alerta}
     </div>
     """, unsafe_allow_html=True)
@@ -3145,6 +3157,16 @@ _CATEGORIAS_IMC_DEF = [
     ("Obesidad Clase 2",         "35 a 39.9",     "Mayor riesgo para la salud.",                                "2️⃣", "#F0384A", 35, 39.9, ("🔴 Muy alto", "#FF3B30")),
     ("Obesidad Clase 3 (Severa)", "40 o más",     "Riesgo muy alto para la salud.",                             "3️⃣", "#B71C33", 40, None, ("🔴 Muy alto", "#FF3B30")),
 ]
+
+_CATEGORIAS_IMC_DEF_EN = [
+    ("Underweight",              "Less than 18.5", "Your weight is below what's recommended for your height.",  "🛡️", "#34C759", None, 18.5, ("🟢 Low", "#34C759")),
+    ("Healthy Weight",           "18.5 to 24.9",   "Your weight is within the healthy range.",                   "💚", "#2E9E4A", 18.5, 24.9, ("🟢 Low", "#34C759")),
+    ("Overweight",               "25 to 29.9",     "Your weight is above the healthy range.",                    "🏋️", "#1E88E5", 25, 29.9, ("🟡 Moderate", "#FFCC00")),
+    ("Obesity",                  "30 or more",     "Your weight is well above the healthy range.",               "⚠️", "#FF9F43", 30, None, ("🟠 High", "#FF9500")),
+    ("Obesity Class 1",          "30 to 34.9",     "Moderate risk to your health.",                              "1️⃣", "#FF6B81", 30, 34.9, ("🔴 Very High", "#FF3B30")),
+    ("Obesity Class 2",          "35 to 39.9",     "Higher risk to your health.",                                "2️⃣", "#F0384A", 35, 39.9, ("🔴 Very High", "#FF3B30")),
+    ("Obesity Class 3 (Severe)", "40 or more",     "Very high risk to your health.",                             "3️⃣", "#B71C33", 40, None, ("🔴 Very High", "#FF3B30")),
+]
 _ESCALA_MIN, _ESCALA_MAX = 0, 40
 
 
@@ -3153,8 +3175,10 @@ def tabla_categorias_imc_visual(imc_usuario=None):
     icono + subtítulo, cabecera de columnas lila, avatar circular + subtexto por clasificación,
     y en la 3ra columna un indicador de línea con dos puntos marcando el inicio/fin de cada
     rango sobre la escala global (0 a 40+), muy similar a la referencia de diseño."""
+    _en_tabla = st.session_state.get("idioma", "Español") == "English"
+    _def_lista = _CATEGORIAS_IMC_DEF_EN if _en_tabla else _CATEGORIAS_IMC_DEF
     filas_html = []
-    for nombre, rango_txt, subtxt, icono, color, ini, fin, riesgo in _CATEGORIAS_IMC_DEF:
+    for nombre, rango_txt, subtxt, icono, color, ini, fin, riesgo in _def_lista:
         ini_v = _ESCALA_MIN if ini is None else ini
         fin_v = _ESCALA_MAX if fin is None else fin
         izq = max(0.0, min(100.0, (ini_v - _ESCALA_MIN) / (_ESCALA_MAX - _ESCALA_MIN) * 100))
@@ -3206,21 +3230,24 @@ def tabla_categorias_imc_visual(imc_usuario=None):
         <div class="imc-table-topbar">
             <span class="imc-table-icon">⚖️</span>
             <div>
-                <div class="imc-table-title">Categorías generales de IMC</div>
-                <div class="imc-table-sub">El Índice de Masa Corporal (IMC) es una guía que relaciona tu peso con tu altura para conocer tu estado nutricional.</div>
+                <div class="imc-table-title">{T("Categorías generales de IMC", "General BMI Categories")}</div>
+                <div class="imc-table-sub">{T("El Índice de Masa Corporal (IMC) es una guía que relaciona tu peso con tu altura para conocer tu estado nutricional.",
+                                                "Body Mass Index (BMI) is a guide that relates your weight to your height to determine your nutritional status.")}</div>
             </div>
         </div>
         <div class="imc-table-head" style="grid-template-columns:1.5fr 0.9fr 1.7fr 1fr;">
-            <span>🔖 Clasificación</span><span>📝 Rango de IMC</span><span>📊 ¿Dónde te encuentras?</span><span>🚨 Riesgo</span>
+            <span>🔖 {T("Clasificación", "Classification")}</span><span>📝 {T("Rango de IMC", "BMI Range")}</span><span>📊 {T("¿Dónde te encuentras?", "Where do you stand?")}</span><span>🚨 {T("Riesgo", "Risk")}</span>
         </div>
         {''.join(filas_html)}
         <div class="imc-footer-banner">
             <span class="imc-footer-avatar">👩‍⚕️</span>
             <div style="font-size:0.82rem;color:#5C6B60;max-width:480px;">
-                <b style="color:#6A1B9A;">💡 Importante:</b> el IMC es una referencia general.
-                Consulta siempre con un profesional de salud para una evaluación completa y recomendaciones personalizadas.
+                <b style="color:#6A1B9A;">💡 {T("Importante:", "Important:")}</b> {T("el IMC es una referencia general.",
+                "BMI is a general reference.")}
+                {T("Consulta siempre con un profesional de salud para una evaluación completa y recomendaciones personalizadas.",
+                   "Always consult a health professional for a complete evaluation and personalized recommendations.")}
             </div>
-            <div class="imc-footer-tip">🛡️ ¡Pequeños cambios hoy, grandes resultados mañana!</div>
+            <div class="imc-footer-tip">🛡️ {T("¡Pequeños cambios hoy, grandes resultados mañana!", "Small changes today, big results tomorrow!")}</div>
         </div>
     </div>
     """
@@ -3237,6 +3264,13 @@ _PERC_COL_ESTILO = [
     ("P95", "Obesidad", "#FFEBEE", "#D32F2F"),
 ]
 
+_PERC_COL_ESTILO_EN = [
+    ("P5", "Underweight", "#E1F5FE", "#0288D1"),
+    ("P50", "Healthy", "#E8F5E9", "#388E3C"),
+    ("P85", "Overweight", "#FFF3E0", "#F57C00"),
+    ("P95", "Obesity", "#FFEBEE", "#D32F2F"),
+]
+
 
 _PERC_CATEGORIA_COL = {"Bajo Peso": 0, "Peso Saludable": 1, "Sobrepeso": 2, "Obesidad": 3}
 
@@ -3245,10 +3279,13 @@ def _tarjeta_percentil_genero(genero_tabla, tabla, edad_usuario=None, genero_usu
     """Construye una tarjeta de percentiles (Mujer=rosa / Hombre=azul) con cabecera ilustrada,
     columnas P5/P50/P85/P95 con color propio, filas alternadas, la fila del usuario resaltada,
     y además la columna (P5/P50/P85/P95) donde cayó su IMC resaltada con un marco de color."""
+    _en_perc = st.session_state.get("idioma", "Español") == "English"
     if genero_tabla == "Mujer":
         fondo_banner, color_titulo, icono, badge = "#FCE4EC", "#C2185B", "👧", "♀"
+        _titulo_genero = "GIRLS" if _en_perc else "MUJER"
     else:
         fondo_banner, color_titulo, icono, badge = "#E3F2FD", "#1976D2", "👦", "♂"
+        _titulo_genero = "BOYS" if _en_perc else "HOMBRE"
 
     col_activa = _PERC_CATEGORIA_COL.get(categoria_usuario) if genero_usuario == genero_tabla else None
 
@@ -3267,21 +3304,24 @@ def _tarjeta_percentil_genero(genero_tabla, tabla, edad_usuario=None, genero_usu
             {_tds}
         </tr>""")
 
+    _col_lista = _PERC_COL_ESTILO_EN if _en_perc else _PERC_COL_ESTILO
     ths = "".join(
         f'<th style="background:{bg};color:{fg};">{cod}<br><span style="font-weight:600;font-size:0.62rem;">{lbl}</span></th>'
-        for cod, lbl, bg, fg in _PERC_COL_ESTILO
+        for cod, lbl, bg, fg in _col_lista
     )
 
+    _edad_txt = T("Edad", "Age")
+    _anios_txt = T("(años)", "(years)")
     html = f"""
     <div class="perc-card">
         <div class="perc-banner" style="background:{fondo_banner};">
             <span class="perc-banner-icon">{icono}</span>
-            <span class="perc-banner-title" style="color:{color_titulo};">{genero_tabla.upper()}</span>
+            <span class="perc-banner-title" style="color:{color_titulo};">{_titulo_genero}</span>
             <span class="perc-badge" style="color:{color_titulo};">{badge}</span>
         </div>
         <div style="max-height:340px;overflow-y:auto;">
         <table class="perc-table">
-            <thead><tr><th style="background:#F5F5F7;color:#5C6B60;">Edad<br><span style="font-weight:600;font-size:0.62rem;">(años)</span></th>{ths}</tr></thead>
+            <thead><tr><th style="background:#F5F5F7;color:#5C6B60;">{_edad_txt}<br><span style="font-weight:600;font-size:0.62rem;">{_anios_txt}</span></th>{ths}</tr></thead>
             <tbody>{''.join(filas)}</tbody>
         </table>
         </div>
@@ -3343,6 +3383,17 @@ _RIESGO_POR_CATEGORIA = {
     "Obesidad Clase 3 (Severa)": ("Muy alto", "#D70015"),
 }
 
+_RIESGO_POR_CATEGORIA_EN = {
+    "Bajo Peso": ("Moderate", "#FF9500"),
+    "Peso Saludable": ("Low", "#34C759"),
+    "Sobrepeso": ("Moderate", "#FF9500"),
+    "Obesidad": ("High", "#FF3B30"),
+    "Obesidad Clase 1": ("High", "#FF3B30"),
+    "Obesidad Clase 2": ("Very High", "#D70015"),
+    "Obesidad Clase 3": ("Very High", "#D70015"),
+    "Obesidad Clase 3 (Severa)": ("Very High", "#D70015"),
+}
+
 _FRASE_POR_CATEGORIA = {
     "Bajo Peso": "Según tus datos actuales, tu peso se encuentra por debajo del rango recomendado para tu edad y estatura.",
     "Peso Saludable": "Según tus datos actuales, tu peso se encuentra dentro del rango recomendado para tu edad y estatura. ¡Sigue así!",
@@ -3354,18 +3405,63 @@ _FRASE_POR_CATEGORIA = {
     "Obesidad Clase 3 (Severa)": "Según tus datos actuales, tu peso se encuentra muy por encima del rango recomendado, con riesgo muy alto para tu salud.",
 }
 
+_FRASE_POR_CATEGORIA_EN = {
+    "Bajo Peso": "Based on your current data, your weight is below the recommended range for your age and height.",
+    "Peso Saludable": "Based on your current data, your weight is within the recommended range for your age and height. Keep it up!",
+    "Sobrepeso": "Based on your current data, your weight is above the recommended range for your age and height.",
+    "Obesidad": "Based on your current data, your weight is well above the recommended range for your age and height.",
+    "Obesidad Clase 1": "Based on your current data, your weight is above the recommended range, with moderate risk to your health.",
+    "Obesidad Clase 2": "Based on your current data, your weight is well above the recommended range, with higher risk to your health.",
+    "Obesidad Clase 3": "Based on your current data, your weight is well above the recommended range, with high risk to your health.",
+    "Obesidad Clase 3 (Severa)": "Based on your current data, your weight is well above the recommended range, with very high risk to your health.",
+}
+
+# Mapa de categorías clínicas de IMC (claves internas en español, usadas en todo el sistema)
+# a su etiqueta traducida — para mostrar en pantalla según el idioma seleccionado.
+_CATEGORIA_IMC_EN = {
+    "Bajo Peso": "Underweight",
+    "Peso Saludable": "Healthy Weight",
+    "Sobrepeso": "Overweight",
+    "Obesidad": "Obesity",
+    "Obesidad Clase 1": "Obesity Class 1",
+    "Obesidad Clase 2": "Obesity Class 2",
+    "Obesidad Clase 3": "Obesity Class 3",
+    "Obesidad Clase 3 (Severa)": "Obesity Class 3 (Severe)",
+}
+
+
+def _cat_imc_txt(categoria):
+    """Devuelve la categoría de IMC (clave interna en español) traducida al idioma activo,
+    sin modificar la clave interna usada en el resto del sistema para cálculos/estilos."""
+    if st.session_state.get("idioma", "Español") == "English":
+        return _CATEGORIA_IMC_EN.get(categoria, categoria)
+    return categoria
+
+
+def _riesgo_imc_txt(categoria):
+    """Devuelve (texto_riesgo, color) para una categoría de IMC, traducido según el idioma."""
+    _dic = _RIESGO_POR_CATEGORIA_EN if st.session_state.get("idioma", "Español") == "English" else _RIESGO_POR_CATEGORIA
+    return _dic.get(categoria, ("—", "#8E8E93"))
+
+
+def _frase_imc_txt(categoria):
+    """Devuelve la frase-resumen del diagnóstico nutricional, traducida según el idioma."""
+    _dic = _FRASE_POR_CATEGORIA_EN if st.session_state.get("idioma", "Español") == "English" else _FRASE_POR_CATEGORIA
+    return _dic.get(categoria, T("Revisa tus datos para conocer tu diagnóstico nutricional.",
+                                  "Check your data to see your nutritional diagnosis."))
+
 
 def panel_diagnostico_nutricional(imc, percentil_valor, categoria, con_percentil=True):
     """Sección 1: 'Tu Diagnóstico Nutricional' — 4 tarjetas iguales (IMC, Percentil, Estado,
     Riesgo) seguidas de una frase-resumen grande, en vez del flujo largo de cajas dispersas."""
     estilo = color_categoria_imc(categoria)
-    riesgo_txt, riesgo_color = _RIESGO_POR_CATEGORIA.get(categoria, ("—", "#8E8E93"))
+    riesgo_txt, riesgo_color = _riesgo_imc_txt(categoria)
     perc_display = f"P{percentil_valor}" if (con_percentil and percentil_valor is not None) else "—"
     tarjetas = [
-        ("IMC", str(imc), "⚖️", "#1E5631"),
-        ("Percentil", perc_display, "📊", "#1E88E5"),
-        ("Estado", categoria, "🩺", estilo["hex"]),
-        ("Riesgo", riesgo_txt, "🚨", riesgo_color),
+        ("IMC" if st.session_state.get("idioma", "Español") != "English" else "BMI", str(imc), "⚖️", "#1E5631"),
+        (T("Percentil", "Percentile"), perc_display, "📊", "#1E88E5"),
+        (T("Estado", "Status"), _cat_imc_txt(categoria), "🩺", estilo["hex"]),
+        (T("Riesgo", "Risk"), riesgo_txt, "🚨", riesgo_color),
     ]
     _kpis = "".join(f"""
         <div class="diag-kpi">
@@ -3373,10 +3469,10 @@ def panel_diagnostico_nutricional(imc, percentil_valor, categoria, con_percentil
             <div class="diag-kpi-label">{lbl}</div>
             <div class="diag-kpi-val" style="color:{col};">{val}</div>
         </div>""" for lbl, val, ic, col in tarjetas)
-    frase = _FRASE_POR_CATEGORIA.get(categoria, "Revisa tus datos para conocer tu diagnóstico nutricional.")
+    frase = _frase_imc_txt(categoria)
     st.markdown(f"""
     <div class="diag-panel">
-        <div class="diag-panel-title">🩺 Tu Diagnóstico Nutricional</div>
+        <div class="diag-panel-title">🩺 {T("Tu Diagnóstico Nutricional", "Your Nutritional Diagnosis")}</div>
         <div class="diag-kpi-grid">{_kpis}</div>
         <div class="diag-frase" style="border-left:5px solid {estilo['hex']};">
             <span style="font-size:1.3rem;">{_ILUSTRA_CATEGORIA.get(estilo['colorSemaforo'], '⚪')}</span>
@@ -3391,19 +3487,27 @@ _ESCALA_ADULTO_ZONAS = [("Bajo", "#42A5F5", 0, 18.5), ("Normal", "#34C759", 18.5
 _ESCALA_INFANTIL_ZONAS = [("Bajo Peso", "#42A5F5", "< 5"), ("Saludable", "#34C759", "5 – 85"),
                            ("Sobrepeso", "#FF9F43", "85 – 95"), ("Obesidad", "#FF5C7C", "> 95")]
 
+_ESCALA_ADULTO_ZONAS_EN = ["Low", "Normal", "Overweight", "Obesity"]
+_ESCALA_INFANTIL_ZONAS_EN = ["Underweight", "Healthy", "Overweight", "Obesity"]
+
 
 def escala_horizontal_imc(imc, categoria, etapa, percentil_valor=None):
     """Sección 2: escala horizontal (reemplaza el velocímetro como pieza principal) que muestra
     de un vistazo en qué zona cae el valor del usuario, con una flecha marcando su posición."""
+    _en = st.session_state.get("idioma", "Español") == "English"
     _es_infantil = etapa in ("Niñez", "Adolescencia") and percentil_valor is not None
     if _es_infantil:
         _nombres_colores = [(n, c) for n, c, _ in _ESCALA_INFANTIL_ZONAS]
+        if _en:
+            _nombres_colores = [(n, c) for n, (_, c) in zip(_ESCALA_INFANTIL_ZONAS_EN, _nombres_colores)]
         _idx_map = {"Bajo Peso": 0, "Peso Saludable": 1, "Sobrepeso": 2, "Obesidad": 3}
         _idx_activo = _idx_map.get(categoria, 1)
         _pos_pct = {0: 5, 1: 45, 2: 82, 3: 96}.get(_idx_activo, 45)
         _valor_mostrar = f"P{percentil_valor}"
     else:
         _nombres_colores = [(n, c) for n, c, _, _ in _ESCALA_ADULTO_ZONAS]
+        if _en:
+            _nombres_colores = [(n, c) for n, (_, c) in zip(_ESCALA_ADULTO_ZONAS_EN, _nombres_colores)]
         _min_v, _max_v = 10.0, 40.0
         _pos_pct = max(2.0, min(98.0, (imc - _min_v) / (_max_v - _min_v) * 100))
         _valor_mostrar = str(imc)
@@ -3413,10 +3517,10 @@ def escala_horizontal_imc(imc, categoria, etapa, percentil_valor=None):
     estilo = color_categoria_imc(categoria)
     st.markdown(f"""
     <div class="escala-imc-wrap">
-        <span class="bento-eyebrow">Dónde te ubicas</span>
+        <span class="bento-eyebrow">{T("Dónde te ubicas", "Where you stand")}</span>
         <div style="position:relative;">
             <div class="escala-imc-marker" style="left:{_pos_pct:.1f}%;">
-                <div style="font-weight:800;font-size:0.95rem;color:{estilo['hex']};">Tú ({_valor_mostrar})</div>
+                <div style="font-weight:800;font-size:0.95rem;color:{estilo['hex']};">{T("Tú", "You")} ({_valor_mostrar})</div>
                 <div class="escala-imc-marker-tri"></div>
             </div>
             <div class="escala-imc-zonas">{_segmentos}</div>
@@ -3437,12 +3541,12 @@ def percentil_visual_card(percentil_valor):
     )
     st.markdown(f"""
     <div class="perc-visual-wrap">
-        <span class="bento-eyebrow">👦 Percentil {percentil_valor}</span>
-        <div style="font-size:0.82rem;color:#5C6B60;margin-top:4px;">De cada 100 niños de tu misma edad y sexo:</div>
+        <span class="bento-eyebrow">👦 {T("Percentil", "Percentile")} {percentil_valor}</span>
+        <div style="font-size:0.82rem;color:#5C6B60;margin-top:4px;">{T("De cada 100 niños de tu misma edad y sexo:", "Out of every 100 kids of your same age and sex:")}</div>
         <div class="perc-visual-grid">{_dots}</div>
         <div style="font-size:0.85rem;color:#17301F;line-height:1.5;">
-            <b style="color:#1E88E5;">{_debajo}</b> están por debajo de tu IMC.<br>
-            Solo <b style="color:#1E88E5;">{100 - _debajo}</b> tienen un IMC mayor.
+            <b style="color:#1E88E5;">{_debajo}</b> {T("están por debajo de tu IMC.", "are below your BMI.")}<br>
+            {T("Solo", "Only")} <b style="color:#1E88E5;">{100 - _debajo}</b> {T("tienen un IMC mayor.", "have a higher BMI.")}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -3455,17 +3559,27 @@ _ESTADO_CHECKLIST = {
     "Obesidad": ["Riesgo cardiovascular ↑↑", "Riesgo metabólico ↑↑", "Conviene reducir peso", "Recomendable acudir a nutrición"],
 }
 
+_ESTADO_CHECKLIST_EN = {
+    "Bajo Peso": ["Increased risk of nutritional deficiency ↑", "May affect energy and immune defenses", "Consider increasing quality caloric intake", "Recommended to see a nutritionist"],
+    "Peso Saludable": ["Low cardiovascular risk", "Low metabolic risk", "Keep up your current habits", "Continue with periodic check-ups"],
+    "Sobrepeso": ["Increased cardiovascular risk ↑", "Increased metabolic risk ↑", "Consider improving your diet", "Recommended to see a nutritionist"],
+    "Obesidad": ["Increased cardiovascular risk ↑↑", "Increased metabolic risk ↑↑", "Consider reducing weight", "Recommended to see a nutritionist"],
+}
+
 
 def tarjeta_estado_nutricional(categoria):
     """Sección 4: tarjeta 'Estado Nutricional' tipo diagnóstico con checklist, en vez de
     mostrar solamente la palabra de la categoría."""
     estilo = color_categoria_imc(categoria)
-    _items = _ESTADO_CHECKLIST.get(categoria, _ESTADO_CHECKLIST["Sobrepeso"])
+    _en = st.session_state.get("idioma", "Español") == "English"
+    _dic = _ESTADO_CHECKLIST_EN if _en else _ESTADO_CHECKLIST
+    _fallback_key = "Sobrepeso"
+    _items = _dic.get(categoria, _dic[_fallback_key])
     _lis = "".join(f'<div class="estado-nutri-item"><span>✓</span><span>{it}</span></div>' for it in _items)
     st.markdown(f"""
     <div class="bento-card" style="border-top:4px solid {estilo['hex']};">
-        <span class="bento-eyebrow">🩺 Estado Nutricional</span>
-        <div style="font-weight:800;font-size:1.2rem;color:{estilo['hex']};margin:4px 0 8px 0;">{categoria}</div>
+        <span class="bento-eyebrow">🩺 {T("Estado Nutricional", "Nutritional Status")}</span>
+        <div style="font-weight:800;font-size:1.2rem;color:{estilo['hex']};margin:4px 0 8px 0;">{_cat_imc_txt(categoria)}</div>
         {_lis}
     </div>
     """, unsafe_allow_html=True)
@@ -3474,24 +3588,39 @@ def tarjeta_estado_nutricional(categoria):
 def interpretacion_inteligente_imc(imc, categoria, etapa, riesgo_txt):
     """Sección 5: caja 'Interpretación Inteligente' con bullets, en el mismo estilo que el
     resumen clínico del análisis sanguíneo."""
+    _en = st.session_state.get("idioma", "Español") == "English"
     _puntos = []
     if categoria == "Peso Saludable":
-        _puntos = ["Tu peso está dentro del rango saludable para tu edad y estatura.",
-                    "El objetivo es mantener tus hábitos actuales.",
-                    "Continúa con actividad física regular.",
-                    "Mantén una alimentación variada y equilibrada."]
+        if _en:
+            _puntos = ["Your weight is within the healthy range for your age and height.",
+                        "The goal is to maintain your current habits.",
+                        "Continue with regular physical activity.",
+                        "Keep a varied, balanced diet."]
+        else:
+            _puntos = ["Tu peso está dentro del rango saludable para tu edad y estatura.",
+                        "El objetivo es mantener tus hábitos actuales.",
+                        "Continúa con actividad física regular.",
+                        "Mantén una alimentación variada y equilibrada."]
     else:
-        _puntos = [f"Existe {'déficit' if categoria == 'Bajo Peso' else 'exceso'} de peso según tu IMC{' y percentil' if etapa in ('Niñez', 'Adolescencia') else ''}.",
-                    "El crecimiento y la evolución del peso deben seguir vigilándose.",
-                    "Conviene reducir bebidas azucaradas y ultraprocesados." if categoria != "Bajo Peso" else "Conviene aumentar el aporte calórico con alimentos nutritivos.",
-                    "Incrementar la actividad física y cuidar las horas de sueño."]
+        if _en:
+            _puntos = [f"There is a weight {'deficit' if categoria == 'Bajo Peso' else 'excess'} according to your BMI{' and percentile' if etapa in ('Niñez', 'Adolescencia') else ''}.",
+                        "Growth and weight changes should continue to be monitored.",
+                        "Consider reducing sugary drinks and ultra-processed foods." if categoria != "Bajo Peso" else "Consider increasing caloric intake with nutritious foods.",
+                        "Increase physical activity and take care of sleep hours."]
+        else:
+            _puntos = [f"Existe {'déficit' if categoria == 'Bajo Peso' else 'exceso'} de peso según tu IMC{' y percentil' if etapa in ('Niñez', 'Adolescencia') else ''}.",
+                        "El crecimiento y la evolución del peso deben seguir vigilándose.",
+                        "Conviene reducir bebidas azucaradas y ultraprocesados." if categoria != "Bajo Peso" else "Conviene aumentar el aporte calórico con alimentos nutritivos.",
+                        "Incrementar la actividad física y cuidar las horas de sueño."]
     _bg = "#EAFAEE" if categoria == "Peso Saludable" else "#FFF6E0"
     _color = "#1E5631" if categoria == "Peso Saludable" else "#B8860B"
     _lis = "".join(f"<li>{p}</li>" for p in _puntos)
+    _seg_texto = T(f"Según tu IMC{' y tu percentil' if etapa in ('Niñez','Adolescencia') else ''} (riesgo: {riesgo_txt}):",
+                   f"According to your BMI{' and percentile' if etapa in ('Niñez','Adolescencia') else ''} (Risk: {riesgo_txt}):")
     st.markdown(f"""
     <div style="background:{_bg};border-radius:18px;padding:16px 20px;margin-top:6px;">
-        <div style="font-weight:800;color:{_color};margin-bottom:6px;">🧠 Interpretación Inteligente</div>
-        <div style="font-size:0.85rem;color:#3A3A3C;">Según tu IMC{' y tu percentil' if etapa in ('Niñez','Adolescencia') else ''} (riesgo: {riesgo_txt}):</div>
+        <div style="font-weight:800;color:{_color};margin-bottom:6px;">🧠 {T("Interpretación Inteligente", "Smart Interpretation")}</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;">{_seg_texto}</div>
         <ul style="margin:6px 0 0 18px;padding:0;font-size:0.85rem;color:#3A3A3C;line-height:1.7;">{_lis}</ul>
     </div>
     """, unsafe_allow_html=True)
@@ -3500,19 +3629,19 @@ def interpretacion_inteligente_imc(imc, categoria, etapa, riesgo_txt):
 def que_influye_imc():
     """Sección 6: '¿Qué puede influir en tu IMC?' con iconos grandes (reemplaza el bloque
     'Tu IMC puede estar relacionado con', que sonaba a publicidad)."""
-    st.markdown('<div class="info3-title" style="margin-top:4px;">🔎 ¿Qué puede influir en tu IMC?</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info3-title" style="margin-top:4px;">🔎 {T("¿Qué puede influir en tu IMC?", "What can influence your BMI?")}</div>', unsafe_allow_html=True)
     fila_dominios_salud([
-        ("🥤", "#1E88E5", "Bebidas azucaradas"),
-        ("🍔", "#FF9500", "Alimentación"),
-        ("🏃", "#34C759", "Actividad física"),
-        ("😴", "#AF52DE", "Sueño"),
-        ("🧬", "#FF2D55", "Genética"),
+        ("🥤", "#1E88E5", T("Bebidas azucaradas", "Sugary Drinks")),
+        ("🍔", "#FF9500", T("Alimentación", "Diet")),
+        ("🏃", "#34C759", T("Actividad física", "Physical Activity")),
+        ("😴", "#AF52DE", T("Sueño", "Sleep")),
+        ("🧬", "#FF2D55", T("Genética", "Genetics")),
     ])
 
 
 def recordar_alerta_clinica():
     """Sección 7: alerta tipo clínica para el aviso 'El IMC no diagnostica enfermedades'."""
-    st.markdown("""
+    st.markdown(T("""
     <div style="background:#FFF9E5;border:1px solid #FFE58F55;border-radius:16px;padding:16px 18px;">
         <div style="font-weight:800;color:#B8860B;margin-bottom:6px;">💡 Importante</div>
         <div style="font-size:0.85rem;color:#7A5C00;line-height:1.6;">
@@ -3521,19 +3650,29 @@ def recordar_alerta_clinica():
         ✔ Edad &nbsp;&nbsp; ✔ Sexo &nbsp;&nbsp; ✔ Composición corporal &nbsp;&nbsp; ✔ Evaluación clínica
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div style="background:#FFF9E5;border:1px solid #FFE58F55;border-radius:16px;padding:16px 18px;">
+        <div style="font-weight:800;color:#B8860B;margin-bottom:6px;">💡 Important</div>
+        <div style="font-size:0.85rem;color:#7A5C00;line-height:1.6;">
+        BMI does <b>NOT</b> diagnose diseases. It is a screening tool.<br>
+        It should always be interpreted together with:<br>
+        ✔ Age &nbsp;&nbsp; ✔ Sex &nbsp;&nbsp; ✔ Body composition &nbsp;&nbsp; ✔ Clinical evaluation
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def links_uniformes_mas_info():
     """Sección 8: fila de enlaces 'Más información' con estilo uniforme (CDC, OMS, MedlinePlus,
     Mayo Clinic), reemplazando los botones grandes tipo anuncio."""
-    st.markdown('<div class="info3-title" style="margin-top:4px;">📚 Más información</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info3-title" style="margin-top:4px;">📚 {T("Más información", "More Information")}</div>', unsafe_allow_html=True)
     cl1, cl2, cl3, cl4 = st.columns(4)
+    _en_links = st.session_state.get("idioma", "Español") == "English"
     _links = [
-        ("📚", "#1565C0", "CDC", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html"),
-        ("❤️", "#C0392B", "OMS", "https://www.who.int/es/news-room/fact-sheets/detail/obesity-and-overweight"),
-        ("🥗", "#2E9E4A", "MedlinePlus", "https://medlineplus.gov/spanish/ency/article/007196.htm"),
-        ("🏥", "#AF52DE", "Mayo Clinic", "https://www.mayoclinic.org/es/healthy-lifestyle/adult-health/in-depth/bmi-calculator/itt-20084938"),
+        ("📚", "#1565C0", "CDC", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html" if _en_links else "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html"),
+        ("❤️", "#C0392B", "WHO" if _en_links else "OMS", "https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight" if _en_links else "https://www.who.int/es/news-room/fact-sheets/detail/obesity-and-overweight"),
+        ("🥗", "#2E9E4A", "MedlinePlus", "https://medlineplus.gov/ency/article/007196.htm" if _en_links else "https://medlineplus.gov/spanish/ency/article/007196.htm"),
+        ("🏥", "#AF52DE", "Mayo Clinic", "https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/bmi-calculator/itt-20084938" if _en_links else "https://www.mayoclinic.org/es/healthy-lifestyle/adult-health/in-depth/bmi-calculator/itt-20084938"),
     ]
     for _col, (_ic, _co, _tt, _url) in zip([cl1, cl2, cl3, cl4], _links):
         with _col:
@@ -3552,13 +3691,19 @@ _ACCIONES_DESDE_HOY = [
     ("🥦", "Más verduras"), ("😴", "Duerme suficiente"), ("⚽", "Muévete todos los días"),
 ]
 
+_ACCIONES_DESDE_HOY_EN = [
+    ("🥛", "Swap soda for water"), ("🚶", "Walk 30 minutes"), ("🍎", "Eat fruit"),
+    ("🥦", "More vegetables"), ("😴", "Sleep enough"), ("⚽", "Move every day"),
+]
+
 
 def acciones_desde_hoy():
     """Sección 12: '¿Qué puedes hacer desde hoy?' con tarjetas cortas de hábitos, en vez de
     consejos largos en párrafo."""
-    st.markdown("#### 🌱 ¿Qué puedes hacer desde hoy?")
-    _cols = st.columns(len(_ACCIONES_DESDE_HOY))
-    for _col, (_em, _txt) in zip(_cols, _ACCIONES_DESDE_HOY):
+    st.markdown(T("#### 🌱 ¿Qué puedes hacer desde hoy?", "#### 🌱 What can you do starting today?"))
+    _lista = _ACCIONES_DESDE_HOY_EN if st.session_state.get("idioma", "Español") == "English" else _ACCIONES_DESDE_HOY
+    _cols = st.columns(len(_lista))
+    for _col, (_em, _txt) in zip(_cols, _lista):
         with _col:
             st.markdown(f"""
             <div class="accion-card">
@@ -3572,7 +3717,8 @@ def progreso_hacia_meta_imc(imc, categoria):
     """Sección 13: barra de progreso del IMC actual hacia la meta saludable (22), conectando
     con la hoja de Control de Peso / Proyección."""
     if categoria == "Peso Saludable":
-        st.success(f"🎯 Tu IMC actual ({imc}) ya está dentro del rango saludable (18.5 – 24.9). ¡Sigue así!")
+        st.success(T(f"🎯 Tu IMC actual ({imc}) ya está dentro del rango saludable (18.5 – 24.9). ¡Sigue así!",
+                      f"🎯 Your current BMI ({imc}) is already within the healthy range (18.5 – 24.9). Keep it up!"))
         return
     _min_v, _max_v, _meta = 10.0, 40.0, 22.0
     _pos_tu = max(2.0, min(98.0, (imc - _min_v) / (_max_v - _min_v) * 100))
@@ -3581,16 +3727,16 @@ def progreso_hacia_meta_imc(imc, categoria):
     _diff = round(abs(imc - _meta), 1)
     st.markdown(f"""
     <div class="bento-card">
-        <span class="bento-eyebrow">📈 Progreso hacia un IMC saludable</span>
+        <span class="bento-eyebrow">📈 {T("Progreso hacia un IMC saludable", "Progress toward a healthy BMI")}</span>
         <div style="position:relative;">
-            <div class="progreso-imc-meta" style="left:{_pos_meta:.1f}%;">🎯 Meta<br>{_meta:g}</div>
+            <div class="progreso-imc-meta" style="left:{_pos_meta:.1f}%;">🎯 {T("Meta", "Goal")}<br>{_meta:g}</div>
             <div class="progreso-imc-track">
                 <div class="progreso-imc-fill" style="left:{_fill_izq:.1f}%;width:{max(1.0, _fill_der - _fill_izq):.1f}%;"></div>
             </div>
-            <div class="progreso-imc-tu" style="left:{_pos_tu:.1f}%;">📍 Tú<br>{imc:g}</div>
+            <div class="progreso-imc-tu" style="left:{_pos_tu:.1f}%;">📍 {T("Tú", "You")}<br>{imc:g}</div>
         </div>
         <div style="margin-top:26px;font-size:0.85rem;color:#5C6B60;">
-        Faltan aproximadamente <b style="color:#1E5631;">{_diff} puntos de IMC</b> para entrar al rango saludable.
+        {T("Faltan aproximadamente", "About")} <b style="color:#1E5631;">{_diff} {T("puntos de IMC", "BMI points")}</b> {T("para entrar al rango saludable.", "left to reach the healthy range.")}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -3599,12 +3745,17 @@ def progreso_hacia_meta_imc(imc, categoria):
 def conexion_resto_sistema():
     """Sección 14: enlaces cruzados hacia otras hojas del sistema para que se sienta como
     una sola plataforma y no como hojas aisladas."""
-    st.markdown("#### 🔗 ¿Cómo influye este resultado en el resto del sistema?")
+    st.markdown(T("#### 🔗 ¿Cómo influye este resultado en el resto del sistema?",
+                   "#### 🔗 How does this result affect the rest of the system?"))
+    _en_con = st.session_state.get("idioma", "Español") == "English"
     _conexiones = [
-        ("🩸", "#FF3B30", "Análisis sanguíneo", "El sobrepeso puede elevar colesterol y triglicéridos."),
-        ("🔥", "#FF9500", "TMB", "Tu metabolismo se calculó usando estos datos."),
-        ("🍎", "#34C759", "Dieta", "Tu plan alimenticio fue generado considerando tu IMC."),
-        ("📈", "#5AC8FA", "Proyección", "Simula cómo cambiaría tu peso con tu meta actual."),
+        ("🩸", "#FF3B30", "Blood Test" if _en_con else "Análisis sanguíneo",
+         "Overweight can raise cholesterol and triglycerides." if _en_con else "El sobrepeso puede elevar colesterol y triglicéridos."),
+        ("🔥", "#FF9500", "BMR", "Your metabolism was calculated using this data." if _en_con else "Tu metabolismo se calculó usando estos datos."),
+        ("🍎", "#34C759", "Diet" if _en_con else "Dieta",
+         "Your meal plan was generated considering your BMI." if _en_con else "Tu plan alimenticio fue generado considerando tu IMC."),
+        ("📈", "#5AC8FA", "Projection" if _en_con else "Proyección",
+         "Simulate how your weight would change with your current goal." if _en_con else "Simula cómo cambiaría tu peso con tu meta actual."),
     ]
     for _ic, _co, _tt, _de in _conexiones:
         st.markdown(f"""
@@ -3980,8 +4131,43 @@ def _gauge_altair(pct, color_hex, big_text, sub_text, key):
     """, unsafe_allow_html=True)
 
 
+def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
+    """Tarjeta corta 'Qué significa tu nuevo objetivo': explica en pocas líneas qué hace el
+    cuerpo con el ajuste calórico elegido, según el objetivo (dinámico)."""
+    if objetivo_v == "Bajar de peso":
+        color, fondo = "#FF9500", "#FFF3E0"
+        texto = ("Con este ajuste, consumirás <b>menos energía de la que gastas</b>.<br>"
+                  "Tu cuerpo utilizará parte de sus reservas de grasa para completar esa diferencia.")
+        checks = ["Déficit calórico controlado", "Sin bajar de tu TMB", "Compatible con un plan saludable"]
+    elif objetivo_v == "Subir de peso":
+        color, fondo = "#007AFF", "#EAF3FF"
+        texto = ("Con este ajuste, consumirás <b>más energía de la que gastas</b>.<br>"
+                  "Tu cuerpo usará ese excedente para construir tejido nuevo, como músculo.")
+        checks = ["Superávit calórico controlado", "Por encima de tu TMB", "Compatible con un plan saludable"]
+    else:
+        color, fondo = "#34C759", "#EAFAEE"
+        texto = ("Con este ajuste, consumirás <b>aproximadamente la misma energía que gastas</b>.<br>"
+                  "Tu cuerpo no necesita usar reservas ni acumular un excedente.")
+        checks = ["Sin déficit ni superávit", "Por encima de tu TMB", "Ideal para conservar tu peso actual"]
+
+    _checks_html = "".join(
+        f'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">'
+        f'<span style="color:{color};font-weight:900;">✔</span>'
+        f'<span style="font-size:0.85rem;color:#17301F;">{c}</span></div>'
+        for c in checks
+    )
+    st.markdown(f"""
+    <div class="bento-card" style="background:{fondo};border:1.5px solid {color}33;">
+        <div style="font-weight:800;color:{color};font-size:0.95rem;margin-bottom:6px;">🧠 ¿Qué significa tu nuevo objetivo?</div>
+        <div style="font-size:0.85rem;color:#3C3C43;line-height:1.55;">{texto}</div>
+        {_checks_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v):
-    """Panel de control visual de macronutrientes con diales Altair y banner de reajuste (Prompt 2)."""
+    """Panel de control visual de macronutrientes con diales Altair y tarjeta de recordatorio
+    de recálculo (dinámica, reemplaza el aviso naranja anterior)."""
     st.markdown("#### 🎛️ Panel de Control de Macros")
     max_prot = max(peso_v * 2.2, 1)
     max_gras = max(peso_v * 1.2, 1)
@@ -4001,12 +4187,17 @@ def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v):
                       "El resto de la energía para tu día y entrenamientos.", "carb")
 
     st.markdown("""
-    <div style="background:linear-gradient(135deg,#FF9500 0%,#FFB300 100%);border-radius:20px;
-                padding:16px 22px;margin-top:14px;color:white;display:flex;align-items:center;gap:14px;
-                box-shadow:0 10px 24px rgba(255,149,0,0.30);">
-        <div style="font-size:2rem;">🔄</div>
-        <div style="font-size:0.95rem;font-weight:700;line-height:1.4;">
-            ⚠️ ¡Atención! Recalcula tu plan cada vez que bajes o subas entre 3 y 5 kg.
+    <div style="background:#FFF9E5;border:1px solid #FFE58F55;border-radius:20px;
+                padding:16px 22px;margin-top:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:1.3rem;">📌</span>
+            <span style="font-weight:800;color:#B8860B;">Recuerda</span>
+        </div>
+        <div style="font-size:0.85rem;color:#7A5C00;line-height:1.7;">
+            Tu plan debe actualizarse cuando:<br>
+            ⚖️ Cambies entre 3 y 5 kg.<br>
+            🏃 Cambie tu actividad física.<br>
+            📏 Cambien tus medidas corporales.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -5953,16 +6144,19 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.divider()
 
 elif hoja_activa == "2.-IMC Y PERCENTIL":
-    hoja_header(2, "El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
+    hoja_header(2, T("El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
                    "En adolescentes y niños se incluye también el Percentil.",
-                ilustracion=_ilustracion_imc_svg(), tip="¡Conoce tu IMC y cuida tu salud! 👍")
+                   "BMI helps determine whether a person has a healthy weight for their height. "
+                   "In teens and children, the Percentile is also included."),
+                ilustracion=_ilustracion_imc_svg(), tip=T("¡Conoce tu IMC y cuida tu salud! 👍",
+                                                            "Know your BMI and take care of your health! 👍"))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "IMC = Peso (kg) / [Altura (m)]²",
-        referencia="Organización Mundial de la Salud (OMS)")}</div>""", unsafe_allow_html=True)
+        "IMC = Peso (kg) / [Altura (m)]²" if st.session_state.get("idioma", "Español") != "English" else "BMI = Weight (kg) / [Height (m)]²",
+        referencia=T("Organización Mundial de la Salud (OMS)", "World Health Organization (WHO)"))}</div>""", unsafe_allow_html=True)
 
     _con_percentil = etapa in ["Niñez", "Adolescencia"] and _percentil_usuario is not None
     _riesgo_imc = _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Obesidad Clase 3 (Severa)"]
-    _riesgo_txt, _ = _RIESGO_POR_CATEGORIA.get(_categoria_imc_usuario, ("—", "#8E8E93"))
+    _riesgo_txt, _ = _riesgo_imc_txt(_categoria_imc_usuario)
 
     # --- 1. Tu Diagnóstico Nutricional ------------------------------------------------------
     panel_diagnostico_nutricional(imc, _percentil_usuario, _categoria_imc_usuario, con_percentil=_con_percentil)
@@ -6005,13 +6199,15 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
         cta1, cta2 = st.columns(2)
         with cta1:
-            cta_pill("🩸", "#FF3B30", "Prueba de riesgo de prediabetes (CDC)",
-                     "Responde un breve cuestionario de 1 minuto y conoce tu riesgo.",
-                     "Realizar prueba", "https://www.cdc.gov/prediabetes/risktest/index.html")
+            cta_pill("🩸", "#FF3B30", T("Prueba de riesgo de prediabetes (CDC)", "Prediabetes Risk Test (CDC)"),
+                     T("Responde un breve cuestionario de 1 minuto y conoce tu riesgo.",
+                       "Answer a brief 1-minute questionnaire to learn your risk."),
+                     T("Realizar prueba", "Take the test"), "https://www.cdc.gov/prediabetes/risktest/index.html")
         with cta2:
-            cta_pill("❤️", "#1E88E5", "Riesgos de salud por obesidad (CDC)",
-                     "Conoce las enfermedades y condiciones asociadas al sobrepeso y la obesidad.",
-                     "Ver más información", "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html")
+            cta_pill("❤️", "#1E88E5", T("Riesgos de salud por obesidad (CDC)", "Health Risks of Obesity (CDC)"),
+                     T("Conoce las enfermedades y condiciones asociadas al sobrepeso y la obesidad.",
+                       "Learn about the diseases and conditions associated with overweight and obesity."),
+                     T("Ver más información", "See more information"), "https://www.cdc.gov/healthy-weight-growth/food-activity/overweight-obesity-impacts-health.html")
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
@@ -6025,29 +6221,40 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
     # --- 10. Gráfico de percentiles por edad (bandas de colores, ya intuitivo) ---------------
-    st.markdown("#### 📈 Percentiles de IMC por edad (2 a 20 años)")
-    st.caption("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
+    st.markdown(T("#### 📈 Percentiles de IMC por edad (2 a 20 años)", "#### 📈 BMI Percentiles by Age (2 to 20 years)"))
+    st.caption(T("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
                "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
                "mientras que las franjas de arriba o abajo indican bajo peso, sobrepeso u obesidad. La estrella ⭐ "
-               "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.")
-    sub_mujeres, sub_hombres = st.tabs(["👧 Mujeres", "👦 Hombres"])
+               "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.",
+               "This chart compares you with other children and teens of your same age and sex. The colored bands "
+               "represent different weight ranges: the central band (light blue/green) is the healthiest range, "
+               "while the bands above or below indicate underweight, overweight, or obesity. The blue star ⭐ "
+               "marks exactly where you stand, if your age is between 2 and 20 years."))
+    sub_mujeres, sub_hombres = st.tabs([T("👧 Mujeres", "👧 Girls"), T("👦 Hombres", "👦 Boys")])
     with sub_mujeres:
         st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
     with sub_hombres:
         st.plotly_chart(grafico_percentil_bandas("Hombre", edad, imc, genero), use_container_width=True)
     if edad not in PERCENTIL_MUJER:
-        st.caption("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.")
+        st.caption(T("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.",
+                      "ℹ️ Your current age is outside the 2-20 year range, so your point isn't marked on the chart."))
 
     # --- 11. Tabla de percentiles — fila Y columna del usuario resaltadas -------------------
-    with st.expander("📊 Ver tabla completa de percentiles (edad 2-20 años)", expanded=False):
+    with st.expander(T("📊 Ver tabla completa de percentiles (edad 2-20 años)", "📊 View full percentile table (age 2-20 years)"), expanded=False):
         tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero, categoria_usuario=_categoria_imc_usuario)
-        st.markdown("""
+        st.markdown(T("""
         <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
         💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
         si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
         y por encima de P95 en Obesidad. La columna marcada con tu color es la que corresponde a tu resultado actual.
         </div>
-        """, unsafe_allow_html=True)
+        """, """
+        <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
+        💡 <b>How to use this table?</b> Find your age row and compare your BMI with the P5/P50/P85/P95 columns:
+        if your BMI falls before P5 you are Underweight, between P5 and P85 Healthy Weight, between P85 and P95 Overweight,
+        and above P95 Obesity. The column marked with your color is the one matching your current result.
+        </div>
+        """), unsafe_allow_html=True)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
@@ -6060,9 +6267,12 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     conexion_resto_sistema()
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    caja_util("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
+    caja_util(T("El IMC te dice, de forma simple, si tu peso está en un rango saludable para tu altura. "
               "En niños y adolescentes se usa además el 'percentil', que te compara con otros chicos de tu misma "
               "edad y sexo — porque el cuerpo de un niño en crecimiento no se mide igual que el de un adulto. 📏⚖️",
+              "BMI tells you, in simple terms, whether your weight is in a healthy range for your height. "
+              "In children and teens, the 'percentile' is also used, comparing you with other kids of your same "
+              "age and sex — because a growing child's body isn't measured the same way as an adult's. 📏⚖️"),
               emoji="⚖️", color="#F3E5F5", borde="#8E24AA")
 
 # ---------------------------------------------------------------------------------------
@@ -7053,6 +7263,8 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     st.divider()
 
     # ===== 6. Distribución de macronutrientes (se conserva) =====
+    _tarjeta_interpretacion_objetivo(objetivo, ajuste_aplicado, tmb)
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
     _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso)
 
     caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
