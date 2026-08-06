@@ -1039,11 +1039,28 @@ IOS_BLUE, IOS_GREEN, IOS_RED, IOS_ORANGE = "#007AFF", "#34C759", "#FF3B30", "#FF
 IOS_GRAY_BG, IOS_LABEL, IOS_SECONDARY = "#F2F2F7", "#1C1C1E", "#6C6C70"
 
 # =========================================================================================
+# TIPOGRAFÍAS (Google Fonts) — carga UNA sola vez, en paralelo y SIN bloquear el resto del
+# render. Antes había dos `@import` distintos (uno aquí y otro más abajo, en la Hoja 5),
+# dentro del <style> global: un @import es render-blocking, así que el navegador esperaba a
+# que Google Fonts respondiera antes de terminar de aplicar el CSS y pintar el resto de la
+# página — por eso se quedaba "pegado" justo después del membrete. Ahora se piden ambas
+# familias en UNA sola petición, con preconnect (adelanta la conexión) y el truco
+# media="print" -> onload="this.media='all'" (la hoja de estilos se carga en segundo plano
+# y el resto de la app se pinta de inmediato, sin esperarla).
+# =========================================================================================
+st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@600;800&display=swap"
+      media="print" onload="this.media='all'">
+""", unsafe_allow_html=True)
+
+# =========================================================================================
 # ESTILOS GLOBALES
 # =========================================================================================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap');
 
 /* =========================================================================================
    SISTEMA VISUAL ESTILO iOS — tipografía San Francisco, esquinas "continuas" muy redondeadas,
@@ -1357,7 +1374,8 @@ div[data-testid="stImageCaption"] {
 }
 
 /* ---------- Hoja 5: Control de Peso — tarjetas creativas, misión y glassmorphism ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
+/* Orbitron ya se carga junto con Poppins/Nunito en el <link> no-bloqueante del inicio del
+   archivo (ver comentario más arriba) — se quitó el @import duplicado que había aquí. */
 
 @keyframes cp5-fadeup {
     from { opacity: 0; transform: translateY(18px); }
