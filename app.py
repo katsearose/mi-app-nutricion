@@ -5616,6 +5616,7 @@ _DEFAULTS_SESION = {
     "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
+    "semana_gestacion": 12, "peso_actual": 75.0,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -5640,6 +5641,65 @@ st.sidebar.markdown(f"""
     <span style="font-size:1.3rem;opacity:0.55;">🥗</span>
 </div>
 """, unsafe_allow_html=True)
+
+# =========================================================================================
+# 🤰 PERFIL GESTACIONAL — Semana → Trimestre (MSD / ACOG / IOM) y tarjeta visual colorida
+# =========================================================================================
+_TABLA_TRIMESTRES_SEMANA = [
+    ("Primer trimestre",  1, 13, 0,   "🌱", "#4CAF50", "#EAFAEE",
+     T("Ocurren los primeros cambios de adaptación materna.", "The first maternal adaptation changes take place."),
+     T("Primer Trimestre", "First Trimester")),
+    ("Segundo trimestre", 14, 27, 340, "👶", "#FF9500", "#FFF3E5",
+     T("El bebé crece rápidamente y se mueve. Etapa de estabilidad energética.",
+       "The baby grows quickly and starts moving. A stage of energy stability."),
+     T("Segundo Trimestre", "Second Trimester")),
+    ("Tercer trimestre",  28, 40, 452, "❤️", "#FF2D55", "#FFEBF0",
+     T("Recta final de desarrollo y preparación para el parto.",
+       "The final stretch of development and preparation for birth."),
+     T("Tercer Trimestre", "Third Trimester")),
+]
+
+def _trimestre_desde_semana(semana):
+    """Devuelve la clave interna del trimestre ('Primer/Segundo/Tercer trimestre') según la
+    semana de gestación (1-40), siguiendo el criterio MSD/ACOG (1-13 / 14-27 / 28-40)."""
+    for _clave, _s_min, _s_max, *_resto in _TABLA_TRIMESTRES_SEMANA:
+        if _s_min <= semana <= _s_max:
+            return _clave
+    return "Tercer trimestre"
+
+def _tarjeta_leyenda_trimestres(semana_actual):
+    """🎨 Tarjeta colorida 'Etapa Gestacional Detectada', con las 3 franjas de trimestre y
+    el bono calórico de cada una; resalta con borde grueso + insignia la etapa activa."""
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#FDF0F7 0%,#F3EEFB 55%,#EAF3FF 100%);border-radius:22px;
+    padding:18px 20px 14px 20px;margin:6px 0 14px 0;border:1.5px solid #BA68C822;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+    <p style="margin:0 0 12px 0;font-weight:900;font-size:0.98rem;color:#8E24AA;">
+    📍 {T("Etapa Gestacional Detectada", "Detected Gestational Stage")}</p>
+    """, unsafe_allow_html=True)
+    _cols_tri_leyenda = st.columns(3)
+    for _col, (_clave, _s_min, _s_max, _bono, _emoji, _borde, _fondo, _desc, _titulo) in zip(_cols_tri_leyenda, _TABLA_TRIMESTRES_SEMANA):
+        _activo = _s_min <= semana_actual <= _s_max
+        _borde_w = f"3px solid {_borde}" if _activo else f"1px solid {_borde}44"
+        _sombra = f"0 10px 22px {_borde}44" if _activo else "0 2px 6px rgba(0,0,0,0.04)"
+        _op = "1" if _activo else "0.55"
+        _bono_txt = f"+{_bono} kcal/{T('día','day')}" if _bono else T("Sin aporte extra", "No extra intake")
+        with _col:
+            st.markdown(f"""
+            <div style="background:{_fondo};border-radius:18px;padding:14px 12px;border:{_borde_w};
+            box-shadow:{_sombra};opacity:{_op};text-align:center;transition:all .25s ease;min-height:150px;">
+                <div style="font-size:1.7rem;">{_emoji}</div>
+                <p style="margin:6px 0 2px 0;font-weight:900;color:{_borde};font-size:0.88rem;">{_titulo}</p>
+                <p style="margin:0 0 6px 0;color:#8A94A6;font-size:0.68rem;font-weight:700;text-transform:uppercase;">
+                    {T('Semanas','Weeks')} {_s_min}–{_s_max}</p>
+                <p style="margin:0 0 8px 0;color:#3C3C43;font-size:0.74rem;line-height:1.4;">{_desc}</p>
+                <p style="margin:0;font-weight:900;font-size:1.02rem;color:{_borde};">{_bono_txt}</p>
+                {f'<p style="margin:6px 0 0 0;font-weight:900;font-size:0.62rem;letter-spacing:.04em;color:#FFFFFF;background:{_borde};display:inline-block;padding:3px 10px;border-radius:999px;">✓ '+T("TU ETAPA ACTUAL","YOUR CURRENT STAGE")+'</p>' if _activo else ''}
+            </div>
+            """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <p style="margin:10px 2px 0 2px;color:#8A94A6;font-size:0.7rem;">
+    {T('Fuente','Source')}: Manual MSD · ACOG · IOM.</p></div>
+    """, unsafe_allow_html=True)
 
 @st.fragment
 def _panel_llenar_datos():
@@ -5697,37 +5757,100 @@ def _panel_llenar_datos():
     if st.session_state.get("peso", 0) and st.session_state["peso"] > min(300.0, peso_max_actual):
         st.session_state["peso"] = min(300.0, peso_max_actual)
 
-    b1c3, b1c4, b1c5 = st.columns(3)
-    with b1c3:
-        peso = st.number_input(T("Peso (kg):", "Weight (kg):"), min_value=20.0, max_value=min(300.0, peso_max_actual),
-                                value=min(75.0, peso_max_actual), step=0.1, key="peso",
-                                help=T("Rango válido: 20 a 300 kg.", "Valid range: 20 to 300 kg."))
-    with b1c4:
-        estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
-                                    value=min(168, estatura_max_actual), step=1, key="estatura",
-                                    help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
-    with b1c5:
-        edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
-                                value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
-    etapa = etapa_desde_edad(edad)
-    st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
-              f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
-
+    # ¿Embarazada? se decide primero porque cambia cómo pedimos el peso más abajo.
     embarazada = False
-    trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
     if genero == "Mujer":
         embarazada = st.checkbox(T("🤰 ¿Estás embarazada?", "🤰 Are you pregnant?"), key="embarazada",
                                   help=T("Si activas esto, tu TMB se calculará con la fórmula de gestación "
                                        "en vez de Mifflin-St Jeor, y se reflejará en toda la app.",
                                        "If you enable this, your BMR will be calculated with the gestational "
                                        "formula instead of Mifflin-St Jeor, and it will be reflected across the app."))
-        if embarazada:
-            trimestre = st.selectbox(T("Trimestre de embarazo:", "Trimester of pregnancy:"),
-                                      ["Primer trimestre", "Segundo trimestre", "Tercer trimestre"],
-                                      key="trimestre_emb",
-                                      format_func=lambda x: T(x, {"Primer trimestre": "First trimester",
-                                                                   "Segundo trimestre": "Second trimester",
-                                                                   "Tercer trimestre": "Third trimester"}[x]))
+
+    if embarazada:
+        b1c3, b1c4 = st.columns(2)
+        with b1c3:
+            st.markdown(f'<p style="margin:0 0 4px 0;font-weight:800;color:#8E24AA;font-size:0.85rem;">'
+                        f'🤰 {T("Peso Pregestacional (kg)","Pre-pregnancy Weight (kg)")}</p>', unsafe_allow_html=True)
+            peso = st.number_input(T("Peso Pregestacional (kg):", "Pre-pregnancy Weight (kg):"), min_value=20.0,
+                                    max_value=min(300.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
+                                    key="peso", label_visibility="collapsed",
+                                    help=T("Tu peso ANTES del embarazo. Se usa para calcular tu TMB, tu IMC "
+                                           "pregestacional y tu rango total de ganancia de peso (Tabla IOM).",
+                                           "Your weight BEFORE pregnancy. Used to calculate your BMR, your "
+                                           "pre-pregnancy BMI, and your total recommended weight-gain range (IOM Table)."))
+        with b1c4:
+            st.markdown(f'<p style="margin:0 0 4px 0;font-weight:800;color:#007AFF;font-size:0.85rem;">'
+                        f'⚖️ {T("Peso Actual (kg)","Current Weight (kg)")}</p>', unsafe_allow_html=True)
+            peso_actual = st.number_input(T("Peso Actual (kg):", "Current Weight (kg):"), min_value=20.0,
+                                           max_value=min(300.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
+                                           key="peso_actual", label_visibility="collapsed",
+                                           help=T("Tu peso HOY. Se usa en el Seguimiento de Peso semanal y en el "
+                                                  "Plan Alimenticio / Fármacos / Cafeína.",
+                                                  "Your weight TODAY. Used in the weekly Weight Tracking sheet and "
+                                                  "in the Meal Plan / Medications / Caffeine sheets."))
+        b1c5, b1c6 = st.columns(2)
+        with b1c5:
+            estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
+                                        value=min(160, estatura_max_actual), step=1, key="estatura",
+                                        help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
+        with b1c6:
+            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
+                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
+    else:
+        b1c3, b1c4, b1c5 = st.columns(3)
+        with b1c3:
+            peso = st.number_input(T("Peso (kg):", "Weight (kg):"), min_value=20.0, max_value=min(300.0, peso_max_actual),
+                                    value=min(75.0, peso_max_actual), step=0.1, key="peso",
+                                    help=T("Rango válido: 20 a 300 kg.", "Valid range: 20 to 300 kg."))
+        with b1c4:
+            estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
+                                        value=min(168, estatura_max_actual), step=1, key="estatura",
+                                        help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
+        with b1c5:
+            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
+                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
+    etapa = etapa_desde_edad(edad)
+    st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
+              f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
+
+    trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
+    if genero == "Mujer" and embarazada:
+        semana_gestacion = st.number_input(
+            T("🗓️ Semana de Gestación (1 a 40):", "🗓️ Week of Gestation (1 to 40):"),
+            min_value=1, max_value=40, step=1, key="semana_gestacion",
+            help=T("Indica en qué semana de embarazo estás. El trimestre y el bono calórico se "
+                   "detectan automáticamente.",
+                   "Enter what week of pregnancy you're in. The trimester and caloric bonus are "
+                   "detected automatically."))
+        trimestre = _trimestre_desde_semana(semana_gestacion)
+        st.session_state["trimestre_emb"] = trimestre
+        _tarjeta_leyenda_trimestres(semana_gestacion)
+
+        if edad < 20:
+            st.markdown(T(f"""
+            <div style="background:#FFF3E5;border-radius:16px;padding:14px 18px;margin-bottom:14px;
+            border-left:5px solid #FF9500;">
+            <p style="margin:0 0 4px 0;font-weight:900;color:#B06000;font-size:0.86rem;">
+            ⚠️ Nota Clínica sobre Percentiles en Adolescentes Gestantes</p>
+            <p style="margin:0;color:#5C4A1E;font-size:0.8rem;line-height:1.5;">
+            Las tablas de percentiles de IMC de la OMS (2 a 20 años) evalúan el crecimiento en
+            etapas <b>no gestacionales</b>. Durante el embarazo, tu seguimiento se guiará por las
+            <b>curvas de ganancia ponderal por semana gestacional (IOM/ACOG)</b> usando tu IMC
+            pregestacional, ya que tu peso actual ya incluye tejido feto-placentario y líquidos.</p>
+            </div>
+            """, f"""
+            <div style="background:#FFF3E5;border-radius:16px;padding:14px 18px;margin-bottom:14px;
+            border-left:5px solid #FF9500;">
+            <p style="margin:0 0 4px 0;font-weight:900;color:#B06000;font-size:0.86rem;">
+            ⚠️ Clinical Note on Percentiles in Pregnant Teens</p>
+            <p style="margin:0;color:#5C4A1E;font-size:0.8rem;line-height:1.5;">
+            WHO's BMI-for-age percentile tables (ages 2-20) assess growth in <b>non-pregnant</b>
+            stages. During pregnancy, your tracking will be guided by <b>weekly gestational weight-gain
+            curves (IOM/ACOG)</b> using your pre-pregnancy BMI, since your current weight already
+            includes feto-placental tissue and fluids.</p>
+            </div>
+            """), unsafe_allow_html=True)
+
     vive_en_chiclayo = st.checkbox(T("🌤️ ¿Vives en Chiclayo?", "🌤️ Do you live in Chiclayo?"), key="vive_en_chiclayo",
                                     help=(T("Ajusta tu RCD según el clima cálido de la ciudad (−5%).",
                                             "Adjusts your DCR for the city's warm climate (−5%).") if not embarazada
@@ -5950,11 +6073,13 @@ with st.sidebar.expander(T("📝 Llenar / Editar Mis Datos", "📝 Enter / Edit 
 nombre_usuario = st.session_state.get("nombre_usuario", "")
 genero = st.session_state.get("genero", "Hombre")
 peso = st.session_state.get("peso", 75.0)
+peso_actual = st.session_state.get("peso_actual", peso)
 estatura = st.session_state.get("estatura", 168)
 edad = st.session_state.get("edad", 9)
 etapa = etapa_desde_edad(edad)
 embarazada = st.session_state.get("embarazada", False) if genero == "Mujer" else False
 trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
+semana_gestacion = st.session_state.get("semana_gestacion", 12)
 vive_en_chiclayo = st.session_state.get("vive_en_chiclayo", False)
 actividad = st.session_state.get("actividad", "Ligero")
 objetivo = st.session_state.get("objetivo", "Bajar de peso")
@@ -6047,6 +6172,8 @@ _nombre_saludo = nombre_display(nombre_usuario, genero)
 
 peso_max_actual = PESO_MAX[genero]
 peso = st.session_state["peso"]
+peso_actual = st.session_state.get("peso_actual", peso)
+semana_gestacion = st.session_state.get("semana_gestacion", 12)
 
 estatura_max_actual = ESTATURA_MAX[genero]
 estatura = st.session_state["estatura"]
@@ -6223,7 +6350,14 @@ porciones = {
 # RCD ya incluye el ajuste de clima de Chiclayo si corresponde (ver cálculo de `rcd` arriba)
 
 # Categoría IMC del usuario (para reutilizar en Hoja 2 y en el Reporte)
-if etapa in ["Niñez", "Adolescencia"]:
+# Excepción clínica (ACOG / IOM Adolescent Pregnancy): en adolescentes gestantes (< 20 años) NO
+# se evalúa el peso con las curvas de percentil poblacional no gestacionales (falsearía un
+# "sobrepeso" por el tejido feto-placentario). Se usa el IMC PREGESTACIONAL sobre la tabla de
+# adultos del IOM en su lugar.
+_es_adolescente_gestante = (genero == "Mujer" and embarazada and edad < 20)
+if _es_adolescente_gestante:
+    _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
+elif etapa in ["Niñez", "Adolescencia"]:
     _percentil_usuario, _categoria_imc_usuario = clasif_percentil(imc, edad, genero)
 else:
     _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
@@ -7228,41 +7362,74 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 10. Gráfico de percentiles por edad (bandas de colores, ya intuitivo) ---------------
-    st.markdown(T("#### 📈 Percentiles de IMC por edad (2 a 20 años)", "#### 📈 BMI Percentiles by Age (2 to 20 years)"))
-    st.caption(T("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
-               "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
-               "mientras que las franjas de arriba o abajo indican bajo peso, sobrepeso u obesidad. La estrella ⭐ "
-               "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.",
-               "This chart compares you with other children and teens of your same age and sex. The colored bands "
-               "represent different weight ranges: the central band (light blue/green) is the healthiest range, "
-               "while the bands above or below indicate underweight, overweight, or obesity. The blue star ⭐ "
-               "marks exactly where you stand, if your age is between 2 and 20 years."))
-    sub_mujeres, sub_hombres = st.tabs([T("👧 Mujeres", "👧 Girls"), T("👦 Hombres", "👦 Boys")])
-    with sub_mujeres:
-        st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
-    with sub_hombres:
-        st.plotly_chart(grafico_percentil_bandas("Hombre", edad, imc, genero), use_container_width=True)
-    if edad not in PERCENTIL_MUJER:
-        st.caption(T("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.",
-                      "ℹ️ Your current age is outside the 2-20 year range, so your point isn't marked on the chart."))
-
-    # --- 11. Tabla de percentiles — fila Y columna del usuario resaltadas -------------------
-    with st.expander(T("📊 Ver tabla completa de percentiles (edad 2-20 años)", "📊 View full percentile table (age 2-20 years)"), expanded=False):
-        tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero, categoria_usuario=_categoria_imc_usuario)
-        st.markdown(T("""
-        <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
-        💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
-        si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
-        y por encima de P95 en Obesidad. La columna marcada con tu color es la que corresponde a tu resultado actual.
+    # --- 10. Gráfico de percentiles por edad (bandas de colores) — SUSPENDIDO en adolescentes
+    #         gestantes: se sustituye por el aviso clínico IOM/ACOG (percentiles no gestacionales) ---
+    if _es_adolescente_gestante:
+        st.markdown(T(f"""
+        <div style="background:linear-gradient(120deg,#FFF3E5 0%,#FDF0F7 100%);border-radius:20px;
+        padding:20px 24px;margin:6px 0 16px 0;border-left:6px solid #FF9500;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+        <p style="margin:0 0 6px 0;font-weight:900;color:#B06000;font-size:1rem;">
+        ⚠️ Nota Clínica sobre Percentiles en Adolescentes Gestantes</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.6;">
+        Las tablas de percentiles de IMC de la OMS (2 a 20 años) evalúan el crecimiento en etapas
+        <b>no gestacionales</b>. Durante el embarazo, el seguimiento del peso <b>debe guiarse
+        exclusivamente por las curvas de ganancia ponderal por semana gestacional (Guías IOM/ACOG)</b>
+        utilizando tu <b style="color:#8E24AA;">IMC pregestacional</b>, ya que el aumento de peso
+        actual incluye el tejido feto-placentario y la expansión de líquidos corporales. Por eso el
+        gráfico de percentiles poblacional está desactivado para tu perfil.</p>
         </div>
-        """, """
-        <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
-        💡 <b>How to use this table?</b> Find your age row and compare your BMI with the P5/P50/P85/P95 columns:
-        if your BMI falls before P5 you are Underweight, between P5 and P85 Healthy Weight, between P85 and P95 Overweight,
-        and above P95 Obesity. The column marked with your color is the one matching your current result.
+        """, f"""
+        <div style="background:linear-gradient(120deg,#FFF3E5 0%,#FDF0F7 100%);border-radius:20px;
+        padding:20px 24px;margin:6px 0 16px 0;border-left:6px solid #FF9500;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+        <p style="margin:0 0 6px 0;font-weight:900;color:#B06000;font-size:1rem;">
+        ⚠️ Clinical Note on Percentiles in Pregnant Teens</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.6;">
+        WHO's BMI-for-age percentile tables (ages 2-20) assess growth in <b>non-pregnant</b> stages.
+        During pregnancy, weight monitoring <b>must be guided exclusively by weekly gestational
+        weight-gain curves (IOM/ACOG Guidelines)</b> using your <b style="color:#8E24AA;">pre-pregnancy
+        BMI</b>, since your current weight gain includes feto-placental tissue and body fluid
+        expansion. That's why the population percentile chart is disabled for your profile.</p>
         </div>
         """), unsafe_allow_html=True)
+        st.info(T("📊 Puedes ver tu curva de ganancia de peso gestacional semana a semana en "
+                  "**13.-LÍNEA DE TIEMPO** (Seguimiento del Peso durante el Embarazo).",
+                  "📊 You can see your week-by-week gestational weight-gain curve in "
+                  "**13.-TIMELINE** (Weight Tracking During Pregnancy)."))
+    else:
+        st.markdown(T("#### 📈 Percentiles de IMC por edad (2 a 20 años)", "#### 📈 BMI Percentiles by Age (2 to 20 years)"))
+        st.caption(T("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
+                   "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
+                   "mientras que las franjas de arriba o abajo indican bajo peso, sobrepeso u obesidad. La estrella ⭐ "
+                   "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.",
+                   "This chart compares you with other children and teens of your same age and sex. The colored bands "
+                   "represent different weight ranges: the central band (light blue/green) is the healthiest range, "
+                   "while the bands above or below indicate underweight, overweight, or obesity. The blue star ⭐ "
+                   "marks exactly where you stand, if your age is between 2 and 20 years."))
+        sub_mujeres, sub_hombres = st.tabs([T("👧 Mujeres", "👧 Girls"), T("👦 Hombres", "👦 Boys")])
+        with sub_mujeres:
+            st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
+        with sub_hombres:
+            st.plotly_chart(grafico_percentil_bandas("Hombre", edad, imc, genero), use_container_width=True)
+        if edad not in PERCENTIL_MUJER:
+            st.caption(T("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.",
+                          "ℹ️ Your current age is outside the 2-20 year range, so your point isn't marked on the chart."))
+
+        # --- 11. Tabla de percentiles — fila Y columna del usuario resaltadas -------------------
+        with st.expander(T("📊 Ver tabla completa de percentiles (edad 2-20 años)", "📊 View full percentile table (age 2-20 years)"), expanded=False):
+            tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero, categoria_usuario=_categoria_imc_usuario)
+            st.markdown(T("""
+            <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
+            💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
+            si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
+            y por encima de P95 en Obesidad. La columna marcada con tu color es la que corresponde a tu resultado actual.
+            </div>
+            """, """
+            <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
+            💡 <b>How to use this table?</b> Find your age row and compare your BMI with the P5/P50/P85/P95 columns:
+            if your BMI falls before P5 you are Underweight, between P5 and P85 Healthy Weight, between P85 and P95 Overweight,
+            and above P95 Obesity. The column marked with your color is the one matching your current result.
+            </div>
+            """), unsafe_allow_html=True)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
@@ -8112,6 +8279,48 @@ elif hoja_activa == "4.-RCD":
         educational estimate and does not replace an evaluation by an obstetrician or nutritionist.</p>
         </div>
         """), unsafe_allow_html=True)
+
+        # --- 🎯 Meta de ganancia de peso total — Tabla oficial IOM/NAM · ACOG · OMS -------------
+        st.write("")
+        st.markdown(T("#### 🎯 Tu meta de ganancia de peso total (IOM/ACOG)", "#### 🎯 Your total weight-gain goal (IOM/ACOG)"))
+        st.caption(T("Calculada con tu IMC PREGESTACIONAL — no con tu peso actual, que ya incluye al bebé.",
+                     "Calculated with your PRE-PREGNANCY BMI — not your current weight, which already includes the baby."))
+        _TABLA_IOM_GANANCIA = [
+            (T("🩵 Bajo peso", "🩵 Underweight"), "< 18.5", 12.5, 18.0, 0.51, "#5AC8FA", "#E9F8FF"),
+            (T("💚 Normal", "💚 Normal"), "18.5 – 24.9", 11.5, 16.0, 0.42, "#34C759", "#EAFAEE"),
+            (T("🧡 Sobrepeso", "🧡 Overweight"), "25.0 – 29.9", 7.0, 11.5, 0.28, "#FF9500", "#FFF3E5"),
+            (T("❤️ Obesidad", "❤️ Obesity"), "≥ 30.0", 5.0, 9.0, 0.22, "#FF3B30", "#FFEDEC"),
+        ]
+        _filas_iom_html = ""
+        for _etq_iom, _rango_imc_iom, _min_iom, _max_iom, _tasa_iom, _color_iom, _fondo_iom in _TABLA_IOM_GANANCIA:
+            _es_fila_iom_activa = (
+                (imc < 18.5 and _rango_imc_iom == "< 18.5") or
+                (18.5 <= imc <= 24.9 and _rango_imc_iom == "18.5 – 24.9") or
+                (25.0 <= imc <= 29.9 and _rango_imc_iom == "25.0 – 29.9") or
+                (imc >= 30.0 and _rango_imc_iom == "≥ 30.0")
+            )
+            _resalte_iom = f"box-shadow:inset 0 0 0 2.5px {_color_iom};transform:scale(1.01);" if _es_fila_iom_activa else ""
+            _filas_iom_html += f"""
+            <tr style="background:{_fondo_iom};{_resalte_iom}">
+                <td style="text-align:left;font-weight:900;color:{_color_iom};padding:12px 14px;border-radius:12px 0 0 12px;font-size:0.86rem;">
+                    {_etq_iom}{' ⭐' if _es_fila_iom_activa else ''}</td>
+                <td style="text-align:center;color:#3C3C43;padding:12px 10px;font-size:0.82rem;">{_rango_imc_iom}</td>
+                <td style="text-align:center;font-weight:800;color:#17301F;padding:12px 10px;font-size:0.86rem;">{_min_iom:.1f}–{_max_iom:.1f} kg</td>
+                <td style="text-align:center;color:#3C3C43;padding:12px 14px;border-radius:0 12px 12px 0;font-size:0.82rem;">≈ {_tasa_iom:.2f} kg/{T('sem','wk')}</td>
+            </tr>"""
+        st.markdown(_html_sin_lineas_vacias(f"""
+        <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-family:var(--font-round);">
+            <thead><tr>
+                <th style="text-align:left;padding:0 14px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Categoría IMC Pregestacional','Pre-pregnancy BMI Category')}</th>
+                <th style="padding:0 10px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">IMC (kg/m²)</th>
+                <th style="padding:0 10px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Ganancia Total','Total Gain')}</th>
+                <th style="padding:0 14px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Ritmo 2°/3er trim.','Rate 2nd/3rd trim.')}</th>
+            </tr></thead>
+            <tbody>{_filas_iom_html}</tbody>
+        </table>
+        """), unsafe_allow_html=True)
+        st.caption(T("📚 Fuente: Institute of Medicine / National Academy of Medicine (IOM/NAM), ratificada por ACOG y OMS.",
+                     "📚 Source: Institute of Medicine / National Academy of Medicine (IOM/NAM), endorsed by ACOG and WHO."))
 
         caja_util(T("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
                   "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
@@ -9954,7 +10163,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         (30.0, T("Sobrepeso (IMC 25.0–29.9)", "Overweight (BMI 25.0–29.9)"), 7.0, 11.5, "#FF9500"),
         (999.0, T("Obesidad (IMC ≥ 30.0)", "Obesity (BMI ≥ 30.0)"), 5.0, 9.0, "#FF3B30"),
     ]
-    _imc_previo = imc  # IMC previo/actual usado como aproximación del IMC pregestacional
+    _imc_previo = imc  # IMC Pregestacional (peso pregestacional / estatura²) — ya no es aproximado
     for _tope, _etq, _min_kg, _max_kg, _color_canal in _CANALES_IOM:
         if _imc_previo < _tope:
             _canal_etiqueta, _canal_min, _canal_max, _canal_color = _etq, _min_kg, _max_kg, _color_canal
@@ -9963,12 +10172,12 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
     _semanas_totales = 40
     _RANGO_TRIMESTRE = {"Primer trimestre": (1, 13), "Segundo trimestre": (14, 27), "Tercer trimestre": (28, 40)}
     _sem_min_tri, _sem_max_tri = _RANGO_TRIMESTRE.get(trimestre, (1, 13))
-    _semana_default = st.session_state.get("semana_embarazo_exacta", (_sem_min_tri + _sem_max_tri) // 2)
+    _semana_default = st.session_state.get("semana_embarazo_exacta", semana_gestacion)
     _semana_default = min(max(_semana_default, 1), _semanas_totales)
     _trimestre_disp_lt = T(trimestre, {"Primer trimestre": "First trimester", "Segundo trimestre": "Second trimester",
                                         "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))
 
-    _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso)
+    _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso_actual)
 
     # ===== 📋 Tarjetas resumen (fila única) =====
     def _tarjeta_resumen(icono, titulo, valor, sub, color):
@@ -10651,6 +10860,7 @@ elif hoja_activa == "📄 MI REPORTE":
         "grupo": 'N°04 - 5° "C"',
         "actividad": actividad,
         "peso": peso,
+        "peso_actual": peso_actual,
         "estatura": estatura,
         "imc": imc,
         "categoria_imc": _categoria_imc_usuario,
