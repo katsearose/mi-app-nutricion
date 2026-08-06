@@ -35,7 +35,8 @@ from reportlab.platypus import (
 )
 from reportlab.lib.utils import ImageReader
 
-st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎")
+st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎",
+                    initial_sidebar_state="expanded")
 
 # =========================================================================================
 # IDIOMA / LANGUAGE — selector global (sidebar, Bloque 0) + helper de traducción T(es, en)
@@ -6125,36 +6126,50 @@ NAV_COLORES = {
     "🎓 SOBRE NOSOTRAS":           ("#FF2D55", "#FFEBF0"),
 }
 
-_nav_colores_css = "<style>\n"
-for _i_nav, _hoja_nav_css in enumerate(OPCIONES_HOJAS, start=1):
-    _borde_css, _fondo_css = NAV_COLORES.get(_hoja_nav_css, ("#1E5631", "#EAFAEE"))
-    _nav_colores_css += f'''
-section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="secondary"] {{
-    background:{_fondo_css} !important; color:{_borde_css} !important;
-    border:1.5px solid {_borde_css}55 !important; font-weight:700 !important;
+@st.cache_data(show_spinner=False)
+def _construir_css_nav(_opciones, _colores):
+    """Construye el CSS de resaltado de los botones de navegación UNA sola vez (cacheado):
+    los colores son estáticos y no dependen del estado del usuario, así que recalcularlos en
+    cada rerun es trabajo innecesario que ralentiza el cambio de pestaña."""
+    _css = "<style>\n"
+    for _i, _hoja in enumerate(_opciones, start=1):
+        _borde, _fondo = _colores.get(_hoja, ("#1E5631", "#EAFAEE"))
+        _css += f'''
+section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i}) button[kind="secondary"] {{
+    background:{_fondo} !important; color:{_borde} !important;
+    border:1.5px solid {_borde}55 !important; font-weight:700 !important;
 }}
-section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="secondary"]:hover {{
-    border-color:{_borde_css} !important; transform:translateX(2px);
+section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i}) button[kind="secondary"]:hover {{
+    border-color:{_borde} !important; transform:translateX(2px);
 }}
-section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i_nav}) button[kind="primary"] {{
-    background:linear-gradient(135deg,{_borde_css} 0%,{_borde_css}CC 100%) !important; color:#FFFFFF !important;
-    box-shadow:0 4px 14px {_borde_css}66 !important; border:1.5px solid {_borde_css} !important;
+section[data-testid="stSidebar"] div[data-testid="stButton"]:nth-of-type({_i}) button[kind="primary"] {{
+    background:linear-gradient(135deg,{_borde} 0%,{_borde}CC 100%) !important; color:#FFFFFF !important;
+    box-shadow:0 4px 14px {_borde}66 !important; border:1.5px solid {_borde} !important;
 }}
 '''
-_nav_colores_css += "</style>"
-st.sidebar.markdown(_nav_colores_css, unsafe_allow_html=True)
+    _css += "</style>"
+    return _css
+
+st.sidebar.markdown(_construir_css_nav(tuple(OPCIONES_HOJAS), tuple(NAV_COLORES.items())), unsafe_allow_html=True)
+
+def _ir_a_hoja(_destino):
+    """Callback de navegación: se ejecuta ANTES de que el script vuelva a correr, así que
+    st.session_state ya queda actualizado para TODO el rerun (sidebar incluido) y no hace
+    falta un st.rerun() manual — eso evitaba una segunda ejecución completa del script
+    (doble trabajo) en cada cambio de pestaña."""
+    st.session_state["hoja_activa"] = _destino
 
 for _hoja_nav in OPCIONES_HOJAS:
     _icono_nav, _titulo_nav = _etiquetas_nav_activas()[_hoja_nav]
     _es_activo_nav = (_hoja_nav == st.session_state["hoja_activa"])
-    if st.sidebar.button(
+    st.sidebar.button(
         f"{_icono_nav}  {_titulo_nav}",
         key=f"nav_{_hoja_nav}",
         use_container_width=True,
         type="primary" if _es_activo_nav else "secondary",
-    ):
-        st.session_state["hoja_activa"] = _hoja_nav
-        st.rerun()
+        on_click=_ir_a_hoja,
+        args=(_hoja_nav,),
+    )
 
 st.sidebar.markdown("---")
 
@@ -11091,16 +11106,14 @@ _idx_actual = OPCIONES_HOJAS.index(hoja_activa)
 col_prev, col_mid, col_next = st.columns([1, 2, 1])
 with col_prev:
     if _idx_actual > 0:
-        if st.button(T("← Sección Anterior", "← Previous Section"), use_container_width=True, key="btn_anterior_footer"):
-            st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual - 1]
-            st.rerun()
+        st.button(T("← Sección Anterior", "← Previous Section"), use_container_width=True, key="btn_anterior_footer",
+                  on_click=_ir_a_hoja, args=(OPCIONES_HOJAS[_idx_actual - 1],))
 with col_mid:
     st.write("")
 with col_next:
     if _idx_actual < len(OPCIONES_HOJAS) - 1:
-        if st.button(T("Siguiente Sección →", "Next Section →"), use_container_width=True, type="primary", key="btn_siguiente_footer"):
-            st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual + 1]
-            st.rerun()
+        st.button(T("Siguiente Sección →", "Next Section →"), use_container_width=True, type="primary", key="btn_siguiente_footer",
+                  on_click=_ir_a_hoja, args=(OPCIONES_HOJAS[_idx_actual + 1],))
 
 st.markdown("---")
 st.caption(T(
