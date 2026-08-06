@@ -2843,26 +2843,26 @@ def panel_referencia_hemo_hierro():
     Hierro: contenedor con bordes redondeados, encabezados por columna en color y una
     tarjeta por cada rango de dato, en tonos suaves — sin fondos oscuros ni negros."""
     filas_hemo = [
-        ("Niños 5–11 años", "≥ 11,5 g/dL", "11,0 – 11,4", "8,0 – 10,9", "< 8,0"),
-        ("Adolescentes", "≥ 12,0 g/dL", "11,0 – 11,9", "8,0 – 10,9", "< 8,0"),
-        ("Mujeres", "≥ 12,0 g/dL", "11,0 – 11,9", "8,0 – 10,9", "< 8,0"),
-        ("Hombres", "≥ 13,0 g/dL", "12,0 – 12,9", "8,0 – 10,9", "< 8,0"),
-        ("Mujeres embarazadas", "≥ 11,0 g/dL", "10,0 – 10,9", "7,0 – 9,9", "< 7,0"),
+        (T("Niños 5–11 años", "Children 5–11 years"), "≥ 11,5 g/dL", "11,0 – 11,4", "8,0 – 10,9", "< 8,0"),
+        (T("Adolescentes", "Adolescents"), "≥ 12,0 g/dL", "11,0 – 11,9", "8,0 – 10,9", "< 8,0"),
+        (T("Mujeres", "Women"), "≥ 12,0 g/dL", "11,0 – 11,9", "8,0 – 10,9", "< 8,0"),
+        (T("Hombres", "Men"), "≥ 13,0 g/dL", "12,0 – 12,9", "8,0 – 10,9", "< 8,0"),
+        (T("Mujeres embarazadas", "Pregnant Women"), "≥ 11,0 g/dL", "10,0 – 10,9", "7,0 – 9,9", "< 7,0"),
     ]
     filas_hierro = [
-        ("Niños y adolescentes", "< 50", "50 – 120", "> 120"),
-        ("Mujeres", "< 50", "50 – 170", "> 170"),
-        ("Hombres", "< 65", "65 – 175", "> 175"),
+        (T("Niños y adolescentes", "Children and Adolescents"), "< 50", "50 – 120", "> 120"),
+        (T("Mujeres", "Women"), "< 50", "50 – 170", "> 170"),
+        (T("Hombres", "Men"), "< 65", "65 – 175", "> 175"),
     ]
 
     html = ['<div class="ref-panel">']
-    html.append(f'<div class="ref-panel-title">{_ICONO_GOTA} Hemoglobina (g/dL)</div>')
+    html.append(f'<div class="ref-panel-title">{_ICONO_GOTA} {T("Hemoglobina", "Hemoglobin")} (g/dL)</div>')
     html.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;">')
-    html.append(_ref_header_chip("Grupo Poblacional"))
-    html.append(_ref_header_chip("Normal", "normal"))
-    html.append(_ref_header_chip("Anemia Leve", "leve"))
-    html.append(_ref_header_chip("Anemia Moderada", "moderada"))
-    html.append(_ref_header_chip("Anemia Grave", "grave"))
+    html.append(_ref_header_chip(T("Grupo Poblacional", "Population Group")))
+    html.append(_ref_header_chip(T("Normal", "Normal"), "normal"))
+    html.append(_ref_header_chip(T("Anemia Leve", "Mild Anemia"), "leve"))
+    html.append(_ref_header_chip(T("Anemia Moderada", "Moderate Anemia"), "moderada"))
+    html.append(_ref_header_chip(T("Anemia Grave", "Severe Anemia"), "grave"))
     html.append('</div>')
     for grupo, normal, leve, moderada, grave in filas_hemo:
         html.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;">')
@@ -2876,12 +2876,12 @@ def panel_referencia_hemo_hierro():
     st.markdown("".join(html), unsafe_allow_html=True)
 
     html2 = ['<div class="ref-panel">']
-    html2.append(f'<div class="ref-panel-title">{_ICONO_MOLECULA} Hierro Sérico (µg/dL)</div>')
+    html2.append(f'<div class="ref-panel-title">{_ICONO_MOLECULA} {T("Hierro Sérico", "Serum Iron")} (µg/dL)</div>')
     html2.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr;">')
-    html2.append(_ref_header_chip("Grupo Poblacional"))
-    html2.append(_ref_header_chip("Bajo", "bajo"))
-    html2.append(_ref_header_chip("Normal", "normal"))
-    html2.append(_ref_header_chip("Alto", "alto"))
+    html2.append(_ref_header_chip(T("Grupo Poblacional", "Population Group")))
+    html2.append(_ref_header_chip(T("Bajo", "Low"), "bajo"))
+    html2.append(_ref_header_chip(T("Normal", "Normal"), "normal"))
+    html2.append(_ref_header_chip(T("Alto", "High"), "alto"))
     html2.append('</div>')
     for grupo, bajo, normal, alto in filas_hierro:
         html2.append('<div class="ref-row" style="grid-template-columns:1.3fr 1fr 1fr 1fr;">')
@@ -2898,22 +2898,22 @@ def panel_referencia_trigli_gluco_coles():
     """Tres paneles pastel INDEPENDIENTES (uno por parámetro) para Triglicéridos, Glucosa
     y Colesterol — mismo estilo de tarjetas que Hemoglobina/Hierro, cada uno con su propia
     tabla, sin compartir columnas entre sí."""
-    _panel_referencia_una_fila(_ICONO_LIPIDO, "Triglicéridos (mg/dL)", [
-        ("Normal", "< 150", "normal"),
-        ("Límite Alto", "150 – 199", "leve"),
-        ("Alto", "200 – 499", "moderada"),
-        ("Muy Alto", "≥ 500", "grave"),
+    _panel_referencia_una_fila(_ICONO_LIPIDO, f'{T("Triglicéridos", "Triglycerides")} (mg/dL)', [
+        (T("Normal", "Normal"), "< 150", "normal"),
+        (T("Límite Alto", "Borderline High"), "150 – 199", "leve"),
+        (T("Alto", "High"), "200 – 499", "moderada"),
+        (T("Muy Alto", "Very High"), "≥ 500", "grave"),
     ])
-    _panel_referencia_una_fila(_ICONO_AZUCAR, "Glucosa (mg/dL)", [
-        ("Hipoglucemia", "< 70", "leve"),
-        ("Normal", "70 – 99", "normal"),
-        ("Prediabetes", "100 – 125", "moderada"),
-        ("Diabetes", "≥ 126", "grave"),
+    _panel_referencia_una_fila(_ICONO_AZUCAR, f'{T("Glucosa", "Glucose")} (mg/dL)', [
+        (T("Hipoglucemia", "Hypoglycemia"), "< 70", "leve"),
+        (T("Normal", "Normal"), "70 – 99", "normal"),
+        (T("Prediabetes", "Prediabetes"), "100 – 125", "moderada"),
+        (T("Diabetes", "Diabetes"), "≥ 126", "grave"),
     ])
-    _panel_referencia_una_fila(_ICONO_CORAZON, "Colesterol (mg/dL)", [
-        ("Deseable", "< 200", "normal"),
-        ("Límite Alto", "200 – 239", "leve"),
-        ("Alto", "≥ 240", "grave"),
+    _panel_referencia_una_fila(_ICONO_CORAZON, f'{T("Colesterol", "Cholesterol")} (mg/dL)', [
+        (T("Deseable", "Desirable"), "< 200", "normal"),
+        (T("Límite Alto", "Borderline High"), "200 – 239", "leve"),
+        (T("Alto", "High"), "≥ 240", "grave"),
     ])
 
 
@@ -3245,6 +3245,10 @@ SEMAFORO_ESTILO = {
     "gris":  {"hex": "#8E8E93", "fondo": "#F2F2F7", "emoji": "⚪", "etiqueta": "Sin dato"},  # gris neutro
 }
 
+_SEMAFORO_ETIQUETA_EN = {
+    "Normal": "Normal", "Alerta": "Alert", "Crítico": "Critical", "Sin dato": "No data",
+}
+
 MENSAJES_TRIAJE = {
     "Hemoglobina": {
         "verde": "¡Excelente balance! Tus niveles de hemoglobina están en equilibrio. Sigue priorizando hierro y proteínas de calidad.",
@@ -3367,13 +3371,13 @@ def evaluar_estado_clinico(parametro, categoria):
     retorna el color de semáforo, su estilo visual y un mensaje de recomendación personalizado."""
     color = CATEGORIA_SEMAFORO.get(categoria, "gris")
     estilo = SEMAFORO_ESTILO[color]
-    mensaje = MENSAJES_TRIAJE_CATEGORIA.get(categoria) or MENSAJES_TRIAJE.get(parametro, {}).get(color, "Sin recomendación disponible.")
+    mensaje = _mensaje_triaje_txt(parametro, categoria, color)
     return {
         "colorSemaforo": color,
         "hex": estilo["hex"],
         "fondo": estilo["fondo"],
         "emoji": estilo["emoji"],
-        "etiqueta": estilo["etiqueta"],
+        "etiqueta": T(estilo["etiqueta"], _SEMAFORO_ETIQUETA_EN.get(estilo["etiqueta"], estilo["etiqueta"])),
         "mensajePersonalizado": mensaje,
     }
 
@@ -3512,21 +3516,24 @@ def panel_resumen_semaforo_creativo(resultados, nombre_saludo=""):
     """Reemplaza la tabla plana 'Parámetro | Valor | Resultado' por un panel de tarjetas
     en degradado conectadas con flechas — un resumen visual tipo 'flujo sanguíneo' del
     panel completo, muy colorido, con icono, valor grande y badge de resultado por tarjeta."""
-    st.markdown("#### 🌈 Resumen Visual de tu Panel Sanguíneo")
-    st.caption(f"El mismo diagnóstico de arriba, pero de un vistazo — como una línea de flujo, {nombre_saludo}. 🩸➡️🍬➡️🫀")
+    st.markdown(f"#### 🌈 {T('Resumen Visual de tu Panel Sanguíneo', 'Visual Summary of your Blood Panel')}")
+    st.caption(T(f"El mismo diagnóstico de arriba, pero de un vistazo — como una línea de flujo, {nombre_saludo}. 🩸➡️🍬➡️🫀",
+                 f"The same diagnosis as above, but at a glance — like a flow line, {nombre_saludo}. 🩸➡️🍬➡️🫀"))
     piezas = ['<div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;">']
     for i, (parametro, valor_texto, categoria) in enumerate(resultados):
         r = evaluar_estado_clinico(parametro, categoria)
         c1_, c2_ = _GRAD_RESUMEN.get(r["colorSemaforo"], _GRAD_RESUMEN["gris"])
         icono_svg = ICONOS_PARAMETRO.get(parametro, "").format(fondo="rgba(255,255,255,0.30)", hex="#FFFFFF")
+        parametro_txt = _parametro_txt(parametro)
+        categoria_txt = _categoria_clinica_txt(categoria)
         piezas.append(f'''
         <div class="cp5-card" style="flex:1;min-width:150px;text-align:center;
              background:linear-gradient(155deg,{c1_} 0%,{c2_} 100%);padding:16px 12px;">
             <div style="width:42px;height:42px;margin:0 auto 8px auto;">{icono_svg}</div>
-            <div class="cp5-title" style="font-size:0.92rem;margin-bottom:2px;">{parametro}</div>
+            <div class="cp5-title" style="font-size:0.92rem;margin-bottom:2px;">{parametro_txt}</div>
             <div style="font-size:0.78rem;opacity:0.92;margin-bottom:8px;">{valor_texto}</div>
             <div style="background:rgba(255,255,255,0.28);border-radius:999px;padding:5px 10px;
-                        font-weight:800;font-size:0.78rem;display:inline-block;">{r['emoji']} {categoria}</div>
+                        font-weight:800;font-size:0.78rem;display:inline-block;">{r['emoji']} {categoria_txt}</div>
         </div>''')
         if i < len(resultados) - 1:
             piezas.append('<div style="display:flex;align-items:center;font-size:1.5rem;color:#B0B8C1;padding:0 2px;">→</div>')
@@ -6381,11 +6388,12 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
         _hex_pt = SEMAFORO_ESTILO[_color_pt]["hex"]
         _fondo_pt = SEMAFORO_ESTILO[_color_pt]["fondo"]
         _texto_impacto = generar_impacto_ambito(_parametro, _categoria, ambito_seleccionado)
+        _categoria_txt_pt = _categoria_clinica_txt(_categoria)
         st.markdown(f"""
         <div style="background:{_fondo_pt};border-left:4px solid {_hex_pt};border-radius:16px;
                     padding:12px 18px;margin-bottom:8px;
                     box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);">
-        <b style="color:{_hex_pt};">{_pn(_parametro)}</b> <span style="color:#1C1C1E;">({_categoria})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
+        <b style="color:{_hex_pt};">{_pn(_parametro)}</b> <span style="color:#1C1C1E;">({_categoria_txt_pt})</span> — <span style="color:#1C1C1E;">{_texto_impacto}</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -7137,9 +7145,12 @@ elif hoja_activa == "3.-TMB":
     interpretacion_inteligente_tmb(tmb)
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    caja_util("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
+    caja_util(T("La TMB es la energía mínima que tu cuerpo necesita para vivir si te quedaras todo el día en cama: "
               "respirar, hacer latir tu corazón, mantener tu temperatura, etc. Es la base sobre la que se calcula "
               "TODO lo demás en esta app (cuánto debes comer, cuánto puedes bajar o subir de peso, etc.). 🔥",
+              "BMR is the minimum energy your body needs to survive if you stayed in bed all day: "
+              "breathing, keeping your heart beating, maintaining your temperature, etc. It's the basis for "
+              "EVERYTHING else calculated in this app (how much you should eat, how much you can lose or gain, etc.). 🔥"),
               emoji="⚡", color="#FFF3E0", borde="#FB8C00")
 
 
@@ -7181,7 +7192,8 @@ elif hoja_activa == "3.-TMB":
         st.markdown(T("#### 🔎 De tus datos a tu resultado", "#### 🔎 From your data to your result"))
         _pasos_emb = [
             ("#5AC8FA", "👩", T("Datos ingresados", "Data entered"), f"{edad:.0f} {T('años','years')} · {peso:.0f} kg · {estatura:.0f} cm"),
-            ("#BA68C8", "🤰", T("Trimestre", "Trimester"), trimestre),
+            ("#BA68C8", "🤰", T("Trimestre", "Trimester"), T(trimestre, {"Primer trimestre": "First trimester",
+                "Segundo trimestre": "Second trimester", "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))),
             ("#FF9500", "🔥", T("TMB calculada", "Calculated BMR"), f"{tmb_base_gestacion:.0f} kcal/{T('día','day')}"),
             ("#34C759", "🍽️", T("Calorías adicionales", "Additional calories"), f"+{ajuste_gestacion} kcal"),
             ("#FF2D55", "❤️", T("Resultado recomendado", "Recommended result"), f"{(tmb + ajuste_gestacion):.0f} kcal/{T('día','day')}"),
@@ -7424,16 +7436,16 @@ elif hoja_activa == "4.-RCD":
         T("RCD = TMB × Factor de Actividad Física", "DCR = BMR × Physical Activity Factor"),
         autor="OMS / FAO / UNU", referencia=T("Factor de Actividad Física", "Physical Activity Factor"))}</div>""", unsafe_allow_html=True)
 
-    _txt_nivel_actividad = {"Sedentario": T("Sedentario", "Sedentary"), "Ligero": T("Ligero", "Light"),
-                             "Moderado": T("Moderado", "Moderate"), "Intenso": T("Intenso", "Intense")}
+    _txt_nivel_actividad = {"Sedentaria": T("Sedentaria", "Sedentary"), "Ligero": T("Ligero", "Light"),
+                             "Moderada": T("Moderada", "Moderate"), "Intensa": T("Intensa", "Intense")}
     _actividad_disp = _txt_nivel_actividad.get(actividad, actividad)
 
     # ===== 4 tarjetas grandes: TMB → Nivel de actividad → Factor aplicado → RCD =====
     _desc_nivel_rcd = {
-        "Sedentario": T("Realizas muy poca actividad física durante el día.", "You do very little physical activity during the day."),
+        "Sedentaria": T("Realizas muy poca actividad física durante el día.", "You do very little physical activity during the day."),
         "Ligero": T("Realizas actividad física ligera durante el día.", "You do light physical activity during the day."),
-        "Moderado": T("Realizas actividad física moderada durante el día.", "You do moderate physical activity during the day."),
-        "Intenso": T("Realizas actividad física intensa durante el día.", "You do intense physical activity during the day."),
+        "Moderada": T("Realizas actividad física moderada durante el día.", "You do moderate physical activity during the day."),
+        "Intensa": T("Realizas actividad física intensa durante el día.", "You do intense physical activity during the day."),
     }
     _tarjetas_grandes_rcd = [
         ("🧍", T("Tu metabolismo basal (TMB)", "Your basal metabolism (BMR)"), f"{tmb:.0f} kcal/{T('día','day')}",
@@ -7931,82 +7943,90 @@ elif hoja_activa == "4.-RCD":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "5.-CONTROL DE PESO":
-    hoja_header(5, "En un solo vistazo podrás entender cuánto necesitas, cuál es tu objetivo "
-                   "y cuántas calorías debes consumir cada día.")
+    hoja_header(5, T("En un solo vistazo podrás entender cuánto necesitas, cuál es tu objetivo "
+                   "y cuántas calorías debes consumir cada día.",
+                   "At a glance you'll understand how much you need, what your goal is, "
+                   "and how many calories you should eat each day."))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "Bajar: RCD_Final = RCD×(1−%déficit)  |  Mantener: RCD_Final = RCD  |  "
+        T("Bajar: RCD_Final = RCD×(1−%déficit)  |  Mantener: RCD_Final = RCD  |  "
         "Subir: RCD_Final = RCD×(1+%superávit)",
-        autor="OMS / FAO / UNU", referencia="Ajuste de Control de Peso")}</div>""", unsafe_allow_html=True)
+        "Lose: Final DCR = DCR×(1−%deficit)  |  Maintain: Final DCR = DCR  |  "
+        "Gain: Final DCR = DCR×(1+%surplus)"),
+        autor="OMS / FAO / UNU", referencia=T("Ajuste de Control de Peso", "Weight Control Adjustment"))}</div>""", unsafe_allow_html=True)
 
     _diferencia_rcd = rcd_final - rcd
     _signo_dif = "" if abs(_diferencia_rcd) < 1 else ("+" if _diferencia_rcd > 0 else "")
     _obj_emoji = {"Bajar de peso": "📉", "Subir de peso": "📈", "Mantenerse": "⚖️"}[objetivo]
     _obj_color = {"Bajar de peso": "#FF9500", "Subir de peso": "#007AFF", "Mantenerse": "#34C759"}[objetivo]
+    _obj_txt = T(objetivo, _OBJ_EN.get(objetivo, objetivo))
 
     # ===== 1. HERO PRINCIPAL =====
     st.markdown(f"""
     <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:26px;
                 padding:26px 30px;color:#FFFFFF;text-align:center;margin-bottom:18px;
                 box-shadow:0 16px 36px rgba(30,86,49,0.28);">
-        <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">🎯 Tu Plan de Control de Peso</div>
+        <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">🎯 {T("Tu Plan de Control de Peso", "Your Weight Management Plan")}</div>
         <div style="font-size:1rem;opacity:0.95;max-width:640px;margin:8px auto 0 auto;line-height:1.5;">
-            "No es una dieta. Es un ajuste inteligente de tus calorías para ayudarte a alcanzar tu objetivo,
-            {_nombre_saludo}, de forma segura."
+            {T(f'"No es una dieta. Es un ajuste inteligente de tus calorías para ayudarte a alcanzar tu objetivo, {_nombre_saludo}, de forma segura."',
+               f'"This is not a diet. It is a smart calorie adjustment to help you safely reach your goal, {_nombre_saludo}."')}
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ===== 2. FLUJO: RCD inicial → Objetivo → Ajuste → RCD objetivo (4 tarjetas grandes) =====
+    _sin_cambio_txt = T("0% (sin cambio)", "0% (no change)")
     st.markdown(f"""
     <div style="display:flex;flex-direction:column;gap:6px;max-width:520px;margin:0 auto;">
         <div style="background:#EAFAEE;border:2px solid #34C759;border-radius:20px;padding:16px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#1E5631;text-transform:uppercase;">🟢 RCD Inicial</div>
-            <div style="font-size:2rem;font-weight:900;color:#1E5631;letter-spacing:-0.02em;">{rcd:.0f} <span style="font-size:1rem;font-weight:700;">kcal/día</span></div>
-            <div style="font-size:0.78rem;color:#3E7050;">Las calorías que tu cuerpo necesita para mantener tu peso.</div>
+            <div style="font-size:0.78rem;font-weight:800;color:#1E5631;text-transform:uppercase;">🟢 {T("RCD Inicial", "Initial DCR")}</div>
+            <div style="font-size:2rem;font-weight:900;color:#1E5631;letter-spacing:-0.02em;">{rcd:.0f} <span style="font-size:1rem;font-weight:700;">kcal/{T("día","day")}</span></div>
+            <div style="font-size:0.78rem;color:#3E7050;">{T("Las calorías que tu cuerpo necesita para mantener tu peso.", "The calories your body needs to maintain your weight.")}</div>
         </div>
         <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
         <div style="background:{_obj_color}1A;border:2px solid {_obj_color};border-radius:20px;padding:14px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:{_obj_color};text-transform:uppercase;">Objetivo seleccionado</div>
-            <div style="font-size:1.5rem;font-weight:900;color:{_obj_color};">{_obj_emoji} {objetivo}</div>
+            <div style="font-size:0.78rem;font-weight:800;color:{_obj_color};text-transform:uppercase;">{T("Objetivo seleccionado", "Selected Goal")}</div>
+            <div style="font-size:1.5rem;font-weight:900;color:{_obj_color};">{_obj_emoji} {_obj_txt}</div>
         </div>
         <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
         <div style="background:#EAF3FF;border:2px solid #007AFF;border-radius:20px;padding:14px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#007AFF;text-transform:uppercase;">🔵 Ajuste aplicado</div>
+            <div style="font-size:0.78rem;font-weight:800;color:#007AFF;text-transform:uppercase;">🔵 {T("Ajuste aplicado", "Adjustment Applied")}</div>
             <div style="font-size:1.5rem;font-weight:900;color:#007AFF;">
-                {("-" if objetivo == "Bajar de peso" else ("+" if objetivo == "Subir de peso" else "")) + f"{ajuste_aplicado*100:.0f}%" if ajuste_aplicado else "0% (sin cambio)"}
+                {("-" if objetivo == "Bajar de peso" else ("+" if objetivo == "Subir de peso" else "")) + f"{ajuste_aplicado*100:.0f}%" if ajuste_aplicado else _sin_cambio_txt}
             </div>
         </div>
         <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
         <div style="background:#FFEBF0;border:2px solid #FF2D55;border-radius:20px;padding:18px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">🎯 RCD Objetivo</div>
-            <div style="font-size:2.3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/día</span></div>
-            <div style="font-size:0.78rem;color:#9C1948;">Las calorías recomendadas para cumplir tu meta.</div>
+            <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">🎯 {T("RCD Objetivo", "Target DCR")}</div>
+            <div style="font-size:2.3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/{T("día","day")}</span></div>
+            <div style="font-size:0.78rem;color:#9C1948;">{T("Las calorías recomendadas para cumplir tu meta.", "The recommended calories to reach your goal.")}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     if _ico_recortada_por_tmb:
-        st.warning(f"⚠️ Tu ajuste se limitó automáticamente para nunca bajar de tu TMB ({tmb:.0f} kcal/día), "
-                   "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.")
+        st.warning(T(f"⚠️ Tu ajuste se limitó automáticamente para nunca bajar de tu TMB ({tmb:.0f} kcal/día), "
+                   "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.",
+                   f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
+                   "your body's vital minimum. That's why your Target DCR didn't go any lower."))
 
     st.divider()
 
     # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
-    st.markdown("#### 📊 Comparación de tu plan")
+    st.markdown(f"#### 📊 {T('Comparación de tu plan', 'Your Plan Comparison')}")
     _c1, _c2, _c3 = st.columns(3)
     with _c1:
         st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">Antes</div>
+            <div class="bento-eyebrow">{T("Antes", "Before")}</div>
             <div style="font-size:1.7rem;font-weight:900;color:#17301F;">{rcd:.0f} kcal</div>
         </div>""", unsafe_allow_html=True)
     with _c2:
         st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">Ahora</div>
+            <div class="bento-eyebrow">{T("Ahora", "Now")}</div>
             <div style="font-size:1.7rem;font-weight:900;color:#D81B60;">{rcd_final:.0f} kcal</div>
         </div>""", unsafe_allow_html=True)
     with _c3:
         st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">Diferencia</div>
+            <div class="bento-eyebrow">{T("Diferencia", "Difference")}</div>
             <div style="font-size:1.7rem;font-weight:900;color:{_obj_color};">{_signo_dif}{_diferencia_rcd:.0f} kcal</div>
         </div>""", unsafe_allow_html=True)
 
@@ -8015,12 +8035,12 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     _pct_ahora = max(6, round(rcd_final / _max_barra * 100))
     st.markdown(f"""
     <div style="margin-top:16px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin-bottom:4px;">Calorías necesarias (RCD)</div>
+        <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin-bottom:4px;">{T("Calorías necesarias (RCD)", "Calories Needed (DCR)")}</div>
         <div style="height:26px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
             <div style="width:{_pct_antes}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#34C759,#1E5631);
                         display:flex;align-items:center;padding-left:12px;color:white;font-weight:800;font-size:0.8rem;">{rcd:.0f} kcal</div>
         </div>
-        <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin:12px 0 4px 0;">Calorías objetivo (RCD Objetivo)</div>
+        <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin:12px 0 4px 0;">{T("Calorías objetivo (RCD Objetivo)", "Target Calories (Target DCR)")}</div>
         <div style="height:26px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
             <div style="width:{_pct_ahora}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#FF2D55,#D81B60);
                         display:flex;align-items:center;padding-left:12px;color:white;font-weight:800;font-size:0.8rem;">{rcd_final:.0f} kcal</div>
@@ -8031,62 +8051,83 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     st.divider()
 
     # ===== 4. EXPLICACIÓN SENCILLA =====
-    st.markdown("#### 💬 ¿Qué significa este cambio?")
+    st.markdown(f"#### 💬 {T('¿Qué significa este cambio?', 'What does this change mean?')}")
     if objetivo == "Bajar de peso":
-        _texto_expl = (f"Para alcanzar tu objetivo de **bajar de peso**, se aplicó un déficit calórico del "
+        _texto_expl = T(f"Para alcanzar tu objetivo de **bajar de peso**, se aplicó un déficit calórico del "
                         f"**{ajuste_aplicado*100:.0f}%**. Este ajuste favorece la pérdida gradual de grasa "
                         "corporal sin reducir tu consumo por debajo del mínimo necesario para el funcionamiento "
-                        "del organismo.")
+                        "del organismo.",
+                        f"To reach your goal of **losing weight**, a **{ajuste_aplicado*100:.0f}%** calorie "
+                        "deficit was applied. This adjustment supports gradual body fat loss without "
+                        "reducing your intake below the minimum your body needs to function.")
     elif objetivo == "Subir de peso":
-        _texto_expl = (f"Para alcanzar tu objetivo de **subir de peso**, se aplicó un superávit calórico del "
+        _texto_expl = T(f"Para alcanzar tu objetivo de **subir de peso**, se aplicó un superávit calórico del "
                         f"**{ajuste_aplicado*100:.0f}%**. Este ajuste le da a tu cuerpo la energía extra "
-                        "necesaria para construir tejido nuevo de forma controlada.")
+                        "necesaria para construir tejido nuevo de forma controlada.",
+                        f"To reach your goal of **gaining weight**, a **{ajuste_aplicado*100:.0f}%** calorie "
+                        "surplus was applied. This adjustment gives your body the extra energy "
+                        "needed to build new tissue in a controlled way.")
     else:
-        _texto_expl = ("Para **mantener tu peso**, tu RCD Objetivo es igual a tu RCD Inicial: consumirás "
-                        "aproximadamente lo mismo que gastas, sin déficit ni superávit.")
+        _texto_expl = T("Para **mantener tu peso**, tu RCD Objetivo es igual a tu RCD Inicial: consumirás "
+                        "aproximadamente lo mismo que gastas, sin déficit ni superávit.",
+                        "To **maintain your weight**, your Target DCR equals your Initial DCR: you'll "
+                        "consume approximately the same as you burn, with no deficit or surplus.")
     st.markdown(f"""<div class="info3-card">{_texto_expl}</div>""", unsafe_allow_html=True)
 
     st.divider()
 
     # ===== 5. TU OBJETIVO EXPLICADO (reemplaza el panel de misión) =====
-    st.markdown("#### 🧭 Tu objetivo explicado")
-    st.caption("Según el objetivo elegido, cambia el comportamiento de tus calorías.")
+    st.markdown(f"#### 🧭 {T('Tu objetivo explicado', 'Your Goal Explained')}")
+    st.caption(T("Según el objetivo elegido, cambia el comportamiento de tus calorías.",
+                 "Depending on the goal you choose, how your calories behave changes."))
     _oc1, _oc2, _oc3 = st.columns(3)
     _objetivos_info = [
         (_oc1, "Bajar de peso", "📉", "#FF9500", "#FFF3E0",
-         "El cuerpo utilizará parte de la grasa almacenada como fuente de energía."),
+         T("El cuerpo utilizará parte de la grasa almacenada como fuente de energía.",
+           "Your body will use some of its stored fat as an energy source.")),
         (_oc2, "Mantenerse", "⚖️", "#34C759", "#EAFAEE",
-         "Consumirás aproximadamente las mismas calorías que gastas."),
+         T("Consumirás aproximadamente las mismas calorías que gastas.",
+           "You'll consume approximately the same calories you burn.")),
         (_oc3, "Subir de peso", "📈", "#007AFF", "#EAF3FF",
-         "Consumirás más energía para favorecer el crecimiento y desarrollo corporal."),
+         T("Consumirás más energía para favorecer el crecimiento y desarrollo corporal.",
+           "You'll consume more energy to support body growth and development.")),
     ]
     for _col_o, _tit_o, _ic_o, _col_hex_o, _fon_o, _desc_o in _objetivos_info:
         _es_sel_o = (_tit_o == objetivo)
+        _tit_o_disp = T(_tit_o, _OBJ_EN.get(_tit_o, _tit_o))
         with _col_o:
             _estilo_o = (f"border:2.5px solid {_col_hex_o};box-shadow:0 8px 20px {_col_hex_o}40;"
                          if _es_sel_o else "border:1px solid rgba(0,0,0,0.06);")
             st.markdown(f"""
             <div style="background:{_fon_o};border-radius:18px;padding:16px 14px;height:100%;{_estilo_o}">
                 <div style="font-size:1.8rem;text-align:center;">{_ic_o}</div>
-                <div style="font-weight:800;color:{_col_hex_o};font-size:0.9rem;text-align:center;margin:4px 0;">{_tit_o}{' ✓' if _es_sel_o else ''}</div>
+                <div style="font-weight:800;color:{_col_hex_o};font-size:0.9rem;text-align:center;margin:4px 0;">{_tit_o_disp}{' ✓' if _es_sel_o else ''}</div>
                 <div style="font-size:0.78rem;color:#3C3C43;text-align:center;">{_desc_o}</div>
             </div>
             """, unsafe_allow_html=True)
 
-    st.info("🛡️ **¿Es seguro?** Sí — tu RCD Objetivo nunca baja de tu TMB (el mínimo vital de tu cuerpo), así que "
+    st.info(T("🛡️ **¿Es seguro?** Sí — tu RCD Objetivo nunca baja de tu TMB (el mínimo vital de tu cuerpo), así que "
             "siempre recibes la energía necesaria para funcionar bien. Este ajuste no reemplaza la evaluación de "
-            "un profesional de salud.")
+            "un profesional de salud.",
+            "🛡️ **Is it safe?** Yes — your Target DCR never drops below your BMR (your body's vital minimum), so "
+            "you always get the energy you need to function well. This adjustment doesn't replace evaluation by "
+            "a health professional."))
 
     st.divider()
 
     # ===== 6. Distribución de macronutrientes (se conserva) =====
     _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso, objetivo)
 
-    caja_util("Esta sección transforma tu objetivo (bajar, mantener o subir de peso) en un requerimiento "
+    caja_util(T("Esta sección transforma tu objetivo (bajar, mantener o subir de peso) en un requerimiento "
               "calórico diario personalizado. Así sabes exactamente cuántas calorías consumir para alcanzar "
               "tu meta de forma segura, respetando siempre las necesidades mínimas de tu organismo. Consulta "
               "la sección \"Proyección de Peso\" para visualizar cómo podría evolucionar tu peso si mantienes "
               "este plan.",
+              "This section converts your goal (lose, maintain, or gain weight) into a personalized daily "
+              "calorie requirement. This way you know exactly how many calories to consume to reach "
+              "your goal safely, always respecting your body's minimum needs. Check "
+              "the \"Weight Projection\" section to see how your weight might evolve if you follow "
+              "this plan."),
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
 
 # ---------------------------------------------------------------------------------------
@@ -9736,7 +9777,7 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
     # ===== 🌸 Encabezado con degradado suave =====
-    st.markdown("""
+    st.markdown(T("""
     <div style="background:linear-gradient(120deg,#FFE1EC 0%,#E1F3FF 55%,#FFFFFF 100%);border-radius:22px;
                 padding:26px 28px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
         <div style="font-size:1.35rem;font-weight:900;color:#B0205A;margin-bottom:4px;">
@@ -9745,14 +9786,23 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
             Conoce si tu aumento de peso está dentro del rango recomendado para la etapa de
             embarazo que seleccionaste.</div>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div style="background:linear-gradient(120deg,#FFE1EC 0%,#E1F3FF 55%,#FFFFFF 100%);border-radius:22px;
+                padding:26px 28px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+        <div style="font-size:1.35rem;font-weight:900;color:#B0205A;margin-bottom:4px;">
+            🤰 Weight Tracking During Pregnancy</div>
+        <div style="color:#5C6B78;font-size:0.92rem;line-height:1.5;max-width:640px;">
+            Find out if your weight gain is within the recommended range for the pregnancy
+            stage you selected.</div>
+    </div>
+    """), unsafe_allow_html=True)
 
     # Canal de Ganancia de Peso Gestacional (IOM / National Research Council — Weight Gain During Pregnancy)
     _CANALES_IOM = [
-        (18.5, "Bajo peso (IMC < 18.5)", 12.5, 18.0, "#5AC8FA"),
-        (25.0, "Normal (IMC 18.5–24.9)", 11.5, 16.0, "#34C759"),
-        (30.0, "Sobrepeso (IMC 25.0–29.9)", 7.0, 11.5, "#FF9500"),
-        (999.0, "Obesidad (IMC ≥ 30.0)", 5.0, 9.0, "#FF3B30"),
+        (18.5, T("Bajo peso (IMC < 18.5)", "Underweight (BMI < 18.5)"), 12.5, 18.0, "#5AC8FA"),
+        (25.0, T("Normal (IMC 18.5–24.9)", "Normal (BMI 18.5–24.9)"), 11.5, 16.0, "#34C759"),
+        (30.0, T("Sobrepeso (IMC 25.0–29.9)", "Overweight (BMI 25.0–29.9)"), 7.0, 11.5, "#FF9500"),
+        (999.0, T("Obesidad (IMC ≥ 30.0)", "Obesity (BMI ≥ 30.0)"), 5.0, 9.0, "#FF3B30"),
     ]
     _imc_previo = imc  # IMC previo/actual usado como aproximación del IMC pregestacional
     for _tope, _etq, _min_kg, _max_kg, _color_canal in _CANALES_IOM:
@@ -9765,6 +9815,8 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
     _sem_min_tri, _sem_max_tri = _RANGO_TRIMESTRE.get(trimestre, (1, 13))
     _semana_default = st.session_state.get("semana_embarazo_exacta", (_sem_min_tri + _sem_max_tri) // 2)
     _semana_default = min(max(_semana_default, 1), _semanas_totales)
+    _trimestre_disp_lt = T(trimestre, {"Primer trimestre": "First trimester", "Segundo trimestre": "Second trimester",
+                                        "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))
 
     _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso)
 
@@ -9783,32 +9835,36 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
 
     _c1, _c2, _c3, _c4 = st.columns(4)
     with _c1:
-        _tarjeta_resumen("🤰", "Etapa actual", trimestre, f"Semanas {_sem_min_tri}–{_sem_max_tri}", "#B0205A")
+        _tarjeta_resumen("🤰", T("Etapa actual", "Current stage"), _trimestre_disp_lt,
+                          T(f"Semanas {_sem_min_tri}–{_sem_max_tri}", f"Weeks {_sem_min_tri}–{_sem_max_tri}"), "#B0205A")
     with _c2:
-        st.markdown('<p style="margin:0 0 4px 0;color:#8E8E93;font-size:0.72rem;font-weight:800;'
-                     'text-transform:uppercase;">📅 Semana del embarazo</p>', unsafe_allow_html=True)
-        semana_exacta = st.number_input("Semana del embarazo:", min_value=1, max_value=_semanas_totales,
+        st.markdown(f'<p style="margin:0 0 4px 0;color:#8E8E93;font-size:0.72rem;font-weight:800;'
+                     f'text-transform:uppercase;">📅 {T("Semana del embarazo", "Week of pregnancy")}</p>', unsafe_allow_html=True)
+        semana_exacta = st.number_input(T("Semana del embarazo:", "Week of pregnancy:"), min_value=1, max_value=_semanas_totales,
                                          value=_semana_default, step=1, key="semana_embarazo_exacta",
                                          label_visibility="collapsed")
     with _c3:
-        _tarjeta_resumen("⚖️", "Peso actual", f"{_peso_hoy:.1f} kg", "Tu último registro", "#007AFF")
+        _tarjeta_resumen("⚖️", T("Peso actual", "Current weight"), f"{_peso_hoy:.1f} kg", T("Tu último registro", "Your last entry"), "#007AFF")
 
     _kg_ganados = _peso_hoy - peso
     _min_esperado_hoy = (_canal_min / _semanas_totales) * semana_exacta
     _max_esperado_hoy = (_canal_max / _semanas_totales) * semana_exacta
     if _kg_ganados < _min_esperado_hoy - 1:
-        _estado_txt, _estado_color, _estado_icono = "Por debajo del rango", "#FF9500", "🟡"
+        _estado_key, _estado_color, _estado_icono = "bajo", "#FF9500", "🟡"
     elif _kg_ganados > _max_esperado_hoy + 1:
-        _estado_txt, _estado_color, _estado_icono = "Por encima del rango", "#FF3B30", "🔴"
+        _estado_key, _estado_color, _estado_icono = "alto", "#FF3B30", "🔴"
     else:
-        _estado_txt, _estado_color, _estado_icono = "Dentro del rango", "#34C759", "🟢"
+        _estado_key, _estado_color, _estado_icono = "ok", "#34C759", "🟢"
+    _estado_txt = {"bajo": T("Por debajo del rango", "Below range"),
+                    "alto": T("Por encima del rango", "Above range"),
+                    "ok": T("Dentro del rango", "Within range")}[_estado_key]
     with _c4:
-        _tarjeta_resumen(_estado_icono, "Estado", _estado_txt, "Según tu semana", _estado_color)
+        _tarjeta_resumen(_estado_icono, T("Estado", "Status"), _estado_txt, T("Según tu semana", "Based on your week"), _estado_color)
 
     st.write("")
 
     # ===== 💡 Caja informativa =====
-    st.markdown("""
+    st.markdown(T("""
     <div style="background:#E9F3FF;border-radius:16px;padding:16px 20px;margin-bottom:16px;
                 border:1px solid #B9DBFF;">
     <p style="margin:0 0 6px 0;font-weight:800;color:#0B4DA8;font-size:0.92rem;">
@@ -9819,54 +9875,70 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         semana para ser más preciso.<br>
         Por eso el punto aparece en la semana correspondiente.</p>
     </div>
-    """, unsafe_allow_html=True)
+    """, """
+    <div style="background:#E9F3FF;border-radius:16px;padding:16px 20px;margin-bottom:16px;
+                border:1px solid #B9DBFF;">
+    <p style="margin:0 0 6px 0;font-weight:800;color:#0B4DA8;font-size:0.92rem;">
+        ℹ️ How does this chart work?</p>
+    <p style="margin:0;color:#31465F;font-size:0.85rem;line-height:1.55;">
+        The chart uses the exact week of pregnancy you entered.<br>
+        Even though you selected a trimester, weight tracking is done week by week
+        to be more precise.<br>
+        That's why the point appears on the corresponding week.</p>
+    </div>
+    """), unsafe_allow_html=True)
 
     # ===== 📈 Título + badges =====
-    st.markdown("##### 📈 Comparación de tu peso con el rango recomendado")
-    st.caption("Basado en las recomendaciones del Instituto de Medicina (IOM).")
+    st.markdown(f"##### 📈 {T('Comparación de tu peso con el rango recomendado', 'Comparison of your weight with the recommended range')}")
+    st.caption(T("Basado en las recomendaciones del Instituto de Medicina (IOM).",
+                 "Based on the recommendations of the Institute of Medicine (IOM)."))
     _b1, _b2, _b3, _b4 = st.columns(4)
     with _b1:
-        st.markdown('<span style="background:#EAF3FF;color:#007AFF;font-weight:800;font-size:0.76rem;'
-                     'padding:5px 10px;border-radius:999px;">🔵 Tu peso</span>', unsafe_allow_html=True)
+        st.markdown(f'<span style="background:#EAF3FF;color:#007AFF;font-weight:800;font-size:0.76rem;'
+                     f'padding:5px 10px;border-radius:999px;">🔵 {T("Tu peso", "Your weight")}</span>', unsafe_allow_html=True)
     with _b2:
         st.markdown(f'<span style="background:{_canal_color}22;color:{_canal_color};font-weight:800;'
-                     f'font-size:0.76rem;padding:5px 10px;border-radius:999px;">🟩 Zona saludable</span>',
+                     f'font-size:0.76rem;padding:5px 10px;border-radius:999px;">🟩 {T("Zona saludable", "Healthy zone")}</span>',
                      unsafe_allow_html=True)
     with _b3:
-        st.markdown('<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
-                     'padding:5px 10px;border-radius:999px;">⬇️ Mínimo recomendado</span>', unsafe_allow_html=True)
+        st.markdown(f'<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
+                     f'padding:5px 10px;border-radius:999px;">⬇️ {T("Mínimo recomendado", "Recommended minimum")}</span>', unsafe_allow_html=True)
     with _b4:
-        st.markdown('<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
-                     'padding:5px 10px;border-radius:999px;">⬆️ Máximo recomendado</span>', unsafe_allow_html=True)
+        st.markdown(f'<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
+                     f'padding:5px 10px;border-radius:999px;">⬆️ {T("Máximo recomendado", "Recommended maximum")}</span>', unsafe_allow_html=True)
 
     st.write("")
 
     _sem_eje = list(range(0, _semanas_totales + 1))
     _linea_min = [round((_canal_min / _semanas_totales) * s, 2) for s in _sem_eje]
     _linea_max = [round((_canal_max / _semanas_totales) * s, 2) for s in _sem_eje]
+    _txt_max_rec = T("Máximo recomendado", "Recommended maximum")
+    _txt_min_rec = T("Mínimo recomendado", "Recommended minimum")
+    _txt_tu_peso = T("Tu peso", "Your weight")
+    _txt_semana = T("Semana", "Week")
 
     fig_iom = go.Figure()
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_max], mode="lines",
-                                  name="Máximo recomendado", line=dict(color=_canal_color, width=2, dash="dash")))
+                                  name=_txt_max_rec, line=dict(color=_canal_color, width=2, dash="dash")))
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_min], mode="lines",
-                                  name="Mínimo recomendado", line=dict(color=_canal_color, width=2, dash="dash"),
+                                  name=_txt_min_rec, line=dict(color=_canal_color, width=2, dash="dash"),
                                   fill="tonexty", fillcolor=_hex_a_rgba(_canal_color, 0.14)))
     fig_iom.add_trace(go.Scatter(x=[semana_exacta], y=[_peso_hoy], mode="markers+text",
-                                  name="Tu peso", marker=dict(size=14, color="#007AFF",
+                                  name=_txt_tu_peso, marker=dict(size=14, color="#007AFF",
                                   line=dict(color="#FFFFFF", width=3)),
-                                  text=[f"Semana {semana_exacta}: {_peso_hoy:.1f} kg"], textposition="top center",
+                                  text=[f"{_txt_semana} {semana_exacta}: {_peso_hoy:.1f} kg"], textposition="top center",
                                   textfont=dict(size=13, color="#17301F")))
     fig_iom.update_layout(
-        title=dict(text="📈 Comparación de tu peso con el rango saludable", x=0.02, xanchor="left",
+        title=dict(text=f"📈 {T('Comparación de tu peso con el rango saludable', 'Comparison of your weight with the healthy range')}", x=0.02, xanchor="left",
                    font=dict(size=17, color="#17301F", family="-apple-system")),
-        xaxis_title="Semana de embarazo", yaxis_title="Peso (kg)",
+        xaxis_title=T("Semana de embarazo", "Week of pregnancy"), yaxis_title=T("Peso (kg)", "Weight (kg)"),
         height=420, margin=dict(t=60, l=10, r=10, b=10),
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig_iom, use_container_width=True)
 
     # ===== 🌈 Barra visual tipo progreso =====
-    st.markdown("##### 🌈 Tu posición dentro del rango")
+    st.markdown(f"##### 🌈 {T('Tu posición dentro del rango', 'Your position within the range')}")
     _rango_barra = max(_max_esperado_hoy - _min_esperado_hoy, 0.1)
     _pct_barra = (_kg_ganados - _min_esperado_hoy) / _rango_barra
     _pct_barra = min(max(_pct_barra, -0.3), 1.3)
@@ -9879,15 +9951,15 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
                     box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>
     </div>
     <div style="display:flex;justify-content:space-between;color:#8E8E93;font-size:0.76rem;font-weight:700;">
-        <span>⬇️ Debajo</span><span>🟩 Saludable</span><span>Encima ⬆️</span>
+        <span>⬇️ {T("Debajo", "Below")}</span><span>🟩 {T("Saludable", "Healthy")}</span><span>{T("Encima", "Above")} ⬆️</span>
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
 
     # ===== 📚 Sección desplegable =====
-    with st.expander("❓ ¿Por qué cambia el gráfico? — Más información"):
-        st.markdown("""
+    with st.expander(f"❓ {T('¿Por qué cambia el gráfico? — Más información', 'Why does the chart change? — More information')}"):
+        st.markdown(T("""
         Durante el embarazo el aumento de peso no ocurre de golpe. Cada semana existe un rango
         recomendado. Por eso esta herramienta compara tu peso con la semana que registraste y no
         únicamente con el trimestre.
@@ -9895,16 +9967,26 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         El aumento de peso en el embarazo no sigue un patrón estético: mantenerte dentro de este
         rango médico ayuda a evitar partos prematuros (ganar muy poco) o diabetes gestacional
         (ganar demasiado).
-        """)
+        """, """
+        During pregnancy, weight gain doesn't happen all at once. Each week has a
+        recommended range. That's why this tool compares your weight to the week you entered,
+        not just the trimester.
+
+        Pregnancy weight gain isn't about aesthetics: staying within this medical
+        range helps avoid preterm birth (gaining too little) or gestational diabetes
+        (gaining too much).
+        """))
 
     st.write("")
-    st.markdown("##### 📝 Registra tu peso de esta semana")
-    _peso_registro = st.number_input("Tu peso actual (kg):", min_value=20.0, max_value=300.0,
+    st.markdown(f"##### 📝 {T('Registra tu peso de esta semana', 'Log your weight for this week')}")
+    _peso_registro = st.number_input(T("Tu peso actual (kg):", "Your current weight (kg):"), min_value=20.0, max_value=300.0,
                                       value=float(_peso_hoy), step=0.1, key="peso_gestacional_hoy")
-    if _estado_txt == "Dentro del rango":
-        st.success("🟢 Tu ganancia de peso está dentro del canal saludable IOM para tu semana de embarazo.")
+    if _estado_key == "ok":
+        st.success(T("🟢 Tu ganancia de peso está dentro del canal saludable IOM para tu semana de embarazo.",
+                      "🟢 Your weight gain is within the healthy IOM range for your week of pregnancy."))
     else:
-        st.warning(f"🟨 {_estado_txt}. Coméntalo con tu médico ginecólogo-obstetra o nutricionista.")
+        st.warning(T(f"🟨 {_estado_txt}. Coméntalo con tu médico ginecólogo-obstetra o nutricionista.",
+                      f"🟨 {_estado_txt}. Discuss this with your OB-GYN or nutritionist."))
 
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hoja_header(13, "Manteniendo tus hábitos actuales y el plan de calorías calculado, esta es una estimación "
@@ -10118,10 +10200,14 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
             """, unsafe_allow_html=True)
 
     st.write("")
-    caja_util(f"Esta proyección te muestra, con la misma matemática que usan los nutricionistas, cómo "
+    caja_util(T(f"Esta proyección te muestra, con la misma matemática que usan los nutricionistas, cómo "
               f"avanzarías en {_DIAS_PROY} días si sigues tu plan calórico. Ver el progreso estimado ayuda a "
               f"entender que los resultados reales toman semanas o meses de constancia — ¡tú puedes lograrlo, "
               f"{_nombre_saludo}! 🌱",
+              f"This projection shows you, using the same math nutritionists use, how "
+              f"you'd progress over {_DIAS_PROY} days if you follow your calorie plan. Seeing the estimated progress helps "
+              f"you understand that real results take weeks or months of consistency — you can do it, "
+              f"{_nombre_saludo}! 🌱"),
               emoji="📈", color="#E8EAF6", borde="#3949AB")
 
 # ---------------------------------------------------------------------------------------
