@@ -2147,15 +2147,21 @@ def generar_pdf_reporte(datos):
     MOD_W = 87 * mm
     GAP_W = 4 * mm
 
-    AZUL_TXT    = "#17324A"
-    VERDE       = "#1E5631"
+    AZUL_TXT    = "#0f172a"   # Slate oscuro institucional (antes #17324A)
+    AZUL_TXT2   = "#1e293b"   # Slate oscuro secundario, para degradados simulados del banner
+    CYAN        = "#0284c7"   # Azul cyan clínico (acentos, títulos de sección)
+    CYAN_CLARO  = "#38bdf8"
+    VERDE       = "#065f46"
     GRIS_TXT    = "#3C3C43"
     GRIS_SUAVE  = "#6C6C70"
-    LINEA       = "#E3E8E3"
-    GRIS_MOD    = "#F1F4F2"
+    LINEA       = "#e2e8f0"
+    GRIS_MOD    = "#f8fafc"
     AZUL_CARB, AZUL_CARB_CLARO       = "#2980b9", "#ebf5fb"
     MORADO_PROT, MORADO_PROT_CLARO   = "#8e44ad", "#f4ecf7"
     NARANJA_GRA, NARANJA_GRA_CLARO   = "#d35400", "#fbeee6"
+    VERDE_BG, VERDE_TXT   = "#d1fae5", "#065f46"
+    AMBAR_BG, AMBAR_TXT   = "#fef3c7", "#92400e"
+    ROJO_BG,  ROJO_TXT    = "#fee2e2", "#991b1b"
 
     styles = getSampleStyleSheet()
     estilo_titulo = ParagraphStyle("TituloInforme", parent=styles["Title"], fontName="Helvetica-Bold",
@@ -2176,7 +2182,17 @@ def generar_pdf_reporte(datos):
     estilo_pagina2_tit = ParagraphStyle("Pag2Tit", parent=styles["Heading1"], fontName="Helvetica-Bold",
                                          fontSize=13, textColor=_rl_hex(AZUL_TXT), spaceAfter=1)
     estilo_seccion2 = ParagraphStyle("Seccion2", parent=styles["Heading2"], fontName="Helvetica-Bold",
-                                      fontSize=10.2, textColor=_rl_hex(AZUL_TXT), spaceBefore=10, spaceAfter=5)
+                                      fontSize=10.2, textColor=_rl_hex(CYAN), spaceBefore=10, spaceAfter=5)
+    estilo_banner_nombre = ParagraphStyle("BannerNombre", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                           fontSize=11.5, textColor=rl_colors.white, leading=13.5)
+    estilo_banner_label = ParagraphStyle("BannerLabel", parent=styles["Normal"], fontName="Helvetica",
+                                          fontSize=6.4, textColor=_rl_hex("#cbd5e1"))
+    estilo_banner_valor = ParagraphStyle("BannerValor", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                          fontSize=8.6, textColor=rl_colors.white, leading=10.5)
+    estilo_id_badge = ParagraphStyle("IdBadge", parent=styles["Normal"], fontName="Courier-Bold",
+                                      fontSize=7, textColor=_rl_hex(CYAN_CLARO), alignment=TA_RIGHT)
+    estilo_footer = ParagraphStyle("Footer", parent=styles["Normal"], fontName="Helvetica",
+                                    fontSize=6.8, textColor=_rl_hex(GRIS_SUAVE))
     estilo_recom_tit = ParagraphStyle("RecomTit", parent=estilo_texto_bold, fontSize=8.7, textColor=_rl_hex(VERDE))
     estilo_recom_txt = ParagraphStyle("RecomTxt", parent=estilo_texto, leftIndent=2, spaceAfter=7, leading=11.8)
     estilo_aviso = ParagraphStyle("Aviso", parent=styles["Normal"], fontName="Helvetica",
@@ -2218,9 +2234,51 @@ def generar_pdf_reporte(datos):
         t = Table([[Paragraph(titulo, estilo_modulo)]], colWidths=[ancho])
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(GRIS_MOD)),
-            ("LINEBEFORE", (0, 0), (0, -1), 2.6, _rl_hex(AZUL_TXT)),
+            ("LINEBEFORE", (0, 0), (0, -1), 2.6, _rl_hex(CYAN)),
             ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
             ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        return t
+
+    def _kpi_card(icono, etiqueta, valor, sub_txt, color_valor, ancho):
+        """Tarjeta KPI: icono, etiqueta en mayúsculas gris, valor grande destacado y subtítulo."""
+        p_ic = Paragraph(icono, ParagraphStyle("KpiIco", parent=estilo_texto, fontSize=12, alignment=TA_LEFT))
+        p_et = Paragraph(f"<font color='{GRIS_SUAVE}'><b>{etiqueta.upper()}</b></font>",
+                          ParagraphStyle("KpiEt", parent=estilo_texto, fontSize=6.6, alignment=TA_LEFT))
+        p_val = Paragraph(f"<font color='{color_valor}'><b>{valor}</b></font>",
+                           ParagraphStyle("KpiVal", parent=estilo_texto, fontSize=11, alignment=TA_LEFT, leading=13))
+        p_sub = Paragraph(f"<font color='{GRIS_SUAVE}'>{sub_txt}</font>",
+                           ParagraphStyle("KpiSub", parent=estilo_texto, fontSize=6.6, alignment=TA_LEFT))
+        t = Table([[p_ic], [p_et], [p_val], [p_sub]], colWidths=[ancho])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(GRIS_MOD)),
+            ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex(LINEA)),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, 0), 7), ("BOTTOMPADDING", (0, 0), (-1, 0), 1),
+            ("TOPPADDING", (0, 1), (-1, 1), 1), ("BOTTOMPADDING", (0, 1), (-1, 1), 2),
+            ("TOPPADDING", (0, 2), (-1, 2), 1), ("BOTTOMPADDING", (0, 2), (-1, 2), 1),
+            ("TOPPADDING", (0, 3), (-1, 3), 1), ("BOTTOMPADDING", (0, 3), (-1, 3), 7),
+        ]))
+        return t
+
+    def _fila_kpis(tarjetas, ancho_total=CONTENT_W, gap=3 * mm):
+        n = len(tarjetas)
+        ancho_c = (ancho_total - gap * (n - 1)) / n
+        fila = []
+        for i, tj in enumerate(tarjetas):
+            fila.append(tj)
+            if i < n - 1:
+                fila.append("")
+        colw = []
+        for i in range(n):
+            colw.append(ancho_c)
+            if i < n - 1:
+                colw.append(gap)
+        t = Table([fila], colWidths=colw)
+        t.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
         ]))
         return t
 
@@ -2276,13 +2334,14 @@ def generar_pdf_reporte(datos):
 
     _grupo_txt = datos.get("grupo", 'N°04 - 5° "C"')
     _etapa_hdr_txt = T(datos['etapa'], _ETAPA_EN.get(datos['etapa'], datos['etapa']))
+    _id_expediente = datos.get("id_expediente") or f"CIAMSUNI-{abs(hash(datos.get('nombre', ''))) % 1000:03d}"
     header_tbl = Table([
         [Paragraph(T("INFORME DE ORIENTACIÓN NUTRICIONAL CLÍNICA", "CLINICAL NUTRITIONAL GUIDANCE REPORT"), estilo_titulo),
-         Paragraph(f"<b>{T('PACIENTE', 'PATIENT')}:</b> {datos['nombre'].upper()}", estilo_meta)],
+         Paragraph(f"ID: {_id_expediente}", estilo_id_badge)],
         [Paragraph(T('Programa de Salud Escolar CIAM&amp;SUNI | C.E.P. "Santa María Reina", Chiclayo',
                       'CIAM&amp;SUNI School Health Program | C.E.P. "Santa María Reina", Chiclayo'), estilo_subtitulo),
-         Paragraph(f"<b>{T('Edad', 'Age')}:</b> {datos['edad']} {T('años', 'years')} ({_etapa_hdr_txt})", estilo_meta)],
-        ["", Paragraph(f"<b>{T('Fecha', 'Date')}:</b> {datos['fecha']} | <b>{T('Grupo', 'Group')}:</b> {_grupo_txt}", estilo_meta)],
+         Paragraph(f"<b>{T('Fecha', 'Date')}:</b> {datos['fecha']}", estilo_meta)],
+        ["", Paragraph(f"<b>{T('Grupo', 'Group')}:</b> {_grupo_txt}", estilo_meta)],
     ], colWidths=[CONTENT_W - 55 * mm, 55 * mm])
     header_tbl.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -2291,10 +2350,10 @@ def generar_pdf_reporte(datos):
     ]))
     story.append(header_tbl)
     story.append(Spacer(1, 6))
-    story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(AZUL_TXT)))
-    story.append(Spacer(1, 9))
+    story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(CYAN)))
+    story.append(Spacer(1, 8))
 
-    # ---------------- MÓDULO 1 / 2: Información personal + Signos vitales ----------------
+    # ---------------- BANNER DE IDENTIFICACIÓN DEL PACIENTE (fondo slate oscuro, 4 columnas) ----------------
     _sexo_txt = T("Femenino", "Female") if datos["genero"] == "Mujer" else T("Masculino", "Male")
     _idioma_pdf_en = st.session_state.get("idioma", "Español") == "English"
     _trimestre_txt = datos.get('trimestre', '')
@@ -2307,6 +2366,28 @@ def generar_pdf_reporte(datos):
         _trimestre_txt = _trimestre_txt.replace('Primer', '1°').replace('Segundo', '2°').replace('Tercer', '3°')
         _estado_fisio_txt = f"Gestacional ({_trimestre_txt})" if _embarazada_pdf else "No gestante"
         _etapa_pdf_txt = datos['etapa']
+
+    def _banner_celda(label, valor):
+        return [Paragraph(label.upper(), estilo_banner_label), Paragraph(valor, estilo_banner_valor)]
+
+    _banner_col_w = CONTENT_W / 4
+    banner_tbl = Table([[
+        [Paragraph(T("PACIENTE", "PATIENT"), estilo_banner_label), Paragraph(datos['nombre'].upper(), estilo_banner_nombre)],
+        _banner_celda(T("Edad / Etapa", "Age / Stage"), f"{datos['edad']} {T('años', 'yrs')} · {_etapa_pdf_txt}"),
+        _banner_celda(T("Sexo Biológico", "Biological Sex"), _sexo_txt),
+        _banner_celda(T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
+    ]], colWidths=[_banner_col_w] * 4)
+    banner_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(AZUL_TXT)),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LINEBEFORE", (1, 0), (1, 0), 0.5, _rl_hex("#334155")),
+        ("LINEBEFORE", (2, 0), (2, 0), 0.5, _rl_hex("#334155")),
+        ("LINEBEFORE", (3, 0), (3, 0), 0.5, _rl_hex("#334155")),
+        ("TOPPADDING", (0, 0), (-1, -1), 9), ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    story.append(banner_tbl)
+    story.append(Spacer(1, 10))
 
     mod1 = [_cab_modulo(T("1. INFORMACIÓN PERSONAL Y FISIOLÓGICA", "1. PERSONAL & PHYSIOLOGICAL INFORMATION")), Spacer(1, 2),
             _tabla_kv([
@@ -2429,6 +2510,23 @@ def generar_pdf_reporte(datos):
     if _idioma_pdf_en:
         _trimestre_expl_txt = (_trimestre_expl_txt.replace('Primer', '1st').replace('Segundo', '2nd')
                                 .replace('Tercer', '3rd').replace('Trimestre', 'Trimester'))
+    _color_imc_kpi = ROJO_TXT if datos.get("categoria_imc", "") in (
+        "Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Bajo Peso") else VERDE_TXT
+    _kpi_gap = 3 * mm
+    _kpi_ancho_c = (CONTENT_W - _kpi_gap * 3) / 4
+    _kpi_row = _fila_kpis([
+        _kpi_card("⚖️", T("Peso y Talla", "Weight & Height"), f"{datos['peso']:.1f} kg",
+                  f"{datos['estatura']} cm", AZUL_TXT, _kpi_ancho_c),
+        _kpi_card("📏", T("IMC Actual", "Current BMI"), f"{datos['imc']} kg/m²",
+                  _cat_imc_pdf_txt, _color_imc_kpi, _kpi_ancho_c),
+        _kpi_card("📉", T("Proyección (60 días)", "Projection (60 days)"),
+                  f"{datos['peso_proyectado']:.1f} kg", T("Meta estimada", "Estimated goal"), VERDE_TXT, _kpi_ancho_c),
+        _kpi_card("🔥", T("Meta Calórica Diaria", "Daily Caloric Goal"),
+                  f"{datos['rcd_final']:.0f} kcal", T("por día", "per day"), CYAN, _kpi_ancho_c),
+    ], gap=_kpi_gap)
+    story.append(_kpi_row)
+    story.append(Spacer(1, 8))
+
     mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 2),
             _tabla_kv([
                 (T("Peso Actual", "Current Weight"), f"{datos['peso']:.2f} kg"),
@@ -2595,43 +2693,86 @@ def generar_pdf_reporte(datos):
     story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(AZUL_TXT)))
     story.append(Spacer(1, 8))
 
-    # ---------------- 7. PLAN ALIMENTARIO (3 tablas cromáticas, datos reales seleccionados) ----------------
-    story.append(Paragraph(T("7. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", "7. DETAILED MEAL PLAN BY MACRONUTRIENT"), estilo_seccion2))
+    # ---------------- 7. PLAN ALIMENTARIO (5 bloques por momento de comida, con badges de macro) ----------------
+    story.append(Paragraph(T("7. PRESCRIPCIÓN DIETÉTICA DETALLADA POR MOMENTOS", "7. DETAILED DIETARY PRESCRIPTION BY MEAL"), estilo_seccion2))
 
-    def _tabla_macro_color(macro_key, titulo_col, color_cab, color_fila):
-        filas_html = [[T("Momento", "Meal"), f"{T('Alimento', 'Food')} ({_mac_pdf(titulo_col)})",
-                        "Kcal/100g", T("Porción Corregida", "Adjusted Portion"), T("Gramos Finales", "Final Grams")]]
-        for fila in datos["dieta_filas"]:
-            d = fila[macro_key]
-            filas_html.append([_mom_pdf(fila["momento"]), _alim_pdf(d["alimento"]), f"{d['kcal']:.0f} kcal",
-                                f"{d['porcion']:.1f} kcal", f"{d['gramos']:.1f} g"])
-        _tot = datos["dieta_totales"][macro_key]
-        filas_html.append(["TOTAL", "", "—", f"{_tot['porcion']:.1f} kcal", f"{_tot['gramos']:.1f} g"])
-        t = Table(filas_html, colWidths=[24 * mm, 62 * mm, 24 * mm, 38 * mm, 30 * mm])
-        n = len(filas_html)
+    _MOMENTO_ICONO = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _MACRO_BADGE = {
+        "Carbohidrato": (AZUL_CARB_CLARO, AZUL_CARB),
+        "Proteína":     (MORADO_PROT_CLARO, MORADO_PROT),
+        "Grasa":        (AMBAR_BG, AMBAR_TXT),
+    }
+    _COL_W_BLOQUE = [24 * mm, 76 * mm, 32 * mm, 32 * mm]
+
+    def _macro_badge(macro_key, ancho=22 * mm):
+        bg, fg = _MACRO_BADGE[macro_key]
+        p = Paragraph(f"<b>{_mac_pdf(macro_key)}</b>",
+                      ParagraphStyle("Badge", parent=estilo_texto, fontSize=6.6, textColor=_rl_hex(fg), alignment=TA_CENTER))
+        t = Table([[p]], colWidths=[ancho])
         t.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(color_cab)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("ALIGN", (2, 0), (-1, -1), "CENTER"),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -2), [rl_colors.white, _rl_hex(color_fila)]),
+            ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(bg)),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+        return t
+
+    def _bloque_comida(fila):
+        _momento = fila["momento"]
+        _icono = _MOMENTO_ICONO.get(_momento, "🍽️")
+        _cab_txt = Paragraph(f"{_icono} <font color='white'><b>{_mom_pdf(_momento)}</b></font>",
+                              ParagraphStyle("BloqueCab", parent=estilo_texto, fontSize=9, textColor=rl_colors.white))
+        filas_html = [[_cab_txt, "", "", ""],
+                      [Paragraph(f"<b>{T('Grupo', 'Group')}</b>", estilo_texto),
+                       Paragraph(f"<b>{T('Alimento Prescrito', 'Prescribed Food')}</b>", estilo_texto),
+                       Paragraph(f"<b>{T('Porción Base', 'Base Portion')} (kcal)</b>", estilo_texto),
+                       Paragraph(f"<b>{T('Gramos Finales', 'Final Grams')}</b>", estilo_texto)]]
+        _tot_kcal_m, _tot_gr_m = 0.0, 0.0
+        for macro_key in ("Carbohidrato", "Proteína", "Grasa"):
+            d = fila[macro_key]
+            filas_html.append([_macro_badge(macro_key), Paragraph(_alim_pdf(d["alimento"]), estilo_texto),
+                                f"{d['porcion']:.1f} kcal", Paragraph(f"<b>{d['gramos']:.1f} g</b>", estilo_texto_bold)])
+            _tot_kcal_m += d["porcion"]; _tot_gr_m += d["gramos"]
+        filas_html.append([Paragraph(f"<b>{T('Total del momento', 'Meal total')}</b>", estilo_texto_bold), "",
+                            Paragraph(f"<b>{_tot_kcal_m:.1f} kcal</b>", estilo_texto_bold),
+                            Paragraph(f"<b>{_tot_gr_m:.1f} g</b>", estilo_texto_bold)])
+        n = len(filas_html)
+        t = Table(filas_html, colWidths=_COL_W_BLOQUE)
+        t.setStyle(TableStyle([
+            ("SPAN", (0, 0), (-1, 0)),
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(AZUL_TXT)),
+            ("TOPPADDING", (0, 0), (-1, 0), 6), ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
+            ("LEFTPADDING", (0, 0), (-1, 0), 8),
+            ("BACKGROUND", (0, 1), (-1, 1), _rl_hex(GRIS_MOD)),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (2, 1), (-1, -1), "CENTER"),
             ("SPAN", (0, n - 1), (1, n - 1)),
-            ("BACKGROUND", (0, n - 1), (-1, n - 1), _rl_hex(color_cab)),
-            ("TEXTCOLOR", (0, n - 1), (-1, n - 1), rl_colors.white),
-            ("FONTNAME", (0, n - 1), (-1, n - 1), "Helvetica-Bold"),
-            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("BACKGROUND", (0, n - 1), (-1, n - 1), _rl_hex(LINEA)),
+            ("GRID", (0, 1), (-1, -1), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 1), (-1, -1), 4), ("BOTTOMPADDING", (0, 1), (-1, -1), 4),
         ]))
         return t
 
     if datos["tiene_dieta"]:
-        story.append(_tabla_macro_color("Carbohidrato", "Carbohidrato", AZUL_CARB, AZUL_CARB_CLARO))
-        story.append(Spacer(1, 8))
-        story.append(_tabla_macro_color("Proteína", "Proteína", MORADO_PROT, MORADO_PROT_CLARO))
-        story.append(Spacer(1, 8))
-        story.append(_tabla_macro_color("Grasa", "Grasa", NARANJA_GRA, NARANJA_GRA_CLARO))
+        for _fila_comida in datos["dieta_filas"]:
+            story.append(_bloque_comida(_fila_comida))
+            story.append(Spacer(1, 5))
+
+        _tot_c, _tot_p, _tot_g = (datos["dieta_totales"]["Carbohidrato"], datos["dieta_totales"]["Proteína"],
+                                   datos["dieta_totales"]["Grasa"])
+        _resumen_tot = Table([
+            [Paragraph(f"<b>{T('Totales del Plan', 'Plan Totals')}</b>", estilo_texto_bold), "", "", ""],
+            [_macro_badge("Carbohidrato", ancho=40 * mm), f"{_tot_c['porcion']:.1f} kcal", f"{_tot_c['gramos']:.1f} g", ""],
+            [_macro_badge("Proteína", ancho=40 * mm), f"{_tot_p['porcion']:.1f} kcal", f"{_tot_p['gramos']:.1f} g", ""],
+            [_macro_badge("Grasa", ancho=40 * mm), f"{_tot_g['porcion']:.1f} kcal", f"{_tot_g['gramos']:.1f} g", ""],
+        ], colWidths=[44 * mm, 44 * mm, 44 * mm, 46 * mm])
+        _resumen_tot.setStyle(TableStyle([
+            ("SPAN", (0, 0), (-1, 0)), ("SPAN", (2, 1), (3, 1)), ("SPAN", (2, 2), (3, 2)), ("SPAN", (2, 3), (3, 3)),
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(GRIS_MOD)),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("ALIGN", (1, 1), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.append(_resumen_tot)
         story.append(Spacer(1, 6))
     else:
         story.append(Paragraph(T("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
@@ -2722,20 +2863,44 @@ def generar_pdf_reporte(datos):
     _acciones_recom = _dedup(_acciones_recom)
     _evitar_recom = _dedup(_evitar_recom)
 
-    story.append(Paragraph(T("🥦 Alimentos Recomendados", "🥦 Recommended Foods"), estilo_subcat))
-    for r in (_alimentos_recom or [T("Mantén una alimentación variada y balanceada según tu plan asignado.",
-                                      "Maintain a varied, balanced diet according to your assigned plan.")]):
-        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+    _alimentos_recom = _alimentos_recom or [T("Mantén una alimentación variada y balanceada según tu plan asignado.",
+                                               "Maintain a varied, balanced diet according to your assigned plan.")]
+    _acciones_recom = _acciones_recom or [T("Continúa con tus hábitos actuales de alimentación y actividad física.",
+                                             "Continue with your current eating habits and physical activity.")]
+    _evitar_recom = _evitar_recom or [T("No se detectaron alertas específicas con la información ingresada.",
+                                         "No specific alerts were detected with the information entered.")]
 
-    story.append(Paragraph(T("✅ Acciones / Conductas Saludables", "✅ Healthy Actions / Behaviors"), estilo_subcat))
-    for r in (_acciones_recom or [T("Continúa con tus hábitos actuales de alimentación y actividad física.",
-                                     "Continue with your current eating habits and physical activity.")]):
-        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+    def _celda_recom_matriz(titulo, items, bg, fg):
+        estilo_tit_col = ParagraphStyle("RecomColTit", parent=estilo_texto_bold, fontSize=8.4, textColor=_rl_hex(fg))
+        estilo_item_col = ParagraphStyle("RecomColItem", parent=estilo_texto, fontSize=7.4, leading=10.4,
+                                          textColor=_rl_hex(fg), spaceAfter=4)
+        flows = [Paragraph(titulo, estilo_tit_col), Spacer(1, 4)]
+        for it in items:
+            flows.append(Paragraph(f"•  {it}", estilo_item_col))
+        return flows
 
-    story.append(Paragraph(T("⚠️ Alimentos y Conductas a Evitar", "⚠️ Foods & Behaviors to Avoid"), estilo_subcat))
-    for r in (_evitar_recom or [T("No se detectaron alertas específicas con la información ingresada.",
-                                   "No specific alerts were detected with the information entered.")]):
-        story.append(Paragraph(f"•  {r}", estilo_recom_txt))
+    _col_gap = 3 * mm
+    _col_w_recom = (CONTENT_W - _col_gap * 2) / 3
+    _matriz_recom = Table([[
+        _celda_recom_matriz(T("✔ Alimentos Recomendados", "✔ Recommended Foods"), _alimentos_recom, VERDE_BG, VERDE_TXT),
+        "",
+        _celda_recom_matriz(T("💡 Acciones Saludables", "💡 Healthy Actions"), _acciones_recom, "#dbeafe", "#1e40af"),
+        "",
+        _celda_recom_matriz(T("✖ A Evitar", "✖ To Avoid"), _evitar_recom, ROJO_BG, ROJO_TXT),
+    ]], colWidths=[_col_w_recom, _col_gap, _col_w_recom, _col_gap, _col_w_recom])
+    _matriz_recom.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("BACKGROUND", (0, 0), (0, 0), _rl_hex(VERDE_BG)),
+        ("BACKGROUND", (2, 0), (2, 0), _rl_hex("#dbeafe")),
+        ("BACKGROUND", (4, 0), (4, 0), _rl_hex(ROJO_BG)),
+        ("LEFTPADDING", (0, 0), (0, 0), 9), ("RIGHTPADDING", (0, 0), (0, 0), 7),
+        ("LEFTPADDING", (2, 0), (2, 0), 9), ("RIGHTPADDING", (2, 0), (2, 0), 7),
+        ("LEFTPADDING", (4, 0), (4, 0), 9), ("RIGHTPADDING", (4, 0), (4, 0), 7),
+        ("TOPPADDING", (0, 0), (-1, -1), 10), ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (1, 0), (1, 0), 0), ("RIGHTPADDING", (1, 0), (1, 0), 0),
+        ("LEFTPADDING", (3, 0), (3, 0), 0), ("RIGHTPADDING", (3, 0), (3, 0), 0),
+    ]))
+    story.append(_matriz_recom)
 
     # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
     story.append(Spacer(1, 10))
@@ -2755,7 +2920,22 @@ def generar_pdf_reporte(datos):
           "DIAGNOSIS, OR THE PRESCRIPTIVE INDICATIONS OF A LICENSED OB-GYN OR CLINICAL NUTRITIONIST. No personal "
           "or health data is stored on external servers."), estilo_aviso))
 
-    doc.build(story)
+    _institucion_footer_txt = T('C.E.P. "Santa María Reina", Chiclayo — CIAM&SUNI', 'C.E.P. "Santa María Reina", Chiclayo — CIAM&SUNI')
+    _total_paginas_pdf = 2
+
+    def _dibujar_pie_pagina(canvas, doc_):
+        canvas.saveState()
+        canvas.setStrokeColor(_rl_hex(LINEA))
+        canvas.setLineWidth(0.5)
+        canvas.line(16 * mm, 10 * mm, A4[0] - 16 * mm, 10 * mm)
+        canvas.setFont("Helvetica", 6.8)
+        canvas.setFillColor(_rl_hex(GRIS_SUAVE))
+        canvas.drawString(16 * mm, 6.5 * mm, _institucion_footer_txt)
+        _pagina_txt = T(f"Página {doc_.page} de {_total_paginas_pdf}", f"Page {doc_.page} of {_total_paginas_pdf}")
+        canvas.drawRightString(A4[0] - 16 * mm, 6.5 * mm, _pagina_txt)
+        canvas.restoreState()
+
+    doc.build(story, onFirstPage=_dibujar_pie_pagina, onLaterPages=_dibujar_pie_pagina)
     buffer.seek(0)
     return buffer.getvalue()
 
@@ -5436,7 +5616,6 @@ _DEFAULTS_SESION = {
     "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
-    "diabetes_gestacional": False,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -5549,13 +5728,6 @@ def _panel_llenar_datos():
                                       format_func=lambda x: T(x, {"Primer trimestre": "First trimester",
                                                                    "Segundo trimestre": "Second trimester",
                                                                    "Tercer trimestre": "Third trimester"}[x]))
-            diabetes_gestacional = st.radio(
-                T("🩸 ¿Te han diagnosticado diabetes (o diabetes gestacional)?",
-                  "🩸 Have you been diagnosed with diabetes (or gestational diabetes)?"),
-                options=[False, True], index=0, key="diabetes_gestacional", horizontal=True,
-                format_func=lambda v: T("Sí", "Yes") if v else T("No", "No"))
-        else:
-            diabetes_gestacional = False
     vive_en_chiclayo = st.checkbox(T("🌤️ ¿Vives en Chiclayo?", "🌤️ Do you live in Chiclayo?"), key="vive_en_chiclayo",
                                     help=(T("Ajusta tu RCD según el clima cálido de la ciudad (−5%).",
                                             "Adjusts your DCR for the city's warm climate (−5%).") if not embarazada
@@ -5783,7 +5955,6 @@ edad = st.session_state.get("edad", 9)
 etapa = etapa_desde_edad(edad)
 embarazada = st.session_state.get("embarazada", False) if genero == "Mujer" else False
 trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
-diabetes_gestacional = st.session_state.get("diabetes_gestacional", False) if embarazada else False
 vive_en_chiclayo = st.session_state.get("vive_en_chiclayo", False)
 actividad = st.session_state.get("actividad", "Ligero")
 objetivo = st.session_state.get("objetivo", "Bajar de peso")
@@ -5932,10 +6103,11 @@ imc = round(peso / (estatura_m ** 2))  # =REDONDEAR(D30/F30) -> 0 decimales, igu
 _imc_previo_obesidad = (round(peso / ((estatura / 100.0) ** 2)) >= 30) if (estatura and peso) else False
 
 if genero == "Mujer" and embarazada:
-    # Modo Embarazo (ACOG / FAO-OMS / IOM): la TMB gestacional es el punto de partida y el
-    # RCD se calcula SUMANDO bloques fijos de kcal por trimestre — nunca restando — con un
-    # incremento moderado si hay obesidad previa (IMC ≥ 30) para evitar macrosomía/preeclampsia.
-    _AJUSTE_TRIMESTRE_NORMAL = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 450}
+    # Modo Embarazo (ACOG / FAO-OMS / IOM): la TMB gestacional es el punto de partida, se le
+    # aplica el Factor de Actividad Física para obtener el RCD Base, y luego se SUMA el bono
+    # calórico fijo por trimestre — nunca restando — con un incremento moderado si hay
+    # obesidad previa (IMC ≥ 30) para evitar macrosomía/preeclampsia.
+    _AJUSTE_TRIMESTRE_NORMAL = {"Primer trimestre": 0, "Segundo trimestre": 340, "Tercer trimestre": 452}
     _AJUSTE_TRIMESTRE_OBESIDAD = {"Primer trimestre": 0, "Segundo trimestre": 200, "Tercer trimestre": 250}
     tmb_base_gestacion = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
     tmb = tmb_base_gestacion
@@ -5943,13 +6115,13 @@ if genero == "Mujer" and embarazada:
     ajuste_gestacion = tabla_trimestre.get(trimestre, 0)
     tmb_fuente = "embarazo_" + trimestre.split(" ")[0].lower()
 
-    factor = 1.0  # en Modo Embarazo no se aplica factor de actividad tipo fitness sobre el RCD
-    rcd_base = tmb
+    factor = FACTOR_ACTIVIDAD[actividad]["Mujer"]  # el Factor de Actividad Física SÍ se aplica al RCD Base
+    rcd_base = tmb * factor  # RCD_Base = TMB × Factor de Actividad Física
     rcd = rcd_base  # el clima de Chiclayo NUNCA reduce el RCD gestacional (gasto cardíaco/térmico ya elevado)
     ajuste_clima_aplicado = False
 
     ajuste_aplicado = 0.0
-    rcd_final = tmb + ajuste_gestacion  # RCD = TMB gestacional + bloque fijo del trimestre (IOM/FAO-OMS)
+    rcd_final = rcd_base + ajuste_gestacion  # RCD Gestacional Total = RCD Base + Bono Gestacional (nunca sobre la TMB)
     _ico_recortada_por_tmb = False
 else:
     tmb_base_gestacion = None
@@ -6007,14 +6179,12 @@ _ritmo_pct_semanal = (_cambio_semanal_kg / peso) * 100 if peso > 0 else 0
 
 # Hoja 6: Macronutrientes
 if genero == "Mujer" and embarazada:
-    # Modo Embarazo (ACOG / OMS): distribución de macronutrientes por porcentajes clínicos fijos
-    # de seguridad, NO por restricciones basadas en peso/objetivo fitness.
-    # Diabetes gestacional (ADA/ACOG): carbohidratos reducidos a 40% (fuentes de bajo índice
-    # glucémico) y proteína/grasa aumentadas para estabilizar la glucemia posprandial.
-    if diabetes_gestacional:
-        _pct_prot_gest, _pct_gras_gest, _pct_carb_gest = 0.25, 0.35, 0.40
-    else:
-        _pct_prot_gest, _pct_gras_gest, _pct_carb_gest = 0.20, 0.30, 0.50
+    # Modo Embarazo (ACOG / OMS): distribución de macronutrientes ESTÁNDAR para un embarazo
+    # normoevolutivo, por porcentajes clínicos fijos de seguridad (NO por restricciones basadas
+    # en peso/objetivo fitness). No se ajusta por diabetes gestacional u otras condiciones
+    # especiales: esos casos requieren un ajuste individualizado por un profesional de salud
+    # (ver aviso clínico junto a la tabla de macronutrientes).
+    _pct_prot_gest, _pct_gras_gest, _pct_carb_gest = 0.20, 0.30, 0.50
     cal_prot = rcd_final * _pct_prot_gest
     cal_gras = rcd_final * _pct_gras_gest
     cal_carb = rcd_final * _pct_carb_gest
@@ -7160,18 +7330,18 @@ elif hoja_activa == "3.-TMB":
         st.markdown(f"""
         <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
         margin-bottom:14px;border:1px solid rgba(186,104,200,0.18);">
-        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Complemento: TMB durante el Embarazo", "Supplement: BMR during Pregnancy")}</h3>
-        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("El embarazo cambia las necesidades de energía del cuerpo. Aquí ajustamos tu TMB según tu etapa de gestación.", "Pregnancy changes the body's energy needs. Here we adjust your BMR based on your stage of pregnancy.")}</p>
+        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Complemento: RCD durante el Embarazo", "Supplement: DCR during Pregnancy")}</h3>
+        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Ajustamos tu Requerimiento Calórico Diario (RCD) sumando la energía extra que tu cuerpo y tu bebé necesitan según tu trimestre de gestación.", "We adjust your Daily Caloric Requirement (DCR) by adding the extra energy your body and your baby need according to your trimester of pregnancy.")}</p>
         </div>
         """, unsafe_allow_html=True)
         # =================================================================================
-        # RAMA: TMB durante el Embarazo (usa perfil global: peso, estatura, edad, trimestre)
-        # Se muestra como COMPLEMENTO de la TMB normal (no la reemplaza), igual que la hoja
+        # RAMA: RCD durante el Embarazo (usa perfil global: peso, estatura, edad, trimestre)
+        # Se muestra como COMPLEMENTO del RCD normal (no lo reemplaza), igual que la hoja
         # de RCD se complementa con el ajuste de Clima Chiclayo cuando aplica.
         # =================================================================================
         st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-            T("TMB(mujer) + ajuste por trimestre: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
-              "BMR(woman) + trimester adjustment: 1st trim. +0 kcal · 2nd trim. +340 kcal/day · 3rd trim. +452 kcal/day"),
+            T("RCD Gestacional = (TMB × Actividad Física) + Aporte Trimestral: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
+              "Gestational DCR = (BMR × Physical Activity) + Trimester Contribution: 1st trim. +0 kcal · 2nd trim. +340 kcal/day · 3rd trim. +452 kcal/day"),
             autor="MD Mifflin, ST St Jeor et al. (1990)",
             referencia=T("Ecuación de Mifflin-St Jeor + ajuste gestacional", "Mifflin-St Jeor equation + gestational adjustment"))}</div>""", unsafe_allow_html=True)
 
@@ -7195,9 +7365,9 @@ elif hoja_activa == "3.-TMB":
             ("#5AC8FA", "👩", T("Datos ingresados", "Data entered"), f"{edad:.0f} {T('años','years')} · {peso:.0f} kg · {estatura:.0f} cm"),
             ("#BA68C8", "🤰", T("Trimestre", "Trimester"), T(trimestre, {"Primer trimestre": "First trimester",
                 "Segundo trimestre": "Second trimester", "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))),
-            ("#FF9500", "🔥", T("TMB calculada", "Calculated BMR"), f"{tmb_base_gestacion:.0f} kcal/{T('día','day')}"),
+            ("#FF9500", "⚖️", T("RCD Base de Mantenimiento", "Base Maintenance DCR"), f"{rcd_base:.0f} kcal/{T('día','day')}"),
             ("#34C759", "🍽️", T("Calorías adicionales", "Additional calories"), f"+{ajuste_gestacion} kcal"),
-            ("#FF2D55", "❤️", T("Resultado recomendado", "Recommended result"), f"{(tmb + ajuste_gestacion):.0f} kcal/{T('día','day')}"),
+            ("#FF2D55", "❤️", T("RCD Gestacional Recomendado", "Recommended Gestational DCR"), f"{rcd_final:.0f} kcal/{T('día','day')}"),
         ]
         _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
         for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
@@ -7220,17 +7390,15 @@ elif hoja_activa == "3.-TMB":
         <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
         <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 ¿Qué significa este resultado?</p>
         <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
-        Tu cuerpo necesita aproximadamente <b>{tmb:.0f} kcal al día</b> para mantener sus funciones vitales
-        (respirar, mantener la temperatura corporal, funcionamiento de órganos, etc.), sin considerar la
-        actividad física.</p>
+        Tu cuerpo necesita <b>{rcd_final:.0f} kcal/día</b> para cubrir tu metabolismo basal, tus actividades
+        diarias y el desarrollo óptimo de tu bebé.</p>
         </div>
         """, f"""
         <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
         <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 What does this result mean?</p>
         <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
-        Your body needs approximately <b>{tmb:.0f} kcal per day</b> to maintain its vital functions
-        (breathing, maintaining body temperature, organ function, etc.), without considering
-        physical activity.</p>
+        Your body needs <b>{rcd_final:.0f} kcal/day</b> to cover your basal metabolism, your daily
+        activities, and your baby's optimal development.</p>
         </div>
         """), unsafe_allow_html=True)
 
@@ -7306,41 +7474,41 @@ elif hoja_activa == "3.-TMB":
         st.markdown(T(f"""
         <div class="cp5-glass-flow">
             <div class="cp5-flow-card">
-                <div class="cp5-flow-label">🔥 TMB Base</div>
-                <div class="cp5-flow-value">{tmb_base_gestacion:.0f} kcal</div>
-                <div class="cp5-flow-legend">Tu gasto energético sin ajuste gestacional.</div>
+                <div class="cp5-flow-label">⚖️ RCD Base</div>
+                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu gasto energético diario total (TMB × Actividad).</div>
             </div>
             <div class="cp5-flow-arrow">→</div>
             <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
                 <div class="cp5-flow-label">👶 Aporte por embarazo</div>
                 <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
-                <div class="cp5-flow-legend">Energía extra para {trimestre.lower()}.</div>
+                <div class="cp5-flow-legend">Energía extra requerida para tu etapa gestacional.</div>
             </div>
             <div class="cp5-flow-arrow">→</div>
             <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
                 <div class="cp5-flow-label">❤️ Resultado para {_nombre_disp}</div>
-                <div class="cp5-flow-value" style="color:#C2185B;">{(tmb + ajuste_gestacion):.0f} kcal</div>
-                <div class="cp5-flow-legend">Tu gasto energético recomendado hoy.</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{rcd_final:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu meta calórica diaria objetivo para un embarazo saludable.</div>
             </div>
         </div>
         """, f"""
         <div class="cp5-glass-flow">
             <div class="cp5-flow-card">
-                <div class="cp5-flow-label">🔥 Base BMR</div>
-                <div class="cp5-flow-value">{tmb_base_gestacion:.0f} kcal</div>
-                <div class="cp5-flow-legend">Your energy expenditure without gestational adjustment.</div>
+                <div class="cp5-flow-label">⚖️ Base DCR</div>
+                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your total daily energy expenditure (BMR × Activity).</div>
             </div>
             <div class="cp5-flow-arrow">→</div>
             <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
                 <div class="cp5-flow-label">👶 Pregnancy contribution</div>
                 <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
-                <div class="cp5-flow-legend">Extra energy for the {_trimestre_disp_lower}.</div>
+                <div class="cp5-flow-legend">Extra energy required for your gestational stage.</div>
             </div>
             <div class="cp5-flow-arrow">→</div>
             <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
                 <div class="cp5-flow-label">❤️ Result for {_nombre_disp}</div>
-                <div class="cp5-flow-value" style="color:#C2185B;">{(tmb + ajuste_gestacion):.0f} kcal</div>
-                <div class="cp5-flow-legend">Your recommended energy expenditure today.</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{rcd_final:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your target daily caloric goal for a healthy pregnancy.</div>
             </div>
         </div>
         """), unsafe_allow_html=True)
@@ -8160,8 +8328,10 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
 
     if genero == "Mujer" and embarazada:
         # =================================================================================
-        # MÓDULO EXCLUSIVO: Plan de Macronutrientes Gestacional (ACOG / OMS / ADA)
-        # No usa objetivo fitness ni factores g/kg — son porcentajes clínicos fijos y seguros.
+        # MÓDULO EXCLUSIVO: Plan de Macronutrientes Gestacional Estándar (ACOG / OMS)
+        # No usa objetivo fitness ni factores g/kg — son porcentajes clínicos fijos y seguros
+        # para un embarazo normoevolutivo. No contempla diabetes gestacional ni otras
+        # condiciones especiales (ver aviso clínico junto a la tabla de macronutrientes).
         # =================================================================================
         _pct_prot_disp = _pct_prot_gest * 100
         _pct_gras_disp = _pct_gras_gest * 100
@@ -8169,128 +8339,96 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         _total_kcal_gest = cal_prot + cal_gras + cal_carb
         _total_gr_gest = gr_prot + gr_gras + gr_carb
 
-        if diabetes_gestacional:
-            st.markdown(f"""
-            <div style="background:linear-gradient(120deg,#FFF3E0 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
-            margin-bottom:16px;border:1px solid rgba(255,149,0,0.25);">
-            <h3 style="margin:0;color:#E67E22;font-weight:800;">🩸 {T("Distribución Glicémica Controlada (Guías ADA/ACOG)", "Controlled Glycemic Distribution (ADA/ACOG Guidelines)")}</h3>
-            <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Para pacientes gestantes con diabetes gestacional, los macronutrientes se equilibran cuidadosamente para controlar los picos de glucosa. Los carbohidratos se reducen moderadamente y se combinan con más proteína y grasas saludables, garantizando energía segura y constante para ti y tu bebé sin causar hiperglucemia.", "For pregnant patients managing gestational diabetes, macronutrients are carefully balanced to control blood sugar spikes. Carbohydrates are moderately reduced and paired with higher protein and healthy fats, ensuring safe, steady energy for both mother and baby without causing hyperglycemia.")}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
-            margin-bottom:16px;border:1px solid rgba(186,104,200,0.22);">
-            <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Distribución Segura del Embarazo (Guías OMS/ACOG)", "Safe Pregnancy Distribution (ACOG/WHO Guidelines)")}</h3>
-            <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Durante un embarazo saludable, los macronutrientes NO se calculan con restricciones basadas en el peso ni con metas de estado físico. En su lugar, se distribuyen usando porcentajes clínicos de seguridad para asegurar el desarrollo fetal óptimo, prevenir el estrés metabólico y apoyar la salud materna.", "During a healthy pregnancy, macronutrients are NOT calculated using weight-based restrictions or fitness goals. Instead, they are distributed using clinical safety percentages to ensure optimal fetal development, prevent metabolic stress, and support maternal health.")}</p>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
+        margin-bottom:16px;border:1px solid rgba(186,104,200,0.22);">
+        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Distribución Segura del Embarazo (Guías OMS/ACOG)", "Safe Pregnancy Distribution (ACOG/WHO Guidelines)")}</h3>
+        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Durante un embarazo saludable, los macronutrientes NO se calculan con restricciones basadas en el peso ni con metas de estado físico. En su lugar, se distribuyen usando porcentajes clínicos de seguridad para asegurar el desarrollo fetal óptimo, prevenir el estrés metabólico y apoyar la salud materna.", "During a healthy pregnancy, macronutrients are NOT calculated using weight-based restrictions or fitness goals. Instead, they are distributed using clinical safety percentages to ensure optimal fetal development, prevent metabolic stress, and support maternal health.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown(f"""
         <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
                     padding:26px 30px;text-align:center;color:#FFFFFF;margin-bottom:18px;
                     box-shadow:0 16px 36px rgba(30,86,49,0.30);">
             <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
-                🔥 {T("Tu RCD Gestacional (Requerimiento Calórico Diario)" if not diabetes_gestacional else "Tu RCD Gestacional para Diabetes", "Your Gestational DCR (Daily Caloric Requirement)" if not diabetes_gestacional else "Your Gestational Diabetes DCR")}</div>
+                🔥 {T("Tu RCD Gestacional (Requerimiento Calórico Diario)", "Your Gestational DCR (Daily Caloric Requirement)")}</div>
             <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">{T("kcal/día", "kcal/day")}</span></div>
-            <div style="font-size:0.84rem;opacity:0.9;">{T("Tus macronutrientes se reparten de forma segura sobre este total." if not diabetes_gestacional else "Tus macronutrientes se reparten para proteger tu equilibrio glicémico.", "Your macronutrients are distributed safely across this total." if not diabetes_gestacional else "Your macronutrients are distributed to protect your glycemic balance.")}</div>
+            <div style="font-size:0.84rem;opacity:0.9;">{T("Tus macronutrientes se reparten de forma segura sobre este total.", "Your macronutrients are distributed safely across this total.")}</div>
         </div>
         """, unsafe_allow_html=True)
 
         # ---- Recomendación clínica internacional ----
-        st.markdown(f"#### 🌍 {T('Recomendación Clínica para un Embarazo Saludable' if not diabetes_gestacional else 'Recomendación Clínica para la Diabetes Gestacional', 'Clinical Recommendation for a Healthy Pregnancy' if not diabetes_gestacional else 'Clinical Recommendation for Gestational Diabetes')}")
-        if diabetes_gestacional:
-            st.markdown(f"""
-            <div style="background:linear-gradient(120deg,#FFF3E0 0%,#FFE8CC 100%);border-radius:20px;
-                        padding:20px 24px;margin-bottom:18px;border:1.5px solid #FF950033;">
-                <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">{T('Según las guías de salud en diabetes y obstetricia:', 'According to diabetes and obstetric health guidelines:')}</p>
-                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La proteína (25%) ayuda a estabilizar los niveles de azúcar en sangre y apoya el crecimiento de tejido materno-fetal.', 'Protein (25%) helps stabilize blood sugar levels and supports maternal-fetal tissue growth.')}</p>
-                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La grasa (35%) retrasa la digestión y absorción de las comidas, evitando picos rápidos de glucosa.', 'Fat (35%) slows down the digestion and absorption of meals, preventing rapid glucose spikes.')}</p>
-                <p style="margin:0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos (40%) se controlan cuidadosamente y deben provenir de fuentes ricas en fibra y complejas (vegetales, granos enteros, legumbres) para mantener energía fetal estable sin sobrecargar la capacidad de insulina.', 'Carbohydrates (40%) are carefully controlled and must come from fiber-rich, complex sources (vegetables, whole grains, legumes) to maintain steady fetal energy without overloading insulin capacity.')}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style="background:linear-gradient(120deg,#F8ECFB 0%,#EFDDF5 100%);border-radius:20px;
-                        padding:20px 24px;margin-bottom:18px;border:1.5px solid #8E24AA33;">
-                <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">{T('Según las guías obstétricas internacionales:', 'According to international obstetric guidelines:')}</p>
-                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La proteína es vital para el crecimiento de los tejidos del bebé y el desarrollo de la placenta.', "Protein is vital for the baby's tissue growth and the development of the placenta.")}</p>
-                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La grasa aporta los ácidos grasos esenciales que requiere el cerebro y los ojos del bebé.', "Fat provides essential fatty acids required for the baby's brain and eye development.")}</p>
-                <p style="margin:0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos DEBEN ser tu fuente principal de energía (50%). Aportan un suministro constante de glucosa al feto y previenen la cetosis, un estado que puede ser dañino durante el embarazo.', 'Carbohydrates MUST be your primary energy source (50%). They provide a constant glucose supply to the fetus and prevent ketosis, a state that can be harmful during pregnancy.')}</p>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"#### 🌍 {T('Recomendación Clínica para un Embarazo Saludable', 'Clinical Recommendation for a Healthy Pregnancy')}")
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#F8ECFB 0%,#EFDDF5 100%);border-radius:20px;
+                    padding:20px 24px;margin-bottom:18px;border:1.5px solid #8E24AA33;">
+            <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">{T('Según las guías obstétricas internacionales:', 'According to international obstetric guidelines:')}</p>
+            <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La proteína es vital para el crecimiento de los tejidos del bebé y el desarrollo de la placenta.', "Protein is vital for the baby's tissue growth and the development of the placenta.")}</p>
+            <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La grasa aporta los ácidos grasos esenciales que requiere el cerebro y los ojos del bebé.', "Fat provides essential fatty acids required for the baby's brain and eye development.")}</p>
+            <p style="margin:0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos DEBEN ser tu fuente principal de energía (50%). Aportan un suministro constante de glucosa al feto y previenen la cetosis, un estado que puede ser dañino durante el embarazo.', 'Carbohydrates MUST be your primary energy source (50%). They provide a constant glucose supply to the fetus and prevent ketosis, a state that can be harmful during pregnancy.')}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.divider()
 
         # ---- Qué hace cada macronutriente por ti y tu bebé ----
-        st.markdown(f"#### 🧠 {T('¿Qué hace cada macronutriente por ti y tu bebé?' if not diabetes_gestacional else '¿Qué hace cada macronutriente por tu glucosa y tu bebé?', 'What does each macronutrient do for you and your baby?' if not diabetes_gestacional else 'What does each macronutrient do for your blood sugar and baby?')}")
+        st.markdown(f"#### 🧠 {T('¿Qué hace cada macronutriente por ti y tu bebé?', 'What does each macronutrient do for you and your baby?')}")
         gp1, gp2, gp3 = st.columns(3)
-        if diabetes_gestacional:
-            with gp1:
-                st.markdown(f"""<div class="macro-card prot">
-                <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteína (25%)', 'Protein (25%)')}</span>
-                    <span class="mc-tip" title="{T('Estabilizador glicémico', 'Glycemic Stabilizer')}">ℹ️</span></div>
-                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🩸 {T('Mantiene estable el azúcar en sangre tras las comidas', 'Keeps blood sugar steady after meals')}</p>
-                <p style="margin:2px 0;font-size:0.82rem;">👶 {T('Apoya el desarrollo de órganos fetales y la reparación de tejidos', 'Supports fetal organ development and tissue repair')}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Protege tu masa muscular', 'Protects maternal muscle mass')}</p>
-                <div class="mc-value">⚡ 4 kcal/g</div>
-                </div>""", unsafe_allow_html=True)
-            with gp2:
-                st.markdown(f"""<div class="macro-card gras">
-                <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasa (35%)', 'Fat (35%)')}</span>
-                    <span class="mc-tip" title="{T('Absorción lenta y protección', 'Slow Absorption & Protection')}">ℹ️</span></div>
-                <p style="margin:6px 0 2px 0;font-size:0.82rem;">⏳ {T('Retrasa el vaciamiento gástrico para evitar picos de azúcar', 'Delays stomach emptying to prevent sugar spikes')}</p>
-                <p style="margin:2px 0;font-size:0.82rem;">🧠 {T('Crucial para el cerebro y el sistema nervioso del bebé', "Crucial for the baby's brain and nervous system")}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Apoya el equilibrio hormonal y la absorción de vitaminas', 'Supports hormonal balance and vitamin absorption')}</p>
-                <div class="mc-value">⚡ 9 kcal/g</div>
-                </div>""", unsafe_allow_html=True)
-            with gp3:
-                st.markdown(f"""<div class="macro-card carb">
-                <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidrato (40%)', 'Carbohydrates (40%)')}</span>
-                    <span class="mc-tip" title="{T('Energía controlada', 'Controlled Energy')}">ℹ️</span></div>
-                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Aporta el combustible esencial evitando la hiperglucemia', 'Provides essential fuel while preventing hyperglycemia')}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">⚠️ {T('Debe ser alto en fibra y estar estrictamente monitoreado', 'Must be high-fiber and strictly monitored')}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Suministra glucosa segura y continua a la placenta', 'Supplies safe, continuous glucose to the placenta')}</p>
-                <div class="mc-value">⚡ 4 kcal/g</div>
-                </div>""", unsafe_allow_html=True)
-        else:
-            with gp1:
-                st.markdown(f"""<div class="macro-card prot">
-                <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteína (20%)', 'Protein (20%)')}</span>
-                    <span class="mc-tip" title="{T('Constructor de tejidos', 'Tissue Builder')}">ℹ️</span></div>
-                <p style="margin:6px 0 2px 0;font-size:0.82rem;">👶 {T('Forma los órganos y músculos del bebé', "Forms the baby's organs and muscles")}</p>
-                <p style="margin:2px 0;font-size:0.82rem;">🩸 {T('Aumenta el volumen sanguíneo materno', 'Increases maternal blood volume')}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Apoya el crecimiento del tejido mamario y uterino', 'Supports breast and uterine tissue growth')}</p>
-                <div class="mc-value">⚡ 4 kcal/g</div>
-                </div>""", unsafe_allow_html=True)
-            with gp2:
-                st.markdown(f"""<div class="macro-card gras">
-                <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasa (30%)', 'Fat (30%)')}</span>
-                    <span class="mc-tip" title="{T('Protector neurológico', 'Neurological Protector')}">ℹ️</span></div>
-                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 {T('Desarrolla el cerebro y el sistema nervioso del bebé', "Develops the baby's brain and nervous system")}</p>
-                <p style="margin:2px 0;font-size:0.82rem;">👁️ {T('Esencial para la formación de la retina fetal', 'Essential for fetal retina formation')}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Ayuda a absorber vitaminas liposolubles (A, D, E, K)', 'Helps absorb fat-soluble vitamins (A, D, E, K)')}</p>
-                <div class="mc-value">⚡ 9 kcal/g</div>
-                </div>""", unsafe_allow_html=True)
-            with gp3:
-                st.markdown(f"""<div class="macro-card carb">
-                <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidrato (50%)', 'Carbohydrates (50%)')}</span>
-                    <span class="mc-tip" title="{T('Energía esencial', 'Essential Energy')}">ℹ️</span></div>
-                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Combustible principal y más seguro para tu energía materna', 'Primary and safest fuel for maternal energy')}</p>
-                <p style="margin:2px 0;font-size:0.82rem;">🛡 {T('Previene la cetosis dañina', 'Prevents harmful ketosis')}</p>
-                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Aporta un flujo constante de glucosa a través de la placenta', 'Provides a constant glucose flow across the placenta')}</p>
-                <div class="mc-value">⚡ 4 kcal/g</div>
-                </div>""", unsafe_allow_html=True)
+        with gp1:
+            st.markdown(f"""<div class="macro-card prot">
+            <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteína (20%)', 'Protein (20%)')}</span>
+                <span class="mc-tip" title="{T('Constructor de tejidos', 'Tissue Builder')}">ℹ️</span></div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">👶 {T('Forma los órganos y músculos del bebé', "Forms the baby's organs and muscles")}</p>
+            <p style="margin:2px 0;font-size:0.82rem;">🩸 {T('Aumenta el volumen sanguíneo materno', 'Increases maternal blood volume')}</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Apoya el crecimiento del tejido mamario y uterino', 'Supports breast and uterine tissue growth')}</p>
+            <div class="mc-value">⚡ 4 kcal/g</div>
+            </div>""", unsafe_allow_html=True)
+        with gp2:
+            st.markdown(f"""<div class="macro-card gras">
+            <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasa (30%)', 'Fat (30%)')}</span>
+                <span class="mc-tip" title="{T('Protector neurológico', 'Neurological Protector')}">ℹ️</span></div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 {T('Desarrolla el cerebro y el sistema nervioso del bebé', "Develops the baby's brain and nervous system")}</p>
+            <p style="margin:2px 0;font-size:0.82rem;">👁️ {T('Esencial para la formación de la retina fetal', 'Essential for fetal retina formation')}</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Ayuda a absorber vitaminas liposolubles (A, D, E, K)', 'Helps absorb fat-soluble vitamins (A, D, E, K)')}</p>
+            <div class="mc-value">⚡ 9 kcal/g</div>
+            </div>""", unsafe_allow_html=True)
+        with gp3:
+            st.markdown(f"""<div class="macro-card carb">
+            <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidrato (50%)', 'Carbohydrates (50%)')}</span>
+                <span class="mc-tip" title="{T('Energía esencial', 'Essential Energy')}">ℹ️</span></div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Combustible principal y más seguro para tu energía materna', 'Primary and safest fuel for maternal energy')}</p>
+            <p style="margin:2px 0;font-size:0.82rem;">🛡 {T('Previene la cetosis dañina', 'Prevents harmful ketosis')}</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Aporta un flujo constante de glucosa a través de la placenta', 'Provides a constant glucose flow across the placenta')}</p>
+            <div class="mc-value">⚡ 4 kcal/g</div>
+            </div>""", unsafe_allow_html=True)
 
         st.divider()
 
+        # ---- Aviso clínico: condiciones especiales requieren ajuste individualizado ----
+        st.markdown(f"""
+        <div style="background:#FFF8E1;border-left:5px solid #F5A623;border-radius:16px;
+                    padding:16px 22px;margin:6px 0 20px 0;">
+        <p style="margin:0 0 4px 0;color:#8A6D00;font-weight:800;font-size:0.9rem;">⚠️ {T('Nota Clínica Importante:', 'Important Clinical Note:')}</p>
+        <p style="margin:0;color:#7A5D00;font-size:0.84rem;line-height:1.55;">{T(
+            'Esta distribución de macronutrientes está calculada para un embarazo normoevolutivo (estándar). Si '
+            'presentas Diabetes Gestacional, resistencia a la insulina, hipertensión o alguna condición médica '
+            'especial, la proporción de carbohidratos y grasas debe ser ajustada de manera individualizada por tu '
+            'médico ginecólogo-obstetra o nutricionista clínico, según las guías de la American Diabetes '
+            'Association (ADA) y la ACOG.',
+            'This macronutrient distribution is calculated for a normal, uncomplicated pregnancy (standard). If '
+            'you have Gestational Diabetes, insulin resistance, hypertension, or any special medical condition, '
+            'the proportion of carbohydrates and fats must be individually adjusted by your OB-GYN or clinical '
+            'nutritionist, according to the guidelines of the American Diabetes Association (ADA) and ACOG.'
+        )}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         # ---- Tabla final del plan diario ----
-        st.markdown(f"#### 🎯 {T('Este Es Tu Plan Gestacional Diario' if not diabetes_gestacional else 'Este Es Tu Plan Glicémico Diario', 'This Is Your Daily Gestational Plan' if not diabetes_gestacional else 'This Is Your Daily Glycemic Plan')}")
+        st.markdown(f"#### 🎯 {T('Este Es Tu Plan Gestacional Diario', 'This Is Your Daily Gestational Plan')}")
         st.caption(T(
-            "Basado en tu trimestre actual y tu RCD Gestacional, aquí tienes tus requerimientos diarios exactos optimizados para un embarazo saludable." if not diabetes_gestacional else
-            "Basado en tu trimestre actual y tu perfil de Diabetes Gestacional, aquí tienes tus requerimientos diarios exactos optimizados para un control seguro de la glucosa.",
-            "Based on your current trimester and your Gestational DCR, here are your exact daily requirements optimized for a healthy pregnancy." if not diabetes_gestacional else
-            "Based on your current trimester and your Gestational Diabetes profile, here are your exact daily requirements optimized for safe blood sugar control."
+            "Basado en tu trimestre actual y tu RCD Gestacional, aquí tienes tus requerimientos diarios exactos optimizados para un embarazo saludable.",
+            "Based on your current trimester and your Gestational DCR, here are your exact daily requirements optimized for a healthy pregnancy."
         ))
 
         _html_tabla_gest = f"""
@@ -8347,15 +8485,14 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         st.divider()
 
         # ---- Por qué no hay opción de bajar de peso ----
-        if not diabetes_gestacional:
-            st.markdown(f"#### 🛡️ {T('¿Por qué no hay opciones para bajar de peso?', 'Why are there no options to lose weight?')}")
-            caja_util(T(
-                "Durante la gestación, la pérdida de peso intencional o la restricción severa de calorías está "
-                "médicamente contraindicada, incluso en mujeres que inician el embarazo con sobrepeso. Restringir "
-                "carbohidratos o calorías obliga al cuerpo a quemar grasa de forma acelerada, liberando cuerpos "
-                "cetónicos que pueden cruzar la placenta y afectar el desarrollo neurológico del bebé. Además, el "
-                "aumento de peso en el embarazo no es solo grasa: incluye al bebé, la placenta, el líquido "
-                "amniótico, el útero en expansión y el mayor volumen de sangre y líquidos.",
+        st.markdown(f"#### 🛡️ {T('¿Por qué no hay opciones para bajar de peso?', 'Why are there no options to lose weight?')}")
+        caja_util(T(
+            "Durante la gestación, la pérdida de peso intencional o la restricción severa de calorías está "
+            "médicamente contraindicada, incluso en mujeres que inician el embarazo con sobrepeso. Restringir "
+            "carbohidratos o calorías obliga al cuerpo a quemar grasa de forma acelerada, liberando cuerpos "
+            "cetónicos que pueden cruzar la placenta y afectar el desarrollo neurológico del bebé. Además, el "
+            "aumento de peso en el embarazo no es solo grasa: incluye al bebé, la placenta, el líquido "
+            "amniótico, el útero en expansión y el mayor volumen de sangre y líquidos.",
                 "During pregnancy, intentional weight loss or severe caloric restriction is medically "
                 "contraindicated, even in women who start pregnancy overweight. Restricting carbohydrates or "
                 "calories forces the body to burn fat rapidly, releasing ketone bodies that can cross the "
@@ -8363,14 +8500,14 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
                 "isn't just fat: it includes the baby, the placenta, amniotic fluid, the expanding uterus, and "
                 "increased blood and fluid volume."
             ), emoji="🛡️", color="#F8ECFB", borde="#8E24AA")
-            st.caption(T(
-                "Fuentes clínicas: el Colegio Americano de Obstetras y Ginecólogos (ACOG) y la Organización "
-                "Mundial de la Salud (OMS) establecen que todas las mujeres deben ganar peso durante el "
-                "embarazo; el déficit calórico nunca es la vía de tratamiento.",
-                "Clinical sources: the American College of Obstetricians and Gynecologists (ACOG) and the World "
-                "Health Organization (WHO) establish that all women should gain weight during pregnancy; caloric "
-                "deficit is never the treatment path."
-            ))
+        st.caption(T(
+            "Fuentes clínicas: el Colegio Americano de Obstetras y Ginecólogos (ACOG) y la Organización "
+            "Mundial de la Salud (OMS) establecen que todas las mujeres deben ganar peso durante el "
+            "embarazo; el déficit calórico nunca es la vía de tratamiento.",
+            "Clinical sources: the American College of Obstetricians and Gynecologists (ACOG) and the World "
+            "Health Organization (WHO) establish that all women should gain weight during pregnancy; caloric "
+            "deficit is never the treatment path."
+        ))
 
         st.write("")
         caja_util(T(
