@@ -5429,6 +5429,7 @@ _DEFAULTS_SESION = {
     "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
+    "diabetes_gestacional": False,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -5541,6 +5542,13 @@ def _panel_llenar_datos():
                                       format_func=lambda x: T(x, {"Primer trimestre": "First trimester",
                                                                    "Segundo trimestre": "Second trimester",
                                                                    "Tercer trimestre": "Third trimester"}[x]))
+            diabetes_gestacional = st.radio(
+                T("🩸 ¿Te han diagnosticado diabetes (o diabetes gestacional)?",
+                  "🩸 Have you been diagnosed with diabetes (or gestational diabetes)?"),
+                options=[False, True], index=0, key="diabetes_gestacional", horizontal=True,
+                format_func=lambda v: T("Sí", "Yes") if v else T("No", "No"))
+        else:
+            diabetes_gestacional = False
     vive_en_chiclayo = st.checkbox(T("🌤️ ¿Vives en Chiclayo?", "🌤️ Do you live in Chiclayo?"), key="vive_en_chiclayo",
                                     help=(T("Ajusta tu RCD según el clima cálido de la ciudad (−5%).",
                                             "Adjusts your DCR for the city's warm climate (−5%).") if not embarazada
@@ -5768,6 +5776,7 @@ edad = st.session_state.get("edad", 9)
 etapa = etapa_desde_edad(edad)
 embarazada = st.session_state.get("embarazada", False) if genero == "Mujer" else False
 trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
+diabetes_gestacional = st.session_state.get("diabetes_gestacional", False) if embarazada else False
 vive_en_chiclayo = st.session_state.get("vive_en_chiclayo", False)
 actividad = st.session_state.get("actividad", "Ligero")
 objetivo = st.session_state.get("objetivo", "Bajar de peso")
@@ -5990,14 +5999,19 @@ _ritmo_pct_semanal = (_cambio_semanal_kg / peso) * 100 if peso > 0 else 0
 
 # Hoja 6: Macronutrientes
 if genero == "Mujer" and embarazada:
-    # Modo Embarazo (IOM — DRIs para Macronutrientes): proteína mínima 1.1 g/kg de peso actual,
-    # carbohidratos SIEMPRE entre 45%-55% del RCD (nunca low-carb/keto, por riesgo de cetosis
-    # neurotóxica fetal), y grasas completando el resto priorizando insaturadas (Omega-3 DHA).
-    gr_prot = max(peso * 1.1, (rcd_final * 0.20) / 4)
-    cal_prot = gr_prot * 4
-    cal_carb = rcd_final * 0.50  # punto medio del rango seguro 45%-55%
+    # Modo Embarazo (ACOG / OMS): distribución de macronutrientes por porcentajes clínicos fijos
+    # de seguridad, NO por restricciones basadas en peso/objetivo fitness.
+    # Diabetes gestacional (ADA/ACOG): carbohidratos reducidos a 40% (fuentes de bajo índice
+    # glucémico) y proteína/grasa aumentadas para estabilizar la glucemia posprandial.
+    if diabetes_gestacional:
+        _pct_prot_gest, _pct_gras_gest, _pct_carb_gest = 0.25, 0.35, 0.40
+    else:
+        _pct_prot_gest, _pct_gras_gest, _pct_carb_gest = 0.20, 0.30, 0.50
+    cal_prot = rcd_final * _pct_prot_gest
+    cal_gras = rcd_final * _pct_gras_gest
+    cal_carb = rcd_final * _pct_carb_gest
+    gr_prot = cal_prot / 4
     gr_carb = cal_carb / 4
-    cal_gras = max(rcd_final - cal_prot - cal_carb, 0)
     gr_gras = cal_gras / 9
 else:
     cal_prot = rcd_final * 0.20
@@ -7170,7 +7184,7 @@ elif hoja_activa == "3.-TMB":
             ("#BA68C8", "🤰", T("Trimestre", "Trimester"), trimestre),
             ("#FF9500", "🔥", T("TMB calculada", "Calculated BMR"), f"{tmb_base_gestacion:.0f} kcal/{T('día','day')}"),
             ("#34C759", "🍽️", T("Calorías adicionales", "Additional calories"), f"+{ajuste_gestacion} kcal"),
-            ("#FF2D55", "❤️", T("Resultado recomendado", "Recommended result"), f"{tmb:.0f} kcal/{T('día','day')}"),
+            ("#FF2D55", "❤️", T("Resultado recomendado", "Recommended result"), f"{(tmb + ajuste_gestacion):.0f} kcal/{T('día','day')}"),
         ]
         _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
         for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
@@ -7292,7 +7306,7 @@ elif hoja_activa == "3.-TMB":
             <div class="cp5-flow-arrow">→</div>
             <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
                 <div class="cp5-flow-label">❤️ Resultado para {_nombre_disp}</div>
-                <div class="cp5-flow-value" style="color:#C2185B;">{tmb:.0f} kcal</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{(tmb + ajuste_gestacion):.0f} kcal</div>
                 <div class="cp5-flow-legend">Tu gasto energético recomendado hoy.</div>
             </div>
         </div>
@@ -7312,7 +7326,7 @@ elif hoja_activa == "3.-TMB":
             <div class="cp5-flow-arrow">→</div>
             <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
                 <div class="cp5-flow-label">❤️ Result for {_nombre_disp}</div>
-                <div class="cp5-flow-value" style="color:#C2185B;">{tmb:.0f} kcal</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{(tmb + ajuste_gestacion):.0f} kcal</div>
                 <div class="cp5-flow-legend">Your recommended energy expenditure today.</div>
             </div>
         </div>
@@ -8102,417 +8116,643 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     </div>
     """, unsafe_allow_html=True)
 
-    # =====================================================================================
-    # VARIABLES DE ENTRADA (equivalentes a pesoUsuario / rcdUsuario / objetivoUsuario)
-    # =====================================================================================
-    peso_usuario = peso
-    rcd_usuario = rcd_final
-    objetivo_usuario = objetivo
+    if genero == "Mujer" and embarazada:
+        # =================================================================================
+        # MÓDULO EXCLUSIVO: Plan de Macronutrientes Gestacional (ACOG / OMS / ADA)
+        # No usa objetivo fitness ni factores g/kg — son porcentajes clínicos fijos y seguros.
+        # =================================================================================
+        _pct_prot_disp = _pct_prot_gest * 100
+        _pct_gras_disp = _pct_gras_gest * 100
+        _pct_carb_disp = _pct_carb_gest * 100
+        _total_kcal_gest = cal_prot + cal_gras + cal_carb
+        _total_gr_gest = gr_prot + gr_gras + gr_carb
 
-    # ---- Constantes universales: calorías que aporta 1 gramo de cada macronutriente ----
-    KCAL_POR_G_PROT = 4
-    KCAL_POR_G_CARB = 4
-    KCAL_POR_G_GRAS = 9
-
-    # ---- Factores g/kg de peso corporal para cada nivel (Mínimo / Intermedio / Máximo) ----
-    FACTORES_PROT = {"Mínimo": 1.8, "Intermedio": 2.1, "Máximo": 2.5}
-    FACTORES_GRAS = {"Mínimo": 0.5, "Intermedio": 1.0, "Máximo": 1.5}
-
-    # ---- Excepción de conversión de Grasa: en el nivel Máximo se usa 4 kcal/g (no 9) ----
-    KCAL_POR_G_GRAS_POR_NIVEL = {"Mínimo": KCAL_POR_G_GRAS, "Intermedio": KCAL_POR_G_GRAS, "Máximo": 4}
-
-    def _calcular_nivel_macros(nivel, factor_prot, factor_gras):
-        """Fórmulas exactas de cálculo para un nivel (Mínimo/Intermedio/Máximo):
-        Proteína (g)  = peso × factor_prot   |  Proteína (kcal/día) = g × 4
-        Grasa (g)     = peso × factor_gras   |  Grasa (kcal/día)    = g × 9
-            (EXCEPCIÓN: en el nivel Máximo, la grasa se convierte con 4 kcal/g, no 9)
-        Kcal Restantes = Kcal Proteína (de ese nivel) + Kcal Grasa (de ese nivel)
-        Carbohidrato (kcal/día) = RCD − Kcal Restantes   ← energía restante de ese nivel
-        Carbohidrato (g)        = Kcal Carbohidrato/día / 4
-        """
-        gr_p = peso_usuario * factor_prot
-        kcal_p = gr_p * KCAL_POR_G_PROT
-        gr_g = peso_usuario * factor_gras
-        kcal_g = gr_g * KCAL_POR_G_GRAS_POR_NIVEL[nivel]
-        kcal_restantes = kcal_p + kcal_g
-        kcal_c = rcd_usuario - kcal_restantes
-        gr_c = kcal_c / KCAL_POR_G_CARB
-        return {"gr_prot": gr_p, "kcal_prot": kcal_p, "gr_gras": gr_g, "kcal_gras": kcal_g,
-                "kcal_restantes": kcal_restantes, "kcal_carb": kcal_c, "gr_carb": gr_c}
-
-    niveles_calculados = {
-        nivel: _calcular_nivel_macros(nivel, FACTORES_PROT[nivel], FACTORES_GRAS[nivel])
-        for nivel in ["Mínimo", "Intermedio", "Máximo"]
-    }
-
-    # ---- Filtro inteligente: el objetivo del usuario define qué nivel de factor se aplica ----
-    MAPA_OBJETIVO_NIVEL = {
-        "Bajar de peso": "Mínimo",
-        "Mantenerse": "Intermedio",
-        "Subir de peso": "Máximo",
-    }
-    nivel_final = MAPA_OBJETIVO_NIVEL.get(objetivo_usuario, "Intermedio")
-    datos_final = niveles_calculados[nivel_final]
-    total_kcal_final = datos_final["kcal_prot"] + datos_final["kcal_gras"] + datos_final["kcal_carb"]
-    total_gr_final = datos_final["gr_prot"] + datos_final["gr_gras"] + datos_final["gr_carb"]
-
-    _pct_prot_final = (datos_final["kcal_prot"] / total_kcal_final * 100) if total_kcal_final else 0
-    _pct_gras_final = (datos_final["kcal_gras"] / total_kcal_final * 100) if total_kcal_final else 0
-    _pct_carb_final = (datos_final["kcal_carb"] / total_kcal_final * 100) if total_kcal_final else 0
-
-    # =====================================================================================
-    # 1. ¿CÓMO SE REPARTEN TUS CALORÍAS? — mapa visual en vez de 3 tarjetas iguales
-    # =====================================================================================
-    st.markdown(f"#### 🍽️ {T('¿Cómo se reparten tus calorías?', 'How are your calories distributed?')}")
-    st.markdown(f"""
-    <div style="text-align:center;margin:6px 0 18px 0;">
-        <div style="font-size:2.1rem;font-weight:900;color:#17301F;">{rcd_final:.0f} <span style="font-size:1rem;font-weight:700;color:#8E8E93;">{T('kcal', 'kcal')}</span></div>
-        <div style="font-size:1.3rem;color:#8E8E93;margin:2px 0 14px 0;">↓</div>
-    </div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:150px;background:#FFEBF0;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FF2D5533;">
-            <div style="font-size:1.6rem;">❤️</div>
-            <div style="font-weight:800;color:#C2185B;margin:4px 0 2px 0;">{T('Proteínas', 'Protein')}</div>
-            <div style="font-size:0.78rem;color:#8A5252;">{T('Construyen', 'Build')}</div>
-            <div style="font-weight:800;color:#C2185B;margin-top:6px;">4 kcal/g</div>
-        </div>
-        <div style="flex:1;min-width:150px;background:#EAFAEE;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #34C75933;">
-            <div style="font-size:1.6rem;">🥑</div>
-            <div style="font-weight:800;color:#1E5631;margin:4px 0 2px 0;">{T('Grasas', 'Fat')}</div>
-            <div style="font-size:0.78rem;color:#3E7050;">{T('Protegen', 'Protect')}</div>
-            <div style="font-weight:800;color:#1E5631;margin-top:6px;">9 kcal/g</div>
-        </div>
-        <div style="flex:1;min-width:150px;background:#FFF8E1;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FFCC0055;">
-            <div style="font-size:1.6rem;">🌾</div>
-            <div style="font-weight:800;color:#8A6D00;margin:4px 0 2px 0;">{T('Carbohidratos', 'Carbohydrates')}</div>
-            <div style="font-size:0.78rem;color:#9C8300;">{T('Dan energía', 'Provide Energy')}</div>
-            <div style="font-weight:800;color:#8A6D00;margin-top:6px;">4 kcal/g</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.write("")
-
-    # =====================================================================================
-    # 2. RECOMENDACIÓN INTERNACIONAL — tarjeta OMS bien visible
-    # =====================================================================================
-    st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#EAF3FF 0%,#DCEBFF 100%);border-radius:20px;
-                padding:20px 24px;margin-bottom:18px;border:1.5px solid #007AFF33;">
-        <div style="font-weight:800;color:#007AFF;font-size:1rem;margin-bottom:10px;">
-            🌍 {T('Recomendación internacional', 'International Recommendation')}</div>
-        <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">
-            {T('Según la Organización Mundial de la Salud (OMS):', 'According to the World Health Organization (WHO):')}</p>
-        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Proteínas y grasas son nutrientes esenciales.', 'Protein and fat are essential nutrients.')}</p>
-        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos son la principal fuente práctica de energía.', 'Carbohydrates are the main practical source of energy.')}</p>
-        <p style="margin:0 0 8px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Una alimentación saludable debe incluir un equilibrio entre los tres macronutrientes.', 'A healthy diet should include a balance of all three macronutrients.')}</p>
-        <p style="margin:0;color:#8E8E93;font-size:0.7rem;">{T('Referencia: Organización Mundial de la Salud (OMS).', 'Reference: World Health Organization (WHO).')}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.info(T(
-        "🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
-        "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
-        "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
-        "pero no son indispensables para sobrevivir ni para una nutrición adecuada.",
-        "🌾 **Important WHO Note:** unlike protein and fat, **carbohydrates are not an essential "
-        "nutrient**: the body can obtain energy from fat and protein through gluconeogenesis. They "
-        "are included in the diet because they're a practical and efficient source of energy, but "
-        "they aren't indispensable for survival or for adequate nutrition."
-    ))
-
-    st.divider()
-
-    # =====================================================================================
-    # 3. TARJETAS CON PERSONALIDAD — qué función cumple cada macronutriente
-    # =====================================================================================
-    st.markdown(f"#### 🧠 {T('¿Qué hace cada macronutriente?', 'What does each macronutrient do?')}")
-    tp1, tp2, tp3 = st.columns(3)
-    with tp1:
-        st.markdown(f"""
-        <div class="macro-card prot">
-            <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteínas', 'Protein')}</span>
-                <span class="mc-tip" title="{T('1 gramo de proteína equivale a 4 kcal. Se calcula multiplicando tu peso (kg) por un factor de 1.8 a 2.5 g/kg.', '1 gram of protein equals 4 kcal. It is calculated by multiplying your weight (kg) by a factor of 1.8 to 2.5 g/kg.')}">ℹ️</span></div>
-            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏗 {T('Construyen músculos', 'Build muscle')}</p>
-            <p style="margin:2px 0;font-size:0.82rem;">🩹 {T('Reparan tejidos', 'Repair tissue')}</p>
-            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Forman enzimas', 'Form enzymes')}</p>
-            <div class="mc-value">⚡ 4 kcal/g</div>
-            <div class="mc-sub">{T('Factores (g/kg de peso)', 'Factors (g/kg of weight)')}:<br>{T('Mínimo', 'Minimum')} <b>1.8</b> · {T('Intermedio', 'Intermediate')} <b>2.1</b> · {T('Máximo', 'Maximum')} <b>2.5</b></div>
-        </div>
-        """, unsafe_allow_html=True)
-    with tp2:
-        st.markdown(f"""
-        <div class="macro-card gras">
-            <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasas', 'Fat')}</span>
-                <span class="mc-tip" title="{T('1 gramo de grasa equivale a 9 kcal. Se calcula multiplicando tu peso (kg) por un factor de 0.5 a 1.5 g/kg.', '1 gram of fat equals 9 kcal. It is calculated by multiplying your weight (kg) by a factor of 0.5 to 1.5 g/kg.')}">ℹ️</span></div>
-            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 {T('Protegen el cerebro', 'Protect the brain')}</p>
-            <p style="margin:2px 0;font-size:0.82rem;">🔥 {T('Reserva energética', 'Energy reserve')}</p>
-            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Ayudan a absorber vitaminas', 'Help absorb vitamins')}</p>
-            <div class="mc-value">⚡ 9 kcal/g</div>
-            <div class="mc-sub">{T('Factores (g/kg de peso)', 'Factors (g/kg of weight)')}:<br>{T('Mínimo', 'Minimum')} <b>0.5</b> · {T('Intermedio', 'Intermediate')} <b>1.0</b> · {T('Máximo', 'Maximum')} <b>1.5</b></div>
-        </div>
-        """, unsafe_allow_html=True)
-    with tp3:
-        st.markdown(f"""
-        <div class="macro-card carb">
-            <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidratos', 'Carbohydrates')}</span>
-                <span class="mc-tip" title="{T('1 gramo de carbohidrato equivale a 4 kcal. No usan un factor de peso: cubren la energía restante hasta tu RCD.', '1 gram of carbohydrate equals 4 kcal. They do not use a weight factor: they cover the remaining energy up to your DCR.')}">ℹ️</span></div>
-            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Principal combustible', 'Main fuel source')}</p>
-            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Energía para el cerebro', 'Energy for the brain')}</p>
-            <div class="mc-value">⚡ 4 kcal/g</div>
-            <div class="mc-sub">{T('Sin factor de peso — cubren el resto de la energía de tu RCD.', 'No weight factor — they cover the rest of your DCR energy.')}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.divider()
-
-    # =====================================================================================
-    # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles) — sin tocar
-    # =====================================================================================
-    st.markdown(f"#### 📊 {T('Proyección de Requerimientos', 'Projection of Requirements')}")
-    st.markdown(f"""
-    <div style="text-align:center;color:#8E8E93;font-size:0.8rem;font-weight:700;margin-bottom:8px;">
-        {T('Peso → Factores OMS → Proteínas → Grasas → Carbohidratos → Plan nutricional',
-           'Weight → WHO Factors → Protein → Fat → Carbohydrates → Nutritional Plan')}
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "Prot(g)=peso×Factor → Kcal=g×4 | Grasa(g)=peso×Factor → Kcal=g×9 | "
-        "Carb: Kcal = RCD − Kcal Restantes → Gramos = Kcal/4",
-        referencia=T("Modelo de reparto de macronutrientes por nivel", "Macronutrient distribution model by level"))}</div>""", unsafe_allow_html=True)
-    st.caption(T("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.",
-                 "This is how the Minimum, Intermediate, and Maximum scenarios are calculated based on your current weight."))
-    st.info(f"⚖️ {T('Peso usado en los cálculos', 'Weight used in calculations')}: **{peso_usuario:.2f} kg** · "
-            f"🔥 {T('RCD objetivo', 'Target DCR')}: **{rcd_usuario:.2f} {T('kcal/día', 'kcal/day')}**")
-
-    _filas_niveles_html = ""
-    _COL_PROT = ("#C2185B", "#FFEBF0")
-    _COL_GRAS = ("#1E5631", "#EAFAEE")
-    _COL_CARB = ("#8A6D00", "#FFF8E1")
-    for _nivel in ["Mínimo", "Intermedio", "Máximo"]:
-        _d = niveles_calculados[_nivel]
-        _es_actual = (_nivel == nivel_final)
-        _borde_sel = "box-shadow:inset 0 2px 0 #FFCC00,inset 0 -2px 0 #FFCC00;" if _es_actual else ""
-        _nombre_fila = f"⭐ {_niv(_nivel)}" if _es_actual else _niv(_nivel)
-        _badge_tu_nivel = f' <span class="badge-tu-nivel">{T("TU NIVEL", "YOUR LEVEL")}</span>' if _es_actual else ""
-        _filas_niveles_html += f"""
-        <tr>
-            <td style="text-align:left;font-weight:800;{_borde_sel}">{_nombre_fila}{_badge_tu_nivel}</td>
-            <td style="background:{_COL_PROT[1]};{_borde_sel}">{FACTORES_PROT[_nivel]:.1f} g/kg</td>
-            <td style="background:{_COL_PROT[1]};{_borde_sel}">{_d['gr_prot']:.1f} g</td>
-            <td style="background:{_COL_PROT[1]};color:{_COL_PROT[0]};font-weight:800;{_borde_sel}">{_d['kcal_prot']:.0f} kcal/día</td>
-            <td style="background:{_COL_GRAS[1]};{_borde_sel}">{FACTORES_GRAS[_nivel]:.1f} g/kg</td>
-            <td style="background:{_COL_GRAS[1]};{_borde_sel}">{_d['gr_gras']:.1f} g</td>
-            <td style="background:{_COL_GRAS[1]};color:{_COL_GRAS[0]};font-weight:800;{_borde_sel}">{_d['kcal_gras']:.0f} kcal/día</td>
-            <td style="background:{_COL_CARB[1]};{_borde_sel}">{_d['kcal_restantes']:.0f} kcal/día</td>
-            <td style="background:{_COL_CARB[1]};{_borde_sel}">{_d['gr_carb']:.1f} g</td>
-            <td style="background:{_COL_CARB[1]};color:{_COL_CARB[0]};font-weight:800;{_borde_sel}">{_d['kcal_carb']:.0f} kcal/día</td>
-        </tr>"""
-
-    _html_tabla_niveles = f"""
-    <div style="overflow-x:auto;">
-    <table class="macro-niveles-table">
-        <thead>
-        <tr>
-            <th rowspan="2">{T('Nivel', 'Level')}</th>
-            <th colspan="3" style="background:{_COL_PROT[0]};">🥩 {T('Proteína', 'Protein')}</th>
-            <th colspan="3" style="background:{_COL_GRAS[0]};">🥑 {T('Grasa', 'Fat')}</th>
-            <th colspan="3" style="background:{_COL_CARB[0]};">🌾 {T('Carbohidrato', 'Carbohydrate')}</th>
-        </tr>
-        <tr>
-            <th style="background:{_COL_PROT[0]};">{T('Factor', 'Factor')}</th><th style="background:{_COL_PROT[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_PROT[0]};">{T('Kcal/día', 'Kcal/day')}</th>
-            <th style="background:{_COL_GRAS[0]};">{T('Factor', 'Factor')}</th><th style="background:{_COL_GRAS[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_GRAS[0]};">{T('Kcal/día', 'Kcal/day')}</th>
-            <th style="background:{_COL_CARB[0]};">{T('Kcal Restantes', 'Remaining Kcal')}</th><th style="background:{_COL_CARB[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_CARB[0]};">{T('Kcal/día', 'Kcal/day')}</th>
-        </tr>
-        </thead>
-        <tbody>
-        {_filas_niveles_html}
-        </tbody>
-    </table>
-    </div>
-    """
-    st.markdown(_html_sin_lineas_vacias(_html_tabla_niveles), unsafe_allow_html=True)
-    st.caption(f"⭐ {T('La fila resaltada con borde amarillo es el nivel que corresponde a tu objetivo actual', 'The row highlighted with a yellow border is the level that matches your current goal')} "
-               f"(**{T(objetivo_usuario, _OBJ_EN.get(objetivo_usuario, objetivo_usuario))}** → **{_niv(nivel_final)}**).")
-    st.caption(T(
-        "💡 **Kcal Restantes:** es la suma de la Kcal/día de Proteína + la Kcal/día de Grasa de "
-        "ESE mismo nivel (Mínimo, Intermedio o Máximo) — por eso cambia en cada fila. "
-        "**Carbohidratos:** no usan un factor de peso; se calculan cubriendo la energía "
-        "restante hasta tu Requerimiento Calórico Diario → "
-        "`Kcal/día Carbohidrato = RCD − Kcal Restantes` y `Gramos = Kcal/día ÷ 4`.",
-        "💡 **Remaining Kcal:** this is the sum of the Kcal/day from Protein + the Kcal/day from Fat "
-        "for THAT SAME level (Minimum, Intermediate, or Maximum) — that's why it changes on each row. "
-        "**Carbohydrates:** they don't use a weight factor; they're calculated by covering the "
-        "remaining energy up to your Daily Caloric Requirement → "
-        "`Kcal/day Carbohydrate = DCR − Remaining Kcal` and `Grams = Kcal/day ÷ 4`."
-    ))
-
-    st.divider()
-
-    # =====================================================================================
-    # TABLA 3 — Tu Plan Nutricional Definitivo (filtro inteligente según tu objetivo)
-    # =====================================================================================
-    st.markdown(f"#### 🎯 {T('Este será tu plan diario', 'This Will Be Your Daily Plan')}")
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        'IF "Bajar de peso" → Mínimo (1.8/0.5) · IF "Mantenerse" → Intermedio (2.1/1.0) · '
-        'IF "Subir de peso" → Máximo (2.5/1.5)',
-        referencia=T("Filtro inteligente según objetivoUsuario", "Smart filter based on objetivoUsuario"))}</div>""", unsafe_allow_html=True)
-    st.caption(T("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.",
-                 "Based on your choice on the previous page, here are your exact requirements to reach your goal."))
-    st.success(f"🎯 {T('Objetivo seleccionado', 'Selected Goal')}: **{T(objetivo_usuario, _OBJ_EN.get(objetivo_usuario, objetivo_usuario))}** → "
-               f"{T('Nivel aplicado', 'Applied Level')}: **{_niv(nivel_final)}** "
-               f"({T('Proteína', 'Protein')} {FACTORES_PROT[nivel_final]:.1f} g/kg · {T('Grasa', 'Fat')} {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
-
-    # ---- Resumen visual: 3 tarjetas grandes + barra de calorías ----
-    rp1, rp2, rp3 = st.columns(3)
-    for _col_r, _ic_r, _val_r, _lab_r, _col_hex_r, _fon_r in [
-        (rp1, "❤️", f"{datos_final['gr_prot']:.0f} g", T("Proteínas", "Protein"), "#C2185B", "#FFEBF0"),
-        (rp2, "🥑", f"{datos_final['gr_gras']:.0f} g", T("Grasas", "Fat"), "#1E5631", "#EAFAEE"),
-        (rp3, "🌾", f"{datos_final['gr_carb']:.0f} g", T("Carbohidratos", "Carbohydrates"), "#8A6D00", "#FFF8E1"),
-    ]:
-        with _col_r:
+        if diabetes_gestacional:
             st.markdown(f"""
-            <div style="background:{_fon_r};border-radius:20px;padding:20px;text-align:center;">
-                <div style="font-size:1.8rem;">{_ic_r}</div>
-                <div style="font-size:1.6rem;font-weight:900;color:{_col_hex_r};margin:4px 0;">{_val_r}</div>
-                <div style="font-size:0.82rem;font-weight:700;color:{_col_hex_r};">{_lab_r}</div>
+            <div style="background:linear-gradient(120deg,#FFF3E0 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
+            margin-bottom:16px;border:1px solid rgba(255,149,0,0.25);">
+            <h3 style="margin:0;color:#E67E22;font-weight:800;">🩸 {T("Distribución Glicémica Controlada (Guías ADA/ACOG)", "Controlled Glycemic Distribution (ADA/ACOG Guidelines)")}</h3>
+            <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Para pacientes gestantes con diabetes gestacional, los macronutrientes se equilibran cuidadosamente para controlar los picos de glucosa. Los carbohidratos se reducen moderadamente y se combinan con más proteína y grasas saludables, garantizando energía segura y constante para ti y tu bebé sin causar hiperglucemia.", "For pregnant patients managing gestational diabetes, macronutrients are carefully balanced to control blood sugar spikes. Carbohydrates are moderately reduced and paired with higher protein and healthy fats, ensuring safe, steady energy for both mother and baby without causing hyperglycemia.")}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
+            margin-bottom:16px;border:1px solid rgba(186,104,200,0.22);">
+            <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Distribución Segura del Embarazo (Guías OMS/ACOG)", "Safe Pregnancy Distribution (ACOG/WHO Guidelines)")}</h3>
+            <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Durante un embarazo saludable, los macronutrientes NO se calculan con restricciones basadas en el peso ni con metas de estado físico. En su lugar, se distribuyen usando porcentajes clínicos de seguridad para asegurar el desarrollo fetal óptimo, prevenir el estrés metabólico y apoyar la salud materna.", "During a healthy pregnancy, macronutrients are NOT calculated using weight-based restrictions or fitness goals. Instead, they are distributed using clinical safety percentages to ensure optimal fetal development, prevent metabolic stress, and support maternal health.")}</p>
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div style="margin:14px 0 4px 0;">
-        <div style="display:flex;height:22px;border-radius:11px;overflow:hidden;">
-            <div style="width:{_pct_prot_final:.1f}%;background:#FF2D55;"></div>
-            <div style="width:{_pct_gras_final:.1f}%;background:#34C759;"></div>
-            <div style="width:{_pct_carb_final:.1f}%;background:#FFCC00;"></div>
-        </div>
-        <div style="text-align:center;margin-top:6px;font-weight:800;color:#17301F;">
-            {total_kcal_final:.0f} {T('kcal', 'kcal')} — 100%</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ---- Gráfico donut ----
-    fig_donut_macro = go.Figure(data=[go.Pie(
-        labels=[f"❤️ {T('Proteínas', 'Protein')}", f"🥑 {T('Grasas', 'Fat')}", f"🌾 {T('Carbohidratos', 'Carbohydrates')}"],
-        values=[datos_final["kcal_prot"], datos_final["kcal_gras"], datos_final["kcal_carb"]],
-        hole=0.62,
-        marker=dict(colors=["#FF2D55", "#34C759", "#FFCC00"]),
-        textinfo="label+percent",
-        textfont=dict(size=13),
-    )])
-    fig_donut_macro.update_layout(
-        annotations=[dict(text=f"🍽<br><b>{total_kcal_final:.0f}</b><br>{T('kcal', 'kcal')}", x=0.5, y=0.5,
-                           font=dict(size=15, color="#17301F"), showarrow=False)],
-        showlegend=False, height=340, margin=dict(t=20, b=20, l=20, r=20),
-        paper_bgcolor="rgba(0,0,0,0)",
-    )
-    st.plotly_chart(fig_donut_macro, use_container_width=True)
-    st.caption(T("El gráfico muestra de dónde vienen principalmente tus calorías diarias.",
-                 "The chart shows where your daily calories mainly come from."))
-
-    _html_tabla_final = f"""
-    <table class="macro-final-table">
-        <thead>
-        <tr><th style="text-align:left;">{T('Macronutriente', 'Macronutrient')}</th><th>{T('Gramos', 'Grams')} (g)</th><th>{T('Kcal/día', 'Kcal/day')}</th></tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td style="text-align:left;">🥩 {T('Proteína', 'Protein')}</td>
-            <td>{datos_final['gr_prot']:.1f} g</td>
-            <td>{datos_final['kcal_prot']:.0f} {T('kcal/día', 'kcal/day')}</td>
-        </tr>
-        <tr>
-            <td style="text-align:left;">🥑 {T('Grasa', 'Fat')}</td>
-            <td>{datos_final['gr_gras']:.1f} g</td>
-            <td>{datos_final['kcal_gras']:.0f} {T('kcal/día', 'kcal/day')}</td>
-        </tr>
-        <tr>
-            <td style="text-align:left;">🌾 {T('Carbohidrato', 'Carbohydrate')}</td>
-            <td>{datos_final['gr_carb']:.1f} g</td>
-            <td>{datos_final['kcal_carb']:.0f} {T('kcal/día', 'kcal/day')}</td>
-        </tr>
-        <tr class="fila-total">
-            <td style="text-align:left;">{T('TOTAL', 'TOTAL')}</td>
-            <td>{total_gr_final:.1f} g</td>
-            <td>{total_kcal_final:.0f} {T('kcal/día', 'kcal/day')}
-                <span style="display:inline-block;margin-left:10px;background:#FFCC00;color:#5C4700;
-                    font-weight:900;font-size:0.8rem;padding:4px 12px;border-radius:999px;
-                    letter-spacing:0.02em;">→ {T('RCD', 'DCR')}</span>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    """
-    st.markdown(_html_sin_lineas_vacias(_html_tabla_final), unsafe_allow_html=True)
-
-    if abs(total_kcal_final - rcd_usuario) < 1:
         st.markdown(f"""
-        <div style="background:linear-gradient(120deg,#34C759 0%,#1E5631 100%);color:#FFFFFF;
-                    border-radius:20px;padding:20px 26px;margin-top:14px;text-align:center;
-                    font-weight:900;font-size:1.05rem;box-shadow:0 14px 32px rgba(52,199,89,0.35);">
-            ✅ {T('El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).', 'The total calories match your Daily Caloric Requirement (DCR) exactly.')}
+        <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
+                    padding:26px 30px;text-align:center;color:#FFFFFF;margin-bottom:18px;
+                    box-shadow:0 16px 36px rgba(30,86,49,0.30);">
+            <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
+                🔥 {T("Tu RCD Gestacional (Requerimiento Calórico Diario)" if not diabetes_gestacional else "Tu RCD Gestacional para Diabetes", "Your Gestational DCR (Daily Caloric Requirement)" if not diabetes_gestacional else "Your Gestational Diabetes DCR")}</div>
+            <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">{T("kcal/día", "kcal/day")}</span></div>
+            <div style="font-size:0.84rem;opacity:0.9;">{T("Tus macronutrientes se reparten de forma segura sobre este total." if not diabetes_gestacional else "Tus macronutrientes se reparten para proteger tu equilibrio glicémico.", "Your macronutrients are distributed safely across this total." if not diabetes_gestacional else "Your macronutrients are distributed to protect your glycemic balance.")}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    st.divider()
+        # ---- Recomendación clínica internacional ----
+        st.markdown(f"#### 🌍 {T('Recomendación Clínica para un Embarazo Saludable' if not diabetes_gestacional else 'Recomendación Clínica para la Diabetes Gestacional', 'Clinical Recommendation for a Healthy Pregnancy' if not diabetes_gestacional else 'Clinical Recommendation for Gestational Diabetes')}")
+        if diabetes_gestacional:
+            st.markdown(f"""
+            <div style="background:linear-gradient(120deg,#FFF3E0 0%,#FFE8CC 100%);border-radius:20px;
+                        padding:20px 24px;margin-bottom:18px;border:1.5px solid #FF950033;">
+                <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">{T('Según las guías de salud en diabetes y obstetricia:', 'According to diabetes and obstetric health guidelines:')}</p>
+                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La proteína (25%) ayuda a estabilizar los niveles de azúcar en sangre y apoya el crecimiento de tejido materno-fetal.', 'Protein (25%) helps stabilize blood sugar levels and supports maternal-fetal tissue growth.')}</p>
+                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La grasa (35%) retrasa la digestión y absorción de las comidas, evitando picos rápidos de glucosa.', 'Fat (35%) slows down the digestion and absorption of meals, preventing rapid glucose spikes.')}</p>
+                <p style="margin:0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos (40%) se controlan cuidadosamente y deben provenir de fuentes ricas en fibra y complejas (vegetales, granos enteros, legumbres) para mantener energía fetal estable sin sobrecargar la capacidad de insulina.', 'Carbohydrates (40%) are carefully controlled and must come from fiber-rich, complex sources (vegetables, whole grains, legumes) to maintain steady fetal energy without overloading insulin capacity.')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="background:linear-gradient(120deg,#F8ECFB 0%,#EFDDF5 100%);border-radius:20px;
+                        padding:20px 24px;margin-bottom:18px;border:1.5px solid #8E24AA33;">
+                <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">{T('Según las guías obstétricas internacionales:', 'According to international obstetric guidelines:')}</p>
+                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La proteína es vital para el crecimiento de los tejidos del bebé y el desarrollo de la placenta.', "Protein is vital for the baby's tissue growth and the development of the placenta.")}</p>
+                <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('La grasa aporta los ácidos grasos esenciales que requiere el cerebro y los ojos del bebé.', "Fat provides essential fatty acids required for the baby's brain and eye development.")}</p>
+                <p style="margin:0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos DEBEN ser tu fuente principal de energía (50%). Aportan un suministro constante de glucosa al feto y previenen la cetosis, un estado que puede ser dañino durante el embarazo.', 'Carbohydrates MUST be your primary energy source (50%). They provide a constant glucose supply to the fetus and prevent ketosis, a state that can be harmful during pregnancy.')}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-    # =====================================================================================
-    # ¿POR QUÉ NO TODOS SE CALCULAN IGUAL? — versión corta, tipo clínica
-    # =====================================================================================
-    st.markdown(f"#### 💡 {T('¿Por qué no todos se calculan igual?', 'Why are they calculated differently?')}")
-    wp1, wp2, wp3 = st.columns(3)
-    with wp1:
-        st.markdown(f"""<div style="background:#FFEBF0;border-radius:16px;padding:14px;text-align:center;height:100%;">
-        <div style="font-size:1.3rem;">❤️</div><b style="color:#C2185B;">{T('Proteínas', 'Protein')}</b>
-        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('Dependen de tu peso corporal.', 'They depend on your body weight.')}</p>
-        </div>""", unsafe_allow_html=True)
-    with wp2:
-        st.markdown(f"""<div style="background:#EAFAEE;border-radius:16px;padding:14px;text-align:center;height:100%;">
-        <div style="font-size:1.3rem;">🥑</div><b style="color:#1E5631;">{T('Grasas', 'Fat')}</b>
-        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('También dependen de tu peso.', 'They also depend on your weight.')}</p>
-        </div>""", unsafe_allow_html=True)
-    with wp3:
-        st.markdown(f"""<div style="background:#FFF8E1;border-radius:16px;padding:14px;text-align:center;height:100%;">
-        <div style="font-size:1.3rem;">🌾</div><b style="color:#8A6D00;">{T('Carbohidratos', 'Carbohydrates')}</b>
-        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('Se calculan con las calorías restantes hasta completar tu RCD.', 'They are calculated from the remaining calories needed to complete your DCR.')}</p>
-        </div>""", unsafe_allow_html=True)
+        st.divider()
 
-    st.write("")
+        # ---- Qué hace cada macronutriente por ti y tu bebé ----
+        st.markdown(f"#### 🧠 {T('¿Qué hace cada macronutriente por ti y tu bebé?' if not diabetes_gestacional else '¿Qué hace cada macronutriente por tu glucosa y tu bebé?', 'What does each macronutrient do for you and your baby?' if not diabetes_gestacional else 'What does each macronutrient do for your blood sugar and baby?')}")
+        gp1, gp2, gp3 = st.columns(3)
+        if diabetes_gestacional:
+            with gp1:
+                st.markdown(f"""<div class="macro-card prot">
+                <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteína (25%)', 'Protein (25%)')}</span>
+                    <span class="mc-tip" title="{T('Estabilizador glicémico', 'Glycemic Stabilizer')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🩸 {T('Mantiene estable el azúcar en sangre tras las comidas', 'Keeps blood sugar steady after meals')}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">👶 {T('Apoya el desarrollo de órganos fetales y la reparación de tejidos', 'Supports fetal organ development and tissue repair')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Protege tu masa muscular', 'Protects maternal muscle mass')}</p>
+                <div class="mc-value">⚡ 4 kcal/g</div>
+                </div>""", unsafe_allow_html=True)
+            with gp2:
+                st.markdown(f"""<div class="macro-card gras">
+                <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasa (35%)', 'Fat (35%)')}</span>
+                    <span class="mc-tip" title="{T('Absorción lenta y protección', 'Slow Absorption & Protection')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">⏳ {T('Retrasa el vaciamiento gástrico para evitar picos de azúcar', 'Delays stomach emptying to prevent sugar spikes')}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">🧠 {T('Crucial para el cerebro y el sistema nervioso del bebé', "Crucial for the baby's brain and nervous system")}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Apoya el equilibrio hormonal y la absorción de vitaminas', 'Supports hormonal balance and vitamin absorption')}</p>
+                <div class="mc-value">⚡ 9 kcal/g</div>
+                </div>""", unsafe_allow_html=True)
+            with gp3:
+                st.markdown(f"""<div class="macro-card carb">
+                <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidrato (40%)', 'Carbohydrates (40%)')}</span>
+                    <span class="mc-tip" title="{T('Energía controlada', 'Controlled Energy')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Aporta el combustible esencial evitando la hiperglucemia', 'Provides essential fuel while preventing hyperglycemia')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">⚠️ {T('Debe ser alto en fibra y estar estrictamente monitoreado', 'Must be high-fiber and strictly monitored')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Suministra glucosa segura y continua a la placenta', 'Supplies safe, continuous glucose to the placenta')}</p>
+                <div class="mc-value">⚡ 4 kcal/g</div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            with gp1:
+                st.markdown(f"""<div class="macro-card prot">
+                <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteína (20%)', 'Protein (20%)')}</span>
+                    <span class="mc-tip" title="{T('Constructor de tejidos', 'Tissue Builder')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">👶 {T('Forma los órganos y músculos del bebé', "Forms the baby's organs and muscles")}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">🩸 {T('Aumenta el volumen sanguíneo materno', 'Increases maternal blood volume')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Apoya el crecimiento del tejido mamario y uterino', 'Supports breast and uterine tissue growth')}</p>
+                <div class="mc-value">⚡ 4 kcal/g</div>
+                </div>""", unsafe_allow_html=True)
+            with gp2:
+                st.markdown(f"""<div class="macro-card gras">
+                <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasa (30%)', 'Fat (30%)')}</span>
+                    <span class="mc-tip" title="{T('Protector neurológico', 'Neurological Protector')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 {T('Desarrolla el cerebro y el sistema nervioso del bebé', "Develops the baby's brain and nervous system")}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">👁️ {T('Esencial para la formación de la retina fetal', 'Essential for fetal retina formation')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Ayuda a absorber vitaminas liposolubles (A, D, E, K)', 'Helps absorb fat-soluble vitamins (A, D, E, K)')}</p>
+                <div class="mc-value">⚡ 9 kcal/g</div>
+                </div>""", unsafe_allow_html=True)
+            with gp3:
+                st.markdown(f"""<div class="macro-card carb">
+                <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidrato (50%)', 'Carbohydrates (50%)')}</span>
+                    <span class="mc-tip" title="{T('Energía esencial', 'Essential Energy')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Combustible principal y más seguro para tu energía materna', 'Primary and safest fuel for maternal energy')}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">🛡 {T('Previene la cetosis dañina', 'Prevents harmful ketosis')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Aporta un flujo constante de glucosa a través de la placenta', 'Provides a constant glucose flow across the placenta')}</p>
+                <div class="mc-value">⚡ 4 kcal/g</div>
+                </div>""", unsafe_allow_html=True)
 
-    # =====================================================================================
-    # ¿SABÍAS QUE? — curiosidades rotativas
-    # =====================================================================================
-    _curiosidades_macro = [
-        ("📚", T("El cuerpo puede almacenar muy poca proteína. Por eso necesita consumirla regularmente.",
-                 "The body can store very little protein. That's why it needs to be consumed regularly.")),
-        ("🧠", T("El cerebro utiliza principalmente glucosa como fuente de energía.",
-                 "The brain mainly uses glucose as its energy source.")),
-        ("🥑", T("Las grasas aportan más del doble de energía por gramo que proteínas y carbohidratos.",
-                 "Fat provides more than double the energy per gram compared to protein and carbohydrates.")),
-    ]
-    _idx_curio = int(datetime.now().timestamp() // 8) % len(_curiosidades_macro)
-    _ic_curio, _txt_curio = _curiosidades_macro[_idx_curio]
-    st.markdown(f"""
-    <div style="background:#F5F5F7;border-radius:16px;padding:14px 18px;display:flex;gap:12px;align-items:center;">
-        <div style="font-size:1.4rem;">{_ic_curio}</div>
-        <div style="font-size:0.84rem;color:#3C3C43;"><b>{T('¿Sabías que?', 'Did you know?')}</b> {_txt_curio}</div>
-    </div>
-    """, unsafe_allow_html=True)
+        st.divider()
 
-    st.write("")
+        # ---- Tabla final del plan diario ----
+        st.markdown(f"#### 🎯 {T('Este Es Tu Plan Gestacional Diario' if not diabetes_gestacional else 'Este Es Tu Plan Glicémico Diario', 'This Is Your Daily Gestational Plan' if not diabetes_gestacional else 'This Is Your Daily Glycemic Plan')}")
+        st.caption(T(
+            "Basado en tu trimestre actual y tu RCD Gestacional, aquí tienes tus requerimientos diarios exactos optimizados para un embarazo saludable." if not diabetes_gestacional else
+            "Basado en tu trimestre actual y tu perfil de Diabetes Gestacional, aquí tienes tus requerimientos diarios exactos optimizados para un control seguro de la glucosa.",
+            "Based on your current trimester and your Gestational DCR, here are your exact daily requirements optimized for a healthy pregnancy." if not diabetes_gestacional else
+            "Based on your current trimester and your Gestational Diabetes profile, here are your exact daily requirements optimized for safe blood sugar control."
+        ))
 
-    caja_util(T(
-        "Las proteínas y grasas se calculan según tu peso corporal (gramos por kilo), porque son "
-        "nutrientes estructurales que dependen de tu masa, no de cuánta energía gastas. Los "
-        "carbohidratos, en cambio, son la variable de ajuste: llenan el resto de tu energía diaria "
-        "hasta llegar exactamente a tu RCD. 🍽️",
-        "Protein and fat are calculated based on your body weight (grams per kilogram), because they "
-        "are structural nutrients that depend on your mass, not on how much energy you burn. "
-        "Carbohydrates, on the other hand, are the adjustment variable: they fill in the rest of your "
-        "daily energy until they exactly reach your DCR. 🍽️"
-    ), emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
+        _html_tabla_gest = f"""
+        <table class="macro-final-table">
+            <thead>
+            <tr><th style="text-align:left;">{T('Macronutriente', 'Macronutrient')}</th><th>{T('Porcentaje', 'Percentage')}</th><th>{T('Gramos', 'Grams')} (g)</th><th>{T('Kcal/día', 'Kcal/day')}</th></tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="text-align:left;">🥩 {T('Proteína', 'Protein')}</td>
+                <td>{_pct_prot_disp:.0f}%</td>
+                <td>{gr_prot:.1f} g</td>
+                <td>{cal_prot:.1f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left;">🥑 {T('Grasa', 'Fat')}</td>
+                <td>{_pct_gras_disp:.0f}%</td>
+                <td>{gr_gras:.1f} g</td>
+                <td>{cal_gras:.1f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left;">🌾 {T('Carbohidrato', 'Carbohydrate')}</td>
+                <td>{_pct_carb_disp:.0f}%</td>
+                <td>{gr_carb:.1f} g</td>
+                <td>{cal_carb:.1f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            <tr class="fila-total">
+                <td style="text-align:left;">{T('TOTAL', 'TOTAL')}</td>
+                <td>100%</td>
+                <td>{_total_gr_gest:.1f} g</td>
+                <td>{_total_kcal_gest:.1f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            </tbody>
+        </table>
+        """
+        st.markdown(_html_sin_lineas_vacias(_html_tabla_gest), unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------------------------
+        fig_donut_gest = go.Figure(data=[go.Pie(
+            labels=[f"🥩 {T('Proteína', 'Protein')}", f"🥑 {T('Grasa', 'Fat')}", f"🌾 {T('Carbohidrato', 'Carbohydrate')}"],
+            values=[cal_prot, cal_gras, cal_carb],
+            hole=0.62,
+            marker=dict(colors=["#FF2D55", "#34C759", "#FFCC00"]),
+            textinfo="label+percent",
+            textfont=dict(size=13),
+        )])
+        fig_donut_gest.update_layout(
+            annotations=[dict(text=f"🍽<br><b>{_total_kcal_gest:.0f}</b><br>{T('kcal', 'kcal')}", x=0.5, y=0.5,
+                               font=dict(size=15, color="#17301F"), showarrow=False)],
+            showlegend=False, height=340, margin=dict(t=20, b=20, l=20, r=20),
+            paper_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(fig_donut_gest, use_container_width=True)
+
+        st.divider()
+
+        # ---- Por qué no hay opción de bajar de peso ----
+        if not diabetes_gestacional:
+            st.markdown(f"#### 🛡️ {T('¿Por qué no hay opciones para bajar de peso?', 'Why are there no options to lose weight?')}")
+            caja_util(T(
+                "Durante la gestación, la pérdida de peso intencional o la restricción severa de calorías está "
+                "médicamente contraindicada, incluso en mujeres que inician el embarazo con sobrepeso. Restringir "
+                "carbohidratos o calorías obliga al cuerpo a quemar grasa de forma acelerada, liberando cuerpos "
+                "cetónicos que pueden cruzar la placenta y afectar el desarrollo neurológico del bebé. Además, el "
+                "aumento de peso en el embarazo no es solo grasa: incluye al bebé, la placenta, el líquido "
+                "amniótico, el útero en expansión y el mayor volumen de sangre y líquidos.",
+                "During pregnancy, intentional weight loss or severe caloric restriction is medically "
+                "contraindicated, even in women who start pregnancy overweight. Restricting carbohydrates or "
+                "calories forces the body to burn fat rapidly, releasing ketone bodies that can cross the "
+                "placenta and affect the baby's neurological development. Also, weight gain during pregnancy "
+                "isn't just fat: it includes the baby, the placenta, amniotic fluid, the expanding uterus, and "
+                "increased blood and fluid volume."
+            ), emoji="🛡️", color="#F8ECFB", borde="#8E24AA")
+            st.caption(T(
+                "Fuentes clínicas: el Colegio Americano de Obstetras y Ginecólogos (ACOG) y la Organización "
+                "Mundial de la Salud (OMS) establecen que todas las mujeres deben ganar peso durante el "
+                "embarazo; el déficit calórico nunca es la vía de tratamiento.",
+                "Clinical sources: the American College of Obstetricians and Gynecologists (ACOG) and the World "
+                "Health Organization (WHO) establish that all women should gain weight during pregnancy; caloric "
+                "deficit is never the treatment path."
+            ))
+
+        st.write("")
+        caja_util(T(
+            "En lugar de concentrarte en la balanza, tu objetivo es la calidad de tus calorías diarias: prioriza "
+            "alimentos ricos en hierro y ácido fólico, mantén un ritmo de ganancia de peso gradual y supervisado "
+            "por tu médico tratante, y escucha a tu cuerpo — si tienes hambre, elige snacks densos en nutrientes "
+            "en lugar de calorías vacías.",
+            "Instead of focusing on the scale, your goal is the quality of your daily calories: prioritize foods "
+            "rich in iron and folic acid, keep a gradual pace of weight gain supervised by your doctor, and "
+            "listen to your body — if you're hungry, choose nutrient-dense snacks instead of empty calories."
+        ), emoji="✅", color="#EAFAEE", borde="#34C759")
+
+    else:
+        # =====================================================================================
+        # VARIABLES DE ENTRADA (equivalentes a pesoUsuario / rcdUsuario / objetivoUsuario)
+        # =====================================================================================
+        peso_usuario = peso
+        rcd_usuario = rcd_final
+        objetivo_usuario = objetivo
+
+        # ---- Constantes universales: calorías que aporta 1 gramo de cada macronutriente ----
+        KCAL_POR_G_PROT = 4
+        KCAL_POR_G_CARB = 4
+        KCAL_POR_G_GRAS = 9
+
+        # ---- Factores g/kg de peso corporal para cada nivel (Mínimo / Intermedio / Máximo) ----
+        FACTORES_PROT = {"Mínimo": 1.8, "Intermedio": 2.1, "Máximo": 2.5}
+        FACTORES_GRAS = {"Mínimo": 0.5, "Intermedio": 1.0, "Máximo": 1.5}
+
+        # ---- Excepción de conversión de Grasa: en el nivel Máximo se usa 4 kcal/g (no 9) ----
+        KCAL_POR_G_GRAS_POR_NIVEL = {"Mínimo": KCAL_POR_G_GRAS, "Intermedio": KCAL_POR_G_GRAS, "Máximo": 4}
+
+        def _calcular_nivel_macros(nivel, factor_prot, factor_gras):
+            """Fórmulas exactas de cálculo para un nivel (Mínimo/Intermedio/Máximo):
+            Proteína (g)  = peso × factor_prot   |  Proteína (kcal/día) = g × 4
+            Grasa (g)     = peso × factor_gras   |  Grasa (kcal/día)    = g × 9
+                (EXCEPCIÓN: en el nivel Máximo, la grasa se convierte con 4 kcal/g, no 9)
+            Kcal Restantes = Kcal Proteína (de ese nivel) + Kcal Grasa (de ese nivel)
+            Carbohidrato (kcal/día) = RCD − Kcal Restantes   ← energía restante de ese nivel
+            Carbohidrato (g)        = Kcal Carbohidrato/día / 4
+            """
+            gr_p = peso_usuario * factor_prot
+            kcal_p = gr_p * KCAL_POR_G_PROT
+            gr_g = peso_usuario * factor_gras
+            kcal_g = gr_g * KCAL_POR_G_GRAS_POR_NIVEL[nivel]
+            kcal_restantes = kcal_p + kcal_g
+            kcal_c = rcd_usuario - kcal_restantes
+            gr_c = kcal_c / KCAL_POR_G_CARB
+            return {"gr_prot": gr_p, "kcal_prot": kcal_p, "gr_gras": gr_g, "kcal_gras": kcal_g,
+                    "kcal_restantes": kcal_restantes, "kcal_carb": kcal_c, "gr_carb": gr_c}
+
+        niveles_calculados = {
+            nivel: _calcular_nivel_macros(nivel, FACTORES_PROT[nivel], FACTORES_GRAS[nivel])
+            for nivel in ["Mínimo", "Intermedio", "Máximo"]
+        }
+
+        # ---- Filtro inteligente: el objetivo del usuario define qué nivel de factor se aplica ----
+        MAPA_OBJETIVO_NIVEL = {
+            "Bajar de peso": "Mínimo",
+            "Mantenerse": "Intermedio",
+            "Subir de peso": "Máximo",
+        }
+        nivel_final = MAPA_OBJETIVO_NIVEL.get(objetivo_usuario, "Intermedio")
+        datos_final = niveles_calculados[nivel_final]
+        total_kcal_final = datos_final["kcal_prot"] + datos_final["kcal_gras"] + datos_final["kcal_carb"]
+        total_gr_final = datos_final["gr_prot"] + datos_final["gr_gras"] + datos_final["gr_carb"]
+
+        _pct_prot_final = (datos_final["kcal_prot"] / total_kcal_final * 100) if total_kcal_final else 0
+        _pct_gras_final = (datos_final["kcal_gras"] / total_kcal_final * 100) if total_kcal_final else 0
+        _pct_carb_final = (datos_final["kcal_carb"] / total_kcal_final * 100) if total_kcal_final else 0
+
+        # =====================================================================================
+        # 1. ¿CÓMO SE REPARTEN TUS CALORÍAS? — mapa visual en vez de 3 tarjetas iguales
+        # =====================================================================================
+        st.markdown(f"#### 🍽️ {T('¿Cómo se reparten tus calorías?', 'How are your calories distributed?')}")
+        st.markdown(f"""
+        <div style="text-align:center;margin:6px 0 18px 0;">
+            <div style="font-size:2.1rem;font-weight:900;color:#17301F;">{rcd_final:.0f} <span style="font-size:1rem;font-weight:700;color:#8E8E93;">{T('kcal', 'kcal')}</span></div>
+            <div style="font-size:1.3rem;color:#8E8E93;margin:2px 0 14px 0;">↓</div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:150px;background:#FFEBF0;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FF2D5533;">
+                <div style="font-size:1.6rem;">❤️</div>
+                <div style="font-weight:800;color:#C2185B;margin:4px 0 2px 0;">{T('Proteínas', 'Protein')}</div>
+                <div style="font-size:0.78rem;color:#8A5252;">{T('Construyen', 'Build')}</div>
+                <div style="font-weight:800;color:#C2185B;margin-top:6px;">4 kcal/g</div>
+            </div>
+            <div style="flex:1;min-width:150px;background:#EAFAEE;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #34C75933;">
+                <div style="font-size:1.6rem;">🥑</div>
+                <div style="font-weight:800;color:#1E5631;margin:4px 0 2px 0;">{T('Grasas', 'Fat')}</div>
+                <div style="font-size:0.78rem;color:#3E7050;">{T('Protegen', 'Protect')}</div>
+                <div style="font-weight:800;color:#1E5631;margin-top:6px;">9 kcal/g</div>
+            </div>
+            <div style="flex:1;min-width:150px;background:#FFF8E1;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FFCC0055;">
+                <div style="font-size:1.6rem;">🌾</div>
+                <div style="font-weight:800;color:#8A6D00;margin:4px 0 2px 0;">{T('Carbohidratos', 'Carbohydrates')}</div>
+                <div style="font-size:0.78rem;color:#9C8300;">{T('Dan energía', 'Provide Energy')}</div>
+                <div style="font-weight:800;color:#8A6D00;margin-top:6px;">4 kcal/g</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # =====================================================================================
+        # 2. RECOMENDACIÓN INTERNACIONAL — tarjeta OMS bien visible
+        # =====================================================================================
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#EAF3FF 0%,#DCEBFF 100%);border-radius:20px;
+                    padding:20px 24px;margin-bottom:18px;border:1.5px solid #007AFF33;">
+            <div style="font-weight:800;color:#007AFF;font-size:1rem;margin-bottom:10px;">
+                🌍 {T('Recomendación internacional', 'International Recommendation')}</div>
+            <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">
+                {T('Según la Organización Mundial de la Salud (OMS):', 'According to the World Health Organization (WHO):')}</p>
+            <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Proteínas y grasas son nutrientes esenciales.', 'Protein and fat are essential nutrients.')}</p>
+            <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos son la principal fuente práctica de energía.', 'Carbohydrates are the main practical source of energy.')}</p>
+            <p style="margin:0 0 8px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Una alimentación saludable debe incluir un equilibrio entre los tres macronutrientes.', 'A healthy diet should include a balance of all three macronutrients.')}</p>
+            <p style="margin:0;color:#8E8E93;font-size:0.7rem;">{T('Referencia: Organización Mundial de la Salud (OMS).', 'Reference: World Health Organization (WHO).')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.info(T(
+            "🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
+            "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
+            "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
+            "pero no son indispensables para sobrevivir ni para una nutrición adecuada.",
+            "🌾 **Important WHO Note:** unlike protein and fat, **carbohydrates are not an essential "
+            "nutrient**: the body can obtain energy from fat and protein through gluconeogenesis. They "
+            "are included in the diet because they're a practical and efficient source of energy, but "
+            "they aren't indispensable for survival or for adequate nutrition."
+        ))
+
+        st.divider()
+
+        # =====================================================================================
+        # 3. TARJETAS CON PERSONALIDAD — qué función cumple cada macronutriente
+        # =====================================================================================
+        st.markdown(f"#### 🧠 {T('¿Qué hace cada macronutriente?', 'What does each macronutrient do?')}")
+        tp1, tp2, tp3 = st.columns(3)
+        with tp1:
+            st.markdown(f"""
+            <div class="macro-card prot">
+                <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteínas', 'Protein')}</span>
+                    <span class="mc-tip" title="{T('1 gramo de proteína equivale a 4 kcal. Se calcula multiplicando tu peso (kg) por un factor de 1.8 a 2.5 g/kg.', '1 gram of protein equals 4 kcal. It is calculated by multiplying your weight (kg) by a factor of 1.8 to 2.5 g/kg.')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏗 {T('Construyen músculos', 'Build muscle')}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">🩹 {T('Reparan tejidos', 'Repair tissue')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Forman enzimas', 'Form enzymes')}</p>
+                <div class="mc-value">⚡ 4 kcal/g</div>
+                <div class="mc-sub">{T('Factores (g/kg de peso)', 'Factors (g/kg of weight)')}:<br>{T('Mínimo', 'Minimum')} <b>1.8</b> · {T('Intermedio', 'Intermediate')} <b>2.1</b> · {T('Máximo', 'Maximum')} <b>2.5</b></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with tp2:
+            st.markdown(f"""
+            <div class="macro-card gras">
+                <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasas', 'Fat')}</span>
+                    <span class="mc-tip" title="{T('1 gramo de grasa equivale a 9 kcal. Se calcula multiplicando tu peso (kg) por un factor de 0.5 a 1.5 g/kg.', '1 gram of fat equals 9 kcal. It is calculated by multiplying your weight (kg) by a factor of 0.5 to 1.5 g/kg.')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 {T('Protegen el cerebro', 'Protect the brain')}</p>
+                <p style="margin:2px 0;font-size:0.82rem;">🔥 {T('Reserva energética', 'Energy reserve')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Ayudan a absorber vitaminas', 'Help absorb vitamins')}</p>
+                <div class="mc-value">⚡ 9 kcal/g</div>
+                <div class="mc-sub">{T('Factores (g/kg de peso)', 'Factors (g/kg of weight)')}:<br>{T('Mínimo', 'Minimum')} <b>0.5</b> · {T('Intermedio', 'Intermediate')} <b>1.0</b> · {T('Máximo', 'Maximum')} <b>1.5</b></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with tp3:
+            st.markdown(f"""
+            <div class="macro-card carb">
+                <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidratos', 'Carbohydrates')}</span>
+                    <span class="mc-tip" title="{T('1 gramo de carbohidrato equivale a 4 kcal. No usan un factor de peso: cubren la energía restante hasta tu RCD.', '1 gram of carbohydrate equals 4 kcal. They do not use a weight factor: they cover the remaining energy up to your DCR.')}">ℹ️</span></div>
+                <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Principal combustible', 'Main fuel source')}</p>
+                <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Energía para el cerebro', 'Energy for the brain')}</p>
+                <div class="mc-value">⚡ 4 kcal/g</div>
+                <div class="mc-sub">{T('Sin factor de peso — cubren el resto de la energía de tu RCD.', 'No weight factor — they cover the rest of your DCR energy.')}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # =====================================================================================
+        # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles) — sin tocar
+        # =====================================================================================
+        st.markdown(f"#### 📊 {T('Proyección de Requerimientos', 'Projection of Requirements')}")
+        st.markdown(f"""
+        <div style="text-align:center;color:#8E8E93;font-size:0.8rem;font-weight:700;margin-bottom:8px;">
+            {T('Peso → Factores OMS → Proteínas → Grasas → Carbohidratos → Plan nutricional',
+               'Weight → WHO Factors → Protein → Fat → Carbohydrates → Nutritional Plan')}
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+            "Prot(g)=peso×Factor → Kcal=g×4 | Grasa(g)=peso×Factor → Kcal=g×9 | "
+            "Carb: Kcal = RCD − Kcal Restantes → Gramos = Kcal/4",
+            referencia=T("Modelo de reparto de macronutrientes por nivel", "Macronutrient distribution model by level"))}</div>""", unsafe_allow_html=True)
+        st.caption(T("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.",
+                     "This is how the Minimum, Intermediate, and Maximum scenarios are calculated based on your current weight."))
+        st.info(f"⚖️ {T('Peso usado en los cálculos', 'Weight used in calculations')}: **{peso_usuario:.2f} kg** · "
+                f"🔥 {T('RCD objetivo', 'Target DCR')}: **{rcd_usuario:.2f} {T('kcal/día', 'kcal/day')}**")
+
+        _filas_niveles_html = ""
+        _COL_PROT = ("#C2185B", "#FFEBF0")
+        _COL_GRAS = ("#1E5631", "#EAFAEE")
+        _COL_CARB = ("#8A6D00", "#FFF8E1")
+        for _nivel in ["Mínimo", "Intermedio", "Máximo"]:
+            _d = niveles_calculados[_nivel]
+            _es_actual = (_nivel == nivel_final)
+            _borde_sel = "box-shadow:inset 0 2px 0 #FFCC00,inset 0 -2px 0 #FFCC00;" if _es_actual else ""
+            _nombre_fila = f"⭐ {_niv(_nivel)}" if _es_actual else _niv(_nivel)
+            _badge_tu_nivel = f' <span class="badge-tu-nivel">{T("TU NIVEL", "YOUR LEVEL")}</span>' if _es_actual else ""
+            _filas_niveles_html += f"""
+            <tr>
+                <td style="text-align:left;font-weight:800;{_borde_sel}">{_nombre_fila}{_badge_tu_nivel}</td>
+                <td style="background:{_COL_PROT[1]};{_borde_sel}">{FACTORES_PROT[_nivel]:.1f} g/kg</td>
+                <td style="background:{_COL_PROT[1]};{_borde_sel}">{_d['gr_prot']:.1f} g</td>
+                <td style="background:{_COL_PROT[1]};color:{_COL_PROT[0]};font-weight:800;{_borde_sel}">{_d['kcal_prot']:.0f} kcal/día</td>
+                <td style="background:{_COL_GRAS[1]};{_borde_sel}">{FACTORES_GRAS[_nivel]:.1f} g/kg</td>
+                <td style="background:{_COL_GRAS[1]};{_borde_sel}">{_d['gr_gras']:.1f} g</td>
+                <td style="background:{_COL_GRAS[1]};color:{_COL_GRAS[0]};font-weight:800;{_borde_sel}">{_d['kcal_gras']:.0f} kcal/día</td>
+                <td style="background:{_COL_CARB[1]};{_borde_sel}">{_d['kcal_restantes']:.0f} kcal/día</td>
+                <td style="background:{_COL_CARB[1]};{_borde_sel}">{_d['gr_carb']:.1f} g</td>
+                <td style="background:{_COL_CARB[1]};color:{_COL_CARB[0]};font-weight:800;{_borde_sel}">{_d['kcal_carb']:.0f} kcal/día</td>
+            </tr>"""
+
+        _html_tabla_niveles = f"""
+        <div style="overflow-x:auto;">
+        <table class="macro-niveles-table">
+            <thead>
+            <tr>
+                <th rowspan="2">{T('Nivel', 'Level')}</th>
+                <th colspan="3" style="background:{_COL_PROT[0]};">🥩 {T('Proteína', 'Protein')}</th>
+                <th colspan="3" style="background:{_COL_GRAS[0]};">🥑 {T('Grasa', 'Fat')}</th>
+                <th colspan="3" style="background:{_COL_CARB[0]};">🌾 {T('Carbohidrato', 'Carbohydrate')}</th>
+            </tr>
+            <tr>
+                <th style="background:{_COL_PROT[0]};">{T('Factor', 'Factor')}</th><th style="background:{_COL_PROT[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_PROT[0]};">{T('Kcal/día', 'Kcal/day')}</th>
+                <th style="background:{_COL_GRAS[0]};">{T('Factor', 'Factor')}</th><th style="background:{_COL_GRAS[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_GRAS[0]};">{T('Kcal/día', 'Kcal/day')}</th>
+                <th style="background:{_COL_CARB[0]};">{T('Kcal Restantes', 'Remaining Kcal')}</th><th style="background:{_COL_CARB[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_CARB[0]};">{T('Kcal/día', 'Kcal/day')}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {_filas_niveles_html}
+            </tbody>
+        </table>
+        </div>
+        """
+        st.markdown(_html_sin_lineas_vacias(_html_tabla_niveles), unsafe_allow_html=True)
+        st.caption(f"⭐ {T('La fila resaltada con borde amarillo es el nivel que corresponde a tu objetivo actual', 'The row highlighted with a yellow border is the level that matches your current goal')} "
+                   f"(**{T(objetivo_usuario, _OBJ_EN.get(objetivo_usuario, objetivo_usuario))}** → **{_niv(nivel_final)}**).")
+        st.caption(T(
+            "💡 **Kcal Restantes:** es la suma de la Kcal/día de Proteína + la Kcal/día de Grasa de "
+            "ESE mismo nivel (Mínimo, Intermedio o Máximo) — por eso cambia en cada fila. "
+            "**Carbohidratos:** no usan un factor de peso; se calculan cubriendo la energía "
+            "restante hasta tu Requerimiento Calórico Diario → "
+            "`Kcal/día Carbohidrato = RCD − Kcal Restantes` y `Gramos = Kcal/día ÷ 4`.",
+            "💡 **Remaining Kcal:** this is the sum of the Kcal/day from Protein + the Kcal/day from Fat "
+            "for THAT SAME level (Minimum, Intermediate, or Maximum) — that's why it changes on each row. "
+            "**Carbohydrates:** they don't use a weight factor; they're calculated by covering the "
+            "remaining energy up to your Daily Caloric Requirement → "
+            "`Kcal/day Carbohydrate = DCR − Remaining Kcal` and `Grams = Kcal/day ÷ 4`."
+        ))
+
+        st.divider()
+
+        # =====================================================================================
+        # TABLA 3 — Tu Plan Nutricional Definitivo (filtro inteligente según tu objetivo)
+        # =====================================================================================
+        st.markdown(f"#### 🎯 {T('Este será tu plan diario', 'This Will Be Your Daily Plan')}")
+        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+            'IF "Bajar de peso" → Mínimo (1.8/0.5) · IF "Mantenerse" → Intermedio (2.1/1.0) · '
+            'IF "Subir de peso" → Máximo (2.5/1.5)',
+            referencia=T("Filtro inteligente según objetivoUsuario", "Smart filter based on objetivoUsuario"))}</div>""", unsafe_allow_html=True)
+        st.caption(T("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.",
+                     "Based on your choice on the previous page, here are your exact requirements to reach your goal."))
+        st.success(f"🎯 {T('Objetivo seleccionado', 'Selected Goal')}: **{T(objetivo_usuario, _OBJ_EN.get(objetivo_usuario, objetivo_usuario))}** → "
+                   f"{T('Nivel aplicado', 'Applied Level')}: **{_niv(nivel_final)}** "
+                   f"({T('Proteína', 'Protein')} {FACTORES_PROT[nivel_final]:.1f} g/kg · {T('Grasa', 'Fat')} {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
+
+        # ---- Resumen visual: 3 tarjetas grandes + barra de calorías ----
+        rp1, rp2, rp3 = st.columns(3)
+        for _col_r, _ic_r, _val_r, _lab_r, _col_hex_r, _fon_r in [
+            (rp1, "❤️", f"{datos_final['gr_prot']:.0f} g", T("Proteínas", "Protein"), "#C2185B", "#FFEBF0"),
+            (rp2, "🥑", f"{datos_final['gr_gras']:.0f} g", T("Grasas", "Fat"), "#1E5631", "#EAFAEE"),
+            (rp3, "🌾", f"{datos_final['gr_carb']:.0f} g", T("Carbohidratos", "Carbohydrates"), "#8A6D00", "#FFF8E1"),
+        ]:
+            with _col_r:
+                st.markdown(f"""
+                <div style="background:{_fon_r};border-radius:20px;padding:20px;text-align:center;">
+                    <div style="font-size:1.8rem;">{_ic_r}</div>
+                    <div style="font-size:1.6rem;font-weight:900;color:{_col_hex_r};margin:4px 0;">{_val_r}</div>
+                    <div style="font-size:0.82rem;font-weight:700;color:{_col_hex_r};">{_lab_r}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div style="margin:14px 0 4px 0;">
+            <div style="display:flex;height:22px;border-radius:11px;overflow:hidden;">
+                <div style="width:{_pct_prot_final:.1f}%;background:#FF2D55;"></div>
+                <div style="width:{_pct_gras_final:.1f}%;background:#34C759;"></div>
+                <div style="width:{_pct_carb_final:.1f}%;background:#FFCC00;"></div>
+            </div>
+            <div style="text-align:center;margin-top:6px;font-weight:800;color:#17301F;">
+                {total_kcal_final:.0f} {T('kcal', 'kcal')} — 100%</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ---- Gráfico donut ----
+        fig_donut_macro = go.Figure(data=[go.Pie(
+            labels=[f"❤️ {T('Proteínas', 'Protein')}", f"🥑 {T('Grasas', 'Fat')}", f"🌾 {T('Carbohidratos', 'Carbohydrates')}"],
+            values=[datos_final["kcal_prot"], datos_final["kcal_gras"], datos_final["kcal_carb"]],
+            hole=0.62,
+            marker=dict(colors=["#FF2D55", "#34C759", "#FFCC00"]),
+            textinfo="label+percent",
+            textfont=dict(size=13),
+        )])
+        fig_donut_macro.update_layout(
+            annotations=[dict(text=f"🍽<br><b>{total_kcal_final:.0f}</b><br>{T('kcal', 'kcal')}", x=0.5, y=0.5,
+                               font=dict(size=15, color="#17301F"), showarrow=False)],
+            showlegend=False, height=340, margin=dict(t=20, b=20, l=20, r=20),
+            paper_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(fig_donut_macro, use_container_width=True)
+        st.caption(T("El gráfico muestra de dónde vienen principalmente tus calorías diarias.",
+                     "The chart shows where your daily calories mainly come from."))
+
+        _html_tabla_final = f"""
+        <table class="macro-final-table">
+            <thead>
+            <tr><th style="text-align:left;">{T('Macronutriente', 'Macronutrient')}</th><th>{T('Gramos', 'Grams')} (g)</th><th>{T('Kcal/día', 'Kcal/day')}</th></tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="text-align:left;">🥩 {T('Proteína', 'Protein')}</td>
+                <td>{datos_final['gr_prot']:.1f} g</td>
+                <td>{datos_final['kcal_prot']:.0f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left;">🥑 {T('Grasa', 'Fat')}</td>
+                <td>{datos_final['gr_gras']:.1f} g</td>
+                <td>{datos_final['kcal_gras']:.0f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left;">🌾 {T('Carbohidrato', 'Carbohydrate')}</td>
+                <td>{datos_final['gr_carb']:.1f} g</td>
+                <td>{datos_final['kcal_carb']:.0f} {T('kcal/día', 'kcal/day')}</td>
+            </tr>
+            <tr class="fila-total">
+                <td style="text-align:left;">{T('TOTAL', 'TOTAL')}</td>
+                <td>{total_gr_final:.1f} g</td>
+                <td>{total_kcal_final:.0f} {T('kcal/día', 'kcal/day')}
+                    <span style="display:inline-block;margin-left:10px;background:#FFCC00;color:#5C4700;
+                        font-weight:900;font-size:0.8rem;padding:4px 12px;border-radius:999px;
+                        letter-spacing:0.02em;">→ {T('RCD', 'DCR')}</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        """
+        st.markdown(_html_sin_lineas_vacias(_html_tabla_final), unsafe_allow_html=True)
+
+        if abs(total_kcal_final - rcd_usuario) < 1:
+            st.markdown(f"""
+            <div style="background:linear-gradient(120deg,#34C759 0%,#1E5631 100%);color:#FFFFFF;
+                        border-radius:20px;padding:20px 26px;margin-top:14px;text-align:center;
+                        font-weight:900;font-size:1.05rem;box-shadow:0 14px 32px rgba(52,199,89,0.35);">
+                ✅ {T('El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).', 'The total calories match your Daily Caloric Requirement (DCR) exactly.')}
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # =====================================================================================
+        # ¿POR QUÉ NO TODOS SE CALCULAN IGUAL? — versión corta, tipo clínica
+        # =====================================================================================
+        st.markdown(f"#### 💡 {T('¿Por qué no todos se calculan igual?', 'Why are they calculated differently?')}")
+        wp1, wp2, wp3 = st.columns(3)
+        with wp1:
+            st.markdown(f"""<div style="background:#FFEBF0;border-radius:16px;padding:14px;text-align:center;height:100%;">
+            <div style="font-size:1.3rem;">❤️</div><b style="color:#C2185B;">{T('Proteínas', 'Protein')}</b>
+            <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('Dependen de tu peso corporal.', 'They depend on your body weight.')}</p>
+            </div>""", unsafe_allow_html=True)
+        with wp2:
+            st.markdown(f"""<div style="background:#EAFAEE;border-radius:16px;padding:14px;text-align:center;height:100%;">
+            <div style="font-size:1.3rem;">🥑</div><b style="color:#1E5631;">{T('Grasas', 'Fat')}</b>
+            <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('También dependen de tu peso.', 'They also depend on your weight.')}</p>
+            </div>""", unsafe_allow_html=True)
+        with wp3:
+            st.markdown(f"""<div style="background:#FFF8E1;border-radius:16px;padding:14px;text-align:center;height:100%;">
+            <div style="font-size:1.3rem;">🌾</div><b style="color:#8A6D00;">{T('Carbohidratos', 'Carbohydrates')}</b>
+            <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('Se calculan con las calorías restantes hasta completar tu RCD.', 'They are calculated from the remaining calories needed to complete your DCR.')}</p>
+            </div>""", unsafe_allow_html=True)
+
+        st.write("")
+
+        # =====================================================================================
+        # ¿SABÍAS QUE? — curiosidades rotativas
+        # =====================================================================================
+        _curiosidades_macro = [
+            ("📚", T("El cuerpo puede almacenar muy poca proteína. Por eso necesita consumirla regularmente.",
+                     "The body can store very little protein. That's why it needs to be consumed regularly.")),
+            ("🧠", T("El cerebro utiliza principalmente glucosa como fuente de energía.",
+                     "The brain mainly uses glucose as its energy source.")),
+            ("🥑", T("Las grasas aportan más del doble de energía por gramo que proteínas y carbohidratos.",
+                     "Fat provides more than double the energy per gram compared to protein and carbohydrates.")),
+        ]
+        _idx_curio = int(datetime.now().timestamp() // 8) % len(_curiosidades_macro)
+        _ic_curio, _txt_curio = _curiosidades_macro[_idx_curio]
+        st.markdown(f"""
+        <div style="background:#F5F5F7;border-radius:16px;padding:14px 18px;display:flex;gap:12px;align-items:center;">
+            <div style="font-size:1.4rem;">{_ic_curio}</div>
+            <div style="font-size:0.84rem;color:#3C3C43;"><b>{T('¿Sabías que?', 'Did you know?')}</b> {_txt_curio}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        caja_util(T(
+            "Las proteínas y grasas se calculan según tu peso corporal (gramos por kilo), porque son "
+            "nutrientes estructurales que dependen de tu masa, no de cuánta energía gastas. Los "
+            "carbohidratos, en cambio, son la variable de ajuste: llenan el resto de tu energía diaria "
+            "hasta llegar exactamente a tu RCD. 🍽️",
+            "Protein and fat are calculated based on your body weight (grams per kilogram), because they "
+            "are structural nutrients that depend on your mass, not on how much energy you burn. "
+            "Carbohydrates, on the other hand, are the adjustment variable: they fill in the rest of your "
+            "daily energy until they exactly reach your DCR. 🍽️"
+        ), emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
+
+    # ---------------------------------------------------------------------------------------
 elif hoja_activa == "7.-PORCIONES":
     hoja_header(7, T(
         "Tu Requerimiento Calórico Diario se reparte en 5 momentos del día usando porcentajes "
