@@ -425,6 +425,78 @@ FOOD_DB_RAW = [
 FOOD_COLS = ["codigo", "nombre", "grupo_cod", "kcal", "proteinas", "grasas", "cho", "fibra", "calcio", "hierro", "vitc"]
 FOOD_DB = [dict(zip(FOOD_COLS, fila)) for fila in FOOD_DB_RAW]
 
+# Traducción de nombres de alimentos GENÉRICOS al inglés (whitelist). Se mantienen sin traducir
+# los alimentos con nomenclatura propia peruana (p. ej. quinua, palta, ají amarillo, camote,
+# olluco, mashua, rocoto, choclo) ya que no tienen equivalente estándar en inglés y forman parte
+# de la Tabla Peruana de Composición de Alimentos (INS/CENAN). Solo se traducen alimentos
+# genéricos e internacionales con una traducción estándar y clara.
+FOOD_NOMBRE_EN = {
+    "Arroz blanco corriente": "Common White Rice",
+    "Pan de molde": "Sliced Bread",
+    "Pan de molde integral": "Whole Wheat Sliced Bread",
+    "Pan integral": "Whole Wheat Bread",
+    "Pan francés fortificado con hierro": "Iron-Fortified French Bread",
+    "Trigo": "Wheat",
+    "Tomate": "Tomato",
+    "Tomate italiano": "Italian Tomato",
+    "Tomate redondo, con cáscara": "Round Tomato, with Skin",
+    "Salsa de tomate": "Tomato Sauce",
+    "Salsa concentrada de tomate": "Concentrated Tomato Sauce",
+    "Salsa de tomate con carne": "Tomato Sauce with Meat",
+    "Aceite vegetal de girasol": "Sunflower Vegetable Oil",
+    "Aceite vegetal de girasol con canola": "Sunflower and Canola Vegetable Oil",
+    "Aceite vegetal de oliva extravirgen": "Extra Virgin Olive Oil",
+    "Aceite vegetal de olivo": "Olive Vegetable Oil",
+    "Aceite vegetal de maíz": "Corn Vegetable Oil",
+    "Aceite vegetal de soya": "Soybean Vegetable Oil",
+    "Aceite vegetal de palma": "Palm Vegetable Oil",
+    "Aceite vegetal de maní": "Peanut Vegetable Oil",
+    "Aceite vegetal de algodón": "Cottonseed Vegetable Oil",
+    "Manteca de cerdo": "Pork Lard",
+    "Mantequilla": "Butter",
+    "Mantequilla con sal": "Salted Butter",
+    "Mantequilla sin sal": "Unsalted Butter",
+    "Carne de cerdo sin hueso": "Boneless Pork",
+    "Hígado de cerdo": "Pork Liver",
+    "Pechuga de gallina sin piel": "Skinless Chicken Breast",
+    "Pechuga de pavo con piel": "Turkey Breast with Skin",
+    "Pollo, carne pulpa": "Chicken, Boneless Meat",
+    "Leche en polvo descremada": "Skim Milk Powder",
+    "Leche en polvo entera": "Whole Milk Powder",
+    "Leche evaporada descremada": "Skim Evaporated Milk",
+    "Leche evaporada entera": "Whole Evaporated Milk",
+    "Leche fresca de vaca": "Fresh Cow Milk",
+    "Leche fresca de vaca descremada": "Fresh Skim Cow Milk",
+    "Leche fresca de cabra": "Fresh Goat Milk",
+    "Leche fresca con menos de 1% de grasa": "Fresh Milk with Less than 1% Fat",
+    "Crema de leche espesa": "Thick Cream",
+    "Crema de leche rala (líquida)": "Light (Liquid) Cream",
+    "Queso fresco de vaca": "Fresh Cow Cheese",
+    "Queso fresco de cabra": "Fresh Goat Cheese",
+    "Queso parmesano duro": "Hard Parmesan Cheese",
+    "Queso edam": "Edam Cheese",
+    "Queso mantecoso": "Creamy Cheese",
+    "Yogurt de leche entera": "Whole Milk Yogurt",
+    "Yogurt natural de leche descremada": "Plain Skim Milk Yogurt",
+    "Yogurt griego natural sin azúcar": "Plain Greek Yogurt, No Sugar",
+    "Café sin azúcar": "Coffee, No Sugar",
+    "Huevo de gallina entero crudo": "Whole Raw Chicken Egg",
+    "Clara de huevo de gallina": "Chicken Egg White",
+    "Yema de huevo de gallina": "Chicken Egg Yolk",
+    "Azúcar rubia": "Brown Sugar",
+}
+
+
+def _nombre_alimento(nombre):
+    """Devuelve el nombre del alimento en el idioma actual. Los nombres genéricos con
+    traducción estándar (whitelist FOOD_NOMBRE_EN) se traducen al inglés; los nombres propios
+    de alimentos tradicionales peruanos (quinua, palta, camote, olluco, etc.) se mantienen
+    intactos porque forman parte de la nomenclatura oficial de la Tabla Peruana de Composición
+    de Alimentos (INS/CENAN) y no tienen una traducción literal correcta."""
+    if st.session_state.get("idioma", "Español") == "English":
+        return FOOD_NOMBRE_EN.get(nombre, nombre)
+    return nombre
+
 GRUPOS_ALIMENTOS = {
     "A": {"nombre": "Cereales y derivados", "icono": "🥖",
           "aporta": "Aportan energía y carbohidratos complejos, base de la alimentación diaria.",
@@ -484,6 +556,71 @@ GRUPOS_ALIMENTOS = {
                     "Consúmelos con cáscara bien lavada cuando sea posible.", "Combina con proteínas y verduras."]},
 }
 
+GRUPOS_ALIMENTOS_EN = {
+    "A": {"nombre": "Cereals and Derivatives", "icono": "🥖",
+          "aporta": "Provide energy and complex carbohydrates, the base of daily eating.",
+          "tips": ["Choose whole-grain versions.", "Combine with vegetables and a protein source.",
+                    "Moderate the portion if your goal is to lose weight.", "Avoid excess refined flours."]},
+    "B": {"nombre": "Vegetables", "icono": "🥬",
+          "aporta": "Rich in fiber, vitamins, and minerals; low in calories.",
+          "tips": ["Fill half your plate with vegetables.", "Vary the colors for a wider range of nutrients.",
+                    "Prefer them raw, steamed, or sautéed.", "Wash them well before eating."]},
+    "C": {"nombre": "Fruits and Derivatives", "icono": "🍎",
+          "aporta": "A natural source of vitamins, fiber, and antioxidants.",
+          "tips": ["Eat whole fruit, not just juice.", "Prefer seasonal fruit.",
+                    "Don't replace water with juice.", "Include a variety of colors."]},
+    "D": {"nombre": "Fats, Oils and Oilseeds", "icono": "🥑",
+          "aporta": "Provide concentrated energy and essential fatty acids.",
+          "tips": ["Use vegetable oils in moderation.", "Prefer unsaturated fats (avocado, nuts).",
+                    "Avoid frequent fried foods.", "Watch your portion size."]},
+    "E": {"nombre": "Fish and Seafood", "icono": "🐟",
+          "aporta": "High biological value protein and omega-3 fatty acids.",
+          "tips": ["Prefer steaming, baking, or grilling.", "Include oily fish 2 to 3 times a week.",
+                    "Moderate the salt when preparing it.", "Check its freshness before buying."]},
+    "F": {"nombre": "Meat and Meat Products", "icono": "🥩",
+          "aporta": "Main source of high biological value protein and iron.",
+          "tips": ["Prefer lean cuts.", "Remove visible fat.",
+                    "Avoid frequent fried foods.", "Combine with vegetables."]},
+    "G": {"nombre": "Milk and Dairy Products", "icono": "🥛",
+          "aporta": "Provide calcium, protein, and vitamins for bones and muscles.",
+          "tips": ["Prefer low-fat versions.", "They provide calcium for bones and teeth.",
+                    "Avoid versions with excess sugar.", "Moderate aged cheeses due to their sodium."]},
+    "H": {"nombre": "Beverages", "icono": "🥤",
+          "aporta": "Provide hydration, although some add extra sugars and calories.",
+          "tips": ["Water should be your main beverage.", "Moderate sugary and alcoholic drinks.",
+                    "Check the added-sugar content.", "Prefer natural juices with no added sugar."]},
+    "J": {"nombre": "Eggs and Egg Products", "icono": "🍳",
+          "aporta": "Complete protein and essential nutrients like choline and vitamin D.",
+          "tips": ["Prefer cooking with little oil.", "Combine it with vegetables.",
+                    "Moderate intake if you have a medical indication.", "Keep it refrigerated."]},
+    "K": {"nombre": "Sugary Products", "icono": "🍯",
+          "aporta": "Provide quick energy, with little additional nutritional value.",
+          "tips": ["Consume in moderation.", "Prefer natural sweeteners in small amounts.",
+                    "Avoid daily consumption.", "Check labels for added sugars."]},
+    "L": {"nombre": "Miscellaneous", "icono": "🧂",
+          "aporta": "Complementary ingredients: condiments, infusions, and others.",
+          "tips": ["Use salt in moderation.", "Prefer infusions without added sugar.",
+                    "Watch the portion when using condiments.", "Use them as a complement, not as the base of the meal."]},
+    "Q": {"nombre": "Infant Foods", "icono": "🍼",
+          "aporta": "Formulated to meet specific needs during early childhood.",
+          "tips": ["Use only as directed by a pediatrician or nutritionist.", "Follow age-appropriate portions.",
+                    "Don't replace breastfeeding without medical guidance.", "Check the expiration date."]},
+    "T": {"nombre": "Legumes and Derivatives", "icono": "🫘",
+          "aporta": "A good source of plant protein, fiber, and iron.",
+          "tips": ["Combine with cereals for more complete protein.", "They help with satiety thanks to their fiber.",
+                    "Soak them before cooking to improve digestion.", "Include them several times a week."]},
+    "U": {"nombre": "Tubers, Roots and Derivatives", "icono": "🥔",
+          "aporta": "A source of energy and carbohydrates, with vitamins and minerals.",
+          "tips": ["Prefer boiled or steamed over fried.", "Moderate the portion if you're aiming to lose weight.",
+                    "Eat them with the well-washed skin when possible.", "Combine with protein and vegetables."]},
+}
+
+def _grupo_campo(cod, campo):
+    """Devuelve el campo (nombre/icono/aporta/tips) de un grupo de alimentos en el idioma
+    actual, usando GRUPOS_ALIMENTOS_EN cuando corresponde."""
+    fuente = GRUPOS_ALIMENTOS_EN if st.session_state.get("idioma", "Español") == "English" else GRUPOS_ALIMENTOS
+    return fuente.get(cod, GRUPOS_ALIMENTOS.get(cod, {})).get(campo)
+
 GRUPOS_COLORES = {
     "A": ("#FF9500", "#FFF3E5"), "B": ("#34C759", "#EAFAEE"), "C": ("#FF3B30", "#FFEDEC"),
     "D": ("#AF52DE", "#F6ECFC"), "E": ("#30B0C7", "#E6F7FA"), "F": ("#8E4A2E", "#F5E9E3"),
@@ -508,6 +645,15 @@ GUIAS_ALIMENTARIAS_PERU = [
     ("🫘", "Prefiere alimentos naturales.", "Menos ultraprocesados, más alimentos frescos."),
     ("💧", "El agua es tu bebida principal.", "Evita reemplazarla por bebidas azucaradas."),
     ("🏃", "Realiza actividad física.", "Al menos 30 minutos la mayoría de días."),
+]
+
+GUIAS_ALIMENTARIAS_PERU_EN = [
+    ("🥦", "Fill half your plate with vegetables.", "At every main meal."),
+    ("🍎", "Eat fruit every day.", "Whole fruit is better than juice."),
+    ("🥛", "Include dairy according to your age.", "Prefer low-fat versions."),
+    ("🫘", "Prefer natural foods.", "Fewer ultra-processed foods, more fresh foods."),
+    ("💧", "Water is your main beverage.", "Avoid replacing it with sugary drinks."),
+    ("🏃", "Get physical activity.", "At least 30 minutes most days."),
 ]
 
 
@@ -575,7 +721,7 @@ COLORES_EN = {
     3:  ("3", "Basal Metabolic Rate (BMR)",                  "⚡", "#FF9500", "#FFF3E5"),
     4:  ("4", "Daily Caloric Requirement (DCR)",             "🔥", "#34C759", "#EAFAEE"),
     5:  ("5", "Weight Control",                              "🎯", "#FF2D55", "#FFEBF0"),
-    6:  ("6", "WHO-Based Nutritional Plan",                  "⚖️", "#FFCC00", "#FFFAE0"),
+    6:  ("6", "WHO Macronutrient Plan",                      "⚖️", "#FFCC00", "#FFFAE0"),
     7:  ("7", "Daily Portions Calculation",                  "⏰", "#30B0C7", "#E6F7FA"),
     8:  ("8", "Food Library",                                "🥗", "#00C7BE", "#E1FBF9"),
     9:  ("9", "Weekly Diet Plan",                             "🍱", "#FF6B35", "#FFEEE6"),
@@ -7274,8 +7420,18 @@ elif hoja_activa == "5.-CONTROL DE PESO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
-    hoja_header(6, "Proteínas y grasas se calculan según tus gramos por kilo de peso corporal; los "
-                   "carbohidratos cubren la energía restante hasta completar tu Requerimiento Calórico Diario.")
+    hoja_header(6, T(
+        "Proteínas y grasas se calculan según tus gramos por kilo de peso corporal; los "
+        "carbohidratos cubren la energía restante hasta completar tu Requerimiento Calórico Diario.",
+        "Protein and fat are calculated based on your grams per kilogram of body weight; "
+        "carbohydrates cover the remaining energy needed to complete your Daily Caloric Requirement."
+    ))
+
+    # ---- Mapas de traducción locales para esta hoja (niveles Mínimo/Intermedio/Máximo) ----
+    _NIVEL_EN = {"Mínimo": "Minimum", "Intermedio": "Intermediate", "Máximo": "Maximum"}
+
+    def _niv(nivel):
+        return T(nivel, _NIVEL_EN[nivel])
 
     # ===== RCD grande y destacado arriba de todo =====
     st.markdown(f"""
@@ -7283,9 +7439,9 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
                 padding:26px 30px;text-align:center;color:#FFFFFF;margin-bottom:18px;
                 box-shadow:0 16px 36px rgba(30,86,49,0.30);">
         <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
-            🔥 Tu Requerimiento Calórico Diario (RCD)</div>
-        <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">kcal/día</span></div>
-        <div style="font-size:0.84rem;opacity:0.9;">Sobre este total se reparten tus macronutrientes.</div>
+            🔥 {T('Tu Requerimiento Calórico Diario (RCD)', 'Your Daily Caloric Requirement (DCR)')}</div>
+        <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">{T('kcal/día', 'kcal/day')}</span></div>
+        <div style="font-size:0.84rem;opacity:0.9;">{T('Sobre este total se reparten tus macronutrientes.', 'Your macronutrients are distributed across this total.')}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -7350,29 +7506,29 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # =====================================================================================
     # 1. ¿CÓMO SE REPARTEN TUS CALORÍAS? — mapa visual en vez de 3 tarjetas iguales
     # =====================================================================================
-    st.markdown("#### 🍽️ ¿Cómo se reparten tus calorías?")
+    st.markdown(f"#### 🍽️ {T('¿Cómo se reparten tus calorías?', 'How are your calories distributed?')}")
     st.markdown(f"""
     <div style="text-align:center;margin:6px 0 18px 0;">
-        <div style="font-size:2.1rem;font-weight:900;color:#17301F;">{rcd_final:.0f} <span style="font-size:1rem;font-weight:700;color:#8E8E93;">kcal</span></div>
+        <div style="font-size:2.1rem;font-weight:900;color:#17301F;">{rcd_final:.0f} <span style="font-size:1rem;font-weight:700;color:#8E8E93;">{T('kcal', 'kcal')}</span></div>
         <div style="font-size:1.3rem;color:#8E8E93;margin:2px 0 14px 0;">↓</div>
     </div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;">
         <div style="flex:1;min-width:150px;background:#FFEBF0;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FF2D5533;">
             <div style="font-size:1.6rem;">❤️</div>
-            <div style="font-weight:800;color:#C2185B;margin:4px 0 2px 0;">Proteínas</div>
-            <div style="font-size:0.78rem;color:#8A5252;">Construyen</div>
+            <div style="font-weight:800;color:#C2185B;margin:4px 0 2px 0;">{T('Proteínas', 'Protein')}</div>
+            <div style="font-size:0.78rem;color:#8A5252;">{T('Construyen', 'Build')}</div>
             <div style="font-weight:800;color:#C2185B;margin-top:6px;">4 kcal/g</div>
         </div>
         <div style="flex:1;min-width:150px;background:#EAFAEE;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #34C75933;">
             <div style="font-size:1.6rem;">🥑</div>
-            <div style="font-weight:800;color:#1E5631;margin:4px 0 2px 0;">Grasas</div>
-            <div style="font-size:0.78rem;color:#3E7050;">Protegen</div>
+            <div style="font-weight:800;color:#1E5631;margin:4px 0 2px 0;">{T('Grasas', 'Fat')}</div>
+            <div style="font-size:0.78rem;color:#3E7050;">{T('Protegen', 'Protect')}</div>
             <div style="font-weight:800;color:#1E5631;margin-top:6px;">9 kcal/g</div>
         </div>
         <div style="flex:1;min-width:150px;background:#FFF8E1;border-radius:18px;padding:16px;text-align:center;border:1.5px solid #FFCC0055;">
             <div style="font-size:1.6rem;">🌾</div>
-            <div style="font-weight:800;color:#8A6D00;margin:4px 0 2px 0;">Carbohidratos</div>
-            <div style="font-size:0.78rem;color:#9C8300;">Dan energía</div>
+            <div style="font-weight:800;color:#8A6D00;margin:4px 0 2px 0;">{T('Carbohidratos', 'Carbohydrates')}</div>
+            <div style="font-size:0.78rem;color:#9C8300;">{T('Dan energía', 'Provide Energy')}</div>
             <div style="font-weight:800;color:#8A6D00;margin-top:6px;">4 kcal/g</div>
         </div>
     </div>
@@ -7387,61 +7543,67 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     <div style="background:linear-gradient(120deg,#EAF3FF 0%,#DCEBFF 100%);border-radius:20px;
                 padding:20px 24px;margin-bottom:18px;border:1.5px solid #007AFF33;">
         <div style="font-weight:800;color:#007AFF;font-size:1rem;margin-bottom:10px;">
-            🌍 Recomendación internacional</div>
+            🌍 {T('Recomendación internacional', 'International Recommendation')}</div>
         <p style="margin:0 0 6px 0;color:#17301F;font-size:0.86rem;">
-            Según la Organización Mundial de la Salud (OMS):</p>
-        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ Proteínas y grasas son nutrientes esenciales.</p>
-        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ Los carbohidratos son la principal fuente práctica de energía.</p>
-        <p style="margin:0 0 8px 0;color:#3C3C43;font-size:0.84rem;">✔ Una alimentación saludable debe incluir un equilibrio entre los tres macronutrientes.</p>
-        <p style="margin:0;color:#8E8E93;font-size:0.7rem;">Referencia: Organización Mundial de la Salud (OMS).</p>
+            {T('Según la Organización Mundial de la Salud (OMS):', 'According to the World Health Organization (WHO):')}</p>
+        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Proteínas y grasas son nutrientes esenciales.', 'Protein and fat are essential nutrients.')}</p>
+        <p style="margin:0 0 4px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Los carbohidratos son la principal fuente práctica de energía.', 'Carbohydrates are the main practical source of energy.')}</p>
+        <p style="margin:0 0 8px 0;color:#3C3C43;font-size:0.84rem;">✔ {T('Una alimentación saludable debe incluir un equilibrio entre los tres macronutrientes.', 'A healthy diet should include a balance of all three macronutrients.')}</p>
+        <p style="margin:0;color:#8E8E93;font-size:0.7rem;">{T('Referencia: Organización Mundial de la Salud (OMS).', 'Reference: World Health Organization (WHO).')}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.info("🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
-            "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
-            "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
-            "pero no son indispensables para sobrevivir ni para una nutrición adecuada.")
+    st.info(T(
+        "🌾 **Dato importante (OMS):** a diferencia de las proteínas y las grasas, los **carbohidratos "
+        "no son un nutriente esencial**: el cuerpo puede obtener energía de grasas y proteínas mediante "
+        "gluconeogénesis. Se incluyen en la dieta por ser una fuente práctica y eficiente de energía, "
+        "pero no son indispensables para sobrevivir ni para una nutrición adecuada.",
+        "🌾 **Important WHO Note:** unlike protein and fat, **carbohydrates are not an essential "
+        "nutrient**: the body can obtain energy from fat and protein through gluconeogenesis. They "
+        "are included in the diet because they're a practical and efficient source of energy, but "
+        "they aren't indispensable for survival or for adequate nutrition."
+    ))
 
     st.divider()
 
     # =====================================================================================
     # 3. TARJETAS CON PERSONALIDAD — qué función cumple cada macronutriente
     # =====================================================================================
-    st.markdown("#### 🧠 ¿Qué hace cada macronutriente?")
+    st.markdown(f"#### 🧠 {T('¿Qué hace cada macronutriente?', 'What does each macronutrient do?')}")
     tp1, tp2, tp3 = st.columns(3)
     with tp1:
-        st.markdown("""
+        st.markdown(f"""
         <div class="macro-card prot">
-            <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">Proteínas</span>
-                <span class="mc-tip" title="1 gramo de proteína equivale a 4 kcal. Se calcula multiplicando tu peso (kg) por un factor de 1.8 a 2.5 g/kg.">ℹ️</span></div>
-            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏗 Construyen músculos</p>
-            <p style="margin:2px 0;font-size:0.82rem;">🩹 Reparan tejidos</p>
-            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 Forman enzimas</p>
+            <div class="mc-head"><span class="mc-icon">❤️</span><span class="mc-title">{T('Proteínas', 'Protein')}</span>
+                <span class="mc-tip" title="{T('1 gramo de proteína equivale a 4 kcal. Se calcula multiplicando tu peso (kg) por un factor de 1.8 a 2.5 g/kg.', '1 gram of protein equals 4 kcal. It is calculated by multiplying your weight (kg) by a factor of 1.8 to 2.5 g/kg.')}">ℹ️</span></div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏗 {T('Construyen músculos', 'Build muscle')}</p>
+            <p style="margin:2px 0;font-size:0.82rem;">🩹 {T('Reparan tejidos', 'Repair tissue')}</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🛡 {T('Forman enzimas', 'Form enzymes')}</p>
             <div class="mc-value">⚡ 4 kcal/g</div>
-            <div class="mc-sub">Factores (g/kg de peso):<br>Mínimo <b>1.8</b> · Intermedio <b>2.1</b> · Máximo <b>2.5</b></div>
+            <div class="mc-sub">{T('Factores (g/kg de peso)', 'Factors (g/kg of weight)')}:<br>{T('Mínimo', 'Minimum')} <b>1.8</b> · {T('Intermedio', 'Intermediate')} <b>2.1</b> · {T('Máximo', 'Maximum')} <b>2.5</b></div>
         </div>
         """, unsafe_allow_html=True)
     with tp2:
-        st.markdown("""
+        st.markdown(f"""
         <div class="macro-card gras">
-            <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">Grasas</span>
-                <span class="mc-tip" title="1 gramo de grasa equivale a 9 kcal. Se calcula multiplicando tu peso (kg) por un factor de 0.5 a 1.5 g/kg.">ℹ️</span></div>
-            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 Protegen el cerebro</p>
-            <p style="margin:2px 0;font-size:0.82rem;">🔥 Reserva energética</p>
-            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 Ayudan a absorber vitaminas</p>
+            <div class="mc-head"><span class="mc-icon">🥑</span><span class="mc-title">{T('Grasas', 'Fat')}</span>
+                <span class="mc-tip" title="{T('1 gramo de grasa equivale a 9 kcal. Se calcula multiplicando tu peso (kg) por un factor de 0.5 a 1.5 g/kg.', '1 gram of fat equals 9 kcal. It is calculated by multiplying your weight (kg) by a factor of 0.5 to 1.5 g/kg.')}">ℹ️</span></div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🧠 {T('Protegen el cerebro', 'Protect the brain')}</p>
+            <p style="margin:2px 0;font-size:0.82rem;">🔥 {T('Reserva energética', 'Energy reserve')}</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🫀 {T('Ayudan a absorber vitaminas', 'Help absorb vitamins')}</p>
             <div class="mc-value">⚡ 9 kcal/g</div>
-            <div class="mc-sub">Factores (g/kg de peso):<br>Mínimo <b>0.5</b> · Intermedio <b>1.0</b> · Máximo <b>1.5</b></div>
+            <div class="mc-sub">{T('Factores (g/kg de peso)', 'Factors (g/kg of weight)')}:<br>{T('Mínimo', 'Minimum')} <b>0.5</b> · {T('Intermedio', 'Intermediate')} <b>1.0</b> · {T('Máximo', 'Maximum')} <b>1.5</b></div>
         </div>
         """, unsafe_allow_html=True)
     with tp3:
-        st.markdown("""
+        st.markdown(f"""
         <div class="macro-card carb">
-            <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">Carbohidratos</span>
-                <span class="mc-tip" title="1 gramo de carbohidrato equivale a 4 kcal. No usan un factor de peso: cubren la energía restante hasta tu RCD.">ℹ️</span></div>
-            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 Principal combustible</p>
-            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 Energía para el cerebro</p>
+            <div class="mc-head"><span class="mc-icon">🌾</span><span class="mc-title">{T('Carbohidratos', 'Carbohydrates')}</span>
+                <span class="mc-tip" title="{T('1 gramo de carbohidrato equivale a 4 kcal. No usan un factor de peso: cubren la energía restante hasta tu RCD.', '1 gram of carbohydrate equals 4 kcal. They do not use a weight factor: they cover the remaining energy up to your DCR.')}">ℹ️</span></div>
+            <p style="margin:6px 0 2px 0;font-size:0.82rem;">🏃 {T('Principal combustible', 'Main fuel source')}</p>
+            <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Energía para el cerebro', 'Energy for the brain')}</p>
             <div class="mc-value">⚡ 4 kcal/g</div>
-            <div class="mc-sub">Sin factor de peso — cubren el resto de la energía de tu RCD.</div>
+            <div class="mc-sub">{T('Sin factor de peso — cubren el resto de la energía de tu RCD.', 'No weight factor — they cover the rest of your DCR energy.')}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -7450,18 +7612,21 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # =====================================================================================
     # TABLA 2 — Proyección de Requerimientos (demostración de los 3 niveles) — sin tocar
     # =====================================================================================
-    st.markdown("#### 📊 Proyección de Requerimientos")
+    st.markdown(f"#### 📊 {T('Proyección de Requerimientos', 'Projection of Requirements')}")
     st.markdown(f"""
     <div style="text-align:center;color:#8E8E93;font-size:0.8rem;font-weight:700;margin-bottom:8px;">
-        Peso → Factores OMS → Proteínas → Grasas → Carbohidratos → Plan nutricional
+        {T('Peso → Factores OMS → Proteínas → Grasas → Carbohidratos → Plan nutricional',
+           'Weight → WHO Factors → Protein → Fat → Carbohydrates → Nutritional Plan')}
     </div>
     """, unsafe_allow_html=True)
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "Prot(g)=peso×Factor → Kcal=g×4 | Grasa(g)=peso×Factor → Kcal=g×9 | "
         "Carb: Kcal = RCD − Kcal Restantes → Gramos = Kcal/4",
-        referencia="Modelo de reparto de macronutrientes por nivel")}</div>""", unsafe_allow_html=True)
-    st.caption("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.")
-    st.info(f"⚖️ Peso usado en los cálculos: **{peso_usuario:.2f} kg** · 🔥 RCD objetivo: **{rcd_usuario:.2f} kcal/día**")
+        referencia=T("Modelo de reparto de macronutrientes por nivel", "Macronutrient distribution model by level"))}</div>""", unsafe_allow_html=True)
+    st.caption(T("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.",
+                 "This is how the Minimum, Intermediate, and Maximum scenarios are calculated based on your current weight."))
+    st.info(f"⚖️ {T('Peso usado en los cálculos', 'Weight used in calculations')}: **{peso_usuario:.2f} kg** · "
+            f"🔥 {T('RCD objetivo', 'Target DCR')}: **{rcd_usuario:.2f} {T('kcal/día', 'kcal/day')}**")
 
     _filas_niveles_html = ""
     _COL_PROT = ("#C2185B", "#FFEBF0")
@@ -7471,8 +7636,8 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         _d = niveles_calculados[_nivel]
         _es_actual = (_nivel == nivel_final)
         _borde_sel = "box-shadow:inset 0 2px 0 #FFCC00,inset 0 -2px 0 #FFCC00;" if _es_actual else ""
-        _nombre_fila = f"⭐ {_nivel}" if _es_actual else _nivel
-        _badge_tu_nivel = ' <span class="badge-tu-nivel">TU NIVEL</span>' if _es_actual else ""
+        _nombre_fila = f"⭐ {_niv(_nivel)}" if _es_actual else _niv(_nivel)
+        _badge_tu_nivel = f' <span class="badge-tu-nivel">{T("TU NIVEL", "YOUR LEVEL")}</span>' if _es_actual else ""
         _filas_niveles_html += f"""
         <tr>
             <td style="text-align:left;font-weight:800;{_borde_sel}">{_nombre_fila}{_badge_tu_nivel}</td>
@@ -7492,15 +7657,15 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     <table class="macro-niveles-table">
         <thead>
         <tr>
-            <th rowspan="2">Nivel</th>
-            <th colspan="3" style="background:{_COL_PROT[0]};">🥩 Proteína</th>
-            <th colspan="3" style="background:{_COL_GRAS[0]};">🥑 Grasa</th>
-            <th colspan="3" style="background:{_COL_CARB[0]};">🌾 Carbohidrato</th>
+            <th rowspan="2">{T('Nivel', 'Level')}</th>
+            <th colspan="3" style="background:{_COL_PROT[0]};">🥩 {T('Proteína', 'Protein')}</th>
+            <th colspan="3" style="background:{_COL_GRAS[0]};">🥑 {T('Grasa', 'Fat')}</th>
+            <th colspan="3" style="background:{_COL_CARB[0]};">🌾 {T('Carbohidrato', 'Carbohydrate')}</th>
         </tr>
         <tr>
-            <th style="background:{_COL_PROT[0]};">Factor</th><th style="background:{_COL_PROT[0]};">Gramos</th><th style="background:{_COL_PROT[0]};">Kcal/día</th>
-            <th style="background:{_COL_GRAS[0]};">Factor</th><th style="background:{_COL_GRAS[0]};">Gramos</th><th style="background:{_COL_GRAS[0]};">Kcal/día</th>
-            <th style="background:{_COL_CARB[0]};">Kcal Restantes</th><th style="background:{_COL_CARB[0]};">Gramos</th><th style="background:{_COL_CARB[0]};">Kcal/día</th>
+            <th style="background:{_COL_PROT[0]};">{T('Factor', 'Factor')}</th><th style="background:{_COL_PROT[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_PROT[0]};">{T('Kcal/día', 'Kcal/day')}</th>
+            <th style="background:{_COL_GRAS[0]};">{T('Factor', 'Factor')}</th><th style="background:{_COL_GRAS[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_GRAS[0]};">{T('Kcal/día', 'Kcal/day')}</th>
+            <th style="background:{_COL_CARB[0]};">{T('Kcal Restantes', 'Remaining Kcal')}</th><th style="background:{_COL_CARB[0]};">{T('Gramos', 'Grams')}</th><th style="background:{_COL_CARB[0]};">{T('Kcal/día', 'Kcal/day')}</th>
         </tr>
         </thead>
         <tbody>
@@ -7510,34 +7675,43 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     </div>
     """
     st.markdown(_html_sin_lineas_vacias(_html_tabla_niveles), unsafe_allow_html=True)
-    st.caption("⭐ La fila resaltada con borde amarillo es el nivel que corresponde a tu objetivo actual "
-               f"(**{objetivo_usuario}** → **{nivel_final}**).")
-    st.caption("💡 **Kcal Restantes:** es la suma de la Kcal/día de Proteína + la Kcal/día de Grasa de "
-               "ESE mismo nivel (Mínimo, Intermedio o Máximo) — por eso cambia en cada fila. "
-               "**Carbohidratos:** no usan un factor de peso; se calculan cubriendo la energía "
-               "restante hasta tu Requerimiento Calórico Diario → "
-               "`Kcal/día Carbohidrato = RCD − Kcal Restantes` y `Gramos = Kcal/día ÷ 4`.")
+    st.caption(f"⭐ {T('La fila resaltada con borde amarillo es el nivel que corresponde a tu objetivo actual', 'The row highlighted with a yellow border is the level that matches your current goal')} "
+               f"(**{T(objetivo_usuario, _OBJ_EN.get(objetivo_usuario, objetivo_usuario))}** → **{_niv(nivel_final)}**).")
+    st.caption(T(
+        "💡 **Kcal Restantes:** es la suma de la Kcal/día de Proteína + la Kcal/día de Grasa de "
+        "ESE mismo nivel (Mínimo, Intermedio o Máximo) — por eso cambia en cada fila. "
+        "**Carbohidratos:** no usan un factor de peso; se calculan cubriendo la energía "
+        "restante hasta tu Requerimiento Calórico Diario → "
+        "`Kcal/día Carbohidrato = RCD − Kcal Restantes` y `Gramos = Kcal/día ÷ 4`.",
+        "💡 **Remaining Kcal:** this is the sum of the Kcal/day from Protein + the Kcal/day from Fat "
+        "for THAT SAME level (Minimum, Intermediate, or Maximum) — that's why it changes on each row. "
+        "**Carbohydrates:** they don't use a weight factor; they're calculated by covering the "
+        "remaining energy up to your Daily Caloric Requirement → "
+        "`Kcal/day Carbohydrate = DCR − Remaining Kcal` and `Grams = Kcal/day ÷ 4`."
+    ))
 
     st.divider()
 
     # =====================================================================================
     # TABLA 3 — Tu Plan Nutricional Definitivo (filtro inteligente según tu objetivo)
     # =====================================================================================
-    st.markdown("#### 🎯 Este será tu plan diario")
+    st.markdown(f"#### 🎯 {T('Este será tu plan diario', 'This Will Be Your Daily Plan')}")
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         'IF "Bajar de peso" → Mínimo (1.8/0.5) · IF "Mantenerse" → Intermedio (2.1/1.0) · '
         'IF "Subir de peso" → Máximo (2.5/1.5)',
-        referencia="Filtro inteligente según objetivoUsuario")}</div>""", unsafe_allow_html=True)
-    st.caption("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.")
-    st.success(f"🎯 Objetivo seleccionado: **{objetivo_usuario}** → Nivel aplicado: **{nivel_final}** "
-               f"(Proteína {FACTORES_PROT[nivel_final]:.1f} g/kg · Grasa {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
+        referencia=T("Filtro inteligente según objetivoUsuario", "Smart filter based on objetivoUsuario"))}</div>""", unsafe_allow_html=True)
+    st.caption(T("Basado en tu elección de la página anterior, aquí tienes tus requerimientos exactos para alcanzar tu meta.",
+                 "Based on your choice on the previous page, here are your exact requirements to reach your goal."))
+    st.success(f"🎯 {T('Objetivo seleccionado', 'Selected Goal')}: **{T(objetivo_usuario, _OBJ_EN.get(objetivo_usuario, objetivo_usuario))}** → "
+               f"{T('Nivel aplicado', 'Applied Level')}: **{_niv(nivel_final)}** "
+               f"({T('Proteína', 'Protein')} {FACTORES_PROT[nivel_final]:.1f} g/kg · {T('Grasa', 'Fat')} {FACTORES_GRAS[nivel_final]:.1f} g/kg)")
 
     # ---- Resumen visual: 3 tarjetas grandes + barra de calorías ----
     rp1, rp2, rp3 = st.columns(3)
     for _col_r, _ic_r, _val_r, _lab_r, _col_hex_r, _fon_r in [
-        (rp1, "❤️", f"{datos_final['gr_prot']:.0f} g", "Proteínas", "#C2185B", "#FFEBF0"),
-        (rp2, "🥑", f"{datos_final['gr_gras']:.0f} g", "Grasas", "#1E5631", "#EAFAEE"),
-        (rp3, "🌾", f"{datos_final['gr_carb']:.0f} g", "Carbohidratos", "#8A6D00", "#FFF8E1"),
+        (rp1, "❤️", f"{datos_final['gr_prot']:.0f} g", T("Proteínas", "Protein"), "#C2185B", "#FFEBF0"),
+        (rp2, "🥑", f"{datos_final['gr_gras']:.0f} g", T("Grasas", "Fat"), "#1E5631", "#EAFAEE"),
+        (rp3, "🌾", f"{datos_final['gr_carb']:.0f} g", T("Carbohidratos", "Carbohydrates"), "#8A6D00", "#FFF8E1"),
     ]:
         with _col_r:
             st.markdown(f"""
@@ -7556,13 +7730,13 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
             <div style="width:{_pct_carb_final:.1f}%;background:#FFCC00;"></div>
         </div>
         <div style="text-align:center;margin-top:6px;font-weight:800;color:#17301F;">
-            {total_kcal_final:.0f} kcal — 100%</div>
+            {total_kcal_final:.0f} {T('kcal', 'kcal')} — 100%</div>
     </div>
     """, unsafe_allow_html=True)
 
     # ---- Gráfico donut ----
     fig_donut_macro = go.Figure(data=[go.Pie(
-        labels=["❤️ Proteínas", "🥑 Grasas", "🌾 Carbohidratos"],
+        labels=[f"❤️ {T('Proteínas', 'Protein')}", f"🥑 {T('Grasas', 'Fat')}", f"🌾 {T('Carbohidratos', 'Carbohydrates')}"],
         values=[datos_final["kcal_prot"], datos_final["kcal_gras"], datos_final["kcal_carb"]],
         hole=0.62,
         marker=dict(colors=["#FF2D55", "#34C759", "#FFCC00"]),
@@ -7570,42 +7744,43 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         textfont=dict(size=13),
     )])
     fig_donut_macro.update_layout(
-        annotations=[dict(text=f"🍽<br><b>{total_kcal_final:.0f}</b><br>kcal", x=0.5, y=0.5,
+        annotations=[dict(text=f"🍽<br><b>{total_kcal_final:.0f}</b><br>{T('kcal', 'kcal')}", x=0.5, y=0.5,
                            font=dict(size=15, color="#17301F"), showarrow=False)],
         showlegend=False, height=340, margin=dict(t=20, b=20, l=20, r=20),
         paper_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig_donut_macro, use_container_width=True)
-    st.caption("El gráfico muestra de dónde vienen principalmente tus calorías diarias.")
+    st.caption(T("El gráfico muestra de dónde vienen principalmente tus calorías diarias.",
+                 "The chart shows where your daily calories mainly come from."))
 
     _html_tabla_final = f"""
     <table class="macro-final-table">
         <thead>
-        <tr><th style="text-align:left;">Macronutriente</th><th>Gramos (g)</th><th>Kcal/día</th></tr>
+        <tr><th style="text-align:left;">{T('Macronutriente', 'Macronutrient')}</th><th>{T('Gramos', 'Grams')} (g)</th><th>{T('Kcal/día', 'Kcal/day')}</th></tr>
         </thead>
         <tbody>
         <tr>
-            <td style="text-align:left;">🥩 Proteína</td>
+            <td style="text-align:left;">🥩 {T('Proteína', 'Protein')}</td>
             <td>{datos_final['gr_prot']:.1f} g</td>
-            <td>{datos_final['kcal_prot']:.0f} kcal/día</td>
+            <td>{datos_final['kcal_prot']:.0f} {T('kcal/día', 'kcal/day')}</td>
         </tr>
         <tr>
-            <td style="text-align:left;">🥑 Grasa</td>
+            <td style="text-align:left;">🥑 {T('Grasa', 'Fat')}</td>
             <td>{datos_final['gr_gras']:.1f} g</td>
-            <td>{datos_final['kcal_gras']:.0f} kcal/día</td>
+            <td>{datos_final['kcal_gras']:.0f} {T('kcal/día', 'kcal/day')}</td>
         </tr>
         <tr>
-            <td style="text-align:left;">🌾 Carbohidrato</td>
+            <td style="text-align:left;">🌾 {T('Carbohidrato', 'Carbohydrate')}</td>
             <td>{datos_final['gr_carb']:.1f} g</td>
-            <td>{datos_final['kcal_carb']:.0f} kcal/día</td>
+            <td>{datos_final['kcal_carb']:.0f} {T('kcal/día', 'kcal/day')}</td>
         </tr>
         <tr class="fila-total">
-            <td style="text-align:left;">TOTAL</td>
+            <td style="text-align:left;">{T('TOTAL', 'TOTAL')}</td>
             <td>{total_gr_final:.1f} g</td>
-            <td>{total_kcal_final:.0f} kcal/día
+            <td>{total_kcal_final:.0f} {T('kcal/día', 'kcal/day')}
                 <span style="display:inline-block;margin-left:10px;background:#FFCC00;color:#5C4700;
                     font-weight:900;font-size:0.8rem;padding:4px 12px;border-radius:999px;
-                    letter-spacing:0.02em;">→ RCD</span>
+                    letter-spacing:0.02em;">→ {T('RCD', 'DCR')}</span>
             </td>
         </tr>
         </tbody>
@@ -7614,11 +7789,11 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     st.markdown(_html_sin_lineas_vacias(_html_tabla_final), unsafe_allow_html=True)
 
     if abs(total_kcal_final - rcd_usuario) < 1:
-        st.markdown("""
+        st.markdown(f"""
         <div style="background:linear-gradient(120deg,#34C759 0%,#1E5631 100%);color:#FFFFFF;
                     border-radius:20px;padding:20px 26px;margin-top:14px;text-align:center;
                     font-weight:900;font-size:1.05rem;box-shadow:0 14px 32px rgba(52,199,89,0.35);">
-            ✅ El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).
+            ✅ {T('El total de calorías coincide exactamente con tu Requerimiento Calórico Diario (RCD).', 'The total calories match your Daily Caloric Requirement (DCR) exactly.')}
         </div>
         """, unsafe_allow_html=True)
 
@@ -7627,22 +7802,22 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # =====================================================================================
     # ¿POR QUÉ NO TODOS SE CALCULAN IGUAL? — versión corta, tipo clínica
     # =====================================================================================
-    st.markdown("#### 💡 ¿Por qué no todos se calculan igual?")
+    st.markdown(f"#### 💡 {T('¿Por qué no todos se calculan igual?', 'Why are they calculated differently?')}")
     wp1, wp2, wp3 = st.columns(3)
     with wp1:
-        st.markdown("""<div style="background:#FFEBF0;border-radius:16px;padding:14px;text-align:center;height:100%;">
-        <div style="font-size:1.3rem;">❤️</div><b style="color:#C2185B;">Proteínas</b>
-        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">Dependen de tu peso corporal.</p>
+        st.markdown(f"""<div style="background:#FFEBF0;border-radius:16px;padding:14px;text-align:center;height:100%;">
+        <div style="font-size:1.3rem;">❤️</div><b style="color:#C2185B;">{T('Proteínas', 'Protein')}</b>
+        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('Dependen de tu peso corporal.', 'They depend on your body weight.')}</p>
         </div>""", unsafe_allow_html=True)
     with wp2:
-        st.markdown("""<div style="background:#EAFAEE;border-radius:16px;padding:14px;text-align:center;height:100%;">
-        <div style="font-size:1.3rem;">🥑</div><b style="color:#1E5631;">Grasas</b>
-        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">También dependen de tu peso.</p>
+        st.markdown(f"""<div style="background:#EAFAEE;border-radius:16px;padding:14px;text-align:center;height:100%;">
+        <div style="font-size:1.3rem;">🥑</div><b style="color:#1E5631;">{T('Grasas', 'Fat')}</b>
+        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('También dependen de tu peso.', 'They also depend on your weight.')}</p>
         </div>""", unsafe_allow_html=True)
     with wp3:
-        st.markdown("""<div style="background:#FFF8E1;border-radius:16px;padding:14px;text-align:center;height:100%;">
-        <div style="font-size:1.3rem;">🌾</div><b style="color:#8A6D00;">Carbohidratos</b>
-        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">Se calculan con las calorías restantes hasta completar tu RCD.</p>
+        st.markdown(f"""<div style="background:#FFF8E1;border-radius:16px;padding:14px;text-align:center;height:100%;">
+        <div style="font-size:1.3rem;">🌾</div><b style="color:#8A6D00;">{T('Carbohidratos', 'Carbohydrates')}</b>
+        <p style="margin:6px 0 0 0;font-size:0.8rem;color:#3C3C43;">{T('Se calculan con las calorías restantes hasta completar tu RCD.', 'They are calculated from the remaining calories needed to complete your DCR.')}</p>
         </div>""", unsafe_allow_html=True)
 
     st.write("")
@@ -7651,57 +7826,84 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
     # ¿SABÍAS QUE? — curiosidades rotativas
     # =====================================================================================
     _curiosidades_macro = [
-        ("📚", "El cuerpo puede almacenar muy poca proteína. Por eso necesita consumirla regularmente."),
-        ("🧠", "El cerebro utiliza principalmente glucosa como fuente de energía."),
-        ("🥑", "Las grasas aportan más del doble de energía por gramo que proteínas y carbohidratos."),
+        ("📚", T("El cuerpo puede almacenar muy poca proteína. Por eso necesita consumirla regularmente.",
+                 "The body can store very little protein. That's why it needs to be consumed regularly.")),
+        ("🧠", T("El cerebro utiliza principalmente glucosa como fuente de energía.",
+                 "The brain mainly uses glucose as its energy source.")),
+        ("🥑", T("Las grasas aportan más del doble de energía por gramo que proteínas y carbohidratos.",
+                 "Fat provides more than double the energy per gram compared to protein and carbohydrates.")),
     ]
     _idx_curio = int(datetime.now().timestamp() // 8) % len(_curiosidades_macro)
     _ic_curio, _txt_curio = _curiosidades_macro[_idx_curio]
     st.markdown(f"""
     <div style="background:#F5F5F7;border-radius:16px;padding:14px 18px;display:flex;gap:12px;align-items:center;">
         <div style="font-size:1.4rem;">{_ic_curio}</div>
-        <div style="font-size:0.84rem;color:#3C3C43;"><b>¿Sabías que?</b> {_txt_curio}</div>
+        <div style="font-size:0.84rem;color:#3C3C43;"><b>{T('¿Sabías que?', 'Did you know?')}</b> {_txt_curio}</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
 
-    caja_util("Las proteínas y grasas se calculan según tu peso corporal (gramos por kilo), porque son "
-              "nutrientes estructurales que dependen de tu masa, no de cuánta energía gastas. Los "
-              "carbohidratos, en cambio, son la variable de ajuste: llenan el resto de tu energía diaria "
-              "hasta llegar exactamente a tu RCD. 🍽️",
-              emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
+    caja_util(T(
+        "Las proteínas y grasas se calculan según tu peso corporal (gramos por kilo), porque son "
+        "nutrientes estructurales que dependen de tu masa, no de cuánta energía gastas. Los "
+        "carbohidratos, en cambio, son la variable de ajuste: llenan el resto de tu energía diaria "
+        "hasta llegar exactamente a tu RCD. 🍽️",
+        "Protein and fat are calculated based on your body weight (grams per kilogram), because they "
+        "are structural nutrients that depend on your mass, not on how much energy you burn. "
+        "Carbohydrates, on the other hand, are the adjustment variable: they fill in the rest of your "
+        "daily energy until they exactly reach your DCR. 🍽️"
+    ), emoji="🍽️", color="#FFFDE7", borde="#FBC02D")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "7.-PORCIONES":
-    hoja_header(7, "Tu Requerimiento Calórico Diario se reparte en 5 momentos del día usando porcentajes "
-                   "preestablecidos, para mantener tu metabolismo activo y evitar la ansiedad.")
+    hoja_header(7, T(
+        "Tu Requerimiento Calórico Diario se reparte en 5 momentos del día usando porcentajes "
+        "preestablecidos, para mantener tu metabolismo activo y evitar la ansiedad.",
+        "Your Daily Caloric Requirement is distributed across 5 times of the day using preset "
+        "percentages, to keep your metabolism active and prevent anxiety."
+    ))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "Energía(comida) = RCD × % preestablecido (Desayuno 25% · Merienda 5% · Almuerzo 40% · "
         "Merienda 5% · Cena 25%)",
-        referencia="Distribución calórica por comidas")}</div>""", unsafe_allow_html=True)
+        referencia=T("Distribución calórica por comidas", "Caloric distribution by meal"))}</div>""", unsafe_allow_html=True)
 
     # =====================================================================================
     # RCD del usuario (ya calculado y ajustado a su objetivo en la Hoja 5)
     # =====================================================================================
     _rcd_comidas = rcd_final
 
+    # ---- Traducción de nombres de comidas (claves internas se mantienen en español) ----
+    _COMIDA_EN = {
+        "Desayuno": "Breakfast", "Merienda 1": "Morning Snack", "Almuerzo": "Lunch",
+        "Merienda 2": "Afternoon Snack", "Cena": "Dinner",
+    }
+
+    def _comida_nombre(nombre):
+        return T(nombre, _COMIDA_EN[nombre])
+
     _html_rcd_hero = f"""
     <div class="rcd-hero-card">
         <div class="rcd-hero-decor d1">🔥</div>
         <div class="rcd-hero-decor d2">🍎</div>
-        <div class="rcd-label">⚡ Tu Requerimiento Calórico Diario</div>
-        <div class="rcd-value">🎯 {_rcd_comidas:.2f} <span style="font-size:1.3rem;font-weight:700;">kcal</span></div>
-        <div class="rcd-sub">Para mantener tu metabolismo activo y evitar la ansiedad, hemos distribuido tus
-        calorías totales a lo largo del día. Cada comida representa un porcentaje ideal de tu RCD. Los
-        valores que ves en la tabla resultan de multiplicar tu RCD total por el porcentaje correspondiente
-        a cada comida.</div>
+        <div class="rcd-label">⚡ {T('Tu Requerimiento Calórico Diario', 'Your Daily Caloric Requirement')}</div>
+        <div class="rcd-value">🎯 {_rcd_comidas:.2f} <span style="font-size:1.3rem;font-weight:700;">{T('kcal', 'kcal')}</span></div>
+        <div class="rcd-sub">{T(
+            "Para mantener tu metabolismo activo y evitar la ansiedad, hemos distribuido tus "
+            "calorías totales a lo largo del día. Cada comida representa un porcentaje ideal de tu "
+            "RCD. Los valores que ves en la tabla resultan de multiplicar tu RCD total por el "
+            "porcentaje correspondiente a cada comida.",
+            "To keep your metabolism active and prevent anxiety, we've distributed your total "
+            "calories throughout the day. Each meal represents an ideal percentage of your DCR. "
+            "The values you see in the table come from multiplying your total DCR by the "
+            "percentage assigned to each meal."
+        )}</div>
         <div class="rcd-hero-badges">
-            <span class="rcd-hero-badge">🌅 Desayuno 25%</span>
-            <span class="rcd-hero-badge">🍎 Merienda 1 · 5%</span>
-            <span class="rcd-hero-badge">🍽️ Almuerzo 40%</span>
-            <span class="rcd-hero-badge">🥪 Merienda 2 · 5%</span>
-            <span class="rcd-hero-badge">🌙 Cena 25%</span>
+            <span class="rcd-hero-badge">🌅 {_comida_nombre('Desayuno')} 25%</span>
+            <span class="rcd-hero-badge">🍎 {_comida_nombre('Merienda 1')} · 5%</span>
+            <span class="rcd-hero-badge">🍽️ {_comida_nombre('Almuerzo')} 40%</span>
+            <span class="rcd-hero-badge">🥪 {_comida_nombre('Merienda 2')} · 5%</span>
+            <span class="rcd-hero-badge">🌙 {_comida_nombre('Cena')} 25%</span>
         </div>
     </div>
     """
@@ -7724,23 +7926,23 @@ elif hoja_activa == "7.-PORCIONES":
         _suma_kcal_comidas += _kcal_comida
         _filas_comidas_html += f"""
         <tr>
-            <td class="comida-nombre">{_ICONOS_COMIDA[_comida]} {_comida}</td>
+            <td class="comida-nombre">{_ICONOS_COMIDA[_comida]} {_comida_nombre(_comida)}</td>
             <td>{_pct*100:.0f}%</td>
-            <td>{_kcal_comida:.2f} kcal</td>
+            <td>{_kcal_comida:.2f} {T('kcal', 'kcal')}</td>
         </tr>"""
 
     _filas_comidas_html += f"""
         <tr class="fila-total-comidas">
-            <td class="comida-nombre" style="color:#FFFFFF;">🔥 RCD (Total Distribuido)</td>
+            <td class="comida-nombre" style="color:#FFFFFF;">🔥 {T('RCD (Total Distribuido)', 'DCR (Total Distributed)')}</td>
             <td>100%</td>
-            <td>{_suma_kcal_comidas:.2f} kcal</td>
+            <td>{_suma_kcal_comidas:.2f} {T('kcal', 'kcal')}</td>
         </tr>"""
 
     _html_tabla_comidas = f"""
     <div class="comidas-table-wrap">
     <table class="comidas-table">
         <thead>
-        <tr><th style="text-align:left;">Comida</th><th>Porcentaje (%)</th><th>Energía (kcal)</th></tr>
+        <tr><th style="text-align:left;">{T('Comida', 'Meal')}</th><th>{T('Porcentaje', 'Percentage')} (%)</th><th>{T('Energía', 'Energy')} ({T('kcal', 'kcal')})</th></tr>
         </thead>
         <tbody>
         {_filas_comidas_html}
@@ -7757,83 +7959,124 @@ elif hoja_activa == "7.-PORCIONES":
     _diferencia_validacion = abs(_suma_kcal_comidas - _rcd_comidas)
     _coincide = _diferencia_validacion < 0.5
     _fila_estado_clase = "val-row-estado-ok" if _coincide else "val-row-estado-bad"
-    _estado_txt = "✅ Coinciden" if _coincide else "❌ No coinciden"
+    _estado_txt = T("✅ Coinciden", "✅ Match") if _coincide else T("❌ No coinciden", "❌ Don't match")
 
     _html_val_card = f"""
     <div class="val-card">
-        <div class="val-card-title">🔍 Comparación: RCD Calculado vs. Total Distribuido</div>
+        <div class="val-card-title">🔍 {T('Comparación: RCD Calculado vs. Total Distribuido', 'Comparison: Calculated DCR vs. Total Distributed')}</div>
         <table class="val-comparacion-table">
-            <tr><td>RCD Calculado</td><td>{_rcd_comidas:.2f} kcal</td></tr>
-            <tr><td>Total Distribuido</td><td>{_suma_kcal_comidas:.2f} kcal</td></tr>
-            <tr><td>Diferencia</td><td>{_diferencia_validacion:.2f} kcal</td></tr>
-            <tr class="{_fila_estado_clase}"><td>Estado</td><td>{_estado_txt}</td></tr>
+            <tr><td>{T('RCD Calculado', 'Calculated DCR')}</td><td>{_rcd_comidas:.2f} {T('kcal', 'kcal')}</td></tr>
+            <tr><td>{T('Total Distribuido', 'Total Distributed')}</td><td>{_suma_kcal_comidas:.2f} {T('kcal', 'kcal')}</td></tr>
+            <tr><td>{T('Diferencia', 'Difference')}</td><td>{_diferencia_validacion:.2f} {T('kcal', 'kcal')}</td></tr>
+            <tr class="{_fila_estado_clase}"><td>{T('Estado', 'Status')}</td><td>{_estado_txt}</td></tr>
         </table>
-        <div class="val-card-title" style="margin-top:4px;">📋 Estado de Validación</div>
+        <div class="val-card-title" style="margin-top:4px;">📋 {T('Estado de Validación', 'Validation Status')}</div>
         <div class="val-checklist">
-<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> RCD Calculado ............. {_rcd_comidas:.2f} kcal
-<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> Total Distribuido ......... {_suma_kcal_comidas:.2f} kcal
-<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> Diferencia ................ {_diferencia_validacion:.2f} kcal
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('RCD Calculado', 'Calculated DCR')} ............. {_rcd_comidas:.2f} {T('kcal', 'kcal')}
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('Total Distribuido', 'Total Distributed')} ......... {_suma_kcal_comidas:.2f} {T('kcal', 'kcal')}
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('Diferencia', 'Difference')} ................ {_diferencia_validacion:.2f} {T('kcal', 'kcal')}
         </div>
     </div>
     """
     st.markdown(_html_sin_lineas_vacias(_html_val_card), unsafe_allow_html=True)
 
     if _coincide:
-        st.markdown("""
+        st.markdown(f"""
         <div class="val-banner-ok">
             <span class="val-banner-icon">🟢</span>
-            <div class="val-banner-title">✔ Planificación Energética Correcta</div>
-            <div class="val-banner-sub">Las calorías distribuidas en tus 5 comidas coinciden exactamente
-            con tu Requerimiento Calórico Diario. ✨ ¡Matemática exacta! Tu día está planificado al 100%.</div>
+            <div class="val-banner-title">✔ {T('Planificación Energética Correcta', 'Energy Distribution Successfully Validated')}</div>
+            <div class="val-banner-sub">{T(
+                "Las calorías distribuidas en tus 5 comidas coinciden exactamente con tu "
+                "Requerimiento Calórico Diario. ✨ ¡Matemática exacta! Tu día está planificado al 100%.",
+                "The calories distributed across your 5 meals match your Daily Caloric Requirement "
+                "exactly. ✨ Precise math! Your day is 100% planned."
+            )}</div>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
         <div class="val-banner-error">
             <span class="val-banner-icon">🔴</span>
-            <div class="val-banner-title">⚠ Existe una diferencia de {_diferencia_validacion:.2f} kcal
-            entre el RCD y la distribución diaria.</div>
-            <div class="val-banner-sub">Revise la planificación.</div>
+            <div class="val-banner-title">⚠ {T(
+                f'Existe una diferencia de {_diferencia_validacion:.2f} kcal entre el RCD y la distribución diaria.',
+                f'There is a difference of {_diferencia_validacion:.2f} kcal between the DCR and the daily distribution.'
+            )}</div>
+            <div class="val-banner-sub">{T('Revise la planificación.', 'Please review the plan.')}</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.divider()
-    st.markdown("#### ❓ Preguntas frecuentes sobre los momentos de comida")
-    FAQ_PORCIONES = {
-        "¿Por qué es importante el desayuno?": (
+    st.markdown(f"#### ❓ {T('Preguntas frecuentes sobre los momentos de comida', 'Frequently Asked Questions About Meal Timing')}")
+    # Pares (pregunta_es, pregunta_en, respuesta_es, respuesta_en) para mantener el orden y
+    # facilitar la traducción completa de preguntas y respuestas del FAQ.
+    FAQ_PORCIONES = [
+        (
+            "¿Por qué es importante el desayuno?",
+            "Why is breakfast important?",
             "El desayuno rompe el ayuno de la noche y le da a tu cerebro la glucosa que necesita para "
             "concentrarte desde temprano. Saltarlo se asocia con menor rendimiento escolar y más antojos de "
-            "azúcar durante el día. Por eso se le asigna un 25% de tus calorías diarias."
+            "azúcar durante el día. Por eso se le asigna un 25% de tus calorías diarias.",
+            "Breakfast breaks the overnight fast and gives your brain the glucose it needs to "
+            "concentrate from early on. Skipping it is linked to lower school performance and more "
+            "sugar cravings during the day. That's why it's assigned 25% of your daily calories.",
         ),
-        "¿Por qué es importante la merienda?": (
+        (
+            "¿Por qué es importante la merienda?",
+            "Why are snacks important?",
             "Las meriendas (5% cada una) evitan que llegues con demasiada hambre al almuerzo o la cena, lo "
             "que ayuda a que no comas de más de una sola vez. También mantienen estables tus niveles de "
-            "energía y glucosa entre comidas principales."
+            "energía y glucosa entre comidas principales.",
+            "Snacks (5% each) keep you from arriving too hungry at lunch or dinner, which helps you "
+            "avoid overeating in one sitting. They also keep your energy and glucose levels stable "
+            "between main meals.",
         ),
-        "¿Por qué es importante el almuerzo?": (
+        (
+            "¿Por qué es importante el almuerzo?",
+            "Why is lunch important?",
             "El almuerzo es la comida más grande del día (40%) porque coincide con el momento de mayor "
             "actividad física y mental. Aporta la mayor parte de tu energía, proteínas y nutrientes para "
-            "sostenerte durante la tarde."
+            "sostenerte durante la tarde.",
+            "Lunch is the largest meal of the day (40%) because it coincides with your peak physical "
+            "and mental activity. It provides most of your energy, protein, and nutrients to sustain "
+            "you through the afternoon.",
         ),
-        "¿Por qué es importante la cena?": (
+        (
+            "¿Por qué es importante la cena?",
+            "Why is dinner important?",
             "La cena (25%) repone lo gastado durante el día sin sobrecargar tu digestión antes de dormir. "
             "Una cena balanceada favorece un mejor descanso, y un mejor descanso reduce la ansiedad por "
-            "comer dulce al día siguiente."
+            "comer dulce al día siguiente.",
+            "Dinner (25%) replenishes what was spent during the day without overloading your digestion "
+            "before bed. A balanced dinner promotes better rest, and better rest reduces next-day "
+            "cravings for sweets.",
         ),
-    }
-    pregunta_faq = st.selectbox("Elige una pregunta:", list(FAQ_PORCIONES.keys()), key="faq_porciones")
-    st.info(FAQ_PORCIONES[pregunta_faq])
+    ]
+    _es_ingles = st.session_state.get("idioma", "Español") == "English"
+    _preguntas_mostradas = [(fen if _es_ingles else fes) for fes, fen, _, _ in FAQ_PORCIONES]
+    _idx_pregunta = st.selectbox(T("Elige una pregunta:", "Choose a question:"), range(len(_preguntas_mostradas)),
+                                  format_func=lambda i: _preguntas_mostradas[i], key="faq_porciones")
+    _respuesta_mostrada = FAQ_PORCIONES[_idx_pregunta][3] if _es_ingles else FAQ_PORCIONES[_idx_pregunta][2]
+    st.info(_respuesta_mostrada)
 
-    caja_util("Comer todas tus calorías de una sola vez sería imposible (¡y poco saludable!). Esta hoja te dice "
-              "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
-              "llegues a tu meta sin pasar hambre ni excederte. ⏰🍴",
-              emoji="🍽️", color="#E0F7FA", borde="#00ACC1")
+    caja_util(T(
+        "Comer todas tus calorías de una sola vez sería imposible (¡y poco saludable!). Esta hoja te dice "
+        "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
+        "llegues a tu meta sin pasar hambre ni excederte. ⏰🍴",
+        "Eating all your calories at once would be impossible (and unhealthy!). This page tells you "
+        "how much you can eat at each time of day: breakfast, snacks, lunch, and dinner, so you reach "
+        "your goal without going hungry or overeating. ⏰🍴"
+    ), emoji="🍽️", color="#E0F7FA", borde="#00ACC1")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "8.-FATSECRET":
-    hoja_header(8, subtitulo="Descubre la composición nutricional de los alimentos más consumidos en el Perú "
-                             "utilizando información oficial del INS/CENAN. Busca un alimento y conoce su "
-                             "aporte de energía y nutrientes de forma clara y sencilla.")
+    hoja_header(8, subtitulo=T(
+        "Descubre la composición nutricional de los alimentos más consumidos en el Perú "
+        "utilizando información oficial del INS/CENAN. Busca un alimento y conoce su "
+        "aporte de energía y nutrientes de forma clara y sencilla.",
+        "Discover the nutritional composition of the most commonly eaten foods in Peru "
+        "using official INS/CENAN data. Search for a food and learn about its energy and "
+        "nutrient content in a clear and simple way."
+    ))
 
     st.markdown("""
     <style>
@@ -7860,81 +8103,100 @@ elif hoja_activa == "8.-FATSECRET":
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("#### 🌐 Buscador FatSecret (externo)")
-    consulta_fs = st.text_input("Escribe el nombre de un alimento para buscarlo en FatSecret:",
+    st.markdown(f"#### 🌐 {T('Buscador FatSecret (externo)', 'FatSecret Search (external)')}")
+    consulta_fs = st.text_input(T("Escribe el nombre de un alimento para buscarlo en FatSecret:",
+                                   "Type the name of a food to search it on FatSecret:"),
                                  "", key="bpa_buscar_fatsecret")
     if consulta_fs.strip():
         url_fs = f"https://www.fatsecret.es/calor%C3%ADas-nutrici%C3%B3n/search?q={quote(consulta_fs.strip())}"
-        st.link_button(f"🔍 Ver '{consulta_fs}' en FatSecret", url_fs, use_container_width=True)
+        _label_fs = T(f"Ver '{consulta_fs}' en FatSecret", f"View '{consulta_fs}' on FatSecret")
+        st.link_button(f"🔍 {_label_fs}", url_fs, use_container_width=True)
     else:
-        st.link_button("🌐 Abrir FatSecret", "https://www.fatsecret.es/", use_container_width=True)
-    st.markdown("""
+        st.link_button(T("🌐 Abrir FatSecret", "🌐 Open FatSecret"), "https://www.fatsecret.es/", use_container_width=True)
+    st.markdown(f"""
     <div style="background:#E6F7FA;border-left:5px solid #30B0C7;border-radius:16px;padding:14px 18px;margin:14px 0;">
-    <b style="color:#0B7285;">🌐 ¿Por qué usamos FatSecret?</b><br>
-    <span style="color:#1C1C1E;font-size:0.9rem;">Es una base de datos externa y muy amplia, con miles de alimentos,
-    marcas y productos envasados peruanos e internacionales. La usamos como <b>respaldo rápido</b> cuando buscas un
-    producto comercial específico o algo que no forma parte de nuestra Base Peruana de Alimentos.</span>
+    <b style="color:#0B7285;">🌐 {T('¿Por qué usamos FatSecret?', 'Why do we use FatSecret?')}</b><br>
+    <span style="color:#1C1C1E;font-size:0.9rem;">{T(
+        "Es una base de datos externa y muy amplia, con miles de alimentos, marcas y productos "
+        "envasados peruanos e internacionales. La usamos como <b>respaldo rápido</b> cuando buscas "
+        "un producto comercial específico o algo que no forma parte de nuestra Base Peruana de "
+        "Alimentos.",
+        "It is a very large external database, with thousands of foods, brands, and packaged "
+        "products, both Peruvian and international. We use it as a <b>quick backup</b> when you "
+        "search for a specific commercial product or something that isn't part of our Peruvian "
+        "Food Database."
+    )}</span>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("#### 🔎 Buscador Nutricional · Tabla Peruana de Composición de Alimentos")
-    consulta = st.text_input("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
+    st.markdown(f"#### 🔎 {T('Buscador Nutricional · Tabla Peruana de Composición de Alimentos', 'Nutritional Search · Peruvian Food Composition Table')}")
+    consulta = st.text_input(T("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
+                                "Type the name of a food (e.g. 'palta', 'pollo', 'arroz'):"),
                               "", key="bpa_buscar")
 
     resultados = buscar_alimentos(consulta) if consulta.strip() else []
 
     alimento_sel = None
     if consulta.strip() and resultados:
-        opciones = [f"{r['nombre']} · {GRUPOS_ALIMENTOS[r['grupo_cod']]['icono']} {GRUPOS_ALIMENTOS[r['grupo_cod']]['nombre']}" for r in resultados]
-        idx_sel = st.selectbox("Coincidencias encontradas:", range(len(opciones)),
+        opciones = [f"{_nombre_alimento(r['nombre'])} · {GRUPOS_ALIMENTOS[r['grupo_cod']]['icono']} {_grupo_campo(r['grupo_cod'], 'nombre')}" for r in resultados]
+        idx_sel = st.selectbox(T("Coincidencias encontradas:", "Matches found:"), range(len(opciones)),
                                 format_func=lambda i: opciones[i], key="bpa_sel")
         alimento_sel = resultados[idx_sel]
     elif consulta.strip() and not resultados:
-        st.warning(f"No encontramos '{consulta}' en la Base Peruana de Alimentos (343 alimentos curados de mayor "
-                   "consumo). Puedes buscarlo en el buscador de FatSecret de arriba como respaldo.")
+        st.warning(T(
+            f"No encontramos '{consulta}' en la Base Peruana de Alimentos (343 alimentos curados de mayor "
+            "consumo). Puedes buscarlo en el buscador de FatSecret de arriba como respaldo.",
+            f"We couldn't find '{consulta}' in the Peruvian Food Database (343 curated foods of "
+            "highest consumption). You can search for it in the FatSecret search above as a backup."
+        ))
 
     if alimento_sel:
         f = alimento_sel
-        g = GRUPOS_ALIMENTOS[f["grupo_cod"]]
+        g_nombre = _grupo_campo(f["grupo_cod"], "nombre")
+        g_icono = GRUPOS_ALIMENTOS[f["grupo_cod"]]["icono"]
+        g_aporta = _grupo_campo(f["grupo_cod"], "aporta")
+        g_tips = _grupo_campo(f["grupo_cod"], "tips")
+        nombre_mostrado = _nombre_alimento(f["nombre"])
 
         def _m(v, suf=""):
-            return f"{v:g}{suf}" if v is not None else "s/d"
+            return f"{v:g}{suf}" if v is not None else T("s/d", "n/a")
 
         kcal, prot, gras, cho, fibra = f["kcal"], f["proteinas"], f["grasas"], f["cho"], f["fibra"]
-        partes = [("Grasas", gras, "#FF9500"), ("Carbohidratos", cho, "#30B0C7"), ("Proteínas", prot, "#34C759")]
-        total_e = sum((p[1] or 0) * (9 if p[0] == "Grasas" else 4) for p in partes)
+        _lbl_gras, _lbl_carb, _lbl_prot = T("Grasas", "Fat"), T("Carbohidratos", "Carbohydrates"), T("Proteínas", "Protein")
+        partes = [(_lbl_gras, gras, "#FF9500"), (_lbl_carb, cho, "#30B0C7"), (_lbl_prot, prot, "#34C759")]
+        total_e = sum((p[1] or 0) * (9 if p[0] == _lbl_gras else 4) for p in partes)
         barras = ""
         etiquetas = []
         if total_e > 0:
             for nombre_p, val, color in partes:
-                pct = round(((val or 0) * (9 if nombre_p == "Grasas" else 4) / total_e) * 100)
+                pct = round(((val or 0) * (9 if nombre_p == _lbl_gras else 4) / total_e) * 100)
                 if pct > 0:
                     barras += f'<div style="width:{pct}%;background:{color};"></div>'
                     etiquetas.append(f"{nombre_p} {pct}%")
 
         st.markdown(f"""
         <div class="bpa-card">
-            <h3>{g['icono']} {f['nombre']}</h3>
-            <div class="bpa-sub">{g['nombre']} · código {f['codigo']}</div>
-            <div class="bpa-sub" style="margin-top:-10px;">Resumen nutricional · por 100 g de porción comestible</div>
+            <h3>{g_icono} {nombre_mostrado}</h3>
+            <div class="bpa-sub">{g_nombre} · {T('código', 'code')} {f['codigo']}</div>
+            <div class="bpa-sub" style="margin-top:-10px;">{T('Resumen nutricional · por 100 g de porción comestible', 'Nutritional summary · per 100 g of edible portion')}</div>
             <div class="bpa-grid">
-                <div class="bpa-metric"><div class="lbl">🔥 Energía</div><div class="val">{_m(kcal,' kcal')}</div></div>
-                <div class="bpa-metric"><div class="lbl">💪 Proteínas</div><div class="val">{_m(prot,' g')}</div></div>
-                <div class="bpa-metric"><div class="lbl">🥑 Grasas</div><div class="val">{_m(gras,' g')}</div></div>
-                <div class="bpa-metric"><div class="lbl">🍞 Carbohidratos</div><div class="val">{_m(cho,' g')}</div></div>
-                <div class="bpa-metric"><div class="lbl">🌾 Fibra</div><div class="val">{_m(fibra,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🔥 {T('Energía', 'Energy')}</div><div class="val">{_m(kcal,' kcal')}</div></div>
+                <div class="bpa-metric"><div class="lbl">💪 {T('Proteínas', 'Protein')}</div><div class="val">{_m(prot,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🥑 {T('Grasas', 'Fat')}</div><div class="val">{_m(gras,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🍞 {T('Carbohidratos', 'Carbohydrates')}</div><div class="val">{_m(cho,' g')}</div></div>
+                <div class="bpa-metric"><div class="lbl">🌾 {T('Fibra', 'Fiber')}</div><div class="val">{_m(fibra,' g')}</div></div>
             </div>
-            {"<div class='bpa-bar-wrap'><div style='font-size:0.78rem;color:#9DA3AE;margin-bottom:6px;'>Distribución energética</div><div class='bpa-bar'>" + barras + "</div><div class='bpa-bar-label'>" + " · ".join(etiquetas) + "</div></div>" if barras else ""}
-            <div class="bpa-source">📚 Según la Tabla Peruana de Composición de Alimentos (INS/CENAN, 11.ª edición digital, 2025). Valores por 100 g de porción comestible.</div>
-            <div style="font-weight:700;color:#F2F2F7;margin-bottom:4px;">¿Qué aporta principalmente?</div>
-            <div class="bpa-tips">{g['icono']} {g['aporta']}</div>
-            <div style="font-weight:700;color:#F2F2F7;margin:12px 0 4px 0;">Recomendaciones</div>
-            {''.join(f'<div class="bpa-tips">✔ {t}</div>' for t in g['tips'])}
+            {"<div class='bpa-bar-wrap'><div style='font-size:0.78rem;color:#9DA3AE;margin-bottom:6px;'>" + T('Distribución energética', 'Energy distribution') + "</div><div class='bpa-bar'>" + barras + "</div><div class='bpa-bar-label'>" + " · ".join(etiquetas) + "</div></div>" if barras else ""}
+            <div class="bpa-source">📚 {T('Según la Tabla Peruana de Composición de Alimentos (INS/CENAN, 11.ª edición digital, 2025). Valores por 100 g de porción comestible.', 'According to the Peruvian Food Composition Table (INS/CENAN, 11th digital edition, 2025). Values per 100 g of edible portion.')}</div>
+            <div style="font-weight:700;color:#F2F2F7;margin-bottom:4px;">{T('¿Qué aporta principalmente?', 'What does it mainly provide?')}</div>
+            <div class="bpa-tips">{g_icono} {g_aporta}</div>
+            <div style="font-weight:700;color:#F2F2F7;margin:12px 0 4px 0;">{T('Recomendaciones', 'Recommendations')}</div>
+            {''.join(f'<div class="bpa-tips">✔ {t}</div>' for t in g_tips)}
             <div>
-                <span class="bpa-chip">🍽️ Macronutrientes</span>
-                <span class="bpa-chip">📋 Dieta</span>
-                <span class="bpa-chip">⚖️ Control de peso</span>
+                <span class="bpa-chip">🍽️ {T('Macronutrientes', 'Macronutrients')}</span>
+                <span class="bpa-chip">📋 {T('Dieta', 'Diet')}</span>
+                <span class="bpa-chip">⚖️ {T('Control de peso', 'Weight Control')}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -7942,14 +8204,14 @@ elif hoja_activa == "8.-FATSECRET":
         if f["calcio"] is not None or f["hierro"] is not None or f["vitc"] is not None:
             st.markdown(
                 f"<div style='color:#5C6B60;font-size:0.85rem;margin-top:-8px;'>"
-                f"Además, cada 100 g aportan: "
-                f"{'🦴 Calcio ' + _m(f['calcio'],' mg') + '  ' if f['calcio'] is not None else ''}"
-                f"{'🩸 Hierro ' + _m(f['hierro'],' mg') + '  ' if f['hierro'] is not None else ''}"
-                f"{'🍊 Vitamina C ' + _m(f['vitc'],' mg') if f['vitc'] is not None else ''}"
+                f"{T('Además, cada 100 g aportan:', 'Additionally, each 100 g provides:')} "
+                f"{'🦴 ' + T('Calcio', 'Calcium') + ' ' + _m(f['calcio'],' mg') + '  ' if f['calcio'] is not None else ''}"
+                f"{'🩸 ' + T('Hierro', 'Iron') + ' ' + _m(f['hierro'],' mg') + '  ' if f['hierro'] is not None else ''}"
+                f"{'🍊 ' + T('Vitamina C', 'Vitamin C') + ' ' + _m(f['vitc'],' mg') if f['vitc'] is not None else ''}"
                 f"</div>", unsafe_allow_html=True)
 
     elif not consulta.strip():
-        with st.expander("🗂️ Ver los 14 grupos de alimentos disponibles"):
+        with st.expander(T("🗂️ Ver los 14 grupos de alimentos disponibles", "🗂️ View the 14 Available Food Groups")):
             cols_g = st.columns(4)
             for i, (cod, g) in enumerate(GRUPOS_ALIMENTOS.items()):
                 n_items = sum(1 for x in FOOD_DB if x["grupo_cod"] == cod)
@@ -7958,24 +8220,32 @@ elif hoja_activa == "8.-FATSECRET":
                     st.markdown(f"""
                     <div style="background:{cf};border-left:4px solid {cb};border-radius:12px;
                         padding:10px 12px;margin-bottom:10px;">
-                        <div style="font-weight:800;color:{cb};font-size:0.88rem;">{g['icono']} {g['nombre']}</div>
-                        <div style="color:#5C6B60;font-size:0.78rem;">{n_items} alimentos</div>
+                        <div style="font-weight:800;color:{cb};font-size:0.88rem;">{g['icono']} {_grupo_campo(cod, 'nombre')}</div>
+                        <div style="color:#5C6B60;font-size:0.78rem;">{n_items} {T('alimentos', 'foods')}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#EAFAEE;border-left:5px solid #34C759;border-radius:16px;padding:14px 18px;margin:14px 0;">
-    <b style="color:#1E5631;">🇵🇪 ¿Por qué usamos la Tabla Peruana de Composición de Alimentos?</b><br>
-    <span style="color:#1C1C1E;font-size:0.9rem;">Es la fuente <b>oficial y nacional</b> (INS/CENAN), elaborada
-    con alimentos y preparaciones típicas del Perú. Sus valores son más precisos para nuestra población que una
-    base genérica, por eso es la base principal del buscador, y FatSecret queda como respaldo complementario.</span>
+    <b style="color:#1E5631;">🇵🇪 {T('¿Por qué usamos la Tabla Peruana de Composición de Alimentos?', 'Why do we use the Peruvian Food Composition Table?')}</b><br>
+    <span style="color:#1C1C1E;font-size:0.9rem;">{T(
+        "Es la fuente <b>oficial y nacional</b> (INS/CENAN), elaborada con alimentos y "
+        "preparaciones típicas del Perú. Sus valores son más precisos para nuestra población que "
+        "una base genérica, por eso es la base principal del buscador, y FatSecret queda como "
+        "respaldo complementario.",
+        "It is the <b>official, national source</b> (INS/CENAN), built from foods and "
+        "preparations typical of Peru. Its values are more accurate for our population than a "
+        "generic database, which is why it's the main source for the search tool, with FatSecret "
+        "as a complementary backup."
+    )}</span>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### 🍽️ Guía Alimentaria Peruana")
+    st.markdown(f"### 🍽️ {T('Guía Alimentaria Peruana', 'Peruvian Dietary Guidelines')}")
+    _guias = GUIAS_ALIMENTARIAS_PERU_EN if st.session_state.get("idioma", "Español") == "English" else GUIAS_ALIMENTARIAS_PERU
     cols_guia = st.columns(3)
-    for i, (icono, titulo, desc) in enumerate(GUIAS_ALIMENTARIAS_PERU):
+    for i, (icono, titulo, desc) in enumerate(_guias):
         with cols_guia[i % 3]:
             st.markdown(f"""
             <div class="bpa-guide-card">
@@ -7985,24 +8255,32 @@ elif hoja_activa == "8.-FATSECRET":
             </div>
             """, unsafe_allow_html=True)
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-    st.caption("Basado en las Guías Alimentarias para la Población Peruana (MINSA).")
+    st.caption(T("Basado en las Guías Alimentarias para la Población Peruana (MINSA).",
+                 "Based on the Dietary Guidelines for the Peruvian Population (MINSA)."))
 
-    st.markdown("### 🗂️ Alimentos disponibles en el buscador")
-    st.caption("343 alimentos curados de mayor consumo en el Perú, agrupados por categoría, con su energía "
-               "(kcal) por 100 g de porción comestible. Cada grupo tiene su propio color para ubicarlo más fácil.")
+    st.markdown(f"### 🗂️ {T('Alimentos disponibles en el buscador', 'Available Foods in the Database')}")
+    st.caption(T(
+        "343 alimentos curados de mayor consumo en el Perú, agrupados por categoría, con su "
+        "energía (kcal) por 100 g de porción comestible. Cada grupo tiene su propio color para "
+        "ubicarlo más fácil.",
+        "343 curated foods of highest consumption in Peru, grouped by category, with their "
+        "energy (kcal) per 100 g of edible portion. Each group has its own color to make it "
+        "easier to locate."
+    ))
     orden_grupos = sorted(GRUPOS_ALIMENTOS.items(), key=lambda kv: -sum(1 for x in FOOD_DB if x["grupo_cod"] == kv[0]))
     for cod, g in orden_grupos:
+        g_nombre = _grupo_campo(cod, "nombre")
         items_g = sorted([x for x in FOOD_DB if x["grupo_cod"] == cod], key=lambda x: x["nombre"])
         color_borde, color_fondo = GRUPOS_COLORES.get(cod, ("#8E8E93", "#F2F2F7"))
 
         filas_html = ""
         vistos = set()
         for it in items_g:
-            nombre_limpio = _limpiar_nombre_alimento(it["nombre"])
+            nombre_limpio = _nombre_alimento(_limpiar_nombre_alimento(it["nombre"]))
             if not nombre_limpio or nombre_limpio.lower() in vistos:
                 continue
             vistos.add(nombre_limpio.lower())
-            kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else "s/d"
+            kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else T("s/d", "n/a")
             filas_html += (
                 f"<tr><td style='padding:9px 16px;border-bottom:1px solid {color_fondo};color:#1C1C1E;font-size:0.86rem;'>"
                 f"{nombre_limpio}</td>"
@@ -8010,24 +8288,24 @@ elif hoja_activa == "8.-FATSECRET":
                 f"font-weight:700;color:{color_borde};white-space:nowrap;font-size:0.86rem;'>{kcal_txt}</td></tr>"
             )
 
-        with st.expander(f"{g['icono']} {g['nombre']} · {len(items_g)} alimentos"):
+        with st.expander(f"{g['icono']} {g_nombre} · {len(items_g)} {T('alimentos', 'foods')}"):
             st.markdown(f"""
             <div style="border-radius:18px;overflow:hidden;border:1px solid {color_fondo};
                 box-shadow:0 1px 2px rgba(0,0,0,0.06),0 6px 18px rgba(0,0,0,0.06);">
               <div style="background:{color_borde};color:#FFFFFF;padding:12px 18px;font-weight:800;
                   font-size:0.95rem;display:flex;justify-content:space-between;align-items:center;">
-                <span>{g['icono']} {g['nombre']}</span>
+                <span>{g['icono']} {g_nombre}</span>
                 <span style="background:rgba(255,255,255,0.25);border-radius:999px;padding:3px 12px;font-size:0.72rem;">
-                    {len(items_g)} alimentos</span>
+                    {len(items_g)} {T('alimentos', 'foods')}</span>
               </div>
               <div style="max-height:360px;overflow-y:auto;background:#FFFFFF;">
                 <table style="width:100%;border-collapse:collapse;">
                   <thead>
                     <tr style="background:{color_fondo};position:sticky;top:0;">
                       <th style="text-align:left;padding:9px 16px;color:{color_borde};font-size:0.7rem;
-                          text-transform:uppercase;letter-spacing:0.03em;">Alimento</th>
+                          text-transform:uppercase;letter-spacing:0.03em;">{T('Alimento', 'Food')}</th>
                       <th style="text-align:right;padding:9px 16px;color:{color_borde};font-size:0.7rem;
-                          text-transform:uppercase;letter-spacing:0.03em;">Energía / 100 g</th>
+                          text-transform:uppercase;letter-spacing:0.03em;">{T('Energía / 100 g', 'Energy / 100 g')}</th>
                     </tr>
                   </thead>
                   <tbody>{filas_html}</tbody>
@@ -8036,32 +8314,43 @@ elif hoja_activa == "8.-FATSECRET":
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("### 📚 Información para profesionales")
+    st.markdown(f"### 📚 {T('Información para profesionales', 'Information for Healthcare Professionals')}")
     with st.container():
-        st.markdown("""
+        st.markdown(f"""
         <div style="background:#F2F2F7;border-radius:18px;padding:18px 22px;">
-        <div class="bpa-pro-item">✔ Valores expresados por 100 g de porción comestible.</div>
-        <div class="bpa-pro-item">✔ Basado en la Tabla Peruana de Composición de Alimentos, INS/CENAN.</div>
-        <div class="bpa-pro-item">✔ Utilizar porciones individualizadas según el caso.</div>
-        <div class="bpa-pro-item">✔ Ajustar según edad.</div>
-        <div class="bpa-pro-item">✔ Ajustar según condición clínica.</div>
-        <div class="bpa-pro-item">✔ Ajustar según evaluación nutricional.</div>
+        <div class="bpa-pro-item">✔ {T('Valores expresados por 100 g de porción comestible.', 'Values expressed per 100 g of edible portion.')}</div>
+        <div class="bpa-pro-item">✔ {T('Basado en la Tabla Peruana de Composición de Alimentos, INS/CENAN.', 'Based on the Peruvian Food Composition Table, INS/CENAN.')}</div>
+        <div class="bpa-pro-item">✔ {T('Utilizar porciones individualizadas según el caso.', 'Use individualized portions based on the case.')}</div>
+        <div class="bpa-pro-item">✔ {T('Ajustar según edad.', 'Adjust according to age.')}</div>
+        <div class="bpa-pro-item">✔ {T('Ajustar según condición clínica.', 'Adjust according to clinical condition.')}</div>
+        <div class="bpa-pro-item">✔ {T('Ajustar según evaluación nutricional.', 'Adjust according to nutritional assessment.')}</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
     <div style="background:#EAFAEE;border-left:5px solid #1E5631;border-radius:16px;padding:16px 20px;margin-top:14px;">
-    <b style="color:#1E5631;">👩‍⚕️ Criterio profesional</b><br>
-    <span style="color:#1C1C1E;">Las porciones, intercambios y recomendaciones específicas deben ser definidas por el
-    nutricionista responsable, considerando la evaluación clínica, nutricional y los objetivos individuales del
-    paciente.</span>
+    <b style="color:#1E5631;">👩‍⚕️ {T('Criterio profesional', 'Professional Criteria')}</b><br>
+    <span style="color:#1C1C1E;">{T(
+        "Las porciones, intercambios y recomendaciones específicas deben ser definidas por el "
+        "nutricionista responsable, considerando la evaluación clínica, nutricional y los "
+        "objetivos individuales del paciente.",
+        "Specific portions, exchanges, and recommendations should be defined by the responsible "
+        "nutritionist, taking into account the clinical and nutritional assessment and the "
+        "patient's individual goals."
+    )}</span>
     </div>
     """, unsafe_allow_html=True)
 
-    caja_util("Busca cualquier alimento peruano de consumo frecuente y obtén al instante su información "
-              "nutricional oficial (INS/CENAN): calorías, proteínas, grasas, carbohidratos y fibra por cada "
-              "100 g, junto con recomendaciones prácticas según su grupo alimenticio. Ya no depende de FatSecret. 🇵🇪🥗",
-              emoji="🇵🇪", color="#E0F2F1", borde="#00796B")
+    caja_util(T(
+        "Busca cualquier alimento peruano de consumo frecuente y obtén al instante su información "
+        "nutricional oficial (INS/CENAN): calorías, proteínas, grasas, carbohidratos y fibra por "
+        "cada 100 g, junto con recomendaciones prácticas según su grupo alimenticio. Ya no depende "
+        "de FatSecret. 🇵🇪🥗",
+        "Search for any commonly eaten Peruvian food and instantly get its official nutritional "
+        "information (INS/CENAN): calories, protein, fat, carbohydrates, and fiber per 100 g, "
+        "along with practical recommendations based on its food group. No longer dependent on "
+        "FatSecret. 🇵🇪🥗"
+    ), emoji="🇵🇪", color="#E0F2F1", borde="#00796B")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "9.-DIETA":
