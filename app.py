@@ -6150,6 +6150,18 @@ else:
 
     _ico_recortada_por_tmb = (objetivo == "Bajar de peso") and (rcd * (1 - ajuste_bajar) < tmb)
 
+# =========================================================================================
+# RCD_TOTAL — variable global única que alimenta Macronutrientes, Tiempos del Día, Plan
+# Alimenticio y Menús. En Modo Embarazo SIEMPRE incorpora el Bono Gestacional; ninguna hoja
+# posterior debe leer el RCD base sin el bono cuando el perfil tiene embarazo activo.
+# =========================================================================================
+if genero == "Mujer" and embarazada:
+    RCD_TOTAL = (tmb * factor) + ajuste_gestacion  # (TMB × Actividad Física) + Bono_Gestacional
+else:
+    RCD_TOTAL = rcd_final
+
+rcd_final = RCD_TOTAL  # todas las hojas posteriores leen rcd_final == RCD_TOTAL
+
 # Plazo estimado, según los lapsos máximos recomendados (Guía de Ritmos y Lapsos Seguros)
 if objetivo == "Bajar de peso":
     if ajuste_bajar == 0.10:
@@ -7324,275 +7336,6 @@ elif hoja_activa == "3.-TMB":
               "EVERYTHING else calculated in this app (how much you should eat, how much you can lose or gain, etc.). 🔥"),
               emoji="⚡", color="#FFF3E0", borde="#FB8C00")
 
-
-    if genero == "Mujer" and embarazada:
-        st.divider()
-        st.markdown(f"""
-        <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
-        margin-bottom:14px;border:1px solid rgba(186,104,200,0.18);">
-        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Complemento: RCD durante el Embarazo", "Supplement: DCR during Pregnancy")}</h3>
-        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Ajustamos tu Requerimiento Calórico Diario (RCD) sumando la energía extra que tu cuerpo y tu bebé necesitan según tu trimestre de gestación.", "We adjust your Daily Caloric Requirement (DCR) by adding the extra energy your body and your baby need according to your trimester of pregnancy.")}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        # =================================================================================
-        # RAMA: RCD durante el Embarazo (usa perfil global: peso, estatura, edad, trimestre)
-        # Se muestra como COMPLEMENTO del RCD normal (no lo reemplaza), igual que la hoja
-        # de RCD se complementa con el ajuste de Clima Chiclayo cuando aplica.
-        # =================================================================================
-        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-            T("RCD Gestacional = (TMB × Actividad Física) + Aporte Trimestral: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
-              "Gestational DCR = (BMR × Physical Activity) + Trimester Contribution: 1st trim. +0 kcal · 2nd trim. +340 kcal/day · 3rd trim. +452 kcal/day"),
-            autor="MD Mifflin, ST St Jeor et al. (1990)",
-            referencia=T("Ecuación de Mifflin-St Jeor + ajuste gestacional", "Mifflin-St Jeor equation + gestational adjustment"))}</div>""", unsafe_allow_html=True)
-
-        st.markdown(T("""
-        <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
-        border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
-        📌 Esta sección usa tus datos ya registrados (edad, peso, altura) y el trimestre que seleccionaste
-        en "Mis Datos", pensada exclusivamente para mujeres embarazadas.</div>
-        """, """
-        <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
-        border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
-        📌 This section uses the data you already entered (age, weight, height) and the trimester you selected
-        in "My Data", designed exclusively for pregnant women.</div>
-        """), unsafe_allow_html=True)
-
-        _nombre_disp = nombre_usuario.strip() if nombre_usuario.strip() else T("ti", "you")
-
-        # --- Flujo visual: datos → trimestre → TMB → aporte → resultado ---------------------
-        st.markdown(T("#### 🔎 De tus datos a tu resultado", "#### 🔎 From your data to your result"))
-        _pasos_emb = [
-            ("#5AC8FA", "👩", T("Datos ingresados", "Data entered"), f"{edad:.0f} {T('años','years')} · {peso:.0f} kg · {estatura:.0f} cm"),
-            ("#BA68C8", "🤰", T("Trimestre", "Trimester"), T(trimestre, {"Primer trimestre": "First trimester",
-                "Segundo trimestre": "Second trimester", "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))),
-            ("#FF9500", "⚖️", T("RCD Base de Mantenimiento", "Base Maintenance DCR"), f"{rcd_base:.0f} kcal/{T('día','day')}"),
-            ("#34C759", "🍽️", T("Calorías adicionales", "Additional calories"), f"+{ajuste_gestacion} kcal"),
-            ("#FF2D55", "❤️", T("RCD Gestacional Recomendado", "Recommended Gestational DCR"), f"{rcd_final:.0f} kcal/{T('día','day')}"),
-        ]
-        _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
-        for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
-            _es_ultimo = _i == len(_pasos_emb) - 1
-            _fondo_paso = "rgba(255,45,85,0.08)" if _es_ultimo else "#FFFFFF"
-            _html_pasos_emb.append(f"""
-            <div style="display:flex;align-items:center;gap:14px;background:{_fondo_paso};border-radius:18px;
-            padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
-            <div style="font-size:1.5rem;">{_em}</div>
-            <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.02em;">{_tt}</p>
-            <p style="margin:0;color:#17301F;font-size:1rem;font-weight:700;">{_tx}</p></div>
-            </div>""")
-            if not _es_ultimo:
-                _html_pasos_emb.append('<div style="text-align:center;font-size:1.3rem;color:#BA68C8;opacity:0.7;margin:2px 0;">↓</div>')
-        _html_pasos_emb.append('</div>')
-        st.markdown(_html_sin_lineas_vacias("".join(_html_pasos_emb)), unsafe_allow_html=True)
-
-        # --- ¿Qué significa este resultado? --------------------------------------------------
-        st.markdown(T(f"""
-        <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 ¿Qué significa este resultado?</p>
-        <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
-        Tu cuerpo necesita <b>{rcd_final:.0f} kcal/día</b> para cubrir tu metabolismo basal, tus actividades
-        diarias y el desarrollo óptimo de tu bebé.</p>
-        </div>
-        """, f"""
-        <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 What does this result mean?</p>
-        <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
-        Your body needs <b>{rcd_final:.0f} kcal/day</b> to cover your basal metabolism, your daily
-        activities, and your baby's optimal development.</p>
-        </div>
-        """), unsafe_allow_html=True)
-
-        st.write("")
-
-        # --- ¿Por qué cambia según el trimestre? — tres tarjetas -----------------------------
-        st.markdown(T("#### 🤰 ¿Por qué cambia según el trimestre?", "#### 🤰 Why does it change by trimester?"))
-        _tri_data = [
-            ("Primer trimestre", "#4CAF50", "#EAFAEE", "🌱", T("Primer trimestre", "First trimester"),
-             T("No suelen necesitarse calorías adicionales. Lo más importante es mantener una alimentación "
-             "equilibrada y cubrir todos los nutrientes esenciales.",
-             "Additional calories usually aren't needed. The most important thing is to maintain a "
-             "balanced diet and cover all essential nutrients.")),
-            ("Segundo trimestre", "#FF9500", "#FFF3E5", "👶", T("Segundo trimestre", "Second trimester"),
-             T("El bebé comienza un crecimiento más rápido. Generalmente se requieren alrededor de "
-             "340 kcal adicionales al día.",
-             "The baby begins growing faster. Around 340 additional kcal per day are generally needed.")),
-            ("Tercer trimestre", "#FF2D55", "#FFEBF0", "❤️", T("Tercer trimestre", "Third trimester"),
-             T("Es la etapa de mayor crecimiento fetal. Las necesidades energéticas aumentan aproximadamente "
-             "452 kcal por día.",
-             "This is the stage of greatest fetal growth. Energy needs increase by approximately "
-             "452 kcal per day.")),
-        ]
-        _txt_etapa_actual = T("✓ TU ETAPA ACTUAL", "✓ YOUR CURRENT STAGE")
-        _cols_tri = st.columns(3)
-        for _col, (_clave, _borde, _fondo, _emoji, _titulo, _texto) in zip(_cols_tri, _tri_data):
-            _sel = (_clave == trimestre)
-            _op = "1" if _sel else "0.45"
-            _borde_w = "2.5px solid " + _borde if _sel else f"1px solid {_borde}33"
-            _sombra = f"0 10px 24px {_borde}44" if _sel else "0 2px 8px rgba(0,0,0,0.03)"
-            with _col:
-                st.markdown(f"""
-                <div class="bento-card" style="background:{_fondo};border:{_borde_w};text-align:center;
-                opacity:{_op};box-shadow:{_sombra};transition:all 0.25s ease;">
-                <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
-                <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
-                <p style="margin:0;color:#3C3C43;font-size:0.8rem;line-height:1.45;">{_texto}</p>
-                {'<p style="margin:8px 0 0 0;font-weight:800;color:'+_borde+';font-size:0.72rem;">'+_txt_etapa_actual+'</p>' if _sel else ''}
-                </div>
-                """, unsafe_allow_html=True)
-
-        st.write("")
-
-        # --- ¿Por qué aumentan las calorías? — mini infografía -------------------------------
-        st.markdown(T("#### 🔥 ¿Por qué aumentan las calorías?", "#### 🔥 Why do calories increase?"))
-        _pasos_porque = [
-            ("#BA68C8", "🤰", T("El bebé crece", "The baby grows")),
-            ("#FF9500", "🦴", T("Se forman nuevos tejidos", "New tissues form")),
-            ("#FF2D55", "❤️", T("Trabaja más el organismo", "The body works harder")),
-            ("#FF3B30", "🔥", T("Se necesita más energía", "More energy is needed")),
-        ]
-        _cols_porque = st.columns(len(_pasos_porque) * 2 - 1)
-        for _i, (_bc, _em, _tt) in enumerate(_pasos_porque):
-            with _cols_porque[_i * 2]:
-                st.markdown(f"""
-                <div style="text-align:center;">
-                <div style="width:56px;height:56px;border-radius:50%;background:{_bc}22;display:flex;
-                align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 6px auto;">{_em}</div>
-                <p style="margin:0;font-size:0.72rem;font-weight:700;color:#17301F;">{_tt}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            if _i < len(_pasos_porque) - 1:
-                with _cols_porque[_i * 2 + 1]:
-                    st.markdown('<div style="text-align:center;font-size:1.4rem;color:#BA68C8;opacity:0.6;margin-top:16px;">→</div>',
-                                unsafe_allow_html=True)
-
-        st.write("")
-
-        # --- Comparación: TMB Base → Aporte → Resultado ---------------------------------------
-        st.markdown(T("#### 📊 Antes y después del ajuste", "#### 📊 Before and after the adjustment"))
-        _trimestre_disp_lower = T(trimestre.lower(), {"primer trimestre": "1st trimester",
-            "segundo trimestre": "2nd trimester", "tercer trimestre": "3rd trimester"}.get(trimestre.lower(), trimestre.lower()))
-        st.markdown(T(f"""
-        <div class="cp5-glass-flow">
-            <div class="cp5-flow-card">
-                <div class="cp5-flow-label">⚖️ RCD Base</div>
-                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
-                <div class="cp5-flow-legend">Tu gasto energético diario total (TMB × Actividad).</div>
-            </div>
-            <div class="cp5-flow-arrow">→</div>
-            <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
-                <div class="cp5-flow-label">👶 Aporte por embarazo</div>
-                <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
-                <div class="cp5-flow-legend">Energía extra requerida para tu etapa gestacional.</div>
-            </div>
-            <div class="cp5-flow-arrow">→</div>
-            <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
-                <div class="cp5-flow-label">❤️ Resultado para {_nombre_disp}</div>
-                <div class="cp5-flow-value" style="color:#C2185B;">{rcd_final:.0f} kcal</div>
-                <div class="cp5-flow-legend">Tu meta calórica diaria objetivo para un embarazo saludable.</div>
-            </div>
-        </div>
-        """, f"""
-        <div class="cp5-glass-flow">
-            <div class="cp5-flow-card">
-                <div class="cp5-flow-label">⚖️ Base DCR</div>
-                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
-                <div class="cp5-flow-legend">Your total daily energy expenditure (BMR × Activity).</div>
-            </div>
-            <div class="cp5-flow-arrow">→</div>
-            <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
-                <div class="cp5-flow-label">👶 Pregnancy contribution</div>
-                <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
-                <div class="cp5-flow-legend">Extra energy required for your gestational stage.</div>
-            </div>
-            <div class="cp5-flow-arrow">→</div>
-            <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
-                <div class="cp5-flow-label">❤️ Result for {_nombre_disp}</div>
-                <div class="cp5-flow-value" style="color:#C2185B;">{rcd_final:.0f} kcal</div>
-                <div class="cp5-flow-legend">Your target daily caloric goal for a healthy pregnancy.</div>
-            </div>
-        </div>
-        """), unsafe_allow_html=True)
-
-        st.divider()
-
-        # --- 🍽 Recuerda: prioriza calidad, no solo cantidad ----------------------------------
-        st.markdown(T("#### 🍽️ Recuerda", "#### 🍽️ Remember"))
-        st.markdown(T("""
-        <div class="bento-card" style="border-left:5px solid #FF9500;">
-        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">No todas las calorías son iguales. Durante
-        el embarazo es importante priorizar alimentos ricos en:</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Proteínas</span>
-        <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcio</span>
-        <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Hierro</span>
-        <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Ácido fólico</span>
-        <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fibra</span>
-        </div>
-        <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">No solo aumentar la cantidad de comida.</p>
-        </div>
-        """, """
-        <div class="bento-card" style="border-left:5px solid #FF9500;">
-        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">Not all calories are equal. During
-        pregnancy it's important to prioritize foods rich in:</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Protein</span>
-        <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcium</span>
-        <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Iron</span>
-        <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Folic acid</span>
-        <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fiber</span>
-        </div>
-        <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">Not just increasing the amount of food.</p>
-        </div>
-        """), unsafe_allow_html=True)
-
-        st.write("")
-
-        # --- ¿Qué puedes hacer desde hoy? -----------------------------------------------------
-        st.markdown(T("#### ✅ ¿Qué puedes hacer desde hoy?", "#### ✅ What can you do starting today?"))
-        _acciones_emb = [
-            ("#0277BD", "#E9F8FF", "🥛", T("Consumir lácteos", "Consume dairy")),
-            ("#137333", "#EAFAEE", "🥬", T("Incluir verduras diariamente", "Include vegetables daily")),
-            ("#1976D2", "#E3F2FD", "🐟", T("Proteínas de buena calidad", "Good quality protein")),
-            ("#00B8D9", "#E1FBF9", "💧", T("Mantener buena hidratación", "Stay well hydrated")),
-            ("#FF9500", "#FFF3E5", "🚶", T("Actividad física autorizada", "Authorized physical activity")),
-        ]
-        _cols_acc = st.columns(5)
-        for _col, (_borde, _fondo, _emoji, _texto) in zip(_cols_acc, _acciones_emb):
-            with _col:
-                st.markdown(f"""
-                <div class="bento-card" style="background:{_fondo};text-align:center;padding:14px 10px;">
-                <div style="font-size:1.4rem;margin-bottom:4px;">{_emoji}</div>
-                <p style="margin:0;color:{_borde};font-weight:700;font-size:0.72rem;line-height:1.3;">{_texto}</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-        st.write("")
-
-        # --- ⚠️ Importante ----------------------------------------------------------------------
-        st.markdown(T("""
-        <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
-        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Importante</p>
-        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
-        Las necesidades nutricionales durante el embarazo varían entre cada mujer. Este cálculo es una
-        estimación educativa y no reemplaza la evaluación realizada por un obstetra o nutricionista.</p>
-        </div>
-        """, """
-        <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
-        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Important</p>
-        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
-        Nutritional needs during pregnancy vary from woman to woman. This calculation is an
-        educational estimate and does not replace an evaluation by an obstetrician or nutritionist.</p>
-        </div>
-        """), unsafe_allow_html=True)
-
-        caja_util(T("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
-                  "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
-                  "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
-                  "During pregnancy the body needs extra energy so the baby can develop healthily. "
-                  "This calculator tells you how many additional calories you need based on your current trimester, "
-                  "without having to guess or risk your nutrition or your baby's. 🤰💕"),
-                  emoji="👶", color="#F8ECFB", borde="#BA68C8")
-
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "4.-RCD":
     hoja_header(4, subtitulo=T("El Requerimiento Calórico Diario (RCD) es la cantidad de energía que tu cuerpo "
@@ -8109,6 +7852,275 @@ elif hoja_activa == "4.-RCD":
               "normal day, adding your BMR (Sheet 3) to the movement you do based on your activity level. "
               "It's your caloric 'balance point'. 🏃‍♀️🔥"),
               emoji="🔥", color="#E8F5E9", borde="#43A047")
+
+    if genero == "Mujer" and embarazada:
+        st.divider()
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFFFFF 70%);border-radius:24px;padding:20px 26px;
+        margin-bottom:14px;border:1px solid rgba(186,104,200,0.18);">
+        <h3 style="margin:0;color:#8E24AA;font-weight:800;">🤰 {T("Complemento: RCD durante el Embarazo", "Supplement: DCR during Pregnancy")}</h3>
+        <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;">{T("Ajustamos tu Requerimiento Calórico Diario (RCD) sumando la energía extra que tu cuerpo y tu bebé necesitan según tu trimestre de gestación.", "We adjust your Daily Caloric Requirement (DCR) by adding the extra energy your body and your baby need according to your trimester of pregnancy.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        # =================================================================================
+        # RAMA: RCD durante el Embarazo (usa perfil global: peso, estatura, edad, trimestre)
+        # Se muestra como COMPLEMENTO del RCD normal (no lo reemplaza), igual que la hoja
+        # de RCD se complementa con el ajuste de Clima Chiclayo cuando aplica.
+        # =================================================================================
+        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+            T("RCD Gestacional = (TMB × Actividad Física) + Aporte Trimestral: 1er trim. +0 kcal · 2do trim. +340 kcal/día · 3er trim. +452 kcal/día",
+              "Gestational DCR = (BMR × Physical Activity) + Trimester Contribution: 1st trim. +0 kcal · 2nd trim. +340 kcal/day · 3rd trim. +452 kcal/day"),
+            autor="MD Mifflin, ST St Jeor et al. (1990)",
+            referencia=T("Ecuación de Mifflin-St Jeor + ajuste gestacional", "Mifflin-St Jeor equation + gestational adjustment"))}</div>""", unsafe_allow_html=True)
+
+        st.markdown(T("""
+        <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
+        border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
+        📌 Esta sección usa tus datos ya registrados (edad, peso, altura) y el trimestre que seleccionaste
+        en "Mis Datos", pensada exclusivamente para mujeres embarazadas.</div>
+        """, """
+        <div style="background:#F8ECFB;border-radius:16px;padding:12px 18px;margin-bottom:14px;
+        border-left:5px solid #BA68C8;font-size:0.86rem;color:#5C2A6B;">
+        📌 This section uses the data you already entered (age, weight, height) and the trimester you selected
+        in "My Data", designed exclusively for pregnant women.</div>
+        """), unsafe_allow_html=True)
+
+        _nombre_disp = nombre_usuario.strip() if nombre_usuario.strip() else T("ti", "you")
+
+        # --- Flujo visual: datos → trimestre → TMB → aporte → resultado ---------------------
+        st.markdown(T("#### 🔎 De tus datos a tu resultado", "#### 🔎 From your data to your result"))
+        _pasos_emb = [
+            ("#5AC8FA", "👩", T("Datos ingresados", "Data entered"), f"{edad:.0f} {T('años','years')} · {peso:.0f} kg · {estatura:.0f} cm"),
+            ("#BA68C8", "🤰", T("Trimestre", "Trimester"), T(trimestre, {"Primer trimestre": "First trimester",
+                "Segundo trimestre": "Second trimester", "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))),
+            ("#FF9500", "⚖️", T("RCD Base de Mantenimiento", "Base Maintenance DCR"), f"{rcd_base:.0f} kcal/{T('día','day')}"),
+            ("#34C759", "🍽️", T("Calorías adicionales", "Additional calories"), f"+{ajuste_gestacion} kcal"),
+            ("#FF2D55", "❤️", T("RCD Gestacional Recomendado", "Recommended Gestational DCR"), f"{rcd_final:.0f} kcal/{T('día','day')}"),
+        ]
+        _html_pasos_emb = ['<div style="max-width:520px;margin:0 auto;">']
+        for _i, (_bc, _em, _tt, _tx) in enumerate(_pasos_emb):
+            _es_ultimo = _i == len(_pasos_emb) - 1
+            _fondo_paso = "rgba(255,45,85,0.08)" if _es_ultimo else "#FFFFFF"
+            _html_pasos_emb.append(f"""
+            <div style="display:flex;align-items:center;gap:14px;background:{_fondo_paso};border-radius:18px;
+            padding:12px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);border-left:5px solid {_bc};margin-bottom:4px;">
+            <div style="font-size:1.5rem;">{_em}</div>
+            <div><p style="margin:0;font-weight:800;color:#17301F;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.02em;">{_tt}</p>
+            <p style="margin:0;color:#17301F;font-size:1rem;font-weight:700;">{_tx}</p></div>
+            </div>""")
+            if not _es_ultimo:
+                _html_pasos_emb.append('<div style="text-align:center;font-size:1.3rem;color:#BA68C8;opacity:0.7;margin:2px 0;">↓</div>')
+        _html_pasos_emb.append('</div>')
+        st.markdown(_html_sin_lineas_vacias("".join(_html_pasos_emb)), unsafe_allow_html=True)
+
+        # --- ¿Qué significa este resultado? --------------------------------------------------
+        st.markdown(T(f"""
+        <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 ¿Qué significa este resultado?</p>
+        <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
+        Tu cuerpo necesita <b>{rcd_final:.0f} kcal/día</b> para cubrir tu metabolismo basal, tus actividades
+        diarias y el desarrollo óptimo de tu bebé.</p>
+        </div>
+        """, f"""
+        <div class="bento-card" style="border-left:5px solid #FF2D55;margin-top:16px;">
+        <p style="margin:0 0 6px 0;font-weight:800;color:#C2185B;">🤔 What does this result mean?</p>
+        <p style="margin:0;color:#3C3C43;line-height:1.55;font-size:0.92rem;">
+        Your body needs <b>{rcd_final:.0f} kcal/day</b> to cover your basal metabolism, your daily
+        activities, and your baby's optimal development.</p>
+        </div>
+        """), unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ¿Por qué cambia según el trimestre? — tres tarjetas -----------------------------
+        st.markdown(T("#### 🤰 ¿Por qué cambia según el trimestre?", "#### 🤰 Why does it change by trimester?"))
+        _tri_data = [
+            ("Primer trimestre", "#4CAF50", "#EAFAEE", "🌱", T("Primer trimestre", "First trimester"),
+             T("No suelen necesitarse calorías adicionales. Lo más importante es mantener una alimentación "
+             "equilibrada y cubrir todos los nutrientes esenciales.",
+             "Additional calories usually aren't needed. The most important thing is to maintain a "
+             "balanced diet and cover all essential nutrients.")),
+            ("Segundo trimestre", "#FF9500", "#FFF3E5", "👶", T("Segundo trimestre", "Second trimester"),
+             T("El bebé comienza un crecimiento más rápido. Generalmente se requieren alrededor de "
+             "340 kcal adicionales al día.",
+             "The baby begins growing faster. Around 340 additional kcal per day are generally needed.")),
+            ("Tercer trimestre", "#FF2D55", "#FFEBF0", "❤️", T("Tercer trimestre", "Third trimester"),
+             T("Es la etapa de mayor crecimiento fetal. Las necesidades energéticas aumentan aproximadamente "
+             "452 kcal por día.",
+             "This is the stage of greatest fetal growth. Energy needs increase by approximately "
+             "452 kcal per day.")),
+        ]
+        _txt_etapa_actual = T("✓ TU ETAPA ACTUAL", "✓ YOUR CURRENT STAGE")
+        _cols_tri = st.columns(3)
+        for _col, (_clave, _borde, _fondo, _emoji, _titulo, _texto) in zip(_cols_tri, _tri_data):
+            _sel = (_clave == trimestre)
+            _op = "1" if _sel else "0.45"
+            _borde_w = "2.5px solid " + _borde if _sel else f"1px solid {_borde}33"
+            _sombra = f"0 10px 24px {_borde}44" if _sel else "0 2px 8px rgba(0,0,0,0.03)"
+            with _col:
+                st.markdown(f"""
+                <div class="bento-card" style="background:{_fondo};border:{_borde_w};text-align:center;
+                opacity:{_op};box-shadow:{_sombra};transition:all 0.25s ease;">
+                <div style="font-size:1.8rem;margin-bottom:6px;">{_emoji}</div>
+                <p style="margin:0 0 6px 0;font-weight:800;color:{_borde};font-size:0.95rem;">{_titulo}</p>
+                <p style="margin:0;color:#3C3C43;font-size:0.8rem;line-height:1.45;">{_texto}</p>
+                {'<p style="margin:8px 0 0 0;font-weight:800;color:'+_borde+';font-size:0.72rem;">'+_txt_etapa_actual+'</p>' if _sel else ''}
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ¿Por qué aumentan las calorías? — mini infografía -------------------------------
+        st.markdown(T("#### 🔥 ¿Por qué aumentan las calorías?", "#### 🔥 Why do calories increase?"))
+        _pasos_porque = [
+            ("#BA68C8", "🤰", T("El bebé crece", "The baby grows")),
+            ("#FF9500", "🦴", T("Se forman nuevos tejidos", "New tissues form")),
+            ("#FF2D55", "❤️", T("Trabaja más el organismo", "The body works harder")),
+            ("#FF3B30", "🔥", T("Se necesita más energía", "More energy is needed")),
+        ]
+        _cols_porque = st.columns(len(_pasos_porque) * 2 - 1)
+        for _i, (_bc, _em, _tt) in enumerate(_pasos_porque):
+            with _cols_porque[_i * 2]:
+                st.markdown(f"""
+                <div style="text-align:center;">
+                <div style="width:56px;height:56px;border-radius:50%;background:{_bc}22;display:flex;
+                align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 6px auto;">{_em}</div>
+                <p style="margin:0;font-size:0.72rem;font-weight:700;color:#17301F;">{_tt}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            if _i < len(_pasos_porque) - 1:
+                with _cols_porque[_i * 2 + 1]:
+                    st.markdown('<div style="text-align:center;font-size:1.4rem;color:#BA68C8;opacity:0.6;margin-top:16px;">→</div>',
+                                unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- Comparación: TMB Base → Aporte → Resultado ---------------------------------------
+        st.markdown(T("#### 📊 Antes y después del ajuste", "#### 📊 Before and after the adjustment"))
+        _trimestre_disp_lower = T(trimestre.lower(), {"primer trimestre": "1st trimester",
+            "segundo trimestre": "2nd trimester", "tercer trimestre": "3rd trimester"}.get(trimestre.lower(), trimestre.lower()))
+        st.markdown(T(f"""
+        <div class="cp5-glass-flow">
+            <div class="cp5-flow-card">
+                <div class="cp5-flow-label">⚖️ RCD Base</div>
+                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu gasto energético diario total (TMB × Actividad).</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
+                <div class="cp5-flow-label">👶 Aporte por embarazo</div>
+                <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
+                <div class="cp5-flow-legend">Energía extra requerida para tu etapa gestacional.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
+                <div class="cp5-flow-label">❤️ Resultado para {_nombre_disp}</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{rcd_final:.0f} kcal</div>
+                <div class="cp5-flow-legend">Tu meta calórica diaria objetivo para un embarazo saludable.</div>
+            </div>
+        </div>
+        """, f"""
+        <div class="cp5-glass-flow">
+            <div class="cp5-flow-card">
+                <div class="cp5-flow-label">⚖️ Base DCR</div>
+                <div class="cp5-flow-value">{rcd_base:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your total daily energy expenditure (BMR × Activity).</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(186,104,200,0.10);border-color:rgba(186,104,200,0.35);">
+                <div class="cp5-flow-label">👶 Pregnancy contribution</div>
+                <div class="cp5-flow-value" style="color:#8E24AA;">+{ajuste_gestacion} kcal</div>
+                <div class="cp5-flow-legend">Extra energy required for your gestational stage.</div>
+            </div>
+            <div class="cp5-flow-arrow">→</div>
+            <div class="cp5-flow-card" style="background:rgba(255,45,85,0.12);border-color:rgba(255,45,85,0.4);">
+                <div class="cp5-flow-label">❤️ Result for {_nombre_disp}</div>
+                <div class="cp5-flow-value" style="color:#C2185B;">{rcd_final:.0f} kcal</div>
+                <div class="cp5-flow-legend">Your target daily caloric goal for a healthy pregnancy.</div>
+            </div>
+        </div>
+        """), unsafe_allow_html=True)
+
+        st.divider()
+
+        # --- 🍽 Recuerda: prioriza calidad, no solo cantidad ----------------------------------
+        st.markdown(T("#### 🍽️ Recuerda", "#### 🍽️ Remember"))
+        st.markdown(T("""
+        <div class="bento-card" style="border-left:5px solid #FF9500;">
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">No todas las calorías son iguales. Durante
+        el embarazo es importante priorizar alimentos ricos en:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Proteínas</span>
+        <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcio</span>
+        <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Hierro</span>
+        <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Ácido fólico</span>
+        <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fibra</span>
+        </div>
+        <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">No solo aumentar la cantidad de comida.</p>
+        </div>
+        """, """
+        <div class="bento-card" style="border-left:5px solid #FF9500;">
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.9rem;">Not all calories are equal. During
+        pregnancy it's important to prioritize foods rich in:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:#FFEBF0;color:#C2185B;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥩 Protein</span>
+        <span style="background:#E9F8FF;color:#0277BD;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥛 Calcium</span>
+        <span style="background:#EAFAEE;color:#137333;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🥬 Iron</span>
+        <span style="background:#FFF3E5;color:#B06000;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🍊 Folic acid</span>
+        <span style="background:#F8ECFB;color:#8E24AA;padding:6px 14px;border-radius:999px;font-weight:700;font-size:0.82rem;">🫘 Fiber</span>
+        </div>
+        <p style="margin:10px 0 0 0;color:#3C3C43;font-size:0.85rem;">Not just increasing the amount of food.</p>
+        </div>
+        """), unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ¿Qué puedes hacer desde hoy? -----------------------------------------------------
+        st.markdown(T("#### ✅ ¿Qué puedes hacer desde hoy?", "#### ✅ What can you do starting today?"))
+        _acciones_emb = [
+            ("#0277BD", "#E9F8FF", "🥛", T("Consumir lácteos", "Consume dairy")),
+            ("#137333", "#EAFAEE", "🥬", T("Incluir verduras diariamente", "Include vegetables daily")),
+            ("#1976D2", "#E3F2FD", "🐟", T("Proteínas de buena calidad", "Good quality protein")),
+            ("#00B8D9", "#E1FBF9", "💧", T("Mantener buena hidratación", "Stay well hydrated")),
+            ("#FF9500", "#FFF3E5", "🚶", T("Actividad física autorizada", "Authorized physical activity")),
+        ]
+        _cols_acc = st.columns(5)
+        for _col, (_borde, _fondo, _emoji, _texto) in zip(_cols_acc, _acciones_emb):
+            with _col:
+                st.markdown(f"""
+                <div class="bento-card" style="background:{_fondo};text-align:center;padding:14px 10px;">
+                <div style="font-size:1.4rem;margin-bottom:4px;">{_emoji}</div>
+                <p style="margin:0;color:{_borde};font-weight:700;font-size:0.72rem;line-height:1.3;">{_texto}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.write("")
+
+        # --- ⚠️ Importante ----------------------------------------------------------------------
+        st.markdown(T("""
+        <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
+        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Importante</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
+        Las necesidades nutricionales durante el embarazo varían entre cada mujer. Este cálculo es una
+        estimación educativa y no reemplaza la evaluación realizada por un obstetra o nutricionista.</p>
+        </div>
+        """, """
+        <div style="background:#FFF3E5;border-radius:18px;padding:16px 20px;border-left:5px solid #FF9500;">
+        <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">⚠️ Important</p>
+        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
+        Nutritional needs during pregnancy vary from woman to woman. This calculation is an
+        educational estimate and does not replace an evaluation by an obstetrician or nutritionist.</p>
+        </div>
+        """), unsafe_allow_html=True)
+
+        caja_util(T("Durante el embarazo el cuerpo necesita energía extra para que el bebé se desarrolle sanamente. "
+                  "Esta calculadora te dice cuántas calorías adicionales necesitas según el trimestre en que estás, "
+                  "sin tener que adivinarlo ni arriesgar tu nutrición ni la de tu bebé. 🤰💕",
+                  "During pregnancy the body needs extra energy so the baby can develop healthily. "
+                  "This calculator tells you how many additional calories you need based on your current trimester, "
+                  "without having to guess or risk your nutrition or your baby's. 🤰💕"),
+                  emoji="👶", color="#F8ECFB", borde="#BA68C8")
+
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "5.-CONTROL DE PESO":
