@@ -2313,7 +2313,7 @@ def generar_pdf_reporte(datos):
                 (T("Etapa de Vida", "Life Stage"), f"{_etapa_pdf_txt} ({datos['edad']} {T('años', 'years')})"),
                 (T("Sexo Biológico", "Biological Sex"), _sexo_txt),
                 (T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
-                (T("Nivel de Actividad", "Activity Level"), datos.get("actividad", "—")),
+                (T("Nivel de Actividad", "Activity Level"), T(_ACT_LABEL_ES.get(datos.get("actividad"), datos.get("actividad", "—")), _ACT_LABEL_EN.get(datos.get("actividad"), datos.get("actividad", "—")))),
             ])]
 
     _VITAL_LABEL_EN = {
@@ -2576,7 +2576,7 @@ def generar_pdf_reporte(datos):
         return T(nombre, _MACRO_EN_PDF.get(nombre, nombre))
 
     def _alim_pdf(nombre):
-        return T(nombre, FOOD_NOMBRE_EN.get(nombre, nombre)) if _idioma_pdf_en else nombre
+        return T(nombre, DIETA_NOMBRE_EN.get(nombre, nombre)) if _idioma_pdf_en else nombre
 
     header2 = Table([
         [Paragraph(T("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", "MEAL PLAN & DIETARY PRESCRIPTION"), estilo_pagina2_tit),
@@ -2762,7 +2762,7 @@ def generar_pdf_reporte(datos):
 
 def recursos_externos(idx, recursos):
     """Fila de botones 'para abrir' con recursos externos de confianza, en el color de la hoja."""
-    st.markdown(f"<p style='font-weight:700;margin-bottom:2px;'>🔗 Quiero saber más:</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-weight:700;margin-bottom:2px;'>🔗 {T('Quiero saber más:', 'Learn More:')}</p>", unsafe_allow_html=True)
     cols = st.columns(len(recursos))
     for c, (label, url) in zip(cols, recursos):
         with c:
@@ -3478,19 +3478,21 @@ def tarjeta_semaforo(parametro, valor_texto, categoria, valor_num=None, etapa=No
     icono_svg = ICONOS_PARAMETRO.get(parametro, "").format(fondo=r["fondo"], hex=r["hex"])
     min_v, max_v, segmentos = _zonas_gauge(parametro, etapa, genero)
     gauge_html = _gauge_track_html(valor_num, min_v, max_v, segmentos)
-    tooltip = r["mensajePersonalizado"].replace('"', "'")
+    tooltip = _mensaje_triaje_txt(parametro, categoria, r["colorSemaforo"]).replace('"', "'")
+    parametro_txt = _parametro_txt(parametro)
+    categoria_txt = _categoria_clinica_txt(categoria)
     st.markdown(f"""
     <div class="sema-card" style="border-top:5px solid {borde_pastel};border-bottom:5px solid {borde_pastel};"
          title="{tooltip}">
         <div style="width:52px;height:52px;border-radius:50%;background:{r['fondo']};
                     display:flex;align-items:center;justify-content:center;
                     margin:0 auto 8px auto;padding:10px;box-sizing:border-box;">{icono_svg}</div>
-        <div style="text-align:center;font-weight:800;color:#1C1C1E;font-size:0.92rem;letter-spacing:-0.01em;">{parametro}</div>
+        <div style="text-align:center;font-weight:800;color:#1C1C1E;font-size:0.92rem;letter-spacing:-0.01em;">{parametro_txt}</div>
         <div style="text-align:center;color:#8E8E93;font-size:0.76rem;margin-bottom:2px;">{valor_texto}</div>
         {gauge_html}
         <div style="text-align:center;margin-top:6px;">
             <span style="background:{r['fondo']};color:{r['hex']};font-weight:800;font-size:0.78rem;
-                         padding:4px 12px;border-radius:999px;">{r['emoji']} {categoria}</span>
+                         padding:4px 12px;border-radius:999px;">{r['emoji']} {categoria_txt}</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -6408,37 +6410,51 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     # ===== 3. MÓDULO: Estado Fisiológico (signos vitales del Bloque 3) =====================
+    _CAT_FISIO_EN = {
+        "Sin datos": "No data", "Valor no válido": "Invalid value",
+        "Baja / Hipotensión": "Low / Hypotension", "Normal / Óptima": "Normal / Optimal",
+        "Elevado": "Elevated", "Emergencia Hipertensiva": "Hypertensive Emergency",
+        "Hipertensión Estadio 2": "Hypertension Stage 2", "Hipertensión Estadio 1": "Hypertension Stage 1",
+        "Hipoxia": "Hypoxia", "Aceptable": "Acceptable", "Excelente": "Excellent",
+        "Hipotermia": "Hypothermia", "Temperatura baja": "Low Temperature", "Normal": "Normal",
+        "Febrícula": "Low-grade Fever", "Fiebre": "Fever", "Fiebre alta": "High Fever",
+        "Bradicardia": "Bradycardia", "Taquicardia": "Tachycardia",
+    }
+
+    def _ctf(cat):
+        return T(cat, _CAT_FISIO_EN.get(cat, cat))
+
     def _clasif_pa(_pas, _pad):
-        if _pas <= 0 or _pad <= 0: return "Sin datos", "gris"
-        if _pas < 50 or _pas > 300 or _pad < 30 or _pad > 200: return "Valor no válido", "gris"
-        if _pas < 90 or _pad < 60: return "Baja / Hipotensión", "ambar"
-        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return "Normal / Óptima", "verde"
-        if 120 <= _pas <= 129 and _pad < 80: return "Elevado", "ambar"
-        if _pas > 180 or _pad > 120: return "Emergencia Hipertensiva", "rojo"
-        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return "Hipertensión Estadio 2", "rojo"
-        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return "Hipertensión Estadio 1", "rojo"
-        return "Normal / Óptima", "verde"
+        if _pas <= 0 or _pad <= 0: return _ctf("Sin datos"), "gris"
+        if _pas < 50 or _pas > 300 or _pad < 30 or _pad > 200: return _ctf("Valor no válido"), "gris"
+        if _pas < 90 or _pad < 60: return _ctf("Baja / Hipotensión"), "ambar"
+        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return _ctf("Normal / Óptima"), "verde"
+        if 120 <= _pas <= 129 and _pad < 80: return _ctf("Elevado"), "ambar"
+        if _pas > 180 or _pad > 120: return _ctf("Emergencia Hipertensiva"), "rojo"
+        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return _ctf("Hipertensión Estadio 2"), "rojo"
+        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return _ctf("Hipertensión Estadio 1"), "rojo"
+        return _ctf("Normal / Óptima"), "verde"
 
     def _clasif_spo2(_s):
-        if _s <= 0: return "Sin datos", "gris"
-        if _s < 90: return "Hipoxia", "rojo"
-        if _s < 95: return "Aceptable", "ambar"
-        return "Excelente", "verde"
+        if _s <= 0: return _ctf("Sin datos"), "gris"
+        if _s < 90: return _ctf("Hipoxia"), "rojo"
+        if _s < 95: return _ctf("Aceptable"), "ambar"
+        return _ctf("Excelente"), "verde"
 
     def _clasif_temp(_t):
-        if _t <= 34.0: return "Sin datos", "gris"
-        if _t < 35.0: return "Hipotermia", "rojo"
-        if _t < 36.1: return "Temperatura baja", "ambar"
-        if _t <= 37.2: return "Normal", "verde"
-        if _t <= 37.9: return "Febrícula", "ambar"
-        if _t <= 39.5: return "Fiebre", "rojo"
-        return "Fiebre alta", "rojo"
+        if _t <= 34.0: return _ctf("Sin datos"), "gris"
+        if _t < 35.0: return _ctf("Hipotermia"), "rojo"
+        if _t < 36.1: return _ctf("Temperatura baja"), "ambar"
+        if _t <= 37.2: return _ctf("Normal"), "verde"
+        if _t <= 37.9: return _ctf("Febrícula"), "ambar"
+        if _t <= 39.5: return _ctf("Fiebre"), "rojo"
+        return _ctf("Fiebre alta"), "rojo"
 
     def _clasif_pulso(_p):
-        if _p <= 0: return "Sin datos", "gris"
-        if _p < 60: return "Bradicardia", "ambar"
-        if _p <= 100: return "Normal", "verde"
-        return "Taquicardia", "ambar"
+        if _p <= 0: return _ctf("Sin datos"), "gris"
+        if _p < 60: return _ctf("Bradicardia"), "ambar"
+        if _p <= 100: return _ctf("Normal"), "verde"
+        return _ctf("Taquicardia"), "ambar"
 
     _cat_pa, _col_pa = _clasif_pa(pas, pad)
     _cat_ox, _col_ox = _clasif_spo2(spo2)
@@ -6797,12 +6813,12 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             _idx_pa_activa = 1
 
     _pa_filas_data = [
-        (["Baja / Hipotensión", "&lt; 90", "o", "&lt; 60"], "azul"),
-        (["Normal / Óptima", "90 – 119", "y", "60 – 79"], "verde"),
-        (["Elevado", "120 – 129", "y", "&lt; 80"], "amarillo"),
-        (["Hipertensión Estadio 1", "130 – 139", "o", "80 – 89"], "naranja"),
-        (["Hipertensión Estadio 2", "≥ 140", "o", "≥ 90"], "rojo"),
-        (["Emergencia Hipertensiva", "&gt; 180", "y/o", "&gt; 120"], "purpura"),
+        ([T("Baja / Hipotensión", "Low / Hypotension"), "&lt; 90", T("o", "or"), "&lt; 60"], "azul"),
+        ([T("Normal / Óptima", "Normal / Optimal"), "90 – 119", T("y", "and"), "60 – 79"], "verde"),
+        ([T("Elevado", "Elevated"), "120 – 129", T("y", "and"), "&lt; 80"], "amarillo"),
+        ([T("Hipertensión Estadio 1", "Hypertension Stage 1"), "130 – 139", T("o", "or"), "80 – 89"], "naranja"),
+        ([T("Hipertensión Estadio 2", "Hypertension Stage 2"), "≥ 140", T("o", "or"), "≥ 90"], "rojo"),
+        ([T("Emergencia Hipertensiva", "Hypertensive Emergency"), "&gt; 180", T("y/o", "and/or"), "&gt; 120"], "purpura"),
     ]
     _pa_html = "".join(
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pa_activa)
@@ -6829,11 +6845,11 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
             _idx_ox_activa = 1
 
     _ox_filas_data = [
-        (["≥ 97%", "Normal (Lactantes/Niños)", "Excelente oxigenación tisular"], "menta"),
-        (["95% – 100%", "Normal (Adultos / &gt;70 años)", "Transporte idóneo de O₂"], "verde"),
-        (["85% – 94%", "Anormal / Alerta Leve", "Hipoxemia leve / monitoreo"], "amarillo"),
-        (["80% – 85%", "Compromiso Cerebral (Hipoxia)", "Riesgo de alteración neurológica"], "naranja"),
-        (["&lt; 67%", "Cianosis Severa", "Coloración azulada (Urgencia)"], "rojo"),
+        (["≥ 97%", T("Normal (Lactantes/Niños)", "Normal (Infants/Children)"), T("Excelente oxigenación tisular", "Excellent tissue oxygenation")], "menta"),
+        (["95% – 100%", T("Normal (Adultos / &gt;70 años)", "Normal (Adults / &gt;70 years)"), T("Transporte idóneo de O₂", "Optimal O₂ transport")], "verde"),
+        (["85% – 94%", T("Anormal / Alerta Leve", "Abnormal / Mild Alert"), T("Hipoxemia leve / monitoreo", "Mild hypoxemia / monitoring")], "amarillo"),
+        (["80% – 85%", T("Compromiso Cerebral (Hipoxia)", "Cerebral Compromise (Hypoxia)"), T("Riesgo de alteración neurológica", "Risk of neurological impairment")], "naranja"),
+        (["&lt; 67%", T("Cianosis Severa", "Severe Cyanosis"), T("Coloración azulada (Urgencia)", "Bluish discoloration (Emergency)")], "rojo"),
     ]
     _ox_html = "".join(
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_ox_activa)
@@ -6884,14 +6900,15 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         else:
             _idx_pu_activa = 6
 
+    _lpm_txt = T("lpm", "bpm")
     _pu_filas_data = [
-        (["Pretérmino", "120 – 180 lpm", "&lt; 120 o &gt; 180 lpm"], "amarillo"),
-        (["Recién Nacido (0–1 mes)", "100 – 160 lpm", "&lt; 100 o &gt; 160 lpm"], "verde"),
-        (["Bebé (1–12 meses)", "80 – 140 lpm", "&lt; 80 o &gt; 140 lpm"], "verde"),
-        (["Niño Pequeño (1–3 años)", "80 – 130 lpm", "&lt; 80 o &gt; 130 lpm"], "verde"),
-        (["Preescolar (3–5 años)", "80 – 110 lpm", "&lt; 80 o &gt; 110 lpm"], "verde"),
-        (["Edad Escolar (6–12 años)", "70 – 100 lpm", "&lt; 70 o &gt; 100 lpm"], "verde"),
-        (["Adolescentes y Adultos", "60 – 100 lpm", "&lt; 60 o &gt; 100 lpm"], "verde"),
+        ([T("Pretérmino", "Preterm"), f"120 – 180 {_lpm_txt}", T(f"&lt; 120 o &gt; 180 {_lpm_txt}", f"&lt; 120 or &gt; 180 {_lpm_txt}")], "amarillo"),
+        ([T("Recién Nacido (0–1 mes)", "Newborn (0–1 month)"), f"100 – 160 {_lpm_txt}", T(f"&lt; 100 o &gt; 160 {_lpm_txt}", f"&lt; 100 or &gt; 160 {_lpm_txt}")], "verde"),
+        ([T("Bebé (1–12 meses)", "Infant (1–12 months)"), f"80 – 140 {_lpm_txt}", T(f"&lt; 80 o &gt; 140 {_lpm_txt}", f"&lt; 80 or &gt; 140 {_lpm_txt}")], "verde"),
+        ([T("Niño Pequeño (1–3 años)", "Toddler (1–3 years)"), f"80 – 130 {_lpm_txt}", T(f"&lt; 80 o &gt; 130 {_lpm_txt}", f"&lt; 80 or &gt; 130 {_lpm_txt}")], "verde"),
+        ([T("Preescolar (3–5 años)", "Preschool (3–5 years)"), f"80 – 110 {_lpm_txt}", T(f"&lt; 80 o &gt; 110 {_lpm_txt}", f"&lt; 80 or &gt; 110 {_lpm_txt}")], "verde"),
+        ([T("Edad Escolar (6–12 años)", "School Age (6–12 years)"), f"70 – 100 {_lpm_txt}", T(f"&lt; 70 o &gt; 100 {_lpm_txt}", f"&lt; 70 or &gt; 100 {_lpm_txt}")], "verde"),
+        ([T("Adolescentes y Adultos", "Adolescents and Adults"), f"60 – 100 {_lpm_txt}", T(f"&lt; 60 o &gt; 100 {_lpm_txt}", f"&lt; 60 or &gt; 100 {_lpm_txt}")], "verde"),
     ]
     _pu_html = "".join(
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pu_activa, _pulse=True)
@@ -10005,7 +10022,7 @@ elif hoja_activa == "📄 MI REPORTE":
                 filas_html += f"""
                 <tr>
                     <td class="dm-momento">{_ICONOS_COMIDA_R9[f['momento']]} {_mom_r14(f['momento'])}</td>
-                    <td>{_nombre_alimento(d['alimento'])}</td>
+                    <td>{_dieta_nombre(d['alimento'])}</td>
                     <td>{d['kcal']:.0f} kcal</td>
                     <td>{d['porcion']:.1f} kcal</td>
                     <td>{d['gramos']:.1f} g</td>
