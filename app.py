@@ -6131,6 +6131,7 @@ def _construir_css_nav(_opciones, _colores):
     """Construye el CSS de resaltado de los botones de navegación UNA sola vez (cacheado):
     los colores son estáticos y no dependen del estado del usuario, así que recalcularlos en
     cada rerun es trabajo innecesario que ralentiza el cambio de pestaña."""
+    _colores = dict(_colores)
     _css = "<style>\n"
     for _i, _hoja in enumerate(_opciones, start=1):
         _borde, _fondo = _colores.get(_hoja, ("#1E5631", "#EAFAEE"))
@@ -7377,74 +7378,72 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 10. Gráfico de percentiles por edad (bandas de colores) — SUSPENDIDO en adolescentes
-    #         gestantes: se sustituye por el aviso clínico IOM/ACOG (percentiles no gestacionales) ---
+    # --- 10. Gráfico de percentiles por edad (bandas de colores, siempre visible) -----------
+    st.markdown(T("#### 📈 Percentiles de IMC por edad (2 a 20 años)", "#### 📈 BMI Percentiles by Age (2 to 20 years)"))
+    st.caption(T("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
+               "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
+               "mientras que las franjas de arriba o abajo indican bajo peso, sobrepeso u obesidad. La estrella ⭐ "
+               "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.",
+               "This chart compares you with other children and teens of your same age and sex. The colored bands "
+               "represent different weight ranges: the central band (light blue/green) is the healthiest range, "
+               "while the bands above or below indicate underweight, overweight, or obesity. The blue star ⭐ "
+               "marks exactly where you stand, if your age is between 2 and 20 years."))
+    sub_mujeres, sub_hombres = st.tabs([T("👧 Mujeres", "👧 Girls"), T("👦 Hombres", "👦 Boys")])
+    with sub_mujeres:
+        st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
+    with sub_hombres:
+        st.plotly_chart(grafico_percentil_bandas("Hombre", edad, imc, genero), use_container_width=True)
+    if edad not in PERCENTIL_MUJER:
+        st.caption(T("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.",
+                      "ℹ️ Your current age is outside the 2-20 year range, so your point isn't marked on the chart."))
+
+    # --- 11. Tabla de percentiles — fila Y columna del usuario resaltadas -------------------
+    with st.expander(T("📊 Ver tabla completa de percentiles (edad 2-20 años)", "📊 View full percentile table (age 2-20 years)"), expanded=False):
+        tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero, categoria_usuario=_categoria_imc_usuario)
+        st.markdown(T("""
+        <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
+        💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
+        si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
+        y por encima de P95 en Obesidad. La columna marcada con tu color es la que corresponde a tu resultado actual.
+        </div>
+        """, """
+        <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
+        💡 <b>How to use this table?</b> Find your age row and compare your BMI with the P5/P50/P85/P95 columns:
+        if your BMI falls before P5 you are Underweight, between P5 and P85 Healthy Weight, between P85 and P95 Overweight,
+        and above P95 Obesity. The column marked with your color is the one matching your current result.
+        </div>
+        """), unsafe_allow_html=True)
+
+    # --- ⚠️ Leyenda de advertencia — SOLO si la persona es adolescente/niña Y está embarazada ---
     if _es_adolescente_gestante:
         st.markdown(T(f"""
         <div style="background:linear-gradient(120deg,#FFF3E5 0%,#FDF0F7 100%);border-radius:20px;
-        padding:20px 24px;margin:6px 0 16px 0;border-left:6px solid #FF9500;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
-        <p style="margin:0 0 6px 0;font-weight:900;color:#B06000;font-size:1rem;">
+        padding:18px 22px;margin:14px 0 6px 0;border-left:6px solid #FF9500;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+        <p style="margin:0 0 6px 0;font-weight:900;color:#B06000;font-size:0.95rem;">
         ⚠️ Nota Clínica sobre Percentiles en Adolescentes Gestantes</p>
-        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.6;">
+        <p style="margin:0;color:#5C4A1E;font-size:0.85rem;line-height:1.6;">
         Las tablas de percentiles de IMC de la OMS (2 a 20 años) evalúan el crecimiento en etapas
-        <b>no gestacionales</b>. Durante el embarazo, el seguimiento del peso <b>debe guiarse
-        exclusivamente por las curvas de ganancia ponderal por semana gestacional (Guías IOM/ACOG)</b>
-        utilizando tu <b style="color:#8E24AA;">IMC pregestacional</b>, ya que el aumento de peso
-        actual incluye el tejido feto-placentario y la expansión de líquidos corporales. Por eso el
-        gráfico de percentiles poblacional está desactivado para tu perfil.</p>
+        <b>no gestacionales</b>. Durante el embarazo, tu seguimiento se guiará por las
+        <b>curvas de ganancia ponderal por semana gestacional (IOM/ACOG)</b> usando tu
+        <b style="color:#8E24AA;">IMC pregestacional</b>, ya que tu peso actual ya incluye tejido
+        feto-placentario y líquidos.</p>
         </div>
         """, f"""
         <div style="background:linear-gradient(120deg,#FFF3E5 0%,#FDF0F7 100%);border-radius:20px;
-        padding:20px 24px;margin:6px 0 16px 0;border-left:6px solid #FF9500;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
-        <p style="margin:0 0 6px 0;font-weight:900;color:#B06000;font-size:1rem;">
+        padding:18px 22px;margin:14px 0 6px 0;border-left:6px solid #FF9500;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
+        <p style="margin:0 0 6px 0;font-weight:900;color:#B06000;font-size:0.95rem;">
         ⚠️ Clinical Note on Percentiles in Pregnant Teens</p>
-        <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.6;">
+        <p style="margin:0;color:#5C4A1E;font-size:0.85rem;line-height:1.6;">
         WHO's BMI-for-age percentile tables (ages 2-20) assess growth in <b>non-pregnant</b> stages.
-        During pregnancy, weight monitoring <b>must be guided exclusively by weekly gestational
-        weight-gain curves (IOM/ACOG Guidelines)</b> using your <b style="color:#8E24AA;">pre-pregnancy
-        BMI</b>, since your current weight gain includes feto-placental tissue and body fluid
-        expansion. That's why the population percentile chart is disabled for your profile.</p>
+        During pregnancy, your tracking will be guided by <b>weekly gestational weight-gain curves
+        (IOM/ACOG)</b> using your <b style="color:#8E24AA;">pre-pregnancy BMI</b>, since your current
+        weight already includes feto-placental tissue and fluids.</p>
         </div>
         """), unsafe_allow_html=True)
         st.info(T("📊 Puedes ver tu curva de ganancia de peso gestacional semana a semana en "
                   "**13.-LÍNEA DE TIEMPO** (Seguimiento del Peso durante el Embarazo).",
                   "📊 You can see your week-by-week gestational weight-gain curve in "
                   "**13.-TIMELINE** (Weight Tracking During Pregnancy)."))
-    else:
-        st.markdown(T("#### 📈 Percentiles de IMC por edad (2 a 20 años)", "#### 📈 BMI Percentiles by Age (2 to 20 years)"))
-        st.caption(T("Este gráfico te compara con otros niños y adolescentes de tu misma edad y sexo. Las franjas de "
-                   "colores son distintos rangos de peso: la franja central (celeste/verde) es el rango más saludable, "
-                   "mientras que las franjas de arriba o abajo indican bajo peso, sobrepeso u obesidad. La estrella ⭐ "
-                   "azul marca exactamente en qué punto te encuentras tú, si tu edad está entre 2 y 20 años.",
-                   "This chart compares you with other children and teens of your same age and sex. The colored bands "
-                   "represent different weight ranges: the central band (light blue/green) is the healthiest range, "
-                   "while the bands above or below indicate underweight, overweight, or obesity. The blue star ⭐ "
-                   "marks exactly where you stand, if your age is between 2 and 20 years."))
-        sub_mujeres, sub_hombres = st.tabs([T("👧 Mujeres", "👧 Girls"), T("👦 Hombres", "👦 Boys")])
-        with sub_mujeres:
-            st.plotly_chart(grafico_percentil_bandas("Mujer", edad, imc, genero), use_container_width=True)
-        with sub_hombres:
-            st.plotly_chart(grafico_percentil_bandas("Hombre", edad, imc, genero), use_container_width=True)
-        if edad not in PERCENTIL_MUJER:
-            st.caption(T("ℹ️ Tu edad actual está fuera del rango de 2-20 años, así que no aparece tu punto marcado en el gráfico.",
-                          "ℹ️ Your current age is outside the 2-20 year range, so your point isn't marked on the chart."))
-
-        # --- 11. Tabla de percentiles — fila Y columna del usuario resaltadas -------------------
-        with st.expander(T("📊 Ver tabla completa de percentiles (edad 2-20 años)", "📊 View full percentile table (age 2-20 years)"), expanded=False):
-            tabla_percentiles_genero_visual(edad_usuario=edad, genero_usuario=genero, categoria_usuario=_categoria_imc_usuario)
-            st.markdown(T("""
-            <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
-            💡 <b>¿Cómo usar esta tabla?</b> Busca la fila de tu edad y compara tu IMC con las columnas P5/P50/P85/P95:
-            si tu IMC cae antes de P5 estás en Bajo Peso, entre P5 y P85 en Peso Saludable, entre P85 y P95 en Sobrepeso,
-            y por encima de P95 en Obesidad. La columna marcada con tu color es la que corresponde a tu resultado actual.
-            </div>
-            """, """
-            <div style="margin-top:10px;background:#F3EAF7;border-radius:14px;padding:12px 16px;font-size:0.8rem;color:#6A1B9A;">
-            💡 <b>How to use this table?</b> Find your age row and compare your BMI with the P5/P50/P85/P95 columns:
-            if your BMI falls before P5 you are Underweight, between P5 and P85 Healthy Weight, between P85 and P95 Overweight,
-            and above P95 Obesity. The column marked with your color is the one matching your current result.
-            </div>
-            """), unsafe_allow_html=True)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
