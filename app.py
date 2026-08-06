@@ -4282,19 +4282,37 @@ def _datos_interpretacion_objetivo(objetivo_v):
     tarjeta de interpretación como por la tarjeta combinada del panel de macros."""
     if objetivo_v == "Bajar de peso":
         color, fondo = "#FF9500", "#FFF3E0"
-        texto = ("Con este ajuste, consumirás <b>menos energía de la que gastas</b>.<br>"
-                  "Tu cuerpo utilizará parte de sus reservas de grasa para completar esa diferencia.")
-        checks = ["Déficit calórico controlado", "Sin bajar de tu TMB", "Compatible con un plan saludable"]
+        texto = T(
+            "Con este ajuste, consumirás <b>menos energía de la que gastas</b>.<br>"
+            "Tu cuerpo utilizará parte de sus reservas de grasa para completar esa diferencia.",
+            "With this adjustment, you'll consume <b>less energy than you burn</b>.<br>"
+            "Your body will use part of its fat reserves to make up that difference."
+        )
+        checks = [T("Déficit calórico controlado", "Controlled caloric deficit"),
+                  T("Sin bajar de tu TMB", "Never below your BMR"),
+                  T("Compatible con un plan saludable", "Compatible with a healthy plan")]
     elif objetivo_v == "Subir de peso":
         color, fondo = "#007AFF", "#EAF3FF"
-        texto = ("Con este ajuste, consumirás <b>más energía de la que gastas</b>.<br>"
-                  "Tu cuerpo usará ese excedente para construir tejido nuevo, como músculo.")
-        checks = ["Superávit calórico controlado", "Por encima de tu TMB", "Compatible con un plan saludable"]
+        texto = T(
+            "Con este ajuste, consumirás <b>más energía de la que gastas</b>.<br>"
+            "Tu cuerpo usará ese excedente para construir tejido nuevo, como músculo.",
+            "With this adjustment, you'll consume <b>more energy than you burn</b>.<br>"
+            "Your body will use that surplus to build new tissue, such as muscle."
+        )
+        checks = [T("Superávit calórico controlado", "Controlled caloric surplus"),
+                  T("Por encima de tu TMB", "Above your BMR"),
+                  T("Compatible con un plan saludable", "Compatible with a healthy plan")]
     else:
         color, fondo = "#34C759", "#EAFAEE"
-        texto = ("Con este ajuste, consumirás <b>aproximadamente la misma energía que gastas</b>.<br>"
-                  "Tu cuerpo no necesita usar reservas ni acumular un excedente.")
-        checks = ["Sin déficit ni superávit", "Por encima de tu TMB", "Ideal para conservar tu peso actual"]
+        texto = T(
+            "Con este ajuste, consumirás <b>aproximadamente la misma energía que gastas</b>.<br>"
+            "Tu cuerpo no necesita usar reservas ni acumular un excedente.",
+            "With this adjustment, you'll consume <b>approximately the same energy you burn</b>.<br>"
+            "Your body doesn't need to use reserves or build up a surplus."
+        )
+        checks = [T("Sin déficit ni superávit", "No deficit or surplus"),
+                  T("Por encima de tu TMB", "Above your BMR"),
+                  T("Ideal para conservar tu peso actual", "Ideal for maintaining your current weight")]
     return color, fondo, texto, checks
 
 
@@ -4311,7 +4329,7 @@ def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
     )
     st.markdown(f"""
     <div class="bento-card" style="background:{fondo};border:1.5px solid {color}33;">
-        <div style="font-weight:800;color:{color};font-size:0.95rem;margin-bottom:6px;">🧠 ¿Qué significa tu nuevo objetivo?</div>
+        <div style="font-weight:800;color:{color};font-size:0.95rem;margin-bottom:6px;">🧠 {T('¿Qué significa tu nuevo objetivo?', 'What does your new goal mean?')}</div>
         <div style="font-size:0.85rem;color:#3C3C43;line-height:1.55;">{texto}</div>
         {_checks_html}
     </div>
@@ -4319,26 +4337,8 @@ def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
 
 
 def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v, objetivo_v):
-    """Panel de control visual de macronutrientes con diales Altair y una tarjeta combinada
-    de interpretación del objetivo + recordatorio de recálculo (reemplaza el aviso naranja anterior)."""
-    st.markdown("#### 🎛️ Panel de Control de Macros")
-    max_prot = max(peso_v * 2.2, 1)
-    max_gras = max(peso_v * 1.2, 1)
-    pct_prot = gr_prot_v / max_prot
-    pct_gras = gr_gras_v / max_gras
-    pct_carb = 0.50  # los carbohidratos siempre representan el 50% de tu energía diaria
-
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        _gauge_altair(pct_prot, "#FF6B5B", f"Tus Ladrillos: {gr_prot_v:.2f} g/día",
-                      "Para no perder el músculo que ya tienes.", "prot")
-    with m2:
-        _gauge_altair(pct_gras, "#FFC93C", f"Tus Hormonas: {gr_gras_v:.2f} g/día",
-                      "El 'combustible' que mantiene tu cuerpo funcionando bien. ¡No lo bajes demasiado!", "gras")
-    with m3:
-        _gauge_altair(pct_carb, "#4FC3F7", f"Tu Energía: {gr_carb_v:.2f} g/día",
-                      "El resto de la energía para tu día y entrenamientos.", "carb")
-
+    """Tarjeta combinada de interpretación del objetivo + recordatorio de recálculo
+    (reemplaza el aviso naranja anterior y el panel de diales de macros, ya retirado)."""
     _color_o, _fondo_o, _texto_o, _checks_o = _datos_interpretacion_objetivo(objetivo_v)
     _checks_html_o = "".join(
         f'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">'
@@ -4348,19 +4348,19 @@ def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v, objeti
     )
     st.markdown(f"""
     <div class="bento-card" style="background:{_fondo_o};border:1.5px solid {_color_o}33;margin-top:14px;">
-        <div style="font-weight:800;color:{_color_o};font-size:0.95rem;margin-bottom:6px;">🧠 ¿Qué significa tu nuevo objetivo?</div>
+        <div style="font-weight:800;color:{_color_o};font-size:0.95rem;margin-bottom:6px;">🧠 {T('¿Qué significa tu nuevo objetivo?', 'What does your new goal mean?')}</div>
         <div style="font-size:0.85rem;color:#3C3C43;line-height:1.55;">{_texto_o}</div>
         {_checks_html_o}
         <hr style="border:none;border-top:1px solid {_color_o}33;margin:12px 0;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
             <span style="font-size:1.1rem;">📌</span>
-            <span style="font-weight:800;color:{_color_o};">Recuerda</span>
+            <span style="font-weight:800;color:{_color_o};">{T('Recuerda', 'Remember')}</span>
         </div>
         <div style="font-size:0.85rem;color:#3C3C43;line-height:1.7;">
-            Tu plan debe actualizarse cuando:<br>
-            ⚖️ Cambies entre 3 y 5 kg.<br>
-            🏃 Cambie tu actividad física.<br>
-            📏 Cambien tus medidas corporales.
+            {T('Tu plan debe actualizarse cuando:', 'Your plan should be updated when:')}<br>
+            ⚖️ {T('Cambies entre 3 y 5 kg.', 'You change between 3 and 5 kg.')}<br>
+            🏃 {T('Cambie tu actividad física.', 'Your physical activity changes.')}<br>
+            📏 {T('Cambien tus medidas corporales.', 'Your body measurements change.')}
         </div>
     </div>
     """, unsafe_allow_html=True)
