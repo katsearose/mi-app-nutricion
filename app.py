@@ -25,16 +25,6 @@ def _hex_a_rgba(color_hex, alpha=0.12):
         r, g, b = 52, 199, 89
     return f"rgba({r},{g},{b},{alpha})"
 
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
-from reportlab.lib import colors as rl_colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether, Image, PageBreak
-)
-from reportlab.lib.utils import ImageReader
-
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎",
                     initial_sidebar_state="expanded")
 
@@ -2125,6 +2115,7 @@ def galeria_bonita(rutas_con_captions, columnas=3):
 
 def _rl_hex(hexcolor):
     """Convierte un color '#RRGGBB' a un color de reportlab."""
+    from reportlab.lib import colors as rl_colors
     return rl_colors.HexColor(hexcolor)
 
 
@@ -2134,7 +2125,20 @@ def generar_pdf_reporte(datos):
     análisis sanguíneo, módulos de antropometría/energía/macronutrientes en grillas de 2
     columnas, y en la página 2 las 3 tablas cromáticas del plan alimentario + recomendaciones
     y aviso médico-legal) — listo para imprimir o entregar al usuario.
-    `datos` es un diccionario con toda la información necesaria (ver llamada en Hoja 14)."""
+    `datos` es un diccionario con toda la información necesaria (ver llamada en Hoja 14).
+    Los imports de reportlab se hacen aquí (import perezoso), no al inicio del archivo:
+    esta librería solo se usa en esta función (página 'MI REPORTE'), así que cargarla solo
+    cuando realmente se genera el PDF evita ese costo en el arranque y en cada rerun normal
+    de la app, acelerando notablemente la carga inicial."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.lib import colors as rl_colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether, Image, PageBreak
+    )
+    from reportlab.lib.utils import ImageReader
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
