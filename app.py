@@ -425,74 +425,363 @@ FOOD_DB_RAW = [
 FOOD_COLS = ["codigo", "nombre", "grupo_cod", "kcal", "proteinas", "grasas", "cho", "fibra", "calcio", "hierro", "vitc"]
 FOOD_DB = [dict(zip(FOOD_COLS, fila)) for fila in FOOD_DB_RAW]
 
-# Traducción de nombres de alimentos GENÉRICOS al inglés (whitelist). Se mantienen sin traducir
-# los alimentos con nomenclatura propia peruana (p. ej. quinua, palta, ají amarillo, camote,
-# olluco, mashua, rocoto, choclo) ya que no tienen equivalente estándar en inglés y forman parte
-# de la Tabla Peruana de Composición de Alimentos (INS/CENAN). Solo se traducen alimentos
-# genéricos e internacionales con una traducción estándar y clara.
+# Traducción de TODOS los nombres de alimentos de la Base Peruana (343 alimentos) al inglés.
+# Cubre el 100% de FOOD_DB_RAW (verificado por script), incluyendo nombres con nomenclatura
+# propia peruana (quinua, palta, camote, olluco, mashua, rocoto, choclo, etc.), que también
+# se traducen para que la Food Library quede completamente en inglés cuando ese es el idioma
+# activo. Los valores nutricionales de FOOD_DB permanecen exactamente iguales; solo cambia
+# el nombre mostrado.
 FOOD_NOMBRE_EN = {
-    "Arroz blanco corriente": "Common White Rice",
-    "Pan de molde": "Sliced Bread",
-    "Pan de molde integral": "Whole Wheat Sliced Bread",
-    "Pan integral": "Whole Wheat Bread",
-    "Pan francés fortificado con hierro": "Iron-Fortified French Bread",
-    "Trigo": "Wheat",
-    "Tomate": "Tomato",
-    "Tomate italiano": "Italian Tomato",
-    "Tomate redondo, con cáscara": "Round Tomato, with Skin",
-    "Salsa de tomate": "Tomato Sauce",
-    "Salsa concentrada de tomate": "Concentrated Tomato Sauce",
-    "Salsa de tomate con carne": "Tomato Sauce with Meat",
+    "Aceite vegetal de algodón": "Cottonseed Vegetable Oil",
     "Aceite vegetal de girasol": "Sunflower Vegetable Oil",
     "Aceite vegetal de girasol con canola": "Sunflower and Canola Vegetable Oil",
+    "Aceite vegetal de maní": "Peanut Vegetable Oil",
+    "Aceite vegetal de maíz": "Corn Vegetable Oil",
     "Aceite vegetal de oliva extravirgen": "Extra Virgin Olive Oil",
     "Aceite vegetal de olivo": "Olive Vegetable Oil",
-    "Aceite vegetal de maíz": "Corn Vegetable Oil",
-    "Aceite vegetal de soya": "Soybean Vegetable Oil",
     "Aceite vegetal de palma": "Palm Vegetable Oil",
-    "Aceite vegetal de maní": "Peanut Vegetable Oil",
-    "Aceite vegetal de algodón": "Cottonseed Vegetable Oil",
-    "Manteca de cerdo": "Pork Lard",
-    "Mantequilla": "Butter",
-    "Mantequilla con sal": "Salted Butter",
-    "Mantequilla sin sal": "Unsalted Butter",
+    "Aceite vegetal de sacha Inchi": "Sacha Inchi Vegetable Oil",
+    "Aceite vegetal de soya": "Soybean Vegetable Oil",
+    "Achiote seco": "Dried Annatto",
+    "Afrecho de quinua": "Quinoa Bran",
+    "Agua de coco": "Coconut Water",
+    "Aguaymanto": "Cape Gooseberry (Goldenberry)",
+    "Ají amarillo fresco": "Fresh Yellow Chili Pepper",
+    "Ají amarillo fresco, molido sin sal": "Fresh Yellow Chili Pepper, Ground without Salt",
+    "Ají amarillo seco": "Dried Yellow Chili Pepper",
+    "Ají verde": "Green Chili Pepper",
+    "Alcachofa": "Artichoke",
+    "Almendra": "Almond",
+    "Apio, tallo sin hojas": "Celery, Stalk without Leaves",
+    "Arroz blanco corriente": "Common White Rice",
+    "Arroz pilado o pulido cocido": "Cooked Milled Rice",
+    "Arveja, seca sin cáscara": "Pea, Dried without Shell",
+    "Avena envasada": "Packaged Oats",
+    "Azúcar rubia": "Brown Sugar",
+    "Bebida envasada de naranja": "Packaged Orange Drink",
+    "Bebida envasada de piña": "Packaged Pineapple Drink",
+    "Berenjena": "Eggplant",
+    "Berenjena Costeña o tomate de árbol": "Coastal Eggplant or Tree Tomato",
+    "Brocoli": "Broccoli",
+    "Café grano sin tostar": "Unroasted Coffee Beans",
+    "Café sin azúcar": "Coffee, No Sugar",
+    "Camaroncito seco (chino)": "Dried Small Shrimp (Chinese)",
+    "Camarones frescos": "Fresh Shrimp",
+    "Camote amarillo sin cáscara": "Yellow Sweet Potato, Peeled",
+    "Camote blanco": "White Sweet Potato",
+    "Camote de Huarayoc": "Huarayoc Sweet Potato",
+    "Camote deshidratado": "Dehydrated Sweet Potato",
+    "Camote deshidratado tratado con lejía": "Dehydrated Sweet Potato Treated with Lye",
+    "Camote morado sin cáscara": "Purple Sweet Potato, Peeled",
+    "Cangrejo": "Crab",
+    "Cangrejo cocido": "Cooked Crab",
     "Carne de cerdo sin hueso": "Boneless Pork",
+    "Carne de cuy": "Guinea Pig Meat",
+    "Carne de pavo": "Turkey Meat",
+    "Carne molida de res, cruda": "Ground Beef, Raw",
+    "Carne pulpa de alpaca": "Alpaca Meat (Boneless)",
+    "Carne pulpa de res": "Beef (Boneless)",
+    "Cebada con cáscara": "Barley with Husk",
+    "Cebada pelada para mote": "Peeled Barley for Mote",
+    "Cebada perlada o resbalada cocida": "Cooked Pearl Barley",
+    "Cebada perlada o resbalada cruda": "Raw Pearl Barley",
+    "Cebada tostada y molida (chaquepa)": "Toasted and Ground Barley (Chaquepa)",
+    "Cebada tostada, harina integral": "Toasted Barley, Whole Flour",
+    "Cereal infantil Cerelac de trigo": "Cerelac Wheat Infant Cereal",
+    "Cereal infantil Cerelac sabor manzana": "Cerelac Apple-Flavored Infant Cereal",
+    "Cereal infantil Nestúm, cereal mixto": "Nestúm Mixed Grain Infant Cereal",
+    "Cereal infantil Nestúm, tres cereales": "Nestúm Three-Grain Infant Cereal",
+    "Cerveza": "Beer",
+    "Chirimoya": "Custard Apple (Cherimoya)",
+    "Chocolate simple con azúcar (para taza)": "Plain Chocolate with Sugar (Drinking)",
+    "Chorizo": "Chorizo",
+    "Ciruela": "Plum",
+    "Clara de huevo de gallina": "Chicken Egg White",
+    "Col crespa o repollo sin cogollo": "Curly Cabbage or Headless Cabbage",
+    "Coliflor con tallo y sin hojas": "Cauliflower with Stem, without Leaves",
+    "Coliflor sin tallo y sin hojas": "Cauliflower without Stem or Leaves",
+    "Concentrado proteico de pota": "Jumbo Squid Protein Concentrate",
+    "Concha de abanico": "Scallop",
+    "Crema de leche espesa": "Thick Cream",
+    "Crema de leche rala (líquida)": "Light (Liquid) Cream",
+    "Culantro sin tallo": "Cilantro without Stem",
+    "Culantro, con hojas y tallo": "Cilantro, with Leaves and Stem",
+    "Durazno-Melocotón": "Peach",
+    "Esparragos": "Asparagus",
+    "Espinaca blanca": "White Spinach",
+    "Espinaca negra sin tronco": "Black Spinach without Stem",
+    "Espinaca, hojas sin tallo": "Spinach, Leaves without Stem",
+    "Fideo crudo fortificado con hierro": "Raw Iron-Fortified Noodles",
+    "Fideo tallarín crudo fortificado con hierro": "Raw Iron-Fortified Spaghetti Noodles",
+    "Frejol canario": "Canary Bean",
+    "Frejol canario cocido": "Cooked Canary Bean",
+    "Frejol canario fresco (frejol verde)": "Fresh Canary Bean (Green Bean)",
+    "Frejol canario serranito": "Serranito Canary Bean",
+    "Frejol castilla": "Castilla Bean",
+    "Frejol castilla sancochado sin sal": "Boiled Castilla Bean, No Salt",
+    "Frejol negro": "Black Bean",
+    "Frejol negro sancochado sin sal": "Boiled Black Bean, No Salt",
+    "Frejol palo fresco (lenteja verde)": "Fresh Pigeon Pea (Green Lentil)",
+    "Frejol panamito": "Panamito Bean",
+    "Frejol panamito sancochado sin sal": "Boiled Panamito Bean, No Salt",
+    "Fresa": "Strawberry",
+    "Fórmula infantil maternizada Al 110": "Al 110 Infant Formula",
+    "Fórmula infantil maternizada Eledón": "Eledón Infant Formula",
+    "Fórmula infantil maternizada Nan": "Nan Infant Formula",
+    "Fórmula infantil maternizada Pelargón": "Pelargón Infant Formula",
+    "Galleta de soda (San Jorge)": "Soda Cracker (San Jorge)",
+    "Galleta de soda (salada)": "Soda Cracker (Salted)",
+    "Galleta de vainilla (Field)": "Vanilla Cookie (Field)",
+    "Galleta de vainilla (dulce)": "Vanilla Cookie (Sweet)",
+    "Garbanzo": "Chickpea",
+    "Garbanzo, cocido": "Chickpea, Cooked",
+    "Granadilla": "Granadilla (Sweet Passion Fruit)",
+    "Guanábana": "Soursop",
+    "Harina de camote": "Sweet Potato Flour",
+    "Harina de lúcuma": "Lúcuma Flour",
+    "Harina de maca": "Maca Flour",
+    "Harina de maíz morado (api)": "Purple Corn Flour (Api)",
+    "Harina de quinua": "Quinoa Flour",
+    "Harina de yuca": "Cassava Flour",
+    "Harina de zanahoria": "Carrot Flour",
+    "Harina fortificada con hierro de trigo": "Iron-Fortified Wheat Flour",
+    "Harina tostada de trigo (machica)": "Toasted Wheat Flour (Machica)",
+    "Hojas de col": "Cabbage Leaves",
+    "Hojas de nabo": "Turnip Greens",
+    "Hojuela cocida de avena": "Cooked Oat Flakes",
+    "Hojuela cruda de avena": "Raw Oat Flakes",
+    "Hojuela de quinua": "Quinoa Flakes",
+    "Hojuela de trigo (chaque)": "Wheat Flakes (Chaque)",
+    "Hojuela precocida de avena con quinua": "Precooked Oat and Quinoa Flakes",
+    "Hot Dog": "Hot Dog",
+    "Huevera de pescado bonito": "Bonito Fish Roe",
+    "Huevo de gallina entero crudo": "Whole Raw Chicken Egg",
     "Hígado de cerdo": "Pork Liver",
-    "Pechuga de gallina sin piel": "Skinless Chicken Breast",
-    "Pechuga de pavo con piel": "Turkey Breast with Skin",
-    "Pollo, carne pulpa": "Chicken, Boneless Meat",
+    "Hígado de res": "Beef Liver",
+    "Jamón del país": "Local Cooked Ham",
+    "Jugo de naranja agria": "Sour Orange Juice",
+    "Jugo enlatado de granadilla": "Canned Granadilla Juice",
+    "Jugo natural de granadilla, sin azúcar": "Natural Granadilla Juice, No Sugar",
+    "Jugo natural de naranja tangelo": "Natural Tangelo Orange Juice",
+    "Jugo natural envasado de maracuyá": "Bottled Natural Passion Fruit Juice",
+    "Jugo natural envasado de naranja": "Bottled Natural Orange Juice",
+    "Jugo puro de maracuyá": "Pure Passion Fruit Juice",
+    "Kiwicha, achita o achis o amaranto": "Kiwicha (Amaranth)",
+    "Langostino blanco": "White Prawn",
     "Leche en polvo descremada": "Skim Milk Powder",
     "Leche en polvo entera": "Whole Milk Powder",
     "Leche evaporada descremada": "Skim Evaporated Milk",
     "Leche evaporada entera": "Whole Evaporated Milk",
+    "Leche fresca con menos de 1% de grasa": "Fresh Milk with Less than 1% Fat",
+    "Leche fresca de cabra": "Fresh Goat Milk",
     "Leche fresca de vaca": "Fresh Cow Milk",
     "Leche fresca de vaca descremada": "Fresh Skim Cow Milk",
-    "Leche fresca de cabra": "Fresh Goat Milk",
-    "Leche fresca con menos de 1% de grasa": "Fresh Milk with Less than 1% Fat",
-    "Crema de leche espesa": "Thick Cream",
-    "Crema de leche rala (líquida)": "Light (Liquid) Cream",
-    "Queso fresco de vaca": "Fresh Cow Cheese",
-    "Queso fresco de cabra": "Fresh Goat Cheese",
-    "Queso parmesano duro": "Hard Parmesan Cheese",
+    "Leche fresca entera (Plusa)": "Fresh Whole Milk (Plusa)",
+    "Lechuga americana": "Iceberg Lettuce",
+    "Lechuga de seda": "Silk Lettuce",
+    "Lechuga larga": "Romaine Lettuce",
+    "Lechuga morada, hojas sin tallo": "Purple Lettuce, Leaves without Stem",
+    "Lechuga redonda": "Round (Butterhead) Lettuce",
+    "Lengua cocida de res": "Cooked Beef Tongue",
+    "Lengua de res": "Beef Tongue",
+    "Lentejas chicas": "Small Lentils",
+    "Lentejas chicas cocidas": "Cooked Small Lentils",
+    "Lentejas grandes": "Large Lentils",
+    "Levadura fresca para pan": "Fresh Bread Yeast",
+    "Levadura seca": "Dry Yeast",
+    "Llunka de cebada (morón americano)": "Barley Llunka (American Morón)",
+    "Llunka de trigo": "Wheat Llunka",
+    "Lúcuma": "Lúcuma",
+    "Maca, afrechillo": "Maca, Bran",
+    "Maca, almidón": "Maca, Starch",
+    "Maca, pasta integral": "Maca, Whole Paste",
+    "Mandarina": "Tangerine",
+    "Mango": "Mango",
+    "Mango Edward": "Edward Mango",
+    "Mango ciruelo o taperibá": "Plum Mango (Taperibá)",
+    "Mango criollo": "Criollo Mango",
+    "Mango kafro": "Kafro Mango",
+    "Mango kent": "Kent Mango",
+    "Manteca de cerdo": "Pork Lard",
+    "Mantequilla": "Butter",
+    "Mantequilla con sal": "Salted Butter",
+    "Mantequilla sin sal": "Unsalted Butter",
+    "Margarina vegetal con sal": "Salted Vegetable Margarine",
+    "Margarina, Dorina Light al 50% de grasa": "Margarine, Dorina Light 50% Fat",
+    "Margarina, La Preferida 70% grasa": "Margarine, La Preferida 70% Fat",
+    "Margarina, Manty 40% de grasa vegetal": "Margarine, Manty 40% Vegetable Fat",
+    "Margarina, Sello de Oro": "Margarine, Sello de Oro",
+    "Margarina, Swis 60% de grasa": "Margarine, Swis 60% Fat",
+    "Margarina, Swis Light": "Margarine, Swis Light",
+    "Mashka o machica de cebada (harina de cebada tostada)": "Mashka (Toasted Barley Flour)",
+    "Mashua o isaño": "Mashua (Andean Tuber)",
+    "Mayonesa envasada con sal": "Packaged Mayonnaise with Salt",
+    "Maíz, grano fresco (choclo)": "Corn, Fresh Kernel (Choclo)",
+    "Melón": "Melon (Cantaloupe)",
+    "Melón enano": "Dwarf Melon",
+    "Membrillo": "Quince",
+    "Mezcla de mariscos: mejillones, caracol y concha de abanico": "Seafood Mix: Mussels, Sea Snail and Scallop",
+    "Miel de abeja": "Honey",
+    "Mote de trigo sancochado": "Boiled Wheat Mote",
+    "Nabo": "Turnip",
+    "Naranja": "Orange",
+    "Naranja de Guayaquil": "Guayaquil Orange",
+    "Naranja de Huando": "Huando Orange",
+    "Naranja tangelo": "Tangelo Orange",
+    "Néctar envasado de durazno": "Packaged Peach Nectar",
+    "Néctar envasado de mango": "Packaged Mango Nectar",
+    "Néctar envasado de maracuyá": "Packaged Passion Fruit Nectar",
+    "Néctar envasado de naranja": "Packaged Orange Nectar",
+    "Néctar envasado de pera": "Packaged Pear Nectar",
+    "Néctar natural de papaya, sin azúcar": "Natural Papaya Nectar, No Sugar",
+    "Néctar natural de piña Selva, sin azúcar": "Natural Selva Pineapple Nectar, No Sugar",
+    "Olluco sin cáscara": "Olluco, Peeled",
+    "Pallar cocido, con cáscara": "Cooked Lima Bean, with Skin",
+    "Pallar del río Manú": "Manú River Lima Bean",
+    "Pallar morado": "Purple Lima Bean",
+    "Pallar seco": "Dried Lima Bean",
+    "Pallar sin cáscara": "Lima Bean, Peeled",
+    "Palta \"fuerte\"": "\"Fuerte\" Avocado",
+    "Palta Hass": "Hass Avocado",
+    "Pan cuay de trigo de Carhuaz": "Carhuaz Wheat \"Cuay\" Bread",
+    "Pan cuay de trigo de Huaraz": "Huaraz Wheat \"Cuay\" Bread",
+    "Pan de cebada (serrano)": "Barley Bread (Highland-style)",
+    "Pan de molde": "Sliced Bread",
+    "Pan de molde integral": "Whole Wheat Sliced Bread",
+    "Pan de quinua de Lima": "Lima Quinoa Bread",
+    "Pan de trigo artesanal de Carhuaz": "Carhuaz Artisanal Wheat Bread",
+    "Pan francés fortificado con hierro": "Iron-Fortified French Bread",
+    "Pan integral": "Whole Wheat Bread",
+    "Papaya": "Papaya",
+    "Papaya arequipeña": "Arequipa Papaya",
+    "Pecana": "Pecan",
+    "Pechuga de gallina sin piel": "Skinless Chicken Breast",
+    "Pechuga de pavo con piel": "Turkey Breast with Skin",
+    "Pepinillo japonés con cáscara y pepas": "Japanese Cucumber, with Skin and Seeds",
+    "Pepinillo sin cáscara": "Cucumber, Peeled",
+    "Perejil sin tallo": "Parsley without Stem",
+    "Pescado Tilapia, fresco": "Fresh Tilapia",
+    "Pescado anchoveta": "Anchovy",
+    "Pescado atún, en conserva": "Canned Tuna",
+    "Pescado atún, enlatado en aceite": "Tuna, Canned in Oil",
+    "Pescado atún, enlatado en agua": "Tuna, Canned in Water",
+    "Pescado atún, fresco": "Fresh Tuna",
+    "Pescado bonito": "Bonito Fish",
+    "Pescado bonito fresco, músculo claro": "Fresh Bonito, Light Muscle",
+    "Pescado bonito fresco, músculo oscuro": "Fresh Bonito, Dark Muscle",
+    "Pescado bonito, pulpa asada": "Bonito, Roasted Flesh",
+    "Pescado bonito, seco salado": "Bonito, Dried and Salted",
+    "Pescado caballa, en conserva": "Canned Mackerel",
+    "Pescado caballa, fresco": "Fresh Mackerel",
+    "Pescado caballa, salado": "Salted Mackerel",
+    "Pescado corvina": "Corvina (Sea Bass)",
+    "Pescado jurel, en conserva": "Canned Jack Mackerel",
+    "Pescado jurel, fresco": "Fresh Jack Mackerel",
+    "Pescado lenguado": "Sole (Flatfish)",
+    "Pescado merluza, fresco": "Fresh Hake",
+    "Pescado merluza, seco": "Dried Hake",
+    "Pescado pejerrey": "Silverside Fish",
+    "Pescado trucha rosada": "Pink Trout",
+    "Pescado trucha, en conserva": "Canned Trout",
+    "Pescado trucha, fresca": "Fresh Trout",
+    "Pierna cruda de cordero": "Raw Leg of Lamb",
+    "Pierna de gallina sin piel": "Skinless Chicken Leg",
+    "Pierna de pavo con piel": "Turkey Leg with Skin",
+    "Pimiento amarillo": "Yellow Bell Pepper",
+    "Pimiento rojo": "Red Bell Pepper",
+    "Pimiento verde": "Green Bell Pepper",
+    "Piña": "Pineapple",
+    "Piña Golden o baby golden": "Golden Pineapple (Baby Golden)",
+    "Piña Hawaiana": "Hawaiian Pineapple",
+    "Piña Selva": "Selva Pineapple",
+    "Pollo, carne pulpa": "Chicken, Boneless Meat",
+    "Poro sin hojas": "Leek without Leaves",
+    "Pulpa cocida envasada de choro (mejillón)": "Cooked Packaged Mussel Meat",
+    "Pulpo": "Octopus",
     "Queso edam": "Edam Cheese",
+    "Queso fresco de cabra": "Fresh Goat Cheese",
+    "Queso fresco de vaca": "Fresh Cow Cheese",
     "Queso mantecoso": "Creamy Cheese",
-    "Yogurt de leche entera": "Whole Milk Yogurt",
-    "Yogurt natural de leche descremada": "Plain Skim Milk Yogurt",
-    "Yogurt griego natural sin azúcar": "Plain Greek Yogurt, No Sugar",
-    "Café sin azúcar": "Coffee, No Sugar",
-    "Huevo de gallina entero crudo": "Whole Raw Chicken Egg",
-    "Clara de huevo de gallina": "Chicken Egg White",
+    "Queso parmesano duro": "Hard Parmesan Cheese",
+    "Quinua": "Quinoa",
+    "Quinua blanca (Junín)": "White Quinoa (Junín)",
+    "Quinua blanca (Puno)": "White Quinoa (Puno)",
+    "Quinua cocida": "Cooked Quinoa",
+    "Quinua dulce, blanca (Junín)": "Sweet White Quinoa (Junín)",
+    "Quinua dulce, blanca (Puno)": "Sweet White Quinoa (Puno)",
+    "Quinua dulce, rosada (Junín)": "Sweet Pink Quinoa (Junín)",
+    "Quinua rosada (Puno)": "Pink Quinoa (Puno)",
+    "Quinua, variedad Ayara (Puno)": "Quinoa, Ayara Variety (Puno)",
+    "Quinua, variedad CICA-127 (Puno)": "Quinoa, CICA-127 Variety (Puno)",
+    "Quinua, variedad CICA-18 (Puno)": "Quinoa, CICA-18 Variety (Puno)",
+    "Quinua, variedad Choclito (Puno)": "Quinoa, Choclito Variety (Puno)",
+    "Quinua, variedad Chullpi- roja (Puno)": "Quinoa, Red Chullpi Variety (Puno)",
+    "Quinua, variedad Cuchiwilla (Puno)": "Quinoa, Cuchiwilla Variety (Puno)",
+    "Quinua, variedad Misa Jiura (Puno)": "Quinoa, Misa Jiura Variety (Puno)",
+    "Quinua, variedad Pasankalla-roja (Puno)": "Quinoa, Red Pasankalla Variety (Puno)",
+    "Quinua, variedad Q' OITU-negra (Puno)": "Quinoa, Black Q'oitu Variety (Puno)",
+    "Quinua, variedad Wariponcho (Puno)": "Quinoa, Wariponcho Variety (Puno)",
+    "Quinua, variedad Witulla (Puno)": "Quinoa, Witulla Variety (Puno)",
+    "Quinua, variedad blanca de Juli (Puno)": "Quinoa, White Juli Variety (Puno)",
+    "Quinua, variedad real": "Quinoa, Royal Variety",
+    "Rabanitos": "Radishes",
+    "Refresco de carambola con azúcar": "Sweetened Starfruit Refreshment",
+    "Refresco de cebada con azúcar": "Sweetened Barley Refreshment",
+    "Refresco de manzana con azúcar": "Sweetened Apple Refreshment",
+    "Refresco de maracuyá con azúcar": "Sweetened Passion Fruit Refreshment",
+    "Rocoto fresco": "Fresh Rocoto Pepper",
+    "Salchicha blanca chica": "Small White Sausage",
+    "Salchicha blanca grande": "Large White Sausage",
+    "Salchicha de \"Huacho\"": "\"Huacho\" Sausage",
+    "Salsa concentrada de tomate": "Concentrated Tomato Sauce",
+    "Salsa de tomate": "Tomato Sauce",
+    "Salsa de tomate con carne": "Tomato Sauce with Meat",
+    "Sandia": "Watermelon",
+    "Semilla de ajonjolí": "Sesame Seed",
+    "Semilla de ajonjolí negro": "Black Sesame Seed",
+    "Siuca culantro": "Siuca Cilantro (Long Coriander)",
+    "Sémola de quinua": "Quinoa Semolina",
+    "Sémola de trigo": "Wheat Semolina",
+    "Tocino": "Bacon",
+    "Tocino, sancochado": "Bacon, Boiled",
+    "Tomate": "Tomato",
+    "Tomate de palito": "Cherry Tomato (on the Vine)",
+    "Tomate italiano": "Italian Tomato",
+    "Tomate italiano, sin pepas, sin cáscara": "Italian Tomato, Seedless and Peeled",
+    "Tomate redondo, con cáscara": "Round Tomato, with Skin",
+    "Trigo": "Wheat",
+    "Trigo para mote pelado cocido": "Cooked Peeled Wheat for Mote",
+    "Trigo para mote pelado crudo": "Raw Peeled Wheat for Mote",
+    "Trigo pelado": "Peeled Wheat",
+    "Trigo resbalado cocido": "Cooked Rolled Wheat",
+    "Trigo resbalado crudo": "Raw Rolled Wheat",
+    "Trigo sin tostar (chaquepa)": "Untoasted Wheat (Chaquepa)",
+    "Trigo tostado (chaquepa)": "Toasted Wheat (Chaquepa)",
+    "Té hojas secas": "Dried Tea Leaves",
+    "Uva Red Globe con cáscara, sin pepas": "Red Globe Grape, with Skin, Seedless",
+    "Uva blanca": "White Grape",
+    "Uva borgoña": "Burgundy Grape",
+    "Uva italia": "Italia Grape",
+    "Uva negra": "Black Grape",
+    "Uva quebranta": "Quebranta Grape",
+    "Vainita sancochada sin sal": "Boiled Green Bean, No Salt",
+    "Vainitas": "Green Beans",
+    "Vinagre": "Vinegar",
     "Yema de huevo de gallina": "Chicken Egg Yolk",
-    "Azúcar rubia": "Brown Sugar",
+    "Yogurt bebible de fresa": "Strawberry Drinkable Yogurt",
+    "Yogurt de leche entera": "Whole Milk Yogurt",
+    "Yogurt frutado de leche descremada": "Fruit-Flavored Skim Milk Yogurt",
+    "Yogurt griego descremado con fresas": "Skim Greek Yogurt with Strawberries",
+    "Yogurt griego natural sin azúcar": "Plain Greek Yogurt, No Sugar",
+    "Yogurt natural de leche descremada": "Plain Skim Milk Yogurt",
+    "Zanahoria": "Carrot",
 }
 
 
 def _nombre_alimento(nombre):
-    """Devuelve el nombre del alimento en el idioma actual. Los nombres genéricos con
-    traducción estándar (whitelist FOOD_NOMBRE_EN) se traducen al inglés; los nombres propios
-    de alimentos tradicionales peruanos (quinua, palta, camote, olluco, etc.) se mantienen
-    intactos porque forman parte de la nomenclatura oficial de la Tabla Peruana de Composición
-    de Alimentos (INS/CENAN) y no tienen una traducción literal correcta."""
+    """Devuelve el nombre del alimento en el idioma actual. Cuando el idioma activo es
+    English, traduce usando FOOD_NOMBRE_EN (cobertura completa de los 343 alimentos de
+    FOOD_DB); en Español devuelve el nombre original tal cual está en la base."""
     if st.session_state.get("idioma", "Español") == "English":
         return FOOD_NOMBRE_EN.get(nombre, nombre)
     return nombre
@@ -666,9 +955,15 @@ def buscar_alimentos(consulta, limite=12):
     q = _norm_txt(consulta).strip()
     if not q:
         return []
+    idioma_en = st.session_state.get("idioma", "Español") == "English"
     exact, word_start, word_mid, contains = [], [], [], []
     for f in FOOD_DB:
-        n = _norm_txt(f["nombre"])
+        # Nombre en el idioma activo (lo que el usuario espera buscar/ver) y nombre en el
+        # otro idioma como respaldo, para que la búsqueda funcione escriba lo que escriba
+        # (p. ej. "chicken" o "pollo" encuentran el mismo alimento, sin importar el idioma).
+        n_primario = _norm_txt(FOOD_NOMBRE_EN.get(f["nombre"], f["nombre"]) if idioma_en else f["nombre"])
+        n_alterno = _norm_txt(f["nombre"] if idioma_en else FOOD_NOMBRE_EN.get(f["nombre"], f["nombre"]))
+        n = n_primario if q in n_primario else (n_alterno if q in n_alterno else n_primario)
         if n == q:
             exact.append((0, f))
             continue
@@ -2578,6 +2873,131 @@ def dieta_filtrada_para(comida, macro, embarazada_flag):
     if not embarazada_flag:
         return _opciones
     return {k: v for k, v in _opciones.items() if not _es_alimento_riesgo_embarazo(k)}
+
+# =========================================================================================
+# TRADUCCIÓN DE NOMBRES DE ALIMENTOS DEL PLAN DE COMIDAS (Hoja 9.-DIETA) AL INGLÉS
+# Las claves de DIETA se mantienen SIEMPRE en español (son la fuente de verdad usada en
+# session_state, cálculos de kcal/porciones/gramos y el PDF). Este diccionario solo se usa
+# para mostrar el nombre traducido en pantalla (selectbox, tablas, resúmenes) cuando el
+# idioma activo es English, vía la función _dieta_nombre().
+# =========================================================================================
+DIETA_NOMBRE_EN = {
+    "Aceite de aguacate": "Avocado Oil",
+    "Aceite de linaza": "Flaxseed Oil",
+    "Aceite de oliva": "Olive Oil",
+    "Aceitunas": "Olives",
+    "Aceitunas verdes": "Green Olives",
+    "Aguacate": "Avocado",
+    "Almendras": "Almonds",
+    "Almendras fileteadas": "Sliced Almonds",
+    "Anacardos": "Cashews",
+    "Arroz blanco": "White Rice",
+    "Arroz integral": "Brown Rice",
+    "Atún": "Tuna",
+    "Atún en agua": "Tuna in Water",
+    "Avellanas": "Hazelnuts",
+    "Avena": "Oats",
+    "Avena cocida": "Cooked Oatmeal",
+    "Bacalao a la plancha": "Grilled Cod",
+    "Banana": "Banana",
+    "Barra de granola": "Granola Bar",
+    "Batata": "Sweet Potato",
+    "Batata cocida": "Boiled Sweet Potato",
+    "Camarones / Langostinos": "Shrimp / Prawns",
+    "Camote": "Sweet Potato",
+    "Cancha": "Toasted Corn Nuts",
+    "Cebada cocida": "Cooked Barley",
+    "Cereal integral": "Whole Grain Cereal",
+    "Clara de huevo": "Egg White",
+    "Clara de huevo cocida": "Cooked Egg White",
+    "Claras de huevo": "Egg Whites",
+    "Couscous cocido": "Cooked Couscous",
+    "Crema de almendra": "Almond Butter",
+    "Cuscús": "Couscous",
+    "Filete de pescado blanco": "White Fish Fillet",
+    "Fillete de res magra": "Lean Beef Fillet",
+    "Galletas integrales": "Whole Grain Crackers",
+    "Garbanzos (cocidos)": "Chickpeas (Cooked)",
+    "Garbanzos cocidos": "Cooked Chickpeas",
+    "Granola": "Granola",
+    "Granola clásica": "Classic Granola",
+    "Huevo entero": "Whole Egg",
+    "Huevo hervido": "Boiled Egg",
+    "Huevos revueltos": "Scrambled Eggs",
+    "Jamón serrano": "Cured Ham",
+    "Kiwi": "Kiwi",
+    "Leche descremada": "Skim Milk",
+    "Lentejas": "Lentils",
+    "Lentejas (cocidas)": "Lentils (Cooked)",
+    "Lomo de cerdo": "Pork Loin",
+    "Lomo de res / ternera": "Beef / Veal Loin",
+    "Mandarina": "Tangerine",
+    "Mango": "Mango",
+    "Mantequilla": "Butter",
+    "Mantequilla de maní": "Peanut Butter",
+    "Manzana": "Apple",
+    "Manzana verde": "Green Apple",
+    "Maní": "Peanuts",
+    "Maní / Cacahuate": "Peanuts",
+    "Mayonesa": "Mayonnaise",
+    "Nueces": "Walnuts",
+    "Palomitas de maíz": "Popcorn",
+    "Palta": "Avocado",
+    "Pan blanco": "White Bread",
+    "Pan de maíz": "Corn Bread",
+    "Pan integral": "Whole Wheat Bread",
+    "Pan pita integral": "Whole Wheat Pita Bread",
+    "Pan árabe": "Pita Bread",
+    "Papa": "Potato",
+    "Papa sancochada": "Boiled Potato",
+    "Pavo al horno": "Baked Turkey",
+    "Pechuga de pavo": "Turkey Breast",
+    "Pechuga de pollo": "Chicken Breast",
+    "Pechuga de pollo (sin piel)": "Chicken Breast (Skinless)",
+    "Pera": "Pear",
+    "Pescado blanco": "White Fish",
+    "Pistachos": "Pistachios",
+    "Piña": "Pineapple",
+    "Plátano": "Plantain",
+    "Pollo desmenuzado": "Shredded Chicken",
+    "Queso Cottage": "Cottage Cheese",
+    "Queso brie": "Brie Cheese",
+    "Queso cottage": "Cottage Cheese",
+    "Queso crema": "Cream Cheese",
+    "Queso gouda": "Gouda Cheese",
+    "Queso parmesano": "Parmesan Cheese",
+    "Queso ricotta": "Ricotta Cheese",
+    "Quinoa": "Quinoa",
+    "Quinoa cocida": "Cooked Quinoa",
+    "Salmón": "Salmon",
+    "Salmón (graso)": "Salmon (Fatty)",
+    "Salmón a la plancha": "Grilled Salmon",
+    "Sardinas": "Sardines",
+    "Seitán": "Seitan",
+    "Semillas de calabaza": "Pumpkin Seeds",
+    "Semillas de chía": "Chia Seeds",
+    "Semillas de girasol": "Sunflower Seeds",
+    "Spaghetti": "Spaghetti",
+    "Tocino": "Bacon",
+    "Tofu firme": "Firm Tofu",
+    "Tostada de pan de centeno": "Rye Toast",
+    "Uvas": "Grapes",
+    "Yogur descremado": "Skim Yogurt",
+    "Yogur griego natural": "Plain Greek Yogurt",
+    "Yogur natural": "Plain Yogurt",
+    "Yogurt griego": "Greek Yogurt",
+    "Yuca": "Cassava",
+    "Zanahoria cruda": "Raw Carrot",
+}
+
+
+def _dieta_nombre(nombre):
+    """Devuelve el nombre del alimento del plan de comidas (Hoja 9.-DIETA) en el idioma
+    activo. Las claves internas (session_state, cálculos, PDF) siguen siempre en español;
+    esta función solo controla lo que se MUESTRA en pantalla."""
+    if st.session_state.get("idioma", "Español") == "English":
+        return DIETA_NOMBRE_EN.get(nombre, nombre)
+    return nombre
 
 # =========================================================================================
 # LÍMITES BIOLÓGICOS MÁXIMOS DOCUMENTADOS (récords históricos) — usados como tope duro en los inputs
@@ -7277,8 +7697,8 @@ elif hoja_activa == "4.-RCD":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "5.-CONTROL DE PESO":
-    hoja_header(5, "En menos de 10 segundos deberías poder responder: ¿cuánto necesitas normalmente?, "
-                   "¿qué elegiste?, ¿cuánto debes comer ahora?, ¿qué significa? y ¿es seguro?")
+    hoja_header(5, "En un solo vistazo podrás entender cuánto necesitas, cuál es tu objetivo "
+                   "y cuántas calorías debes consumir cada día.")
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "Bajar: RCD_Final = RCD×(1−%déficit)  |  Mantener: RCD_Final = RCD  |  "
         "Subir: RCD_Final = RCD×(1+%superávit)",
@@ -7324,7 +7744,7 @@ elif hoja_activa == "5.-CONTROL DE PESO":
         </div>
         <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
         <div style="background:#FFEBF0;border:2px solid #FF2D55;border-radius:20px;padding:18px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">❤️ Nuevo RCD Objetivo</div>
+            <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">🎯 RCD Objetivo</div>
             <div style="font-size:2.3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/día</span></div>
             <div style="font-size:0.78rem;color:#9C1948;">Las calorías recomendadas para cumplir tu meta.</div>
         </div>
@@ -7338,7 +7758,7 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     st.divider()
 
     # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
-    st.markdown("#### 📊 ¿Qué cambió?")
+    st.markdown("#### 📊 Comparación de tu plan")
     _c1, _c2, _c3 = st.columns(3)
     with _c1:
         st.markdown(f"""<div class="bento-card" style="text-align:center;">
@@ -7379,17 +7799,17 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     # ===== 4. EXPLICACIÓN SENCILLA =====
     st.markdown("#### 💬 ¿Qué significa este cambio?")
     if objetivo == "Bajar de peso":
-        _texto_expl = (f"Como elegiste **Bajar de peso**, el sistema redujo un **{ajuste_aplicado*100:.0f}%** tus "
-                        "calorías diarias. Eso permite que tu cuerpo obtenga parte de la energía usando las "
-                        "reservas de grasa, siempre manteniendo un aporte adecuado de nutrientes. "
-                        "**No es una dieta extrema. Es un déficit calórico controlado.**")
+        _texto_expl = (f"Para alcanzar tu objetivo de **bajar de peso**, se aplicó un déficit calórico del "
+                        f"**{ajuste_aplicado*100:.0f}%**. Este ajuste favorece la pérdida gradual de grasa "
+                        "corporal sin reducir tu consumo por debajo del mínimo necesario para el funcionamiento "
+                        "del organismo.")
     elif objetivo == "Subir de peso":
-        _texto_expl = (f"Como elegiste **Subir de peso**, el sistema aumentó un **{ajuste_aplicado*100:.0f}%** tus "
-                        "calorías diarias. Ese excedente le da a tu cuerpo la energía extra que necesita para "
-                        "construir tejido nuevo (músculo). **No es 'comer de más': es un superávit calórico controlado.**")
+        _texto_expl = (f"Para alcanzar tu objetivo de **subir de peso**, se aplicó un superávit calórico del "
+                        f"**{ajuste_aplicado*100:.0f}%**. Este ajuste le da a tu cuerpo la energía extra "
+                        "necesaria para construir tejido nuevo de forma controlada.")
     else:
-        _texto_expl = ("Como elegiste **Mantenerte**, tu RCD Objetivo es igual a tu RCD Inicial: comerás "
-                        "aproximadamente lo mismo que gastas, sin déficit ni superávit, para conservar tu peso actual.")
+        _texto_expl = ("Para **mantener tu peso**, tu RCD Objetivo es igual a tu RCD Inicial: consumirás "
+                        "aproximadamente lo mismo que gastas, sin déficit ni superávit.")
     st.markdown(f"""<div class="info3-card">{_texto_expl}</div>""", unsafe_allow_html=True)
 
     st.divider()
@@ -7428,9 +7848,11 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     # ===== 6. Distribución de macronutrientes (se conserva) =====
     _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso, objetivo)
 
-    caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
-              "número exacto de calorías al día (tu RCD Objetivo), sin arriesgar tu salud: nunca por debajo de "
-              "tu TMB. Revisa la hoja 'Línea de Tiempo' para ver cómo evolucionaría tu peso con este plan. 🎯",
+    caja_util("Esta sección transforma tu objetivo (bajar, mantener o subir de peso) en un requerimiento "
+              "calórico diario personalizado. Así sabes exactamente cuántas calorías consumir para alcanzar "
+              "tu meta de forma segura, respetando siempre las necesidades mínimas de tu organismo. Consulta "
+              "la sección \"Proyección de Peso\" para visualizar cómo podría evolucionar tu peso si mantienes "
+              "este plan.",
               emoji="🎯", color="#FCE4EC", borde="#D81B60")
 
 # ---------------------------------------------------------------------------------------
@@ -8461,14 +8883,17 @@ elif hoja_activa == "9.-DIETA":
         with c1:
             st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
             carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
+                                     format_func=_dieta_nombre,
                                      key=f"c_{comida}", label_visibility="collapsed")
         with c2:
             st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
             prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
+                                     format_func=_dieta_nombre,
                                      key=f"p_{comida}", label_visibility="collapsed")
         with c3:
             st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
             gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
+                                     format_func=_dieta_nombre,
                                      key=f"g_{comida}", label_visibility="collapsed")
         seleccion[comida] = {
             "Carbohidrato": carb_sel,
@@ -8523,7 +8948,7 @@ elif hoja_activa == "9.-DIETA":
             filas_html += f"""
             <tr>
                 <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
-                <td>{f[macro_key]}</td>
+                <td>{_dieta_nombre(f[macro_key])}</td>
                 <td>{f[f'kcal ({_prefijo})']} kcal</td>
                 <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
                 <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
@@ -9707,11 +10132,7 @@ with col_prev:
             st.session_state["hoja_activa"] = OPCIONES_HOJAS[_idx_actual - 1]
             st.rerun()
 with col_mid:
-    st.markdown(
-        f"<div style='text-align:center;color:#8E8E93;font-size:0.85rem;padding-top:10px;'>"
-        f"{T(f'Sección {_idx_actual + 1} de {len(OPCIONES_HOJAS)}', f'Section {_idx_actual + 1} of {len(OPCIONES_HOJAS)}')}"
-        f"</div>", unsafe_allow_html=True
-    )
+    st.write("")
 with col_next:
     if _idx_actual < len(OPCIONES_HOJAS) - 1:
         if st.button(T("Siguiente Sección →", "Next Section →"), use_container_width=True, type="primary", key="btn_siguiente_footer"):
