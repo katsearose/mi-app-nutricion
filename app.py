@@ -4277,9 +4277,9 @@ def _gauge_altair(pct, color_hex, big_text, sub_text, key):
     """, unsafe_allow_html=True)
 
 
-def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
-    """Tarjeta corta 'Qué significa tu nuevo objetivo': explica en pocas líneas qué hace el
-    cuerpo con el ajuste calórico elegido, según el objetivo (dinámico)."""
+def _datos_interpretacion_objetivo(objetivo_v):
+    """Devuelve (color, fondo, texto, checks) según el objetivo elegido — usado tanto por la
+    tarjeta de interpretación como por la tarjeta combinada del panel de macros."""
     if objetivo_v == "Bajar de peso":
         color, fondo = "#FF9500", "#FFF3E0"
         texto = ("Con este ajuste, consumirás <b>menos energía de la que gastas</b>.<br>"
@@ -4295,6 +4295,13 @@ def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
         texto = ("Con este ajuste, consumirás <b>aproximadamente la misma energía que gastas</b>.<br>"
                   "Tu cuerpo no necesita usar reservas ni acumular un excedente.")
         checks = ["Sin déficit ni superávit", "Por encima de tu TMB", "Ideal para conservar tu peso actual"]
+    return color, fondo, texto, checks
+
+
+def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
+    """Tarjeta corta 'Qué significa tu nuevo objetivo': explica en pocas líneas qué hace el
+    cuerpo con el ajuste calórico elegido, según el objetivo (dinámico)."""
+    color, fondo, texto, checks = _datos_interpretacion_objetivo(objetivo_v)
 
     _checks_html = "".join(
         f'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">'
@@ -4311,9 +4318,9 @@ def _tarjeta_interpretacion_objetivo(objetivo_v, ajuste_aplicado_v, tmb_v):
     """, unsafe_allow_html=True)
 
 
-def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v):
-    """Panel de control visual de macronutrientes con diales Altair y tarjeta de recordatorio
-    de recálculo (dinámica, reemplaza el aviso naranja anterior)."""
+def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v, objetivo_v):
+    """Panel de control visual de macronutrientes con diales Altair y una tarjeta combinada
+    de interpretación del objetivo + recordatorio de recálculo (reemplaza el aviso naranja anterior)."""
     st.markdown("#### 🎛️ Panel de Control de Macros")
     max_prot = max(peso_v * 2.2, 1)
     max_gras = max(peso_v * 1.2, 1)
@@ -4332,14 +4339,24 @@ def _build_panel_macros_creativo(gr_prot_v, gr_gras_v, gr_carb_v, peso_v):
         _gauge_altair(pct_carb, "#4FC3F7", f"Tu Energía: {gr_carb_v:.2f} g/día",
                       "El resto de la energía para tu día y entrenamientos.", "carb")
 
-    st.markdown("""
-    <div style="background:#FFF9E5;border:1px solid #FFE58F55;border-radius:20px;
-                padding:16px 22px;margin-top:14px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <span style="font-size:1.3rem;">📌</span>
-            <span style="font-weight:800;color:#B8860B;">Recuerda</span>
+    _color_o, _fondo_o, _texto_o, _checks_o = _datos_interpretacion_objetivo(objetivo_v)
+    _checks_html_o = "".join(
+        f'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">'
+        f'<span style="color:{_color_o};font-weight:900;">✔</span>'
+        f'<span style="font-size:0.85rem;color:#17301F;">{c}</span></div>'
+        for c in _checks_o
+    )
+    st.markdown(f"""
+    <div class="bento-card" style="background:{_fondo_o};border:1.5px solid {_color_o}33;margin-top:14px;">
+        <div style="font-weight:800;color:{_color_o};font-size:0.95rem;margin-bottom:6px;">🧠 ¿Qué significa tu nuevo objetivo?</div>
+        <div style="font-size:0.85rem;color:#3C3C43;line-height:1.55;">{_texto_o}</div>
+        {_checks_html_o}
+        <hr style="border:none;border-top:1px solid {_color_o}33;margin:12px 0;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:1.1rem;">📌</span>
+            <span style="font-weight:800;color:{_color_o};">Recuerda</span>
         </div>
-        <div style="font-size:0.85rem;color:#7A5C00;line-height:1.7;">
+        <div style="font-size:0.85rem;color:#3C3C43;line-height:1.7;">
             Tu plan debe actualizarse cuando:<br>
             ⚖️ Cambies entre 3 y 5 kg.<br>
             🏃 Cambie tu actividad física.<br>
@@ -4580,12 +4597,12 @@ if _EN_PORTADA:
         st.markdown(f"""
         <div class="hero-card" style="height:100%;min-height:260px;box-sizing:border-box;">
             <div class="hero-emoji-decor">🥗🍎🥦🥛🥑</div>
-            <h1>🥗 CIAM&SUNI</h1>
+            <h1>🥗 CIAM&amp;SUNI</h1>
             <p style="margin:0 0 14px 0;font-size:1.15rem;font-weight:700;opacity:0.95;">{T("Tu Salud, Personalizada", "Your Health, Personalized")}</p>
-            <p class="hero-sub">{T("CIAM&SUNI analiza tu información para estimar tu estado nutricional, calcular tu "
+            <p class="hero-sub">{T("CIAM&amp;SUNI analiza tu información para estimar tu estado nutricional, calcular tu "
             "requerimiento energético y ayudarte a comprender cómo influye la alimentación en tu salud, mediante "
             "explicaciones sencillas y visuales.",
-            "CIAM&SUNI analyzes your information to estimate your nutritional status, calculate your energy "
+            "CIAM&amp;SUNI analyzes your information to estimate your nutritional status, calculate your energy "
             "requirement, and help you understand how nutrition affects your health, through simple, visual "
             "explanations.")}</p>
         </div>
@@ -7409,9 +7426,7 @@ elif hoja_activa == "5.-CONTROL DE PESO":
     st.divider()
 
     # ===== 6. Distribución de macronutrientes (se conserva) =====
-    _tarjeta_interpretacion_objetivo(objetivo, ajuste_aplicado, tmb)
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-    _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso)
+    _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso, objetivo)
 
     caja_util(f"¡Vamos, {_nombre_saludo}! Aquí se traduce tu meta ('quiero bajar/subir/mantener peso') en un "
               "número exacto de calorías al día (tu RCD Objetivo), sin arriesgar tu salud: nunca por debajo de "
@@ -8354,21 +8369,40 @@ elif hoja_activa == "8.-FATSECRET":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "9.-DIETA":
-    hoja_header(9, "Elige un alimento por macronutriente en cada comida y arma tu menú diario personalizado.")
+    hoja_header(9, T(
+        "Elige un alimento por macronutriente en cada comida y arma tu menú diario personalizado.",
+        "Choose one food per macronutrient for each meal and build your personalized daily menu."
+    ))
 
     # =====================================================================================
     # SECCIÓN 1 — Panel de Resumen de Datos Nutricionales
     # =====================================================================================
-    st.markdown("""
+    st.markdown(f"""
     <p style="text-align:center;color:#5C6B60;font-size:0.94rem;max-width:720px;margin:0 auto 14px auto;">
-    Estos valores han sido calculados previamente en base a tu perfil. A continuación, te presentamos el
-    resumen de tus requerimientos calóricos diarios y cómo se distribuyen en tu día a día.
+    {T(
+        "Estos valores han sido calculados previamente en base a tu perfil. A continuación, te presentamos el "
+        "resumen de tus requerimientos calóricos diarios y cómo se distribuyen en tu día a día.",
+        "These values were previously calculated based on your profile. Below is a summary of your daily "
+        "caloric requirements and how they are distributed throughout your day."
+    )}
     </p>
     """, unsafe_allow_html=True)
 
     _ICONOS_COMIDA_D9 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _MOMENTO_EN_D9 = {"Desayuno": "Breakfast", "Merienda 1": "Morning Snack", "Almuerzo": "Lunch",
+                      "Merienda 2": "Afternoon Snack", "Cena": "Dinner"}
+    _MACRO_EN_D9 = {"Carbohidrato": "Carbohydrate", "Proteína": "Protein", "Grasa": "Fat"}
+
+    def _mom(nombre):
+        """Traduce un nombre de comida (clave interna en español) según el idioma elegido."""
+        return T(nombre, _MOMENTO_EN_D9.get(nombre, nombre))
+
+    def _mac(nombre):
+        """Traduce un nombre de macronutriente (clave interna en español) según el idioma elegido."""
+        return T(nombre, _MACRO_EN_D9.get(nombre, nombre))
+
     _filas_tiempos_html = "".join(
-        f"""<div class="rn-tiempos-row"><span>{_ICONOS_COMIDA_D9[_c]} {_c}</span>
+        f"""<div class="rn-tiempos-row"><span>{_ICONOS_COMIDA_D9[_c]} {_mom(_c)}</span>
             <span class="rn-kcal">{porciones[_c]['kcal']:.2f} kcal</span></div>"""
         for _c in porciones
     )
@@ -8376,22 +8410,22 @@ elif hoja_activa == "9.-DIETA":
     _html_resumen_nutri = f"""
     <div class="resumen-nutri-wrap">
         <div class="resumen-nutri-card rn-tiempos">
-            <div class="rn-title">⏰ Distribución por Tiempos del Día</div>
+            <div class="rn-title">⏰ {T('Distribución por Tiempos del Día', 'Distribution Throughout the Day')}</div>
             {_filas_tiempos_html}
         </div>
         <div class="resumen-nutri-card rn-macros">
-            <div class="rn-title">🍽️ Distribución de Macronutrientes</div>
-            <div class="rn-macro-row">🥩 Proteínas
+            <div class="rn-title">🍽️ {T('Distribución de Macronutrientes', 'Macronutrient Distribution')}</div>
+            <div class="rn-macro-row">🥩 {T('Proteínas', 'Protein')}
                 <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.2f} g</span></div>
-            <div class="rn-macro-row">🌾 Carbohidratos
+            <div class="rn-macro-row">🌾 {T('Carbohidratos', 'Carbohydrates')}
                 <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.2f} g</span></div>
-            <div class="rn-macro-row">🥑 Grasas
+            <div class="rn-macro-row">🥑 {T('Grasas', 'Fats')}
                 <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.2f} g</span></div>
         </div>
         <div class="resumen-nutri-card rn-rcd">
-            <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 Requerimiento Calórico Diario</div>
+            <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 {T('Requerimiento Calórico Diario', 'Daily Caloric Requirement')}</div>
             <div class="rn-rcd-value">{rcd_final:.2f}</div>
-            <div style="font-size:0.85rem;opacity:0.9;">kcal / día</div>
+            <div style="font-size:0.85rem;opacity:0.9;">{T('kcal / día', 'kcal / day')}</div>
         </div>
     </div>
     """
@@ -8400,36 +8434,41 @@ elif hoja_activa == "9.-DIETA":
     # =====================================================================================
     # SECCIÓN 2 — Interfaz de Selección de Alimentos
     # =====================================================================================
-    st.markdown('<div class="selector-menu-title">🍱 ¡Personaliza tu Menú! Selecciona tus Alimentos</div>',
+    st.markdown(f'<div class="selector-menu-title">🍱 {T("¡Personaliza tu Menú! Selecciona tus Alimentos", "Customize Your Menu! Choose Your Foods")}</div>',
                 unsafe_allow_html=True)
-    st.markdown('<p class="selector-menu-sub">Elige una fuente de carbohidrato, proteína y grasa para cada '
-                'momento del día.</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="selector-menu-sub">{T("Elige una fuente de carbohidrato, proteína y grasa para cada momento del día.", "Choose a source of carbohydrate, protein, and fat for each time of day.")}</p>', unsafe_allow_html=True)
 
     if genero == "Mujer" and embarazada:
-        st.warning("🤰 Modo Embarazo activo: se ocultaron los alimentos crudos/semicocidos (ceviche, sushi, "
-                   "tártaros), carnes término medio, huevo crudo, mayonesa casera, embutidos sin cocinar "
-                   "(jamón serrano) y lácteos artesanales no pasteurizados, por riesgo de Listeria, "
-                   "Salmonella y Toxoplasma (FDA — Seguridad Alimentaria para Futuras Mamás).")
+        st.warning("🤰 " + T(
+            "Modo Embarazo activo: se ocultaron los alimentos crudos/semicocidos (ceviche, sushi, "
+            "tártaros), carnes término medio, huevo crudo, mayonesa casera, embutidos sin cocinar "
+            "(jamón serrano) y lácteos artesanales no pasteurizados, por riesgo de Listeria, "
+            "Salmonella y Toxoplasma (FDA — Seguridad Alimentaria para Futuras Mamás).",
+            "Pregnancy Mode Active: raw/undercooked foods (ceviche, sushi, tartare), medium-rare meats, "
+            "raw egg, homemade mayonnaise, uncooked cured meats (serrano ham), and unpasteurized "
+            "artisanal dairy have been hidden due to the risk of Listeria, Salmonella, and Toxoplasma "
+            "(FDA — Food Safety for Moms-to-Be)."
+        ))
 
     seleccion = {}
     for comida in DIETA:
-        st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {comida.upper()}</div>',
+        st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
                     unsafe_allow_html=True)
         _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
         _opciones_prot = dieta_filtrada_para(comida, "Proteína", embarazada)
         _opciones_gras = dieta_filtrada_para(comida, "Grasa", embarazada)
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.markdown('<div class="macro-select-label carb">🌾 Carbohidrato</div>', unsafe_allow_html=True)
-            carb_sel = st.selectbox(f"Carbohidrato — {comida}", list(_opciones_carb.keys()),
+            st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
+            carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
                                      key=f"c_{comida}", label_visibility="collapsed")
         with c2:
-            st.markdown('<div class="macro-select-label prot">🥩 Proteína</div>', unsafe_allow_html=True)
-            prot_sel = st.selectbox(f"Proteína — {comida}", list(_opciones_prot.keys()),
+            st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
+            prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
                                      key=f"p_{comida}", label_visibility="collapsed")
         with c3:
-            st.markdown('<div class="macro-select-label gras">🥑 Grasa</div>', unsafe_allow_html=True)
-            gras_sel = st.selectbox(f"Grasa — {comida}", list(_opciones_gras.keys()),
+            st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
+            gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
                                      key=f"g_{comida}", label_visibility="collapsed")
         seleccion[comida] = {
             "Carbohidrato": carb_sel,
@@ -8474,7 +8513,7 @@ elif hoja_activa == "9.-DIETA":
     # =====================================================================================
     # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
     # =====================================================================================
-    st.markdown('<div class="menu-titulo-grande">🍽️ MUESTRA DE TU DIETA TIPO MENÚ</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
 
     def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
         """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
@@ -8483,7 +8522,7 @@ elif hoja_activa == "9.-DIETA":
         for f in filas:
             filas_html += f"""
             <tr>
-                <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {f['Momento']}</td>
+                <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
                 <td>{f[macro_key]}</td>
                 <td>{f[f'kcal ({_prefijo})']} kcal</td>
                 <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
@@ -8491,7 +8530,7 @@ elif hoja_activa == "9.-DIETA":
             </tr>"""
         filas_html += f"""
             <tr class="dm-total">
-                <td class="dm-momento" colspan="2">TOTAL</td>
+                <td class="dm-momento" colspan="2">{T('TOTAL', 'TOTAL')}</td>
                 <td>—</td>
                 <td>{suma_porcion:.1f} kcal</td>
                 <td>{suma_gramos:.1f} g</td>
@@ -8500,8 +8539,8 @@ elif hoja_activa == "9.-DIETA":
         <div class="dieta-menu-wrap {clase_css}">
         <table class="dieta-menu-table">
             <thead>
-            <tr><th style="text-align:left;">Momento</th><th>{icono} Alimento ({titulo})</th>
-                <th>Kcal/100g</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
+            <tr><th style="text-align:left;">{T('Momento', 'Meal')}</th><th>{icono} {T('Alimento', 'Food')} ({_mac(titulo)})</th>
+                <th>{T('Kcal/100g', 'Kcal/100g')}</th><th>{T('Porción Corregida', 'Adjusted Portion')}</th><th>{T('Gramos Finales', 'Final Grams')}</th></tr>
             </thead>
             <tbody>
             {filas_html}
@@ -8517,22 +8556,23 @@ elif hoja_activa == "9.-DIETA":
 
     # ---- Barra final destacada: suma total = RCD ----
     _diferencia_total = abs(total_general - rcd_final)
-    _check_txt = ("✅ ¡Coincide exactamente con tu RCD!" if _diferencia_total < 1
-                  else f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD")
+    _check_txt = (T("✅ ¡Coincide exactamente con tu RCD!", "✅ Exactly matches your DCR!") if _diferencia_total < 1
+                  else T(f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD",
+                         f"⚠️ Difference of {_diferencia_total:.1f} kcal from your DCR"))
     _html_barra_total = f"""
     <div class="dieta-total-bar">
-        <div class="dt-label">🌾 Carbohidratos + 🥩 Proteínas + 🥑 Grasas</div>
+        <div class="dt-label">🌾 {T('Carbohidratos', 'Carbohydrates')} + 🥩 {T('Proteínas', 'Protein')} + 🥑 {T('Grasas', 'Fats')}</div>
         <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
         <div class="dt-value">= {total_general:.1f} kcal</div>
-        <div style="font-size:0.9rem;opacity:0.92;">Este total equivale a tu <b>TOTAL DE CALORÍAS DIARIAS (RCD)</b></div>
+        <div style="font-size:0.9rem;opacity:0.92;">{T('Este total equivale a tu', 'This total equals your')} <b>{T('TOTAL DE CALORÍAS DIARIAS (RCD)', 'TOTAL DAILY CALORIC REQUIREMENT (DCR)')}</b></div>
         <div class="dt-check">{_check_txt}</div>
     </div>
     """
     st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
 
     st.divider()
-    st.markdown("#### ❓ Guía para entender tu tabla de dieta")
-    FAQ_DIETA = {
+    st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
+    FAQ_DIETA_ES = {
         "¿Qué significa la columna 'kcal'?": (
             "Es la cantidad de calorías que aporta ese alimento, tomando como referencia cada 100 gramos "
             "de ese alimento (así viene definido en la base de datos nutricional del proyecto)."
@@ -8558,51 +8598,107 @@ elif hoja_activa == "9.-DIETA":
             "el resultado debe coincidir con tu meta calórica original."
         ),
     }
-    pregunta_dieta = st.selectbox("Elige una pregunta sobre tu tabla de dieta:", list(FAQ_DIETA.keys()), key="faq_dieta")
+    FAQ_DIETA_EN = {
+        "What does the 'kcal' column mean?": (
+            "It's the amount of calories that food provides, taken as a reference per 100 grams "
+            "of that food (as defined in the project's nutritional database)."
+        ),
+        "What does 'Adjusted Portion' mean?": (
+            "It's how many calories from that time of day (Breakfast, Lunch, etc.) correspond to that "
+            "specific macronutrient. For example, if Lunch has 1000 kcal in total, the Adjusted Portion "
+            "of Carbohydrate will be 50% of those 1000 kcal, Protein 20%, and Fat 30%."
+        ),
+        "What does 'Final grams to consume' mean?": (
+            "It's the exact amount, in grams, you should eat of THAT specific food to reach the Adjusted "
+            "Portion in calories. It's calculated by dividing the Adjusted Portion by the food's kcal and "
+            "multiplying by 100."
+        ),
+        "So, how much do I have to eat at each meal?": (
+            "You should prepare the three foods you chose for that time of day (Carbohydrate, Protein, and "
+            "Fat), each in the amount of 'Final grams to consume' shown in the table. Together, those three "
+            "foods complete the calories that correspond to that meal."
+        ),
+        "Why does the total match my target calories?": (
+            "Because the system distributes your daily caloric target (Sheet 5) first across the 5 times of "
+            "day (Sheet 7), and then, within each time, across the 3 macronutrients. Adding everything back "
+            "up, the result should match your original caloric target."
+        ),
+    }
+    FAQ_DIETA = FAQ_DIETA_EN if st.session_state.get("idioma", "Español") == "English" else FAQ_DIETA_ES
+    pregunta_dieta = st.selectbox(T("Elige una pregunta sobre tu tabla de dieta:", "Choose a question about your diet table:"),
+                                   list(FAQ_DIETA.keys()), key="faq_dieta")
     st.info(FAQ_DIETA[pregunta_dieta])
 
     recursos_externos(9, [
-        ("🌐 Buscar alimentos en FatSecret", "https://www.fatsecret.es/"),
+        (T("🌐 Buscar alimentos en FatSecret", "🌐 Search foods on FatSecret"), "https://www.fatsecret.es/"),
     ])
-    caja_util("Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
-              "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
-              "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
-              "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
-              emoji="🍱", color="#FBE9E7", borde="#FF7043")
+    caja_util(T(
+        "Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
+        "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
+        "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
+        "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
+        "Here you build your real menu for the day by choosing foods you like, and the app does all the "
+        "math for you: each time of day splits its calories into 50% carbohydrates, 20% protein, and "
+        "30% fat, then converts those calories to grams based on the specific food you chose — exactly "
+        "like in the original spreadsheet. Eating healthy can taste great too! 😋"
+    ), emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA" and genero == "Mujer" and embarazada:
-    hoja_header(12, subtitulo="En el embarazo, el hígado procesa la cafeína mucho más lento (su vida media "
-                               "sube hasta 15 horas) y atraviesa la placenta libremente. Por eso, en Modo "
-                               "Embarazo esta hoja deja de calcular horarios de sueño y se convierte en un "
-                               "tope fijo de consumo diario.", tip="☕ Máximo 200 mg de cafeína al día")
+    hoja_header(12, subtitulo=T(
+        "En el embarazo, el hígado procesa la cafeína mucho más lento (su vida media "
+        "sube hasta 15 horas) y atraviesa la placenta libremente. Por eso, en Modo "
+        "Embarazo esta hoja deja de calcular horarios de sueño y se convierte en un "
+        "tope fijo de consumo diario.",
+        "During pregnancy, the liver processes caffeine much more slowly (its half-life "
+        "rises to up to 15 hours) and it crosses the placenta freely. That's why, in "
+        "Pregnancy Mode, this sheet stops calculating sleep schedules and becomes a "
+        "fixed daily intake cap."
+    ), tip=T("☕ Máximo 200 mg de cafeína al día", "☕ Maximum 200 mg of caffeine per day"))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "Límite gestacional = 200 mg de cafeína / día (tope fijo, no calculadora de horario)",
-        referencia="Organización Mundial de la Salud (OMS) — Recomendaciones sobre Atención Prenatal")}</div>""",
+        T("Límite gestacional = 200 mg de cafeína / día (tope fijo, no calculadora de horario)",
+          "Gestational limit = 200 mg of caffeine / day (fixed cap, not a schedule calculator)"),
+        referencia=T("Organización Mundial de la Salud (OMS) — Recomendaciones sobre Atención Prenatal",
+                      "World Health Organization (WHO) — Antenatal Care Recommendations"))}</div>""",
         unsafe_allow_html=True)
-    st.error("🚫 **Máximo 200 mg de cafeína al día.** Superar esta dosis se asocia a restricción del "
-             "crecimiento intrauterino y bajo peso al nacer (OMS). Referencia rápida: 1 taza de café "
-             "filtrado ≈ 95 mg · 1 taza de té ≈ 47 mg · 1 lata de gaseosa cola ≈ 34 mg · 1 barra de "
-             "chocolate negro (50 g) ≈ 25 mg.")
-    st.caption("⚕️ Esta herramienta es orientativa y no reemplaza la indicación de tu médico "
-               "ginecólogo-obstetra o nutricionista.")
+    st.error("🚫 " + T(
+        "**Máximo 200 mg de cafeína al día.** Superar esta dosis se asocia a restricción del "
+        "crecimiento intrauterino y bajo peso al nacer (OMS). Referencia rápida: 1 taza de café "
+        "filtrado ≈ 95 mg · 1 taza de té ≈ 47 mg · 1 lata de gaseosa cola ≈ 34 mg · 1 barra de "
+        "chocolate negro (50 g) ≈ 25 mg.",
+        "**Maximum 200 mg of caffeine per day.** Exceeding this dose is associated with intrauterine "
+        "growth restriction and low birth weight (WHO). Quick reference: 1 cup of filtered coffee ≈ "
+        "95 mg · 1 cup of tea ≈ 47 mg · 1 can of cola soda ≈ 34 mg · 1 dark chocolate bar (50 g) ≈ 25 mg."
+    ))
+    st.caption("⚕️ " + T(
+        "Esta herramienta es orientativa y no reemplaza la indicación de tu médico "
+        "ginecólogo-obstetra o nutricionista.",
+        "This tool is for guidance only and does not replace the advice of your "
+        "OB-GYN doctor or nutritionist."
+    ))
 
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
-    hoja_header(12, subtitulo="Dormir bien también ayuda a cuidar tu alimentación. La cafeína puede permanecer "
-                               "varias horas en el organismo. Esta herramienta calcula hasta qué hora puedes "
-                               "consumir café sin afectar tu descanso.", tip="🌙 −8 horas antes de dormir")
+    hoja_header(12, subtitulo=T(
+        "Dormir bien también ayuda a cuidar tu alimentación. La cafeína puede permanecer "
+        "varias horas en el organismo. Esta herramienta calcula hasta qué hora puedes "
+        "consumir café sin afectar tu descanso.",
+        "Sleeping well also helps you take care of your diet. Caffeine can stay in your "
+        "body for several hours. This tool calculates the latest time you can have "
+        "coffee without affecting your rest."
+    ), tip=T("🌙 −8 horas antes de dormir", "🌙 −8 hours before sleeping"))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "Hora_Límite_Cafeína = Hora_Dormir − 8 horas",
-        referencia="Principio de Vida Media de la Cafeína (FDA / AASM)")}</div>""", unsafe_allow_html=True)
+        T("Hora_Límite_Cafeína = Hora_Dormir − 8 horas", "Caffeine_Cutoff_Time = Bedtime − 8 hours"),
+        referencia=T("Principio de Vida Media de la Cafeína (FDA / AASM)",
+                      "Caffeine Half-Life Principle (FDA / AASM)"))}</div>""", unsafe_allow_html=True)
 
     # --- PASO 1: ¿A qué hora sueles dormir? (selector amigable AM/PM) --------------------
-    st.markdown("##### ① 🛏️ ¿A qué hora sueles dormir?")
+    st.markdown(f"##### ① 🛏️ {T('¿A qué hora sueles dormir?', 'What time do you usually go to sleep?')}")
     _opciones_hora, _t_cursor = [], datetime.strptime("00:00", "%H:%M")
     for _ in range(48):
         _opciones_hora.append(_t_cursor)
         _t_cursor += timedelta(minutes=30)
     _etiquetas_hora = [f"🌙 {t.strftime('%I:%M %p').lstrip('0')}" for t in _opciones_hora]
     _idx_default = next((i for i, t in enumerate(_opciones_hora) if t.strftime("%H:%M") == "22:00"), 6)
-    _sel_hora = st.selectbox("Hora de dormir:", _etiquetas_hora, index=_idx_default, label_visibility="collapsed")
+    _sel_hora = st.selectbox(T("Hora de dormir:", "Bedtime:"), _etiquetas_hora, index=_idx_default, label_visibility="collapsed")
     hora_dormir = _opciones_hora[_etiquetas_hora.index(_sel_hora)].time()
     dt_dormir = datetime.combine(datetime.today(), hora_dormir)
     dt_limite = dt_dormir - timedelta(hours=8)
@@ -8611,25 +8707,25 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     st.write("")
 
     # --- PASO 2: ✅ Tu resultado — bloque grande con las 3 preguntas clave ----------------
-    st.markdown("##### ② ✅ Tu resultado")
+    st.markdown(f"##### ② ✅ {T('Tu resultado', 'Your result')}")
     st.markdown(f"""
     <div class="cp5-glass-flow">
         <div class="cp5-flow-card" style="background:rgba(27,42,74,0.08);border-color:rgba(27,42,74,0.3);">
-            <div class="cp5-flow-label">🛏️ Hora para dormir</div>
+            <div class="cp5-flow-label">🛏️ {T('Hora para dormir', 'Bedtime')}</div>
             <div class="cp5-flow-value" style="color:#1B2A4A;">{_fmt(dt_dormir)}</div>
-            <div class="cp5-flow-legend">La hora en la que sueles acostarte.</div>
+            <div class="cp5-flow-legend">{T('La hora en la que sueles acostarte.', 'The time you usually go to bed.')}</div>
         </div>
         <div class="cp5-flow-arrow">→</div>
         <div class="cp5-flow-card" style="background:rgba(255,179,0,0.14);border-color:rgba(255,179,0,0.4);">
-            <div class="cp5-flow-label">☕ Último café recomendado</div>
+            <div class="cp5-flow-label">☕ {T('Último café recomendado', 'Recommended last coffee')}</div>
             <div class="cp5-flow-value" style="color:#B06000;">{_fmt(dt_limite)}</div>
-            <div class="cp5-flow-legend">Después de esa hora, la cafeína aún podría estar activa al dormir.</div>
+            <div class="cp5-flow-legend">{T('Después de esa hora, la cafeína aún podría estar activa al dormir.', 'After this time, caffeine could still be active while you sleep.')}</div>
         </div>
         <div class="cp5-flow-arrow">→</div>
         <div class="cp5-flow-card">
-            <div class="cp5-flow-label">⏱️ Diferencia recomendada</div>
-            <div class="cp5-flow-value">8 horas</div>
-            <div class="cp5-flow-legend">Tiempo mínimo entre tu última cafeína y dormir.</div>
+            <div class="cp5-flow-label">⏱️ {T('Diferencia recomendada', 'Recommended gap')}</div>
+            <div class="cp5-flow-value">{T('8 horas', '8 hours')}</div>
+            <div class="cp5-flow-legend">{T('Tiempo mínimo entre tu última cafeína y dormir.', 'Minimum time between your last caffeine and sleeping.')}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -8637,17 +8733,17 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     st.write("")
 
     # --- PASO 3: Línea de tiempo visual ---------------------------------------------------
-    st.markdown("##### ③ 🗓️ Tu día, en una línea de tiempo")
+    st.markdown(f"##### ③ 🗓️ {T('Tu día, en una línea de tiempo', 'Your day, on a timeline')}")
     _linea_tiempo = [
-        ("#FFB300", "☀️", "Mañana", "8:00 AM"),
-        ("#FF9500", "☀️", "Mediodía", "12:00 PM"),
-        ("#B06000", "☕", "Último café", _fmt(dt_limite)),
-        ("#FF6B35", "🌇", "Tarde", "6:00 PM"),
-        ("#1B2A4A", "🌙", "Dormir", _fmt(dt_dormir)),
+        ("#FFB300", "☀️", T("Mañana", "Morning"), "8:00 AM"),
+        ("#FF9500", "☀️", T("Mediodía", "Noon"), "12:00 PM"),
+        ("#B06000", "☕", T("Último café", "Last coffee"), _fmt(dt_limite)),
+        ("#FF6B35", "🌇", T("Tarde", "Afternoon"), "6:00 PM"),
+        ("#1B2A4A", "🌙", T("Dormir", "Sleep"), _fmt(dt_dormir)),
     ]
     _html_lt = ['<div style="max-width:520px;margin:0 auto;">']
     for _i, (_bc, _em, _tt, _hh) in enumerate(_linea_tiempo):
-        _es_cafe = _tt == "Último café"
+        _es_cafe = _tt == T("Último café", "Last coffee")
         _fondo_lt = "rgba(255,179,0,0.12)" if _es_cafe else "#FFFFFF"
         _html_lt.append(f"""
         <div style="display:flex;align-items:center;gap:14px;background:{_fondo_lt};border-radius:18px;
@@ -8664,12 +8760,15 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     st.write("")
 
     # --- PASO 4: ¿Por qué ocurre esto? — tres tarjetas ------------------------------------
-    st.markdown("##### ④ 🤔 ¿Por qué ocurre esto?")
+    st.markdown(f"##### ④ 🤔 {T('¿Por qué ocurre esto?', 'Why does this happen?')}")
     col_p1, col_p2, col_p3 = st.columns(3)
     _porques = [
-        (col_p1, "#5856D6", "#ECEBFC", "🧠", "La cafeína tarda varias horas en desaparecer del cuerpo."),
-        (col_p2, "#1B2A4A", "#E9ECF5", "😴", "Si consumes café muy tarde puede dificultar el sueño."),
-        (col_p3, "#34C759", "#EAFAEE", "🍎", "Dormir bien ayuda a controlar el apetito y favorece una alimentación saludable."),
+        (col_p1, "#5856D6", "#ECEBFC", "🧠", T("La cafeína tarda varias horas en desaparecer del cuerpo.",
+                                                "Caffeine takes several hours to clear from the body.")),
+        (col_p2, "#1B2A4A", "#E9ECF5", "😴", T("Si consumes café muy tarde puede dificultar el sueño.",
+                                                "Having coffee too late can make it harder to fall asleep.")),
+        (col_p3, "#34C759", "#EAFAEE", "🍎", T("Dormir bien ayuda a controlar el apetito y favorece una alimentación saludable.",
+                                                "Sleeping well helps control appetite and supports healthy eating.")),
     ]
     for _col, _borde, _fondo, _emoji, _texto in _porques:
         with _col:
@@ -8683,17 +8782,20 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     st.write("")
 
     # --- PASO 5: 🌈 Comparación personalizada --------------------------------------------
-    st.markdown("##### ⑤ 🌈 Comparación personalizada")
+    st.markdown(f"##### ⑤ 🌈 {T('Comparación personalizada', 'Personalized comparison')}")
     _hora_verde = dt_limite - timedelta(hours=3)
     _hora_ambar = dt_limite - timedelta(minutes=30)
     _hora_roja = dt_limite + timedelta(hours=3)
     _comparaciones = [
-        ("🟢", _hora_verde, "Muy recomendable",
-         "Hay tiempo de sobra para que tu cuerpo elimine la cafeína antes de dormir."),
-        ("🟡", _hora_ambar, "Aún aceptable",
-         "Está muy cerca del límite; en personas sensibles a la cafeína podría retrasar el sueño."),
-        ("🔴", _hora_roja, "Puede afectar el sueño",
-         "La cafeína seguiría activa en tu organismo a la hora de dormir, reduciendo la calidad del descanso."),
+        ("🟢", _hora_verde, T("Muy recomendable", "Highly recommended"),
+         T("Hay tiempo de sobra para que tu cuerpo elimine la cafeína antes de dormir.",
+           "There's plenty of time for your body to clear the caffeine before you sleep.")),
+        ("🟡", _hora_ambar, T("Aún aceptable", "Still acceptable"),
+         T("Está muy cerca del límite; en personas sensibles a la cafeína podría retrasar el sueño.",
+           "It's very close to the limit; in people sensitive to caffeine it could delay sleep.")),
+        ("🔴", _hora_roja, T("Puede afectar el sueño", "May affect sleep"),
+         T("La cafeína seguiría activa en tu organismo a la hora de dormir, reduciendo la calidad del descanso.",
+           "Caffeine would still be active in your system at bedtime, reducing sleep quality.")),
     ]
     _filas_comp = "".join(f"""
     <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:16px;
@@ -8706,14 +8808,14 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     </div>""" for _ic, _hh, _tt, _txt in _comparaciones)
     st.markdown(_html_sin_lineas_vacias(f"""
     <div style="background:#F4F6FB;border-radius:20px;padding:18px 20px;border:1px solid rgba(27,42,74,0.08);">
-        <p style="margin:0 0 4px 0;font-weight:900;color:#1B2A4A;font-size:1rem;">☕ Tu horario</p>
+        <p style="margin:0 0 4px 0;font-weight:900;color:#1B2A4A;font-size:1rem;">☕ {T('Tu horario', 'Your schedule')}</p>
         <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px;">
-            <div><span style="color:#5C6B60;font-size:0.8rem;">Hora de dormir</span><br>
+            <div><span style="color:#5C6B60;font-size:0.8rem;">{T('Hora de dormir', 'Bedtime')}</span><br>
             <span style="font-weight:800;color:#1B2A4A;font-size:1.05rem;">{_fmt(dt_dormir)}</span></div>
-            <div><span style="color:#5C6B60;font-size:0.8rem;">Último café recomendado</span><br>
+            <div><span style="color:#5C6B60;font-size:0.8rem;">{T('Último café recomendado', 'Recommended last coffee')}</span><br>
             <span style="font-weight:800;color:#B06000;font-size:1.05rem;">{_fmt(dt_limite)}</span></div>
         </div>
-        <p style="margin:0 0 8px 0;font-weight:700;color:#17301F;font-size:0.9rem;">Si tomas café a las...</p>
+        <p style="margin:0 0 8px 0;font-weight:700;color:#17301F;font-size:0.9rem;">{T('Si tomas café a las...', 'If you have coffee at...')}</p>
         {_filas_comp}
     </div>
     """), unsafe_allow_html=True)
@@ -8721,23 +8823,30 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
     st.write("")
 
     # --- PASO 6: 💡 Consejo práctico -------------------------------------------------------
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#FFF6E0;border-radius:18px;padding:16px 20px;border-left:5px solid #FFB300;">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">💡 Consejo</p>
+    <p style="margin:0 0 4px 0;font-weight:800;color:#B06000;">💡 {T('Consejo', 'Tip')}</p>
     <p style="margin:0;color:#5C4A1E;font-size:0.88rem;line-height:1.5;">
-    Si un día deseas tomar café más tarde de lo habitual, intenta reducir la cantidad o elegir una bebida
-    con menos cafeína para disminuir su efecto sobre el sueño.</p>
+    {T('Si un día deseas tomar café más tarde de lo habitual, intenta reducir la cantidad o elegir una bebida '
+       'con menos cafeína para disminuir su efecto sobre el sueño.',
+       'If one day you want to have coffee later than usual, try reducing the amount or choosing a drink '
+       'with less caffeine to lessen its effect on your sleep.')}</p>
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
     recursos_externos(12, [
-        ("☕ Cafeína y sueño (Sleep Foundation)", "https://www.sleepfoundation.org/nutrition/caffeine-and-sleep"),
+        (T("☕ Cafeína y sueño (Sleep Foundation)", "☕ Caffeine and sleep (Sleep Foundation)"),
+         "https://www.sleepfoundation.org/nutrition/caffeine-and-sleep"),
     ])
-    caja_util("¿Sabías que dormir mal te da más hambre y más ganas de comer dulce al día siguiente? Esta "
-              "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
-              "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
-              emoji="🌙", color="#FFF4DE", borde="#1B2A4A")
+    caja_util(T(
+        "¿Sabías que dormir mal te da más hambre y más ganas de comer dulce al día siguiente? Esta "
+        "herramienta te dice hasta qué hora puedes tomar café sin arruinar tu descanso — y un buen "
+        "descanso es tan importante para tu salud como una buena alimentación. ☕😴",
+        "Did you know that sleeping poorly makes you hungrier and craves sweets the next day? This "
+        "tool tells you the latest time you can have coffee without ruining your rest — and good "
+        "rest is just as important for your health as good nutrition. ☕😴"
+    ), emoji="🌙", color="#FFF4DE", borde="#1B2A4A")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
@@ -9151,7 +9260,7 @@ elif hoja_activa == "📄 MI REPORTE":
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 22px rgba(0,0,0,0.06);">
         <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
             <div>
-                <div style="font-size:1.3rem;font-weight:800;color:#32ADE6;letter-spacing:-0.02em;">📄 Informe de Resultados — CIAM&SUNI</div>
+                <div style="font-size:1.3rem;font-weight:800;color:#32ADE6;letter-spacing:-0.02em;">📄 Informe de Resultados — CIAM&amp;SUNI</div>
                 <div style="color:#6C6C70;font-size:0.9rem;">C.E.P. "Santa María Reina", Chiclayo</div>
             </div>
             <div style="text-align:right;color:#6C6C70;font-size:0.85rem;">Generado: {_fecha_reporte}</div>
@@ -9469,13 +9578,13 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     """, unsafe_allow_html=True)
 
     # ===== 1. Encabezado premium =====
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFEBF0 55%,#FFFFFF 100%);border-radius:24px;
                 padding:26px 30px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.06);
                 border:1px solid rgba(255,45,85,0.08);">
-    <h2 style="margin:0;color:#8E24AA;font-weight:900;letter-spacing:-0.02em;">👩‍💻 Conoce al Equipo CIAM&amp;SUNI</h2>
+    <h2 style="margin:0;color:#8E24AA;font-weight:900;letter-spacing:-0.02em;">👩‍💻 {T("Conoce al Equipo CIAM&amp;SUNI", "Meet the CIAM&amp;SUNI Team")}</h2>
     <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.98rem;font-weight:500;">
-    Las estudiantes que hicieron posible este proyecto 💚</p>
+    {T("Las estudiantes que hicieron posible este proyecto 💚", "The students who made this project possible 💚")}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -9491,42 +9600,53 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         <div class="about-hero-card">
         {_logo_img_tag}
         <p style="margin:2px 0 0 0;font-weight:900;color:#1E5631;font-size:1.05rem;">🌱 CIAM&amp;SUNI</p>
-        <p style="margin:0 0 10px 0;color:#5C6B60;font-size:0.85rem;">Calculadora Nutricional</p>
+        <p style="margin:0 0 10px 0;color:#5C6B60;font-size:0.85rem;">{T("Calculadora Nutricional", "Nutritional Calculator")}</p>
         <div>
-            <span class="about-mini-badge">💚 Tecnología</span>
-            <span class="about-mini-badge">🥗 Nutrición</span>
-            <span class="about-mini-badge">💻 Programación</span>
+            <span class="about-mini-badge">💚 {T("Tecnología", "Technology")}</span>
+            <span class="about-mini-badge">🥗 {T("Nutrición", "Nutrition")}</span>
+            <span class="about-mini-badge">💻 {T("Programación", "Programming")}</span>
         </div>
         </div>
         """, unsafe_allow_html=True)
     with col_mision_obj:
-        st.markdown("""
+        st.markdown(f"""
         <div class="about-hero-card" style="text-align:left;margin-bottom:14px;">
-        <p style="margin:0 0 8px 0;font-weight:900;color:#137333;font-size:1rem;">🌿 Nuestra misión</p>
+        <p style="margin:0 0 8px 0;font-weight:900;color:#137333;font-size:1rem;">🌿 {T("Nuestra misión", "Our mission")}</p>
         <p style="margin:0;color:#3C3C43;font-size:0.9rem;line-height:1.55;font-style:italic;">
-        "Crear herramientas digitales gratuitas que promuevan hábitos saludables."</p>
+        "{T("Crear herramientas digitales gratuitas que promuevan hábitos saludables.",
+            "Create free digital tools that promote healthy habits.")}"</p>
         </div>
         <div class="about-hero-card" style="text-align:left;">
-        <p style="margin:0 0 8px 0;font-weight:900;color:#0B4DA8;font-size:1rem;">🎯 Nuestro objetivo</p>
+        <p style="margin:0 0 8px 0;font-weight:900;color:#0B4DA8;font-size:1rem;">🎯 {T("Nuestro objetivo", "Our objective")}</p>
         <p style="margin:0;color:#3C3C43;font-size:0.9rem;line-height:1.55;font-style:italic;">
-        "Facilitar el cálculo nutricional para cualquier persona."</p>
+        "{T("Facilitar el cálculo nutricional para cualquier persona.",
+            "Make nutritional calculations accessible to anyone.")}"</p>
         </div>
         """, unsafe_allow_html=True)
 
     st.write("")
 
     # ===== 4. Tarjetas de integrantes (perfil, color propio, carrera como insignia, hobbies en chips) =====
-    caja_titulo("👩‍🎓 Las Integrantes", 13)
+    caja_titulo(T("👩‍🎓 Las Integrantes", "👩‍🎓 The Team Members"), 13)
 
+    _idioma_equipo = st.session_state.get("idioma", "Español") == "English"
     EQUIPO = [
-        {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩", "icono_rol": "🧠 Psicología", "rol": "Psicología",
-         "color": "#F9A825", "fondo": "#FFF8E1", "chips": ["🎵 Tocar instrumentos"]},
-        {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩", "icono_rol": "⚡ Ingeniería Electrónica", "rol": "Ingeniería Electrónica",
-         "color": "#E91E8C", "fondo": "#FCE4EC", "chips": ["🕵️ Criminología", "🎨 Dibujo"]},
-        {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩", "icono_rol": "🏛️ Arquitectura", "rol": "Arquitectura",
-         "color": "#8E6FCE", "fondo": "#EDE7F6", "chips": ["🎨 Dibujar", "🍳 Cocinar", "🎵 Música"]},
-        {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩", "icono_rol": "🧬 Biología", "rol": "Biología",
-         "color": "#29B6F6", "fondo": "#E1F5FE", "chips": ["🎮 Videojuegos", "🎬 Terror"]},
+        {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩",
+         "icono_rol": "🧠 " + T("Psicología", "Psychology"), "rol": "Psicología",
+         "color": "#F9A825", "fondo": "#FFF8E1",
+         "chips": [T("🎵 Tocar instrumentos", "🎵 Playing instruments")]},
+        {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩",
+         "icono_rol": "⚡ " + T("Ingeniería Electrónica", "Electronic Engineering"), "rol": "Ingeniería Electrónica",
+         "color": "#E91E8C", "fondo": "#FCE4EC",
+         "chips": [T("🕵️ Criminología", "🕵️ Criminology"), T("🎨 Dibujo", "🎨 Drawing")]},
+        {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩",
+         "icono_rol": "🏛️ " + T("Arquitectura", "Architecture"), "rol": "Arquitectura",
+         "color": "#8E6FCE", "fondo": "#EDE7F6",
+         "chips": [T("🎨 Dibujar", "🎨 Drawing"), T("🍳 Cocinar", "🍳 Cooking"), T("🎵 Música", "🎵 Music")]},
+        {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩",
+         "icono_rol": "🧬 " + T("Biología", "Biology"), "rol": "Biología",
+         "color": "#29B6F6", "fondo": "#E1F5FE",
+         "chips": [T("🎮 Videojuegos", "🎮 Video games"), T("🎬 Terror", "🎬 Horror")]},
     ]
     cols_equipo = st.columns(len(EQUIPO))
     for c, miembro in zip(cols_equipo, EQUIPO):
@@ -9536,9 +9656,9 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
             <div class="team-card" style="--tc-color:{miembro['color']};--tc-bg:{miembro['fondo']};">
                 <div class="team-avatar">{miembro['avatar']}</div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
-                <div class="team-icon-role">Integrante CIAM&amp;SUNI</div>
+                <div class="team-icon-role">{T("Integrante CIAM&amp;SUNI", "CIAM&amp;SUNI Member")}</div>
                 <div class="team-badge">{miembro['icono_rol']}</div>
-                <div class="team-chips-label">⭐ Intereses &amp; Hobbies</div>
+                <div class="team-chips-label">⭐ {T("Intereses &amp; Hobbies", "Interests &amp; Hobbies")}</div>
                 <div class="team-chips">{_chips_html}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -9546,25 +9666,31 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     st.write("")
 
     col_a, col_b = st.columns(2)
-    col_a.metric("Grado y sección", '5° "C" Secundaria')
-    col_b.metric("Docente", "Arnadis J. Talavera Oropeza")
+    col_a.metric(T("Grado y sección", "Grade and Section"), T('5° "C" Secundaria', '5th Grade "C" – Secondary School'))
+    col_b.metric(T("Docente", "Teacher"), "Arnadis J. Talavera Oropeza")
 
     st.write("")
 
-    caja_util("Este proyecto fue construido en equipo: cada integrante desarrolló y explicó una parte "
-              "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
-              "cualquier persona —sin saber de Excel ni de nutrición— pueda usarla fácilmente. 🤝🌱",
-              emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
+    caja_util(T(
+        "Este proyecto fue construido en equipo: cada integrante desarrolló y explicó una parte "
+        "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
+        "cualquier persona —sin saber de Excel ni de nutrición— pueda usarla fácilmente. 🤝🌱",
+        "This project was built as a team: each member developed and explained a different part "
+        "of the spreadsheet, and all the pieces were then brought together in this app so that "
+        "anyone —without knowing Excel or nutrition— can use it easily. 🤝🌱"
+    ), emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
 
     # ===== 12. Cierre bonito, con fondo degradado =====
-    st.markdown("""
+    st.markdown(f"""
     <div style="margin-top:8px;background:linear-gradient(120deg,#EAFAEE 0%,#F8ECFB 100%);border-radius:24px;
                 padding:26px 30px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
     <div style="font-size:1.8rem;">🌱</div>
     <p style="margin:8px 0 4px 0;color:#3C3C43;font-size:0.98rem;font-style:italic;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto;">
-    "Pequeños cambios generan grandes resultados. Esperamos que esta herramienta te ayude
-    a cuidar tu salud de una forma sencilla."</p>
-    <p style="margin:10px 0 0 0;color:#1E5631;font-weight:900;">💚 Equipo CIAM&amp;SUNI</p>
+    "{T("Pequeños cambios generan grandes resultados. Esperamos que esta herramienta te ayude "
+        "a cuidar tu salud de una forma sencilla.",
+        "Small changes create big results. We hope this tool helps you take care of your "
+        "health in a simple way.")}"</p>
+    <p style="margin:10px 0 0 0;color:#1E5631;font-weight:900;">💚 {T("Equipo CIAM&amp;SUNI", "CIAM&amp;SUNI Team")}</p>
     </div>
     """, unsafe_allow_html=True)
 
