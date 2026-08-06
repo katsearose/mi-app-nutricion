@@ -2139,7 +2139,8 @@ def generar_pdf_reporte(datos):
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
         topMargin=14 * mm, bottomMargin=12 * mm, leftMargin=16 * mm, rightMargin=16 * mm,
-        title="Informe de Orientación Nutricional Clínica - CIAM&SUNI",
+        title=T("Informe de Orientación Nutricional Clínica - CIAM&SUNI",
+                 "Clinical Nutritional Guidance Report - CIAM&SUNI"),
     )
 
     CONTENT_W = 178 * mm
@@ -2274,12 +2275,14 @@ def generar_pdf_reporte(datos):
     _membrete_institucional()
 
     _grupo_txt = datos.get("grupo", 'N°04 - 5° "C"')
+    _etapa_hdr_txt = T(datos['etapa'], _ETAPA_EN.get(datos['etapa'], datos['etapa']))
     header_tbl = Table([
-        [Paragraph("INFORME DE ORIENTACIÓN NUTRICIONAL CLÍNICA", estilo_titulo),
-         Paragraph(f"<b>PACIENTE:</b> {datos['nombre'].upper()}", estilo_meta)],
-        [Paragraph('Programa de Salud Escolar CIAM&amp;SUNI | C.E.P. "Santa María Reina", Chiclayo', estilo_subtitulo),
-         Paragraph(f"<b>Edad:</b> {datos['edad']} años ({datos['etapa']})", estilo_meta)],
-        ["", Paragraph(f"<b>Fecha:</b> {datos['fecha']} | <b>Grupo:</b> {_grupo_txt}", estilo_meta)],
+        [Paragraph(T("INFORME DE ORIENTACIÓN NUTRICIONAL CLÍNICA", "CLINICAL NUTRITIONAL GUIDANCE REPORT"), estilo_titulo),
+         Paragraph(f"<b>{T('PACIENTE', 'PATIENT')}:</b> {datos['nombre'].upper()}", estilo_meta)],
+        [Paragraph(T('Programa de Salud Escolar CIAM&amp;SUNI | C.E.P. "Santa María Reina", Chiclayo',
+                      'CIAM&amp;SUNI School Health Program | C.E.P. "Santa María Reina", Chiclayo'), estilo_subtitulo),
+         Paragraph(f"<b>{T('Edad', 'Age')}:</b> {datos['edad']} {T('años', 'years')} ({_etapa_hdr_txt})", estilo_meta)],
+        ["", Paragraph(f"<b>{T('Fecha', 'Date')}:</b> {datos['fecha']} | <b>{T('Grupo', 'Group')}:</b> {_grupo_txt}", estilo_meta)],
     ], colWidths=[CONTENT_W - 55 * mm, 55 * mm])
     header_tbl.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -2292,47 +2295,70 @@ def generar_pdf_reporte(datos):
     story.append(Spacer(1, 9))
 
     # ---------------- MÓDULO 1 / 2: Información personal + Signos vitales ----------------
-    _sexo_txt = "Femenino" if datos["genero"] == "Mujer" else "Masculino"
-    _estado_fisio_txt = (f"Gestacional ({datos.get('trimestre', '').replace('Primer', '1°').replace('Segundo', '2°').replace('Tercer', '3°')})"
-                          if _embarazada_pdf else "No gestante")
-    mod1 = [_cab_modulo("1. INFORMACIÓN PERSONAL Y FISIOLÓGICA"), Spacer(1, 2),
+    _sexo_txt = T("Femenino", "Female") if datos["genero"] == "Mujer" else T("Masculino", "Male")
+    _idioma_pdf_en = st.session_state.get("idioma", "Español") == "English"
+    _trimestre_txt = datos.get('trimestre', '')
+    if _idioma_pdf_en:
+        _trimestre_txt = (_trimestre_txt.replace('Primer', '1st').replace('Segundo', '2nd').replace('Tercer', '3rd')
+                           .replace('Trimestre', 'Trimester'))
+        _estado_fisio_txt = f"Gestational ({_trimestre_txt})" if _embarazada_pdf else "Not pregnant"
+        _etapa_pdf_txt = _ETAPA_EN.get(datos['etapa'], datos['etapa'])
+    else:
+        _trimestre_txt = _trimestre_txt.replace('Primer', '1°').replace('Segundo', '2°').replace('Tercer', '3°')
+        _estado_fisio_txt = f"Gestacional ({_trimestre_txt})" if _embarazada_pdf else "No gestante"
+        _etapa_pdf_txt = datos['etapa']
+
+    mod1 = [_cab_modulo(T("1. INFORMACIÓN PERSONAL Y FISIOLÓGICA", "1. PERSONAL & PHYSIOLOGICAL INFORMATION")), Spacer(1, 2),
             _tabla_kv([
-                ("Etapa de Vida", f"{datos['etapa']} ({datos['edad']} años)"),
-                ("Sexo Biológico", _sexo_txt),
-                ("Estado Fisiológico", _estado_fisio_txt),
-                ("Nivel de Actividad", datos.get("actividad", "—")),
+                (T("Etapa de Vida", "Life Stage"), f"{_etapa_pdf_txt} ({datos['edad']} {T('años', 'years')})"),
+                (T("Sexo Biológico", "Biological Sex"), _sexo_txt),
+                (T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
+                (T("Nivel de Actividad", "Activity Level"), datos.get("actividad", "—")),
             ])]
 
+    _VITAL_LABEL_EN = {
+        "Sin datos": "No data", "Baja / Hipotensión": "Low / Hypotension", "Normal / Óptima": "Normal / Optimal",
+        "Elevado": "Elevated", "Emergencia Hipertensiva": "Hypertensive Emergency",
+        "Hipertensión Estadio 2": "Hypertension Stage 2", "Hipertensión Estadio 1": "Hypertension Stage 1",
+        "Hipoxia": "Hypoxia", "Aceptable": "Acceptable", "Excelente": "Excellent",
+        "Hipotermia": "Hypothermia", "Temperatura baja": "Low Temperature", "Normal": "Normal",
+        "Febrícula": "Low-grade Fever", "Fiebre": "Fever", "Fiebre alta": "High Fever",
+        "Bradicardia": "Bradycardia", "Taquicardia": "Tachycardia",
+    }
+
+    def _vt(etiqueta):
+        return _VITAL_LABEL_EN.get(etiqueta, etiqueta) if _idioma_pdf_en else etiqueta
+
     def _clasif_pa_pdf(_pas, _pad):
-        if _pas <= 0 or _pad <= 0: return "Sin datos", "gris"
-        if _pas < 90 or _pad < 60: return "Baja / Hipotensión", "ambar"
-        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return "Normal / Óptima", "verde"
-        if 120 <= _pas <= 129 and _pad < 80: return "Elevado", "ambar"
-        if _pas > 180 or _pad > 120: return "Emergencia Hipertensiva", "rojo"
-        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return "Hipertensión Estadio 2", "rojo"
-        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return "Hipertensión Estadio 1", "rojo"
-        return "Normal / Óptima", "verde"
+        if _pas <= 0 or _pad <= 0: return _vt("Sin datos"), "gris"
+        if _pas < 90 or _pad < 60: return _vt("Baja / Hipotensión"), "ambar"
+        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return _vt("Normal / Óptima"), "verde"
+        if 120 <= _pas <= 129 and _pad < 80: return _vt("Elevado"), "ambar"
+        if _pas > 180 or _pad > 120: return _vt("Emergencia Hipertensiva"), "rojo"
+        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return _vt("Hipertensión Estadio 2"), "rojo"
+        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return _vt("Hipertensión Estadio 1"), "rojo"
+        return _vt("Normal / Óptima"), "verde"
 
     def _clasif_spo2_pdf(_s):
-        if _s <= 0: return "Sin datos", "gris"
-        if _s < 90: return "Hipoxia", "rojo"
-        if _s < 95: return "Aceptable", "ambar"
-        return "Excelente", "verde"
+        if _s <= 0: return _vt("Sin datos"), "gris"
+        if _s < 90: return _vt("Hipoxia"), "rojo"
+        if _s < 95: return _vt("Aceptable"), "ambar"
+        return _vt("Excelente"), "verde"
 
     def _clasif_temp_pdf(_t):
-        if _t <= 34.0: return "Sin datos", "gris"
-        if _t < 35.0: return "Hipotermia", "rojo"
-        if _t < 36.1: return "Temperatura baja", "ambar"
-        if _t <= 37.2: return "Normal", "verde"
-        if _t <= 37.9: return "Febrícula", "ambar"
-        if _t <= 39.5: return "Fiebre", "rojo"
-        return "Fiebre alta", "rojo"
+        if _t <= 34.0: return _vt("Sin datos"), "gris"
+        if _t < 35.0: return _vt("Hipotermia"), "rojo"
+        if _t < 36.1: return _vt("Temperatura baja"), "ambar"
+        if _t <= 37.2: return _vt("Normal"), "verde"
+        if _t <= 37.9: return _vt("Febrícula"), "ambar"
+        if _t <= 39.5: return _vt("Fiebre"), "rojo"
+        return _vt("Fiebre alta"), "rojo"
 
     def _clasif_pulso_pdf(_p):
-        if _p <= 0: return "Sin datos", "gris"
-        if _p < 60: return "Bradicardia", "ambar"
-        if _p <= 100: return "Normal", "verde"
-        return "Taquicardia", "ambar"
+        if _p <= 0: return _vt("Sin datos"), "gris"
+        if _p < 60: return _vt("Bradicardia"), "ambar"
+        if _p <= 100: return _vt("Normal"), "verde"
+        return _vt("Taquicardia"), "ambar"
 
     _pas, _pad = datos.get("pas", 0), datos.get("pad", 0)
     _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 34.0), datos.get("pulso", 0)
@@ -2343,89 +2369,130 @@ def generar_pdf_reporte(datos):
     _hay_algun_vital = any(c != "gris" for c in (_col_pa, _col_ox, _col_te, _col_pu))
     _hay_alerta_vital = any(c in ("rojo", "ambar") for c in (_col_pa, _col_ox, _col_te, _col_pu))
 
-    mod2 = [_cab_modulo("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)"), Spacer(1, 2),
+    _ETIQUETA_SEMAFORO_EN = {"Normal": "Normal", "Alerta": "Alert", "Crítico": "Critical", "Sin dato": "No data"}
+
+    def _et(color_key):
+        _e = SEMAFORO_ESTILO[color_key]["etiqueta"]
+        return _ETIQUETA_SEMAFORO_EN.get(_e, _e) if _idioma_pdf_en else _e
+
+    mod2 = [_cab_modulo(T("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)", "2. VITAL SIGNS (PHYSIOLOGICAL STATE)")), Spacer(1, 2),
             _tabla_vitales([
-                ("Presión Arterial", SEMAFORO_ESTILO[_col_pa]["etiqueta"], _col_pa),
-                ("Oxigenación (SpO₂)", SEMAFORO_ESTILO[_col_ox]["etiqueta"], _col_ox),
-                ("Temperatura", SEMAFORO_ESTILO[_col_te]["etiqueta"], _col_te),
-                ("Pulso en Reposo", SEMAFORO_ESTILO[_col_pu]["etiqueta"], _col_pu),
+                (T("Presión Arterial", "Blood Pressure"), _et(_col_pa), _col_pa),
+                (T("Oxigenación (SpO₂)", "Oxygenation (SpO₂)"), _et(_col_ox), _col_ox),
+                (T("Temperatura", "Temperature"), _et(_col_te), _col_te),
+                (T("Pulso en Reposo", "Resting Pulse"), _et(_col_pu), _col_pu),
             ])]
     story.append(_fila_doble(mod1, mod2))
 
     _explic1 = (
-        "En el segundo/tercer trimestre gestacional se incrementan las demandas hemodinámicas. "
-        + ("Se detectaron valores fuera de rango en los signos vitales (ver etiquetas en alerta o crítico "
-           "en la tabla); se recomienda evaluación médica presencial para descartar trastornos "
-           "hipertensivos del embarazo." if _hay_alerta_vital else
-           "La monitorización periódica de la presión arterial, SpO₂, pulso y temperatura es crucial "
-           "para descartar trastornos hipertensivos del embarazo." if _hay_algun_vital else
-           "La ausencia de registros de signos vitales (presión arterial, SpO₂, pulso y temperatura) "
-           "requiere control prenatal presencial para descartar desórdenes hipertensivos o "
-           "alteraciones hemodinámicas.")
+        T("En el segundo/tercer trimestre gestacional se incrementan las demandas hemodinámicas. ",
+          "In the second/third gestational trimester, hemodynamic demands increase. ")
+        + (T("Se detectaron valores fuera de rango en los signos vitales (ver etiquetas en alerta o crítico "
+             "en la tabla); se recomienda evaluación médica presencial para descartar trastornos "
+             "hipertensivos del embarazo.",
+             "Out-of-range values were detected in the vital signs (see alert or critical labels in the "
+             "table); an in-person medical evaluation is recommended to rule out hypertensive disorders "
+             "of pregnancy.") if _hay_alerta_vital else
+           T("La monitorización periódica de la presión arterial, SpO₂, pulso y temperatura es crucial "
+             "para descartar trastornos hipertensivos del embarazo.",
+             "Periodic monitoring of blood pressure, SpO₂, pulse, and temperature is crucial to rule out "
+             "hypertensive disorders of pregnancy.") if _hay_algun_vital else
+           T("La ausencia de registros de signos vitales (presión arterial, SpO₂, pulso y temperatura) "
+             "requiere control prenatal presencial para descartar desórdenes hipertensivos o "
+             "alteraciones hemodinámicas.",
+             "The absence of vital sign records (blood pressure, SpO₂, pulse, and temperature) requires "
+             "an in-person prenatal check-up to rule out hypertensive disorders or hemodynamic "
+             "alterations."))
     ) if _embarazada_pdf else (
-        "Los signos vitales permiten una primera aproximación al estado fisiológico general. "
-        + ("Se detectaron valores fuera de rango (ver etiquetas en alerta o crítico en la tabla); se "
-           "recomienda evaluación médica para precisar el hallazgo." if _hay_alerta_vital else
-           "Los valores registrados se encuentran dentro de los parámetros esperables; continúa con "
-           "controles periódicos." if _hay_algun_vital else
-           "No se registraron signos vitales en esta sesión; se recomienda completarlos para un "
-           "seguimiento clínico más preciso.")
+        T("Los signos vitales permiten una primera aproximación al estado fisiológico general. ",
+          "Vital signs provide an initial approximation of general physiological state. ")
+        + (T("Se detectaron valores fuera de rango (ver etiquetas en alerta o crítico en la tabla); se "
+             "recomienda evaluación médica para precisar el hallazgo.",
+             "Out-of-range values were detected (see alert or critical labels in the table); a medical "
+             "evaluation is recommended to clarify the finding.") if _hay_alerta_vital else
+           T("Los valores registrados se encuentran dentro de los parámetros esperables; continúa con "
+             "controles periódicos.",
+             "The recorded values are within the expected parameters; continue with periodic check-ups.") if _hay_algun_vital else
+           T("No se registraron signos vitales en esta sesión; se recomienda completarlos para un "
+             "seguimiento clínico más preciso.",
+             "No vital signs were recorded in this session; it is recommended to complete them for more "
+             "precise clinical follow-up."))
     )
-    story.append(Paragraph(f"<b>Explicación Clínica:</b> {_explic1}", estilo_explic))
+    story.append(Paragraph(f"<b>{T('Explicación Clínica:', 'Clinical Explanation:')}</b> {_explic1}", estilo_explic))
 
     # ---------------- MÓDULO 3 / 4: Antropometría + Requerimiento energético ----------------
     _peso_delta = datos["peso_proyectado"] - datos["peso"]
     _bono_gestacional = datos["rcd_final"] - datos["rcd"]
-    mod3 = [_cab_modulo("3. ANTROPOMETRÍA Y PROYECCIÓN"), Spacer(1, 2),
+    _cat_imc_pdf_txt = _cat_imc_txt(datos['categoria_imc'])
+    _obj_pdf_txt = T(datos.get('objetivo', ''), _OBJ_EN.get(datos.get('objetivo', ''), datos.get('objetivo', '')))
+    _trimestre_expl_txt = datos.get('trimestre', '') or T('trimestre gestacional', 'gestational trimester')
+    if _idioma_pdf_en:
+        _trimestre_expl_txt = (_trimestre_expl_txt.replace('Primer', '1st').replace('Segundo', '2nd')
+                                .replace('Tercer', '3rd').replace('Trimestre', 'Trimester'))
+    mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 2),
             _tabla_kv([
-                ("Peso Actual", f"{datos['peso']:.2f} kg"),
-                ("Estatura", f"{datos['estatura']} cm ({datos['estatura']/100:.2f} m)"),
-                ("IMC Actual", f"{datos['imc']} kg/m²  —  {datos['categoria_imc']}"
+                (T("Peso Actual", "Current Weight"), f"{datos['peso']:.2f} kg"),
+                (T("Estatura", "Height"), f"{datos['estatura']} cm ({datos['estatura']/100:.2f} m)"),
+                (T("IMC Actual", "Current BMI"), f"{datos['imc']} kg/m²  —  {_cat_imc_pdf_txt}"
                  + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
-                ("Proyección (60 días)", f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)"),
+                (T("Proyección (60 días)", "Projection (60 days)"), f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)"),
             ])]
     _edad_pdf = datos.get("edad", 0) or 0
     if _embarazada_pdf:
-        _limite_cafeina_txt = "Máx. 200 mg/día (embarazo)"
+        _limite_cafeina_txt = T("Máx. 200 mg/día (embarazo)", "Max. 200 mg/day (pregnancy)")
     elif _edad_pdf < 12:
-        _limite_cafeina_txt = "Evitar (no recomendado en niños)"
+        _limite_cafeina_txt = T("Evitar (no recomendado en niños)", "Avoid (not recommended for children)")
     elif _edad_pdf < 18:
-        _limite_cafeina_txt = "Máx. 100 mg/día (adolescente)"
+        _limite_cafeina_txt = T("Máx. 100 mg/día (adolescente)", "Max. 100 mg/day (adolescent)")
     else:
-        _limite_cafeina_txt = "Máx. 400 mg/día"
-    mod4 = [_cab_modulo("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES"), Spacer(1, 2),
+        _limite_cafeina_txt = T("Máx. 400 mg/día", "Max. 400 mg/day")
+    mod4 = [_cab_modulo(T("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES", "4. ENERGY REQUIREMENT & LIMITS")), Spacer(1, 2),
             _tabla_kv([
-                ("Tasa Metabólica (TMB)", f"{datos['tmb']:.2f} kcal/día"),
-                ("Gasto Calórico Diario", f"{datos['rcd']:.2f} kcal/día"),
-                ("Meta Gestacional Total" if _embarazada_pdf else "Meta Calórica",
-                 f"{datos['rcd_final']:.2f} kcal/día" + (f"  (+{_bono_gestacional:.0f} kcal)" if _embarazada_pdf and _bono_gestacional > 0 else "")),
-                ("Límite de Cafeína", _limite_cafeina_txt),
+                (T("Tasa Metabólica (TMB)", "Metabolic Rate (BMR)"), f"{datos['tmb']:.2f} kcal/{T('día', 'day')}"),
+                (T("Gasto Calórico Diario", "Daily Caloric Expenditure"), f"{datos['rcd']:.2f} kcal/{T('día', 'day')}"),
+                (T("Meta Gestacional Total", "Total Gestational Goal") if _embarazada_pdf else T("Meta Calórica", "Caloric Goal"),
+                 f"{datos['rcd_final']:.2f} kcal/{T('día', 'day')}" + (f"  (+{_bono_gestacional:.0f} kcal)" if _embarazada_pdf and _bono_gestacional > 0 else "")),
+                (T("Límite de Cafeína", "Caffeine Limit"), _limite_cafeina_txt),
             ])]
     story.append(_fila_doble(mod3, mod4))
 
     if _embarazada_pdf:
-        _explic2 = (f"Tu IMC actual de {datos['imc']} se clasifica en un rango {datos['categoria_imc'].lower()}"
-                     + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
-                     f"Para el {datos.get('trimestre', 'trimestre gestacional').lower()} se suma un bono calórico de "
-                     f"+{_bono_gestacional:.0f} kcal sobre tu tasa basal para garantizar el desarrollo fetal adecuado. "
-                     f"La ganancia ponderal estimada en 60 días ({datos['peso_proyectado']:.2f} kg) sigue una curva "
-                     "saludable, sin restricciones calóricas severas. La cafeína debe mantenerse estrictamente "
-                     "<200 mg/día para mitigar riesgos gestacionales.")
+        _explic2 = T(
+            f"Tu IMC actual de {datos['imc']} se clasifica en un rango {_cat_imc_pdf_txt.lower()}"
+            + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
+            f"Para el {_trimestre_expl_txt.lower()} se suma un bono calórico de "
+            f"+{_bono_gestacional:.0f} kcal sobre tu tasa basal para garantizar el desarrollo fetal adecuado. "
+            f"La ganancia ponderal estimada en 60 días ({datos['peso_proyectado']:.2f} kg) sigue una curva "
+            "saludable, sin restricciones calóricas severas. La cafeína debe mantenerse estrictamente "
+            "<200 mg/día para mitigar riesgos gestacionales.",
+            f"Your current BMI of {datos['imc']} is classified in a {_cat_imc_pdf_txt.lower()} range"
+            + (f" (Percentile {datos['percentil']})" if datos.get("percentil") else "") + ". "
+            f"For the {_trimestre_expl_txt.lower()}, a caloric bonus of "
+            f"+{_bono_gestacional:.0f} kcal is added to your basal rate to ensure proper fetal development. "
+            f"The estimated weight gain over 60 days ({datos['peso_proyectado']:.2f} kg) follows a healthy "
+            "curve, without severe caloric restrictions. Caffeine must be kept strictly under 200 mg/day "
+            "to mitigate gestational risks.")
     else:
-        _explic2 = (f"Tu IMC actual de {datos['imc']} se clasifica como {datos['categoria_imc'].lower()}"
-                     + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
-                     f"Tu meta calórica diaria de {datos['rcd_final']:.2f} kcal/día se calculó según tu objetivo "
-                     f"nutricional ({datos['objetivo']}), a partir de tu Tasa Metabólica Basal y tu nivel de "
-                     "actividad física.")
-    story.append(Paragraph(f"<b>Explicación Clínica:</b> {_explic2}", estilo_explic))
+        _explic2 = T(
+            f"Tu IMC actual de {datos['imc']} se clasifica como {_cat_imc_pdf_txt.lower()}"
+            + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
+            f"Tu meta calórica diaria de {datos['rcd_final']:.2f} kcal/día se calculó según tu objetivo "
+            f"nutricional ({_obj_pdf_txt}), a partir de tu Tasa Metabólica Basal y tu nivel de "
+            "actividad física.",
+            f"Your current BMI of {datos['imc']} is classified as {_cat_imc_pdf_txt.lower()}"
+            + (f" (Percentile {datos['percentil']})" if datos.get("percentil") else "") + ". "
+            f"Your daily caloric goal of {datos['rcd_final']:.2f} kcal/day was calculated based on your "
+            f"nutritional goal ({_obj_pdf_txt}), from your Basal Metabolic Rate and your activity level.")
+    story.append(Paragraph(f"<b>{T('Explicación Clínica:', 'Clinical Explanation:')}</b> {_explic2}", estilo_explic))
 
     # ---------------- MÓDULO 5 / 6: Análisis sanguíneo + Macronutrientes ----------------
+    _sin_datos_txt = T("Sin datos", "No data")
     _examen_map = {p: (v, c) for p, v, c in datos.get("examen", [])}
-    _v_hemo, _c_hemo = _examen_map.get("Hemoglobina", ("Sin datos", "Sin datos"))
-    _v_gluco, _c_gluco = _examen_map.get("Glucosa", ("Sin datos", "Sin datos"))
-    _v_hierro, _c_hierro = _examen_map.get("Hierro", ("Sin datos", "Sin datos"))
-    _v_trigli, _c_trigli = _examen_map.get("Triglicéridos", ("Sin datos", "Sin datos"))
-    _v_coles, _c_coles = _examen_map.get("Colesterol", ("Sin datos", "Sin datos"))
+    _v_hemo, _c_hemo = _examen_map.get("Hemoglobina", (_sin_datos_txt, "Sin datos"))
+    _v_gluco, _c_gluco = _examen_map.get("Glucosa", (_sin_datos_txt, "Sin datos"))
+    _v_hierro, _c_hierro = _examen_map.get("Hierro", (_sin_datos_txt, "Sin datos"))
+    _v_trigli, _c_trigli = _examen_map.get("Triglicéridos", (_sin_datos_txt, "Sin datos"))
+    _v_coles, _c_coles = _examen_map.get("Colesterol", (_sin_datos_txt, "Sin datos"))
     _col_hemo = CATEGORIA_SEMAFORO.get(_c_hemo, "gris")
     _col_gluco = CATEGORIA_SEMAFORO.get(_c_gluco, "gris")
     _col_hierro = CATEGORIA_SEMAFORO.get(_c_hierro, "gris")
@@ -2433,47 +2500,64 @@ def generar_pdf_reporte(datos):
     _col_coles = CATEGORIA_SEMAFORO.get(_c_coles, "gris")
     _ORDEN_RIESGO = {"gris": 0, "verde": 1, "ambar": 2, "rojo": 3}
     _col_lipidico = max([_col_trigli, _col_coles], key=lambda c: _ORDEN_RIESGO.get(c, 0))
-    _et_lipidico = "Sin datos" if _col_lipidico == "gris" else SEMAFORO_ESTILO[_col_lipidico]["etiqueta"]
+    _et_lipidico = _sin_datos_txt if _col_lipidico == "gris" else _et(_col_lipidico)
 
-    mod5 = [_cab_modulo("5. ANÁLISIS SANGUÍNEO (SEMÁFORO)"), Spacer(1, 2),
+    mod5 = [_cab_modulo(T("5. ANÁLISIS SANGUÍNEO (SEMÁFORO)", "5. BLOOD ANALYSIS (TRIAGE)")), Spacer(1, 2),
             _tabla_vitales([
-                ("Hemoglobina", SEMAFORO_ESTILO[_col_hemo]["etiqueta"] if datos["tiene_examen"] else "Sin datos", _col_hemo),
-                ("Glucosa Basal", SEMAFORO_ESTILO[_col_gluco]["etiqueta"] if datos["tiene_examen"] else "Sin datos", _col_gluco),
-                ("Hierro Sérico", SEMAFORO_ESTILO[_col_hierro]["etiqueta"] if datos["tiene_examen"] else "Sin datos", _col_hierro),
-                ("Perfil Lipídico", _et_lipidico, _col_lipidico),
+                (T("Hemoglobina", "Hemoglobin"), _et(_col_hemo) if datos["tiene_examen"] else _sin_datos_txt, _col_hemo),
+                (T("Glucosa Basal", "Fasting Glucose"), _et(_col_gluco) if datos["tiene_examen"] else _sin_datos_txt, _col_gluco),
+                (T("Hierro Sérico", "Serum Iron"), _et(_col_hierro) if datos["tiene_examen"] else _sin_datos_txt, _col_hierro),
+                (T("Perfil Lipídico", "Lipid Profile"), _et_lipidico, _col_lipidico),
             ])]
 
     _total_kcal_macros = max(datos["cal_prot"] + datos["cal_carb"] + datos["cal_gras"], 1)
     _pct_prot_pdf = datos["cal_prot"] / _total_kcal_macros * 100
     _pct_carb_pdf = datos["cal_carb"] / _total_kcal_macros * 100
     _pct_gras_pdf = datos["cal_gras"] / _total_kcal_macros * 100
-    mod6 = [_cab_modulo("6. DISTRIBUCIÓN DE MACRONUTRIENTES"), Spacer(1, 2),
+    mod6 = [_cab_modulo(T("6. DISTRIBUCIÓN DE MACRONUTRIENTES", "6. MACRONUTRIENT DISTRIBUTION")), Spacer(1, 2),
             _tabla_kv([
-                (f"Proteínas ({_pct_prot_pdf:.0f}%)", f"{datos['gr_prot']:.2f} g  |  {datos['cal_prot']:.2f} kcal"),
-                (f"Carbohidratos ({_pct_carb_pdf:.0f}%)", f"{datos['gr_carb']:.2f} g  |  {datos['cal_carb']:.2f} kcal"),
-                (f"Grasas ({_pct_gras_pdf:.0f}%)", f"{datos['gr_gras']:.2f} g  |  {datos['cal_gras']:.2f} kcal"),
-                ("Energía Total", f"{datos['rcd_final']:.2f} kcal/día"),
+                (f"{T('Proteínas', 'Protein')} ({_pct_prot_pdf:.0f}%)", f"{datos['gr_prot']:.2f} g  |  {datos['cal_prot']:.2f} kcal"),
+                (f"{T('Carbohidratos', 'Carbohydrates')} ({_pct_carb_pdf:.0f}%)", f"{datos['gr_carb']:.2f} g  |  {datos['cal_carb']:.2f} kcal"),
+                (f"{T('Grasas', 'Fats')} ({_pct_gras_pdf:.0f}%)", f"{datos['gr_gras']:.2f} g  |  {datos['cal_gras']:.2f} kcal"),
+                (T("Energía Total", "Total Energy"), f"{datos['rcd_final']:.2f} kcal/{T('día', 'day')}"),
             ])]
     story.append(_fila_doble(mod5, mod6))
 
     if datos["tiene_examen"]:
-        _explic3 = ("Se registraron analíticas sanguíneas en esta sesión. "
-                     + ("En el embarazo es prioritario evaluar la Hemoglobina (descarte de anemia gestacional) y la "
-                        "Glucosa en ayunas (descarte de diabetes gestacional). " if _embarazada_pdf else
-                        "Se recomienda revisar junto a un profesional de salud cualquier valor fuera del rango normal. ")
-                     + "La distribución de macronutrientes asigna un "
-                     f"{_pct_prot_pdf:.0f}% de proteínas para el aporte estructural"
-                     + (" fetal y placentario." if _embarazada_pdf else " y de mantenimiento muscular."))
+        _explic3 = T(
+            "Se registraron analíticas sanguíneas en esta sesión. "
+            + ("En el embarazo es prioritario evaluar la Hemoglobina (descarte de anemia gestacional) y la "
+               "Glucosa en ayunas (descarte de diabetes gestacional). " if _embarazada_pdf else
+               "Se recomienda revisar junto a un profesional de salud cualquier valor fuera del rango normal. ")
+            + "La distribución de macronutrientes asigna un "
+            f"{_pct_prot_pdf:.0f}% de proteínas para el aporte estructural"
+            + (" fetal y placentario." if _embarazada_pdf else " y de mantenimiento muscular."),
+            "Blood tests were recorded in this session. "
+            + ("In pregnancy, it is a priority to evaluate Hemoglobin (to rule out gestational anemia) and "
+               "fasting Glucose (to rule out gestational diabetes). " if _embarazada_pdf else
+               "It is recommended to review any out-of-range value together with a healthcare professional. ")
+            + "The macronutrient distribution assigns "
+            f"{_pct_prot_pdf:.0f}% protein for structural support"
+            + (", fetal and placental." if _embarazada_pdf else " and muscle maintenance."))
     else:
-        _explic3 = ("No se registraron analíticas sanguíneas en esta sesión. "
-                     + ("En el embarazo es prioritario evaluar la Hemoglobina (descarte de anemia gestacional) y la "
-                        "Glucosa en ayunas (descarte de diabetes gestacional). " if _embarazada_pdf else
-                        "Se recomienda completar un panel básico (hemoglobina, glucosa, hierro y perfil lipídico) "
-                        "para un seguimiento clínico más completo. ")
-                     + "La distribución de macronutrientes asigna un "
-                     f"{_pct_prot_pdf:.0f}% de proteínas para el aporte estructural"
-                     + (" fetal y placentario." if _embarazada_pdf else " y de mantenimiento muscular."))
-    story.append(Paragraph(f"<b>Explicación Clínica:</b> {_explic3}", estilo_explic))
+        _explic3 = T(
+            "No se registraron analíticas sanguíneas en esta sesión. "
+            + ("En el embarazo es prioritario evaluar la Hemoglobina (descarte de anemia gestacional) y la "
+               "Glucosa en ayunas (descarte de diabetes gestacional). " if _embarazada_pdf else
+               "Se recomienda completar un panel básico (hemoglobina, glucosa, hierro y perfil lipídico) "
+               "para un seguimiento clínico más completo. ")
+            + "La distribución de macronutrientes asigna un "
+            f"{_pct_prot_pdf:.0f}% de proteínas para el aporte estructural"
+            + (" fetal y placentario." if _embarazada_pdf else " y de mantenimiento muscular."),
+            "No blood tests were recorded in this session. "
+            + ("In pregnancy, it is a priority to evaluate Hemoglobin (to rule out gestational anemia) and "
+               "fasting Glucose (to rule out gestational diabetes). " if _embarazada_pdf else
+               "It is recommended to complete a basic panel (hemoglobin, glucose, iron, and lipid profile) "
+               "for more complete clinical follow-up. ")
+            + "The macronutrient distribution assigns "
+            f"{_pct_prot_pdf:.0f}% protein for structural support"
+            + (", fetal and placental." if _embarazada_pdf else " and muscle maintenance."))
+    story.append(Paragraph(f"<b>{T('Explicación Clínica:', 'Clinical Explanation:')}</b> {_explic3}", estilo_explic))
 
     # ==========================================================================================
     # PÁGINA 2 — PLAN ALIMENTARIO DETALLADO Y RECOMENDACIONES CLÍNICAS
@@ -2481,12 +2565,25 @@ def generar_pdf_reporte(datos):
     story.append(PageBreak())
     _membrete_institucional()
 
+    _MOMENTO_EN_PDF = {"Desayuno": "Breakfast", "Merienda 1": "Morning Snack", "Almuerzo": "Lunch",
+                        "Merienda 2": "Afternoon Snack", "Cena": "Dinner"}
+    _MACRO_EN_PDF = {"Carbohidrato": "Carbohydrate", "Proteína": "Protein", "Grasa": "Fat"}
+
+    def _mom_pdf(nombre):
+        return T(nombre, _MOMENTO_EN_PDF.get(nombre, nombre))
+
+    def _mac_pdf(nombre):
+        return T(nombre, _MACRO_EN_PDF.get(nombre, nombre))
+
+    def _alim_pdf(nombre):
+        return T(nombre, FOOD_NOMBRE_EN.get(nombre, nombre)) if _idioma_pdf_en else nombre
+
     header2 = Table([
-        [Paragraph("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", estilo_pagina2_tit),
-         Paragraph("Página 2 de 2", estilo_meta)],
-        [Paragraph(f"Programa de Salud Escolar CIAM&amp;SUNI | Paciente: {datos['nombre'].upper()} ({datos['edad']} años)",
+        [Paragraph(T("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", "MEAL PLAN & DIETARY PRESCRIPTION"), estilo_pagina2_tit),
+         Paragraph(T("Página 2 de 2", "Page 2 of 2"), estilo_meta)],
+        [Paragraph(f"{T('Programa de Salud Escolar', 'School Health Program')} CIAM&amp;SUNI | {T('Paciente', 'Patient')}: {datos['nombre'].upper()} ({datos['edad']} {T('años', 'years')})",
                     estilo_subtitulo),
-         Paragraph(f"<b>Meta:</b> {datos['rcd_final']:.2f} kcal/día", estilo_meta)],
+         Paragraph(f"<b>{T('Meta:', 'Goal:')}</b> {datos['rcd_final']:.2f} kcal/{T('día', 'day')}", estilo_meta)],
     ], colWidths=[CONTENT_W - 45 * mm, 45 * mm])
     header2.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -2499,13 +2596,14 @@ def generar_pdf_reporte(datos):
     story.append(Spacer(1, 8))
 
     # ---------------- 7. PLAN ALIMENTARIO (3 tablas cromáticas, datos reales seleccionados) ----------------
-    story.append(Paragraph("7. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", estilo_seccion2))
+    story.append(Paragraph(T("7. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", "7. DETAILED MEAL PLAN BY MACRONUTRIENT"), estilo_seccion2))
 
     def _tabla_macro_color(macro_key, titulo_col, color_cab, color_fila):
-        filas_html = [["Momento", f"Alimento ({titulo_col})", "Kcal/100g", "Porción Corregida", "Gramos Finales"]]
+        filas_html = [[T("Momento", "Meal"), f"{T('Alimento', 'Food')} ({_mac_pdf(titulo_col)})",
+                        "Kcal/100g", T("Porción Corregida", "Adjusted Portion"), T("Gramos Finales", "Final Grams")]]
         for fila in datos["dieta_filas"]:
             d = fila[macro_key]
-            filas_html.append([fila["momento"], d["alimento"], f"{d['kcal']:.0f} kcal",
+            filas_html.append([_mom_pdf(fila["momento"]), _alim_pdf(d["alimento"]), f"{d['kcal']:.0f} kcal",
                                 f"{d['porcion']:.1f} kcal", f"{d['gramos']:.1f} g"])
         _tot = datos["dieta_totales"][macro_key]
         filas_html.append(["TOTAL", "", "—", f"{_tot['porcion']:.1f} kcal", f"{_tot['gramos']:.1f} g"])
@@ -2536,12 +2634,13 @@ def generar_pdf_reporte(datos):
         story.append(_tabla_macro_color("Grasa", "Grasa", NARANJA_GRA, NARANJA_GRA_CLARO))
         story.append(Spacer(1, 6))
     else:
-        story.append(Paragraph("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
+        story.append(Paragraph(T("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
+                                  "No meal plan has been built yet in Sheet 9.-DIET during this session."),
                                 estilo_texto))
         story.append(Spacer(1, 6))
 
     # ---------------- 8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL ----------------
-    story.append(Paragraph("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", estilo_seccion2))
+    story.append(Paragraph(T("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", "8. CLINICAL RECOMMENDATIONS & NUTRITIONAL GUIDE"), estilo_seccion2))
 
     estilo_subcat = ParagraphStyle("SubcatRecom", parent=estilo_seccion2, fontSize=10.5,
                                     spaceBefore=6, spaceAfter=3)
@@ -2557,60 +2656,85 @@ def generar_pdf_reporte(datos):
 
     _cat_imc_pdf = datos.get("categoria_imc", "")
     if _cat_imc_pdf == "Peso Saludable":
-        _acciones_recom.append("Mantén tus hábitos actuales de alimentación balanceada y actividad física regular.")
+        _acciones_recom.append(T("Mantén tus hábitos actuales de alimentación balanceada y actividad física regular.",
+                                  "Keep up your current balanced eating habits and regular physical activity."))
     elif _cat_imc_pdf == "Bajo Peso":
-        _alimentos_recom.append("Incluye fuentes calóricas densas y saludables (frutos secos, palta, aceite de oliva, cereales integrales) para favorecer una ganancia de peso segura.")
-        _acciones_recom.append("Aumenta la frecuencia de comidas y consulta con tu médico o nutricionista para evaluar tu ingesta calórica.")
+        _alimentos_recom.append(T("Incluye fuentes calóricas densas y saludables (frutos secos, palta, aceite de oliva, cereales integrales) para favorecer una ganancia de peso segura.",
+                                   "Include dense, healthy caloric sources (nuts, avocado, olive oil, whole grains) to support safe weight gain."))
+        _acciones_recom.append(T("Aumenta la frecuencia de comidas y consulta con tu médico o nutricionista para evaluar tu ingesta calórica.",
+                                  "Increase your meal frequency and consult your doctor or nutritionist to assess your caloric intake."))
     elif _cat_imc_pdf in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]:
-        _alimentos_recom.append("Prioriza verduras, frutas enteras, proteínas magras y granos integrales; reduce el tamaño de las porciones de forma gradual.")
-        _evitar_recom.append("Evita bebidas azucaradas, frituras y alimentos ultraprocesados de alta densidad calórica.")
+        _alimentos_recom.append(T("Prioriza verduras, frutas enteras, proteínas magras y granos integrales; reduce el tamaño de las porciones de forma gradual.",
+                                   "Prioritize vegetables, whole fruits, lean proteins, and whole grains; gradually reduce portion sizes."))
+        _evitar_recom.append(T("Evita bebidas azucaradas, frituras y alimentos ultraprocesados de alta densidad calórica.",
+                                "Avoid sugary drinks, fried foods, and high-calorie-density ultra-processed foods."))
 
     for _param, _valtxt, _cat in datos.get("examen", []):
         _color_e = CATEGORIA_SEMAFORO.get(_cat, "gris")
         if _color_e not in ("ambar", "rojo"):
             continue
         if _param == "Hemoglobina":
-            _alimentos_recom.append("Prioriza alimentos ricos en hierro (carnes rojas, legumbres, espinaca) junto con vitamina C para mejorar su absorción.")
-            _evitar_recom.append("Evita el té o café junto con las comidas principales, ya que reducen la absorción del hierro.")
+            _alimentos_recom.append(T("Prioriza alimentos ricos en hierro (carnes rojas, legumbres, espinaca) junto con vitamina C para mejorar su absorción.",
+                                       "Prioritize iron-rich foods (red meat, legumes, spinach) along with vitamin C to improve absorption."))
+            _evitar_recom.append(T("Evita el té o café junto con las comidas principales, ya que reducen la absorción del hierro.",
+                                    "Avoid tea or coffee with main meals, as they reduce iron absorption."))
         elif _param == "Triglicéridos":
-            _alimentos_recom.append("Aumenta el consumo de fibra (avena, legumbres, verduras) y grasas saludables (pescado, aceite de oliva).")
-            _evitar_recom.append("Reduce azúcares simples, harinas refinadas, grasas saturadas y alcohol.")
+            _alimentos_recom.append(T("Aumenta el consumo de fibra (avena, legumbres, verduras) y grasas saludables (pescado, aceite de oliva).",
+                                       "Increase your fiber intake (oats, legumes, vegetables) and healthy fats (fish, olive oil)."))
+            _evitar_recom.append(T("Reduce azúcares simples, harinas refinadas, grasas saturadas y alcohol.",
+                                    "Reduce simple sugars, refined flours, saturated fats, and alcohol."))
         elif _param == "Glucosa" and _cat == "Hipoglucemia":
-            _alimentos_recom.append("Combina carbohidratos de absorción compleja con proteína en cada comida para estabilizar tu glucosa.")
-            _acciones_recom.append("Evita el ayuno prolongado; realiza comidas y meriendas frecuentes a lo largo del día.")
+            _alimentos_recom.append(T("Combina carbohidratos de absorción compleja con proteína en cada comida para estabilizar tu glucosa.",
+                                       "Combine slow-absorption carbohydrates with protein in each meal to stabilize your glucose."))
+            _acciones_recom.append(T("Evita el ayuno prolongado; realiza comidas y meriendas frecuentes a lo largo del día.",
+                                      "Avoid prolonged fasting; eat frequent meals and snacks throughout the day."))
         elif _param == "Glucosa":
-            _alimentos_recom.append("Prioriza carbohidratos de absorción lenta (granos integrales, legumbres) y aumenta el consumo de fibra.")
-            _evitar_recom.append("Reduce azúcares simples y controla el tamaño de tus porciones de carbohidratos.")
+            _alimentos_recom.append(T("Prioriza carbohidratos de absorción lenta (granos integrales, legumbres) y aumenta el consumo de fibra.",
+                                       "Prioritize slow-absorption carbohydrates (whole grains, legumes) and increase your fiber intake."))
+            _evitar_recom.append(T("Reduce azúcares simples y controla el tamaño de tus porciones de carbohidratos.",
+                                    "Reduce simple sugars and watch your carbohydrate portion sizes."))
         elif _param == "Colesterol":
-            _alimentos_recom.append("Prioriza grasas saludables como el aceite de oliva, la palta y el pescado.")
-            _evitar_recom.append("Reduce frituras, grasas saturadas y alimentos ultraprocesados.")
+            _alimentos_recom.append(T("Prioriza grasas saludables como el aceite de oliva, la palta y el pescado.",
+                                       "Prioritize healthy fats such as olive oil, avocado, and fish."))
+            _evitar_recom.append(T("Reduce frituras, grasas saturadas y alimentos ultraprocesados.",
+                                    "Reduce fried foods, saturated fats, and ultra-processed foods."))
         elif _param == "Hierro":
-            _alimentos_recom.append("Aumenta el consumo de alimentos ricos en hierro (carnes, legumbres, vegetales verdes).")
+            _alimentos_recom.append(T("Aumenta el consumo de alimentos ricos en hierro (carnes, legumbres, vegetales verdes).",
+                                       "Increase your intake of iron-rich foods (meat, legumes, green vegetables)."))
 
     if _embarazada_pdf:
-        _alimentos_recom.append("Incluye lácteos pasteurizados, carnes y huevos bien cocidos, y cítricos junto con las proteínas.")
-        _acciones_recom.append("Mantén un consumo de 2.5 a 3.0 litros de agua al día y sigue la suplementación indicada por tu ginecólogo-obstetra (Sulfato Ferroso + Ácido Fólico).")
-        _evitar_recom.append("Evita pescados/carnes crudos o poco cocidos, embutidos sin cocer, lácteos no pasteurizados y el exceso de cafeína (máx. 200 mg/día).")
+        _alimentos_recom.append(T("Incluye lácteos pasteurizados, carnes y huevos bien cocidos, y cítricos junto con las proteínas.",
+                                   "Include pasteurized dairy, well-cooked meats and eggs, and citrus fruits along with your proteins."))
+        _acciones_recom.append(T("Mantén un consumo de 2.5 a 3.0 litros de agua al día y sigue la suplementación indicada por tu ginecólogo-obstetra (Sulfato Ferroso + Ácido Fólico).",
+                                  "Maintain a water intake of 2.5 to 3.0 liters per day and follow the supplementation prescribed by your OB-GYN (Ferrous Sulfate + Folic Acid)."))
+        _evitar_recom.append(T("Evita pescados/carnes crudos o poco cocidos, embutidos sin cocer, lácteos no pasteurizados y el exceso de cafeína (máx. 200 mg/día).",
+                                "Avoid raw or undercooked fish/meat, uncooked cold cuts, unpasteurized dairy, and excess caffeine (max. 200 mg/day)."))
     else:
-        _acciones_recom.append("Mantén un consumo adecuado de agua a lo largo del día (aprox. 30-35 ml por kg de peso corporal) y respeta el esquema de 5 comidas diarias.")
-        _evitar_recom.append("Evita saltarte comidas y el exceso de alimentos ultraprocesados.")
+        _acciones_recom.append(T("Mantén un consumo adecuado de agua a lo largo del día (aprox. 30-35 ml por kg de peso corporal) y respeta el esquema de 5 comidas diarias.",
+                                  "Maintain adequate water intake throughout the day (approx. 30-35 ml per kg of body weight) and follow the 5-meals-a-day schedule."))
+        _evitar_recom.append(T("Evita saltarte comidas y el exceso de alimentos ultraprocesados.",
+                                "Avoid skipping meals and excess ultra-processed foods."))
         if _edad_pdf < 18:
-            _evitar_recom.append("Evita bebidas energizantes y limita la cafeína (máx. 100 mg/día en adolescentes).")
+            _evitar_recom.append(T("Evita bebidas energizantes y limita la cafeína (máx. 100 mg/día en adolescentes).",
+                                    "Avoid energy drinks and limit caffeine (max. 100 mg/day for adolescents)."))
 
     _alimentos_recom = _dedup(_alimentos_recom)
     _acciones_recom = _dedup(_acciones_recom)
     _evitar_recom = _dedup(_evitar_recom)
 
-    story.append(Paragraph("🥦 Alimentos Recomendados", estilo_subcat))
-    for r in (_alimentos_recom or ["Mantén una alimentación variada y balanceada según tu plan asignado."]):
+    story.append(Paragraph(T("🥦 Alimentos Recomendados", "🥦 Recommended Foods"), estilo_subcat))
+    for r in (_alimentos_recom or [T("Mantén una alimentación variada y balanceada según tu plan asignado.",
+                                      "Maintain a varied, balanced diet according to your assigned plan.")]):
         story.append(Paragraph(f"•  {r}", estilo_recom_txt))
 
-    story.append(Paragraph("✅ Acciones / Conductas Saludables", estilo_subcat))
-    for r in (_acciones_recom or ["Continúa con tus hábitos actuales de alimentación y actividad física."]):
+    story.append(Paragraph(T("✅ Acciones / Conductas Saludables", "✅ Healthy Actions / Behaviors"), estilo_subcat))
+    for r in (_acciones_recom or [T("Continúa con tus hábitos actuales de alimentación y actividad física.",
+                                     "Continue with your current eating habits and physical activity.")]):
         story.append(Paragraph(f"•  {r}", estilo_recom_txt))
 
-    story.append(Paragraph("⚠️ Alimentos y Conductas a Evitar", estilo_subcat))
-    for r in (_evitar_recom or ["No se detectaron alertas específicas con la información ingresada."]):
+    story.append(Paragraph(T("⚠️ Alimentos y Conductas a Evitar", "⚠️ Foods & Behaviors to Avoid"), estilo_subcat))
+    for r in (_evitar_recom or [T("No se detectaron alertas específicas con la información ingresada.",
+                                   "No specific alerts were detected with the information entered.")]):
         story.append(Paragraph(f"•  {r}", estilo_recom_txt))
 
     # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
@@ -2618,12 +2742,18 @@ def generar_pdf_reporte(datos):
     story.append(HRFlowable(width="100%", thickness=0.6, color=_rl_hex(LINEA)))
     story.append(Spacer(1, 4))
     story.append(Paragraph(
-        "<b>AVISO MÉDICO-LEGAL IMPORTANTE:</b> Este documento representa un informe automatizado de "
-        "distribución de porciones y energía generado por el aplicativo CIAM&amp;SUNI con fines estrictamente "
-        "educativos y de investigación escolar (Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
-        "C.E.P. \"Santa María Reina\", Chiclayo). NO SUSTITUYE LA EVALUACIÓN CLÍNICA PRENATAL, EL DIAGNÓSTICO "
-        "MÉDICO NI LAS INDICACIONES PRESCRIPTIVAS DE UN MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA CLÍNICO "
-        "COLEGIADO. Ningún dato personal o de salud es almacenado en servidores externos.", estilo_aviso))
+        T("<b>AVISO MÉDICO-LEGAL IMPORTANTE:</b> Este documento representa un informe automatizado de "
+          "distribución de porciones y energía generado por el aplicativo CIAM&amp;SUNI con fines estrictamente "
+          "educativos y de investigación escolar (Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
+          "C.E.P. \"Santa María Reina\", Chiclayo). NO SUSTITUYE LA EVALUACIÓN CLÍNICA PRENATAL, EL DIAGNÓSTICO "
+          "MÉDICO NI LAS INDICACIONES PRESCRIPTIVAS DE UN MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA CLÍNICO "
+          "COLEGIADO. Ningún dato personal o de salud es almacenado en servidores externos.",
+          "<b>IMPORTANT MEDICAL-LEGAL NOTICE:</b> This document represents an automated portion and energy "
+          "distribution report generated by the CIAM&amp;SUNI application for strictly educational and school "
+          "research purposes (School Health Project, Group No. 04, 5th Grade \"C\" Secondary School, "
+          "C.E.P. \"Santa María Reina\", Chiclayo). IT DOES NOT REPLACE PRENATAL CLINICAL EVALUATION, MEDICAL "
+          "DIAGNOSIS, OR THE PRESCRIPTIVE INDICATIONS OF A LICENSED OB-GYN OR CLINICAL NUTRITIONIST. No personal "
+          "or health data is stored on external servers."), estilo_aviso))
 
     doc.build(story)
     buffer.seek(0)
@@ -3157,6 +3287,79 @@ MENSAJES_TRIAJE_CATEGORIA = {
                       "comidas y meriendas frecuentes, y combina carbohidratos de absorción compleja con "
                       "proteína para estabilizar tus niveles."),
 }
+
+
+MENSAJES_TRIAJE_EN = {
+    "Hemoglobina": {
+        "verde": "Excellent balance! Your hemoglobin levels are in equilibrium. Keep prioritizing iron and quality proteins.",
+        "ambar": "You're in a zone that needs attention. Prioritize iron-rich foods (red meat, legumes, spinach) along with vitamin C to improve absorption.",
+        "rojo": "Your values suggest a risk of anemia. We recommend consulting a specialist and prioritizing iron and protein in your diet.",
+        "gris": "Enter your hemoglobin value to get a personalized recommendation.",
+    },
+    "Triglicéridos": {
+        "verde": "Great job! Your triglycerides are within the desirable range. Keep up your healthy fat intake and physical activity.",
+        "ambar": "You're in a borderline zone. Consider reducing sugars and simple carbohydrates, and increasing fiber in your diet.",
+        "rojo": "Your values are elevated. We recommend consulting a specialist and reducing saturated fats, sugars, and alcohol.",
+        "gris": "Enter your triglyceride value to get a personalized recommendation.",
+    },
+    "Glucosa": {
+        "verde": "Excellent! Your glucose is in a healthy range. Keep maintaining regular meal times.",
+        "ambar": "You're in a zone that needs attention. Reduce simple sugars and watch your carbohydrate portion sizes.",
+        "rojo": "Your values suggest metabolic risk. We recommend consulting a specialist as soon as possible.",
+        "gris": "Enter your glucose value to get a personalized recommendation.",
+    },
+    "Colesterol": {
+        "verde": "Great job! Your cholesterol is at a desirable level. Keep prioritizing healthy fats like olive oil and avocado.",
+        "ambar": "You're in a borderline zone. Consider reducing fried foods and saturated fats, and increasing your fiber intake.",
+        "rojo": "Your values are elevated. We recommend consulting a specialist and prioritizing a diet low in saturated fats.",
+        "gris": "Enter your cholesterol value to get a personalized recommendation.",
+    },
+    "Hierro": {
+        "verde": "Excellent! Your iron reserves are balanced. Keep prioritizing natural nutrients.",
+        "ambar": "You're in a zone that needs attention. Increase your intake of iron-rich foods (meat, legumes, green vegetables).",
+        "rojo": "Your values are out of range. We recommend consulting a specialist to evaluate your nutritional status.",
+        "gris": "Enter your iron value to get a personalized recommendation.",
+    },
+}
+
+MENSAJES_TRIAJE_CATEGORIA_EN = {
+    "Hipoglucemia": ("Your glucose is below the recommended level. Avoid prolonged fasting, eat frequent "
+                      "meals and snacks, and combine slow-absorption carbohydrates with protein to "
+                      "stabilize your levels."),
+}
+
+_PARAMETRO_EN = {
+    "Hemoglobina": "Hemoglobin", "Triglicéridos": "Triglycerides", "Glucosa": "Glucose",
+    "Colesterol": "Cholesterol", "Hierro": "Iron",
+}
+
+_CATEGORIA_CLINICA_EN = {
+    "Introducir datos": "Enter data", "Valor Imposible": "Impossible Value",
+    "Revisa Datos": "Check Data", "Género no válido": "Invalid Gender", "Etapa no válida": "Invalid Stage",
+    "Edad fuera de tabla (2-20 años)": "Age out of range (2-20 years)",
+    "Anemia grave": "Severe Anemia", "Anemia moderada": "Moderate Anemia", "Anemia leve": "Mild Anemia",
+    "Normal": "Normal", "Límite alto": "Borderline High", "Alto": "High", "Muy alto": "Very High",
+    "Hipoglucemia": "Hypoglycemia", "Prediabetes": "Prediabetes", "Diabetes": "Diabetes",
+    "Deseable": "Desirable", "Bajo": "Low",
+}
+
+
+def _parametro_txt(parametro):
+    """Traduce el nombre de un parámetro clínico (Hemoglobina, Glucosa, etc.) según el idioma."""
+    return T(parametro, _PARAMETRO_EN.get(parametro, parametro))
+
+
+def _categoria_clinica_txt(categoria):
+    """Traduce una categoría clínica (clave interna en español, usada para cálculos/colores)
+    al idioma activo, sin modificar la clave interna."""
+    return T(categoria, _CATEGORIA_CLINICA_EN.get(categoria, categoria))
+
+
+def _mensaje_triaje_txt(parametro, categoria, color):
+    """Devuelve el mensaje de recomendación de triaje ya traducido según el idioma activo."""
+    if st.session_state.get("idioma", "Español") == "English":
+        return MENSAJES_TRIAJE_CATEGORIA_EN.get(categoria) or MENSAJES_TRIAJE_EN.get(parametro, {}).get(color, "No recommendation available.")
+    return MENSAJES_TRIAJE_CATEGORIA.get(categoria) or MENSAJES_TRIAJE.get(parametro, {}).get(color, "Sin recomendación disponible.")
 
 
 def evaluar_estado_clinico(parametro, categoria):
@@ -9666,18 +9869,20 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
-    hoja_header(14, "Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.")
+    hoja_header(14, T("Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.",
+                       "A complete medical report, with your data, results, and recommendations — ready to print."))
 
     st.markdown(f"""
     <div style="background:#E7F6FD;border-left:5px solid #32ADE6;border-radius:20px;
                 padding:16px 24px;margin-bottom:16px;
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);" class="no-print">
-    🔒 <b style="color:#1C7DAD;">Privacidad:</b> este reporte se genera únicamente con la información que ingresaste en esta sesión.
-    Nada se guarda en un servidor ni queda almacenado al cerrar o recargar la página.
+    🔒 <b style="color:#1C7DAD;">{T("Privacidad:", "Privacy:")}</b> {T("este reporte se genera únicamente con la información que ingresaste en esta sesión.", "this report is generated solely from the information you entered in this session.")}
+    {T("Nada se guarda en un servidor ni queda almacenado al cerrar o recargar la página.", "Nothing is saved on a server or stored when you close or reload the page.")}
     </div>
     """, unsafe_allow_html=True)
 
     _fecha_reporte = datetime.now().strftime("%d/%m/%Y %H:%M")
+    _etapa_r14_txt = T(etapa, _ETAPA_EN.get(etapa, etapa))
 
     # --- Encabezado tipo "informe médico" ---
     st.markdown(f"""
@@ -9685,43 +9890,40 @@ elif hoja_activa == "📄 MI REPORTE":
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 22px rgba(0,0,0,0.06);">
         <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
             <div>
-                <div style="font-size:1.3rem;font-weight:800;color:#32ADE6;letter-spacing:-0.02em;">📄 Informe de Resultados — CIAM&amp;SUNI</div>
+                <div style="font-size:1.3rem;font-weight:800;color:#32ADE6;letter-spacing:-0.02em;">📄 {T("Informe de Resultados", "Results Report")} — CIAM&amp;SUNI</div>
                 <div style="color:#6C6C70;font-size:0.9rem;">C.E.P. "Santa María Reina", Chiclayo</div>
             </div>
-            <div style="text-align:right;color:#6C6C70;font-size:0.85rem;">Generado: {_fecha_reporte}</div>
+            <div style="text-align:right;color:#6C6C70;font-size:0.85rem;">{T("Generado", "Generated")}: {_fecha_reporte}</div>
         </div>
         <hr style="border:none;border-top:1px solid #F2F2F7;margin:14px 0;">
-        <b>Nombre:</b> {_nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
-        <b>Edad:</b> {edad} años ({etapa}) &nbsp;&nbsp;|&nbsp;&nbsp;
-        <b>Género:</b> {genero}
+        <b>{T("Nombre", "Name")}:</b> {_nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>{T("Edad", "Age")}:</b> {edad} {T("años", "years")} ({_etapa_r14_txt}) &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>{T("Género", "Gender")}:</b> {T(genero, "Female" if genero == "Mujer" else "Male")}
     </div>
     """, unsafe_allow_html=True)
 
     # --- Bloque 1: Datos antropométricos ---
-    st.markdown("#### 📏 Datos antropométricos")
+    st.markdown(f"#### 📏 {T('Datos antropométricos', 'Anthropometric Data')}")
     r1, r2, r3 = st.columns(3)
-    r1.metric("Peso", f"{peso:.2f} kg")
-    r2.metric("Estatura", f"{estatura} cm")
+    r1.metric(T("Peso", "Weight"), f"{peso:.2f} kg")
+    r2.metric(T("Estatura", "Height"), f"{estatura} cm")
     with r3:
-        if etapa in ["Niñez", "Adolescencia"]:
-            tarjeta_categoria_imc(f"IMC: {imc}", _categoria_imc_usuario)
-        else:
-            tarjeta_categoria_imc(f"IMC: {imc}", _categoria_imc_usuario)
+        tarjeta_categoria_imc(f"{T('IMC', 'BMI')}: {imc}", _categoria_imc_usuario)
 
-    st.markdown("#### 🔥 Requerimiento energético")
+    st.markdown(f"#### 🔥 {T('Requerimiento energético', 'Energy Requirement')}")
     r4, r5, r6 = st.columns(3)
-    r4.metric("TMB", f"{tmb:.2f} kcal/día")
-    r5.metric("RCD (gasto diario)", f"{rcd:.2f} kcal/día")
-    r6.metric("Meta calórica (objetivo)", f"{rcd_final:.2f} kcal/día")
+    r4.metric(T("TMB", "BMR"), f"{tmb:.2f} kcal/{T('día', 'day')}")
+    r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"{rcd:.2f} kcal/{T('día', 'day')}")
+    r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"{rcd_final:.2f} kcal/{T('día', 'day')}")
 
-    st.markdown("#### 🍽️ Macronutrientes recomendados")
+    st.markdown(f"#### 🍽️ {T('Macronutrientes recomendados', 'Recommended Macronutrients')}")
     r7, r8, r9 = st.columns(3)
-    r7.metric("Proteínas", f"{gr_prot:.2f} g")
-    r8.metric("Carbohidratos", f"{gr_carb:.2f} g")
-    r9.metric("Grasas", f"{gr_gras:.2f} g")
+    r7.metric(T("Proteínas", "Protein"), f"{gr_prot:.2f} g")
+    r8.metric(T("Carbohidratos", "Carbohydrates"), f"{gr_carb:.2f} g")
+    r9.metric(T("Grasas", "Fats"), f"{gr_gras:.2f} g")
 
     # --- Bloque 2: Análisis sanguíneo, si hay datos ---
-    st.markdown("#### 🩸 Análisis sanguíneo")
+    st.markdown(f"#### 🩸 {T('Análisis sanguíneo', 'Blood Analysis')}")
     _valores_examen = [hemo, trigli, gluco, coles, hierro]
     _tiene_examen = any(v > 0 for v in _valores_examen)
     if _tiene_examen:
@@ -9731,13 +9933,14 @@ elif hoja_activa == "📄 MI REPORTE":
         _cat_coles_r = clasif_colesterol(coles)
         _cat_hierro_r = clasif_hierro(hierro, etapa, genero)
         rc1, rc2, rc3, rc4, rc5 = st.columns(5)
-        with rc1: tarjeta_semaforo("Hemoglobina", f"{hemo} g/dL", _cat_hemo_r, valor_num=hemo, etapa=etapa, genero=genero)
-        with rc2: tarjeta_semaforo("Triglicéridos", f"{trigli} mg/dL", _cat_trigli_r, valor_num=trigli)
-        with rc3: tarjeta_semaforo("Glucosa", f"{gluco} mg/dL", _cat_gluco_r, valor_num=gluco)
-        with rc4: tarjeta_semaforo("Colesterol", f"{coles} mg/dL", _cat_coles_r, valor_num=coles)
-        with rc5: tarjeta_semaforo("Hierro", f"{hierro} µg/dL", _cat_hierro_r, valor_num=hierro, etapa=etapa, genero=genero)
+        with rc1: tarjeta_semaforo(_parametro_txt("Hemoglobina"), f"{hemo} g/dL", _categoria_clinica_txt(_cat_hemo_r), valor_num=hemo, etapa=etapa, genero=genero)
+        with rc2: tarjeta_semaforo(_parametro_txt("Triglicéridos"), f"{trigli} mg/dL", _categoria_clinica_txt(_cat_trigli_r), valor_num=trigli)
+        with rc3: tarjeta_semaforo(_parametro_txt("Glucosa"), f"{gluco} mg/dL", _categoria_clinica_txt(_cat_gluco_r), valor_num=gluco)
+        with rc4: tarjeta_semaforo(_parametro_txt("Colesterol"), f"{coles} mg/dL", _categoria_clinica_txt(_cat_coles_r), valor_num=coles)
+        with rc5: tarjeta_semaforo(_parametro_txt("Hierro"), f"{hierro} µg/dL", _categoria_clinica_txt(_cat_hierro_r), valor_num=hierro, etapa=etapa, genero=genero)
     else:
-        st.info("Aún no ingresaste tus valores de análisis sanguíneo en la barra lateral.")
+        st.info(T("Aún no ingresaste tus valores de análisis sanguíneo en la barra lateral.",
+                   "You haven't entered your blood test values in the sidebar yet."))
         _cat_hemo_r = _cat_trigli_r = _cat_gluco_r = _cat_coles_r = _cat_hierro_r = "Introducir datos"
 
     # --- Bloque 3: Plan de dieta armado (si el usuario visitó la Hoja 9) ---
@@ -9745,7 +9948,7 @@ elif hoja_activa == "📄 MI REPORTE":
     # que se renderiza (ver comentario allá). Es una única fuente de verdad — no depende de que las
     # 15 claves sueltas de los selectbox (c_/p_/g_ x 5 comidas) sigan existiendo o siendo válidas,
     # por lo que el plan ya NO se reinicia al cambiar de hoja dentro de la misma sesión.
-    st.markdown("#### 🍱 Tu plan de comidas del día")
+    st.markdown(f"#### 🍱 {T('Tu plan de comidas del día', 'Your Daily Meal Plan')}")
     _dieta_guardada_r = st.session_state.get("dieta_guardada")
     _tiene_dieta = bool(_dieta_guardada_r)
 
@@ -9753,6 +9956,18 @@ elif hoja_activa == "📄 MI REPORTE":
     # a partir del plan guardado. Este mismo cálculo se reutiliza más abajo para armar el PDF,
     # así los datos del reporte en pantalla y los del PDF siempre coinciden. ----
     _ICONOS_COMIDA_R9 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _MOMENTO_EN_R9 = {"Desayuno": "Breakfast", "Merienda 1": "Morning Snack", "Almuerzo": "Lunch",
+                      "Merienda 2": "Afternoon Snack", "Cena": "Dinner"}
+    _MACRO_EN_R9 = {"Carbohidrato": "Carbohydrate", "Proteína": "Protein", "Grasa": "Fat"}
+
+    def _mom_r14(nombre):
+        """Traduce un nombre de comida (clave interna en español) según el idioma elegido."""
+        return T(nombre, _MOMENTO_EN_R9.get(nombre, nombre))
+
+    def _mac_r14(nombre):
+        """Traduce un nombre de macronutriente (clave interna en español) según el idioma elegido."""
+        return T(nombre, _MACRO_EN_R9.get(nombre, nombre))
+
     _PCT_MACRO_MOMENTO_PDF = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
     _dieta_filas_pdf = []
     _dieta_totales_pdf = {
@@ -9789,8 +10004,8 @@ elif hoja_activa == "📄 MI REPORTE":
                 d = f[macro_key]
                 filas_html += f"""
                 <tr>
-                    <td class="dm-momento">{_ICONOS_COMIDA_R9[f['momento']]} {f['momento']}</td>
-                    <td>{d['alimento']}</td>
+                    <td class="dm-momento">{_ICONOS_COMIDA_R9[f['momento']]} {_mom_r14(f['momento'])}</td>
+                    <td>{_nombre_alimento(d['alimento'])}</td>
                     <td>{d['kcal']:.0f} kcal</td>
                     <td>{d['porcion']:.1f} kcal</td>
                     <td>{d['gramos']:.1f} g</td>
@@ -9806,8 +10021,8 @@ elif hoja_activa == "📄 MI REPORTE":
             <div class="dieta-menu-wrap {clase_css} print-only-report">
             <table class="dieta-menu-table">
                 <thead>
-                <tr><th style="text-align:left;">Momento</th><th>{icono} Alimento ({titulo})</th>
-                    <th>Kcal/100g</th><th>Porción Corregida</th><th>Gramos Finales</th></tr>
+                <tr><th style="text-align:left;">{T('Momento', 'Meal')}</th><th>{icono} {T('Alimento', 'Food')} ({_mac_r14(titulo)})</th>
+                    <th>Kcal/100g</th><th>{T('Porción Corregida', 'Adjusted Portion')}</th><th>{T('Gramos Finales', 'Final Grams')}</th></tr>
                 </thead>
                 <tbody>
                 {filas_html}
@@ -9821,31 +10036,35 @@ elif hoja_activa == "📄 MI REPORTE":
         _tabla_reporte_macro("prot", "🥩", "Proteína", "Proteína")
         _tabla_reporte_macro("gras", "🥑", "Grasa", "Grasa")
     else:
-        st.info("Aún no armaste tu plan de comidas en la Hoja 9.-DIETA. Visítala para que aparezca aquí.")
+        st.info(T("Aún no armaste tu plan de comidas en la Hoja 9.-DIETA. Visítala para que aparezca aquí.",
+                   "You haven't built your meal plan in Sheet 9.-DIET yet. Visit it so it appears here."))
 
     # --- Bloque 4: Proyección a 60 días ---
-    st.markdown("#### 📈 Proyección estimada (60 días)")
+    st.markdown(f"#### 📈 {T('Proyección estimada (60 días)', 'Estimated Projection (60 days)')}")
     _deficit_r = rcd - rcd_final
     _peso_cambio_r = (_deficit_r * 60) / 7700
     _peso_proyectado_r = peso - _peso_cambio_r
-    st.metric("Peso estimado en 60 días", f"{_peso_proyectado_r:.1f} kg")
+    st.metric(T("Peso estimado en 60 días", "Estimated Weight in 60 Days"), f"{_peso_proyectado_r:.1f} kg")
 
     # =====================================================================================
     # BLOQUE 5: RESUMEN CLÍNICO Y RECOMENDACIONES — estilo informe médico profesional
     # =====================================================================================
     st.divider()
-    st.markdown("#### 🩺 Resumen clínico y recomendaciones")
+    st.markdown(f"#### 🩺 {T('Resumen clínico y recomendaciones', 'Clinical Summary and Recommendations')}")
 
     # Construimos una lista de recomendaciones según cada resultado obtenido
     _recomendaciones = []
 
     # IMC
     if _categoria_imc_usuario == "Peso Saludable":
-        _recomendaciones.append("Tu IMC se encuentra en un rango saludable. Mantén tus hábitos actuales de alimentación y actividad física.")
+        _recomendaciones.append(T("Tu IMC se encuentra en un rango saludable. Mantén tus hábitos actuales de alimentación y actividad física.",
+                                   "Your BMI is within a healthy range. Keep up your current eating and physical activity habits."))
     elif _categoria_imc_usuario in ["Bajo Peso"]:
-        _recomendaciones.append("Tu IMC sugiere bajo peso. Conversa con tu médico o nutricionista para evaluar si necesitas aumentar tu ingesta calórica de forma segura.")
+        _recomendaciones.append(T("Tu IMC sugiere bajo peso. Conversa con tu médico o nutricionista para evaluar si necesitas aumentar tu ingesta calórica de forma segura.",
+                                   "Your BMI suggests you are underweight. Talk to your doctor or nutritionist to assess whether you need to safely increase your caloric intake."))
     elif _categoria_imc_usuario in ["Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3"]:
-        _recomendaciones.append("Tu IMC sugiere un peso por encima del rango saludable, lo que puede aumentar el riesgo de enfermedades crónicas como hipertensión, diabetes tipo 2 y colesterol alto. Se recomienda evaluación con un profesional de la salud.")
+        _recomendaciones.append(T("Tu IMC sugiere un peso por encima del rango saludable, lo que puede aumentar el riesgo de enfermedades crónicas como hipertensión, diabetes tipo 2 y colesterol alto. Se recomienda evaluación con un profesional de la salud.",
+                                   "Your BMI suggests a weight above the healthy range, which may increase the risk of chronic diseases such as hypertension, type 2 diabetes, and high cholesterol. A medical evaluation by a healthcare professional is recommended."))
 
     # Análisis sanguíneo
     if _tiene_examen:
@@ -9853,11 +10072,12 @@ elif hoja_activa == "📄 MI REPORTE":
                               ("Glucosa", _cat_gluco_r), ("Colesterol", _cat_coles_r), ("Hierro", _cat_hierro_r)]:
             _color_r = CATEGORIA_SEMAFORO.get(_cat, "gris")
             if _color_r in ["ambar", "rojo"]:
-                _msg_r = MENSAJES_TRIAJE_CATEGORIA.get(_cat) or MENSAJES_TRIAJE.get(_param, {}).get(_color_r, '')
-                _recomendaciones.append(f"**{_param}** ({_cat}): {_msg_r}")
+                _msg_r = _mensaje_triaje_txt(_param, _cat, _color_r)
+                _recomendaciones.append(f"**{_parametro_txt(_param)}** ({_categoria_clinica_txt(_cat)}): {_msg_r}")
 
     if not _recomendaciones:
-        _recomendaciones.append("No se detectaron alertas con la información ingresada hasta el momento.")
+        _recomendaciones.append(T("No se detectaron alertas con la información ingresada hasta el momento.",
+                                   "No alerts were detected with the information entered so far."))
 
     st.markdown(f"""
     <div class="print-only-report" style="background:#FFFFFF;border:1px solid rgba(30,86,49,0.15);border-radius:20px;
@@ -9872,17 +10092,25 @@ elif hoja_activa == "📄 MI REPORTE":
     <div class="print-only-report" style="background:#FFF3E5;border-left:5px solid #FF9500;border-radius:20px;
                 padding:16px 24px;margin-top:16px;
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-    <b style="color:#FF9500;">Recordar:</b> hable sobre su categoría de IMC y sus resultados con su proveedor de
-    atención médica, ya que estos valores pueden estar relacionados con su salud y bienestar general. Su
-    proveedor de atención médica podría determinar las posibles razones de los resultados obtenidos y
-    recomendar apoyo o tratamiento. Este informe es una herramienta de detección orientativa y no pretende
-    diagnosticar enfermedades ni dolencias.
+    <b style="color:#FF9500;">{T("Recordar:", "Remember:")}</b> {T(
+        "hable sobre su categoría de IMC y sus resultados con su proveedor de "
+        "atención médica, ya que estos valores pueden estar relacionados con su salud y bienestar general. Su "
+        "proveedor de atención médica podría determinar las posibles razones de los resultados obtenidos y "
+        "recomendar apoyo o tratamiento. Este informe es una herramienta de detección orientativa y no pretende "
+        "diagnosticar enfermedades ni dolencias.",
+        "discuss your BMI category and your results with your healthcare provider, since these values may be "
+        "related to your overall health and well-being. Your healthcare provider may be able to determine the "
+        "possible reasons for the results obtained and recommend support or treatment. This report is an "
+        "informational screening tool and is not intended to diagnose diseases or ailments."
+    )}
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
-    st.caption("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
-               "profesional.")
+    st.caption(T("⚕️ Este informe es orientativo y educativo. No reemplaza una evaluación médica o nutricional "
+                 "profesional.",
+                 "⚕️ This report is informational and educational. It does not replace a professional medical or "
+                 "nutritional evaluation."))
 
     # =====================================================================================
     # GENERACIÓN DEL PDF — informe clínico real, listo para descargar e imprimir
@@ -9930,13 +10158,15 @@ elif hoja_activa == "📄 MI REPORTE":
     }
 
     _pdf_bytes = generar_pdf_reporte(_datos_pdf)
-    _nombre_archivo = f"Informe_CIAMSUNI_{_nombre_saludo}".replace(" ", "_") + ".pdf"
+    _nombre_archivo = T(f"Informe_CIAMSUNI_{_nombre_saludo}", f"Report_CIAMSUNI_{_nombre_saludo}").replace(" ", "_") + ".pdf"
 
-    st.markdown("#### 📥 Descarga tu informe")
-    st.caption("Genera un PDF con estilo de informe clínico (no una captura de la página) que puedes "
-               "guardar, enviar o imprimir directamente desde tu lector de PDF.")
+    st.markdown(f"#### 📥 {T('Descarga tu informe', 'Download Your Report')}")
+    st.caption(T("Genera un PDF con estilo de informe clínico (no una captura de la página) que puedes "
+                 "guardar, enviar o imprimir directamente desde tu lector de PDF.",
+                 "Generates a PDF styled as a clinical report (not a page screenshot) that you can save, "
+                 "send, or print directly from your PDF reader."))
     st.download_button(
-        "📄 Descargar Informe en PDF",
+        T("📄 Descargar Informe en PDF", "📄 Download Report as PDF"),
         data=_pdf_bytes,
         file_name=_nombre_archivo,
         mime="application/pdf",
@@ -9944,11 +10174,16 @@ elif hoja_activa == "📄 MI REPORTE":
         type="primary",
     )
 
-    caja_util(f"Este es tu informe final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
-              "las hojas anteriores, con el formato de un informe que te entregarían en un consultorio. "
-              "Usa el botón '📄 Descargar Informe en PDF' para obtener un archivo PDF real, listo para "
-              "imprimir o compartir. 📄✨",
-              emoji="📄", color="#E0F2F1", borde="#00695C")
+    caja_util(T(
+        f"Este es tu informe final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
+        "las hojas anteriores, con el formato de un informe que te entregarían en un consultorio. "
+        "Usa el botón '📄 Descargar Informe en PDF' para obtener un archivo PDF real, listo para "
+        "imprimir o compartir. 📄✨",
+        f"This is your final report, {_nombre_saludo}: it brings together everything we calculated in "
+        "the previous sheets in one place, in the format of a report you'd receive at a clinic. "
+        "Use the '📄 Download Report as PDF' button to get a real PDF file, ready to "
+        "print or share. 📄✨"
+    ), emoji="📄", color="#E0F2F1", borde="#00695C")
 
 elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     # ===== Estilos exclusivos de esta hoja: tarjetas de equipo con hover animado =====
