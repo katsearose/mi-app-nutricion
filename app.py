@@ -7335,6 +7335,26 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                 ("🌤️", T("Evita cambios bruscos de temperatura", "Avoid sudden temperature changes")),
                 ("✅", T("Todo dentro de lo esperado", "Everything within the expected range"))]
 
+    def _reco_spo2(_col_ox_v, _spo2_v):
+        if _col_ox_v == "gris":
+            return [("🩺", T("Registra tu SpO₂ en 'Mis Datos'", "Record your SpO₂ in 'My Data'"))]
+        if _spo2_v < 85:
+            return [("🚨", T("Busca atención médica de emergencia inmediatamente", "Seek emergency medical attention immediately")),
+                    ("🧘", T("Mantén la calma y permanece sentado/a o erguido/a", "Stay calm and remain seated or upright")),
+                    ("🚫", T("Evita cualquier esfuerzo físico o desplazamiento a pie", "Avoid any physical exertion or walking"))]
+        if _spo2_v < 90:
+            return [("🩺", T("Consulta médica pronta (Hipoxemia Moderada)", "Prompt medical evaluation (Moderate Hypoxemia)")),
+                    ("🛑", T("Evita esfuerzo físico hasta ser evaluado/a", "Avoid physical exertion until evaluated")),
+                    ("🫁", T("Respiración profunda y postura erguida", "Deep breathing and upright posture"))]
+        if _spo2_v < 95:
+            return [("🫁", T("Respiración profunda", "Deep breathing")),
+                    ("🚭", T("Evitar el humo/tabaco", "Avoid smoke/tobacco")),
+                    ("🩺", T("Consulta si baja de 90% o presentas síntomas", "See a doctor if it drops below 90% or you have symptoms")
+                     if not embarazada else T("Consulta si baja de 95% (embarazo)", "See a doctor if it drops below 95% (pregnancy)"))]
+        return [("🫁", T("Respiración profunda", "Deep breathing")),
+                ("🚭", T("Evitar el humo/tabaco", "Avoid smoke/tobacco")),
+                ("✅", T("Tu oxigenación está en rango normal", "Your oxygenation is within the normal range"))]
+
     def _reco_pulso(_col_pu_v, _cat_pu_v):
         if _col_pu_v == "gris":
             return [("🩺", T("Registra tu pulso en 'Mis Datos'", "Record your pulse in 'My Data'"))]
@@ -7367,10 +7387,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                           "Indicates the percentage of oxygen your blood carries to your organs and muscles."),
             "sin_dato": T("Aún no ingresaste tu oxigenación. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
                           "You haven't entered your oxygenation yet. Go to 'My Data' → Block 3 to record it."),
-            "recomendaciones": [("🫁", T("Respiración profunda", "Deep breathing")),
-                                 ("🚭", T("Evitar el humo/tabaco", "Avoid smoke/tobacco")),
-                                 ("🩺", T("Consulta si baja de 95%", "See a doctor if it drops below 95%")
-                                  if not embarazada else T("Consulta si baja de 95% (embarazo)", "See a doctor if it drops below 95% (pregnancy)"))],
+            "recomendaciones": _reco_spo2(_col_ox, spo2),
             "curioso": T("La altura geográfica reduce naturalmente el SpO₂; a mayor altitud, el aire tiene menos oxígeno disponible.",
                          "Altitude naturally reduces SpO₂; the higher the altitude, the less oxygen the air has available."),
         },
