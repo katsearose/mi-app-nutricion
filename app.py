@@ -8615,192 +8615,352 @@ elif hoja_activa == "4.-RCD":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "5.-CONTROL DE PESO":
-    hoja_header(5, T("En un solo vistazo podrás entender cuánto necesitas, cuál es tu objetivo "
-                   "y cuántas calorías debes consumir cada día.",
-                   "At a glance you'll understand how much you need, what your goal is, "
-                   "and how many calories you should eat each day."))
-    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        T("Bajar: RCD_Final = RCD×(1−%déficit)  |  Mantener: RCD_Final = RCD  |  "
-        "Subir: RCD_Final = RCD×(1+%superávit)",
-        "Lose: Final DCR = DCR×(1−%deficit)  |  Maintain: Final DCR = DCR  |  "
-        "Gain: Final DCR = DCR×(1+%surplus)"),
-        autor="OMS / FAO / UNU", referencia=T("Ajuste de Control de Peso", "Weight Control Adjustment"))}</div>""", unsafe_allow_html=True)
+    if genero == "Mujer" and embarazada:
+        # =================================================================================
+        # MÓDULO EXCLUSIVO: Control de Peso Gestacional (IOM / NAM · ACOG)
+        # No se ofrece déficit calórico durante el embarazo: el ajuste es 100% automático
+        # por trimestre (ver bloque de TMB/RCD gestacional). Esta vista reemplaza por
+        # completo a las tarjetas fitness de Bajar/Mantener/Subir de peso.
+        # =================================================================================
+        hoja_header(5, T(
+            "Ajuste inteligente de energía para sostener tu metabolismo y el crecimiento de tu bebé.",
+            "Smart energy adjustment to support your metabolism and your baby's growth."))
 
-    _diferencia_rcd = rcd_final - rcd
-    _signo_dif = "" if abs(_diferencia_rcd) < 1 else ("+" if _diferencia_rcd > 0 else "")
-    _obj_emoji = {"Bajar de peso": "📉", "Subir de peso": "📈", "Mantenerse": "⚖️"}[objetivo]
-    _obj_color = {"Bajar de peso": "#FF9500", "Subir de peso": "#007AFF", "Mantenerse": "#34C759"}[objetivo]
-    _obj_txt = T(objetivo, _OBJ_EN.get(objetivo, objetivo))
-
-    # ===== 1. HERO PRINCIPAL =====
-    st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:26px;
-                padding:26px 30px;color:#FFFFFF;text-align:center;margin-bottom:18px;
-                box-shadow:0 16px 36px rgba(30,86,49,0.28);">
-        <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">🎯 {T("Tu Plan de Control de Peso", "Your Weight Management Plan")}</div>
-        <div style="font-size:1rem;opacity:0.95;max-width:640px;margin:8px auto 0 auto;line-height:1.5;">
-            {T(f'"No es una dieta. Es un ajuste inteligente de tus calorías para ayudarte a alcanzar tu objetivo, {_nombre_saludo}, de forma segura."',
-               f'"This is not a diet. It is a smart calorie adjustment to help you safely reach your goal, {_nombre_saludo}."')}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ===== 2. FLUJO: RCD inicial → Objetivo → Ajuste → RCD objetivo (4 tarjetas grandes) =====
-    _sin_cambio_txt = T("0% (sin cambio)", "0% (no change)")
-    st.markdown(f"""
-    <div style="display:flex;flex-direction:column;gap:6px;max-width:520px;margin:0 auto;">
-        <div style="background:#EAFAEE;border:2px solid #34C759;border-radius:20px;padding:16px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#1E5631;text-transform:uppercase;">🟢 {T("RCD Inicial", "Initial DCR")}</div>
-            <div style="font-size:2rem;font-weight:900;color:#1E5631;letter-spacing:-0.02em;">{rcd:.0f} <span style="font-size:1rem;font-weight:700;">kcal/{T("día","day")}</span></div>
-            <div style="font-size:0.78rem;color:#3E7050;">{T("Las calorías que tu cuerpo necesita para mantener tu peso.", "The calories your body needs to maintain your weight.")}</div>
-        </div>
-        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
-        <div style="background:{_obj_color}1A;border:2px solid {_obj_color};border-radius:20px;padding:14px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:{_obj_color};text-transform:uppercase;">{T("Objetivo seleccionado", "Selected Goal")}</div>
-            <div style="font-size:1.5rem;font-weight:900;color:{_obj_color};">{_obj_emoji} {_obj_txt}</div>
-        </div>
-        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
-        <div style="background:#EAF3FF;border:2px solid #007AFF;border-radius:20px;padding:14px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#007AFF;text-transform:uppercase;">🔵 {T("Ajuste aplicado", "Adjustment Applied")}</div>
-            <div style="font-size:1.5rem;font-weight:900;color:#007AFF;">
-                {("-" if objetivo == "Bajar de peso" else ("+" if objetivo == "Subir de peso" else "")) + f"{ajuste_aplicado*100:.0f}%" if ajuste_aplicado else _sin_cambio_txt}
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:26px;
+                    padding:26px 30px;color:#FFFFFF;text-align:center;margin-bottom:14px;
+                    box-shadow:0 16px 36px rgba(30,86,49,0.28);">
+            <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">🤰 {T("Plan de Gestación y Nutrición Ponderal", "Gestational Weight & Nutrition Plan")}</div>
+            <div style="font-size:1rem;opacity:0.95;max-width:640px;margin:8px auto 0 auto;line-height:1.5;">
+                {T("Ajuste inteligente de energía para sostener tu metabolismo y el crecimiento de tu bebé.",
+                   "Smart energy adjustment to support your metabolism and your baby's growth.")}
             </div>
         </div>
-        <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
-        <div style="background:#FFEBF0;border:2px solid #FF2D55;border-radius:20px;padding:18px 20px;text-align:center;">
-            <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">🎯 {T("RCD Objetivo", "Target DCR")}</div>
-            <div style="font-size:2.3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/{T("día","day")}</span></div>
-            <div style="font-size:0.78rem;color:#9C1948;">{T("Las calorías recomendadas para cumplir tu meta.", "The recommended calories to reach your goal.")}</div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div style="background:#EAFAEE;border:1.5px solid #34C759;border-radius:18px;padding:14px 20px;margin-bottom:18px;">
+            <p style="margin:0;color:#1E5631;font-size:0.88rem;line-height:1.5;">📌 {T(
+                "Respaldado por IOM &amp; ACOG: Durante la gestación se desaconsejan las dietas hipocalóricas y "
+                "el déficit energético. Tu plan está calibrado para garantizar un incremento de peso seguro y controlado.",
+                "Backed by IOM &amp; ACOG: Low-calorie diets and energy deficits are discouraged during pregnancy. "
+                "Your plan is calibrated to ensure safe, controlled weight gain.")}</p>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    if _ico_recortada_por_tmb:
-        st.warning(T(f"⚠️ Tu ajuste se limitó automáticamente para nunca bajar de tu TMB ({tmb:.0f} kcal/día), "
-                   "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.",
-                   f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
-                   "your body's vital minimum. That's why your Target DCR didn't go any lower."))
+        _bono_actual_cp = ajuste_gestacion
+        _trimestre_disp_cp = T(trimestre, {"Primer trimestre": "First trimester",
+            "Segundo trimestre": "Second trimester", "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))
 
-    st.divider()
-
-    # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
-    st.markdown(f"#### 📊 {T('Comparación de tu plan', 'Your Plan Comparison')}")
-    _c1, _c2, _c3 = st.columns(3)
-    with _c1:
-        st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">{T("Antes", "Before")}</div>
-            <div style="font-size:1.7rem;font-weight:900;color:#17301F;">{rcd:.0f} kcal</div>
-        </div>""", unsafe_allow_html=True)
-    with _c2:
-        st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">{T("Ahora", "Now")}</div>
-            <div style="font-size:1.7rem;font-weight:900;color:#D81B60;">{rcd_final:.0f} kcal</div>
-        </div>""", unsafe_allow_html=True)
-    with _c3:
-        st.markdown(f"""<div class="bento-card" style="text-align:center;">
-            <div class="bento-eyebrow">{T("Diferencia", "Difference")}</div>
-            <div style="font-size:1.7rem;font-weight:900;color:{_obj_color};">{_signo_dif}{_diferencia_rcd:.0f} kcal</div>
-        </div>""", unsafe_allow_html=True)
-
-    _max_barra = max(rcd, rcd_final, 1)
-    _pct_antes = max(6, round(rcd / _max_barra * 100))
-    _pct_ahora = max(6, round(rcd_final / _max_barra * 100))
-    st.markdown(f"""
-    <div style="margin-top:16px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin-bottom:4px;">{T("Calorías necesarias (RCD)", "Calories Needed (DCR)")}</div>
-        <div style="height:26px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
-            <div style="width:{_pct_antes}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#34C759,#1E5631);
-                        display:flex;align-items:center;padding-left:12px;color:white;font-weight:800;font-size:0.8rem;">{rcd:.0f} kcal</div>
-        </div>
-        <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin:12px 0 4px 0;">{T("Calorías objetivo (RCD Objetivo)", "Target Calories (Target DCR)")}</div>
-        <div style="height:26px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
-            <div style="width:{_pct_ahora}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#FF2D55,#D81B60);
-                        display:flex;align-items:center;padding-left:12px;color:white;font-weight:800;font-size:0.8rem;">{rcd_final:.0f} kcal</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-
-    # ===== 4. EXPLICACIÓN SENCILLA =====
-    st.markdown(f"#### 💬 {T('¿Qué significa este cambio?', 'What does this change mean?')}")
-    if objetivo == "Bajar de peso":
-        _texto_expl = T(f"Para alcanzar tu objetivo de **bajar de peso**, se aplicó un déficit calórico del "
-                        f"**{ajuste_aplicado*100:.0f}%**. Este ajuste favorece la pérdida gradual de grasa "
-                        "corporal sin reducir tu consumo por debajo del mínimo necesario para el funcionamiento "
-                        "del organismo.",
-                        f"To reach your goal of **losing weight**, a **{ajuste_aplicado*100:.0f}%** calorie "
-                        "deficit was applied. This adjustment supports gradual body fat loss without "
-                        "reducing your intake below the minimum your body needs to function.")
-    elif objetivo == "Subir de peso":
-        _texto_expl = T(f"Para alcanzar tu objetivo de **subir de peso**, se aplicó un superávit calórico del "
-                        f"**{ajuste_aplicado*100:.0f}%**. Este ajuste le da a tu cuerpo la energía extra "
-                        "necesaria para construir tejido nuevo de forma controlada.",
-                        f"To reach your goal of **gaining weight**, a **{ajuste_aplicado*100:.0f}%** calorie "
-                        "surplus was applied. This adjustment gives your body the extra energy "
-                        "needed to build new tissue in a controlled way.")
-    else:
-        _texto_expl = T("Para **mantener tu peso**, tu RCD Objetivo es igual a tu RCD Inicial: consumirás "
-                        "aproximadamente lo mismo que gastas, sin déficit ni superávit.",
-                        "To **maintain your weight**, your Target DCR equals your Initial DCR: you'll "
-                        "consume approximately the same as you burn, with no deficit or surplus.")
-    st.markdown(f"""<div class="info3-card">{_texto_expl}</div>""", unsafe_allow_html=True)
-
-    st.divider()
-
-    # ===== 5. TU OBJETIVO EXPLICADO (reemplaza el panel de misión) =====
-    st.markdown(f"#### 🧭 {T('Tu objetivo explicado', 'Your Goal Explained')}")
-    st.caption(T("Según el objetivo elegido, cambia el comportamiento de tus calorías.",
-                 "Depending on the goal you choose, how your calories behave changes."))
-    _oc1, _oc2, _oc3 = st.columns(3)
-    _objetivos_info = [
-        (_oc1, "Bajar de peso", "📉", "#FF9500", "#FFF3E0",
-         T("El cuerpo utilizará parte de la grasa almacenada como fuente de energía.",
-           "Your body will use some of its stored fat as an energy source.")),
-        (_oc2, "Mantenerse", "⚖️", "#34C759", "#EAFAEE",
-         T("Consumirás aproximadamente las mismas calorías que gastas.",
-           "You'll consume approximately the same calories you burn.")),
-        (_oc3, "Subir de peso", "📈", "#007AFF", "#EAF3FF",
-         T("Consumirás más energía para favorecer el crecimiento y desarrollo corporal.",
-           "You'll consume more energy to support body growth and development.")),
-    ]
-    for _col_o, _tit_o, _ic_o, _col_hex_o, _fon_o, _desc_o in _objetivos_info:
-        _es_sel_o = (_tit_o == objetivo)
-        _tit_o_disp = T(_tit_o, _OBJ_EN.get(_tit_o, _tit_o))
-        with _col_o:
-            _estilo_o = (f"border:2.5px solid {_col_hex_o};box-shadow:0 8px 20px {_col_hex_o}40;"
-                         if _es_sel_o else "border:1px solid rgba(0,0,0,0.06);")
+        # ===== Selector de objetivos gestacionales (reemplaza Bajar / Mantener / Subir) =====
+        st.markdown(f"#### 🎯 {T('Tu objetivo gestacional', 'Your gestational goal')}")
+        _g1, _g2, _g3 = st.columns(3)
+        with _g1:
             st.markdown(f"""
-            <div style="background:{_fon_o};border-radius:18px;padding:16px 14px;height:100%;{_estilo_o}">
-                <div style="font-size:1.8rem;text-align:center;">{_ic_o}</div>
-                <div style="font-weight:800;color:{_col_hex_o};font-size:0.9rem;text-align:center;margin:4px 0;">{_tit_o_disp}{' ✓' if _es_sel_o else ''}</div>
-                <div style="font-size:0.78rem;color:#3C3C43;text-align:center;">{_desc_o}</div>
+            <div style="background:linear-gradient(120deg,#E8FBF0 0%,#DFFAF6 100%);border-radius:18px;
+                        padding:16px 14px;height:100%;border:2.5px solid #34C759;box-shadow:0 8px 22px #34C75940;">
+                <div style="font-size:0.72rem;font-weight:800;color:#1E5631;text-transform:uppercase;">✨ {T("Recomendado para tu trimestre", "Recommended for your trimester")}</div>
+                <div style="font-size:1.7rem;text-align:center;margin:4px 0;">🌱</div>
+                <div style="font-weight:800;color:#1E5631;font-size:0.9rem;text-align:center;">{T("Ganancia Gestacional Saludable (IOM/ACOG)", "Healthy Gestational Gain (IOM/ACOG)")} ✓</div>
+                <div style="font-size:0.78rem;color:#3C3C43;text-align:center;margin-top:6px;">{T(
+                    f"Adiciona la energía exacta requerida para la formación de placenta, líquido amniótico y "
+                    f"crecimiento fetal (+{_bono_actual_cp:.0f} kcal/día).",
+                    f"Adds the exact energy required for placental formation, amniotic fluid, and fetal growth "
+                    f"(+{_bono_actual_cp:.0f} kcal/day).")}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with _g2:
+            st.markdown(f"""
+            <div style="background:#F0F1F3;border-radius:18px;padding:16px 14px;height:100%;
+                        border:1.5px solid #FF3B3033;opacity:0.75;"
+                        title="{T('La restricción calórica en el embarazo puede comprometer el desarrollo fetal y está totalmente contraindicada por la ACOG.', 'Caloric restriction during pregnancy can compromise fetal development and is fully contraindicated by ACOG.')}">
+                <div style="font-size:0.72rem;font-weight:800;color:#B71C1C;text-transform:uppercase;">🔒 {T("Desactivado por Seguridad Clínica", "Disabled for Clinical Safety")}</div>
+                <div style="font-size:1.7rem;text-align:center;margin:4px 0;">🚫</div>
+                <div style="font-weight:800;color:#6B6B6F;font-size:0.9rem;text-align:center;">{T("Pérdida de Peso / Déficit Calórico", "Weight Loss / Caloric Deficit")}</div>
+                <div style="font-size:0.76rem;color:#6B6B6F;text-align:center;margin-top:6px;">{T(
+                    "Contraindicado durante el embarazo.", "Contraindicated during pregnancy.")}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with _g3:
+            st.markdown(f"""
+            <div style="background:linear-gradient(120deg,#FFF3E5 0%,#FFE8D6 100%);border-radius:18px;
+                        padding:16px 14px;height:100%;border:1.5px solid #FF9500AA;">
+                <div style="font-size:0.72rem;font-weight:800;color:#B25E00;text-transform:uppercase;">📋 {T("Monitoreo Especial", "Special Monitoring")}</div>
+                <div style="font-size:1.7rem;text-align:center;margin:4px 0;">⚖️</div>
+                <div style="font-weight:800;color:#B25E00;font-size:0.9rem;text-align:center;">{T("Control Estricto de Crecimiento Ponderal", "Strict Weight-Gain Control")}</div>
+                <div style="font-size:0.78rem;color:#3C3C43;text-align:center;margin-top:6px;">{T(
+                    "Ajuste de precisión reservado para casos con IMC pregestacional elevado bajo recomendación "
+                    "médica explícita.",
+                    "Precision adjustment reserved for cases with elevated pre-pregnancy BMI under explicit "
+                    "medical guidance.")}</div>
             </div>
             """, unsafe_allow_html=True)
 
-    st.info(T("🛡️ **¿Es seguro?** Sí — tu RCD Objetivo nunca baja de tu TMB (el mínimo vital de tu cuerpo), así que "
-            "siempre recibes la energía necesaria para funcionar bien. Este ajuste no reemplaza la evaluación de "
-            "un profesional de salud.",
-            "🛡️ **Is it safe?** Yes — your Target DCR never drops below your BMR (your body's vital minimum), so "
-            "you always get the energy you need to function well. This adjustment doesn't replace evaluation by "
-            "a health professional."))
+        st.divider()
 
-    st.divider()
+        # ===== Flowchart RCD Base → Factor Gestacional → RCD Objetivo =====
+        st.markdown(f"#### 🧮 {T('Cómo se calcula tu RCD Gestacional', 'How your Gestational DCR is calculated')}")
+        st.markdown(f"""
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;">
+            <div style="background:#EAFAEE;border:2px solid #2E7D32;border-radius:18px;padding:14px 18px;text-align:center;min-width:170px;">
+                <div style="font-size:0.72rem;font-weight:800;color:#1E5631;text-transform:uppercase;">{T("Mantenimiento Materno Base", "Base Maternal Maintenance")}</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#1E5631;">{rcd:.0f} <span style="font-size:0.8rem;">kcal/{T('día','day')}</span></div>
+                <div style="font-size:0.7rem;color:#3E7050;">TMB {tmb:.0f} × {T('Actividad','Activity')} {factor:.2f}</div>
+            </div>
+            <div style="font-size:1.6rem;font-weight:900;color:#FF9500;background:#FFF3E0;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;">+</div>
+            <div style="background:#F3E8FB;border:2px solid #8E24AA;border-radius:18px;padding:14px 18px;text-align:center;min-width:170px;">
+                <div style="font-size:0.72rem;font-weight:800;color:#6A1B9A;text-transform:uppercase;">{T(f"Bono {_trimestre_disp_cp} (Semana {semana_gestacion})", f"Bonus {_trimestre_disp_cp} (Week {semana_gestacion})")}</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#6A1B9A;">+{_bono_actual_cp:.0f} <span style="font-size:0.8rem;">kcal/{T('día','day')}</span></div>
+            </div>
+            <div style="font-size:1.6rem;font-weight:900;color:#34C759;background:#EAFAEE;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;">=</div>
+            <div style="background:linear-gradient(120deg,#FF2D55 0%,#D81B60 100%);border-radius:20px;padding:18px 22px;text-align:center;min-width:200px;color:#FFFFFF;box-shadow:0 10px 24px rgba(216,27,96,0.35);">
+                <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;opacity:0.9;">{T("RCD GESTACIONAL DEFINITIVO", "FINAL GESTATIONAL DCR")}</div>
+                <div style="font-size:2rem;font-weight:900;">{rcd_final:.0f} <span style="font-size:0.85rem;">kcal/{T('día','day')}</span></div>
+                <div style="font-size:0.7rem;opacity:0.9;">🔥 {T("Variable maestra exportada a Macronutrientes y Menús.", "Master variable exported to Macronutrients and Menus.")}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # ===== 6. Distribución de macronutrientes (se conserva) =====
-    _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso, objetivo)
+        st.divider()
 
-    caja_util(T("Esta sección transforma tu objetivo (bajar, mantener o subir de peso) en un requerimiento "
-              "calórico diario personalizado. Así sabes exactamente cuántas calorías consumir para alcanzar "
-              "tu meta de forma segura, respetando siempre las necesidades mínimas de tu organismo. Consulta "
-              "la sección \"Proyección de Peso\" para visualizar cómo podría evolucionar tu peso si mantienes "
-              "este plan.",
-              "This section converts your goal (lose, maintain, or gain weight) into a personalized daily "
-              "calorie requirement. This way you know exactly how many calories to consume to reach "
-              "your goal safely, always respecting your body's minimum needs. Check "
-              "the \"Weight Projection\" section to see how your weight might evolve if you follow "
-              "this plan."),
-              emoji="🎯", color="#FCE4EC", borde="#D81B60")
+        # ===== Barras comparativas de aporte =====
+        st.markdown(f"#### 📊 {T('Aporte energético gestacional', 'Gestational energy contribution')}")
+        _pct_incremento_cp = (_bono_actual_cp / rcd * 100) if rcd else 0
+        _fig_barras_cp = go.Figure()
+        _fig_barras_cp.add_trace(go.Bar(
+            y=[T("RCD Gestacional", "Gestational DCR")], x=[rcd], orientation="h",
+            name=T("RCD Base de Mantenimiento Materno", "Base Maternal Maintenance DCR"),
+            marker_color="#34C759", text=[f"{rcd:.0f} kcal"], textposition="inside"))
+        _fig_barras_cp.add_trace(go.Bar(
+            y=[T("RCD Gestacional", "Gestational DCR")], x=[_bono_actual_cp], orientation="h",
+            name=T("Aporte Nutricional Gestacional", "Gestational Nutritional Contribution"),
+            marker_color="#BA68C8", text=[f"+{_bono_actual_cp:.0f} kcal"], textposition="inside"))
+        _fig_barras_cp.update_layout(barmode="stack", height=170, margin=dict(l=10, r=10, t=10, b=10),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.4), plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(_fig_barras_cp, use_container_width=True)
+        st.caption(T(f"+{_pct_incremento_cp:.1f}% de energía adicional sobre tu base habitual. Total: {rcd_final:.0f} kcal.",
+                     f"+{_pct_incremento_cp:.1f}% additional energy over your usual base. Total: {rcd_final:.0f} kcal."))
+
+        st.divider()
+
+        # ===== Fuentes científicas y leyendas informativas =====
+        with st.expander(T("🧬 ¿En qué se utiliza esta energía extra?", "🧬 What is this extra energy used for?")):
+            st.markdown(T(
+                "- Desarrollo del tejido mamario y uterino materno.\n"
+                "- Formación y soporte de la placenta y volumen sanguíneo.\n"
+                "- Crecimiento exponencial del bebé durante el 2º y 3º trimestre.",
+                "- Development of maternal breast and uterine tissue.\n"
+                "- Formation and support of the placenta and blood volume.\n"
+                "- Exponential growth of the baby during the 2nd and 3rd trimester."))
+        with st.expander(T("📚 Respaldado por Evidencia Internacional", "📚 Backed by International Evidence")):
+            st.markdown(
+                "- Institute of Medicine (IOM) & National Research Council (NRC). (2009). "
+                "*Weight Gain During Pregnancy: Reexamining the Guidelines*. National Academies Press.\n"
+                "- American College of Obstetricians and Gynecologists (ACOG). (2013, Reaffirmed 2021). "
+                "*Committee Opinion No. 548: Weight Gain During Pregnancy*.\n"
+                "- OMS / FAO / UNU. (2004). *Human energy requirements: Report of a Joint FAO/WHO/UNU "
+                "Expert Consultation*.")
+
+        # ===== Exportación de la variable maestra a los módulos subsiguientes =====
+        st.session_state["rcd_objetivo"] = rcd_final
+
+        caja_util(T(
+            "Esta sección convierte tu trimestre de gestación en un requerimiento calórico diario seguro. "
+            "El valor de RCD Gestacional se exporta automáticamente a las secciones de Macronutrientes, "
+            "Porciones Diarias y Plan de Alimentación, para que todos tus menús sumen exactamente esta meta.",
+            "This section converts your pregnancy trimester into a safe daily caloric requirement. The "
+            "Gestational DCR value is automatically exported to the Macronutrients, Daily Portions, and "
+            "Meal Plan sections, so all your menus add up to exactly this target."),
+            emoji="🤰", color="#F8ECFB", borde="#8E24AA")
+
+    else:
+        hoja_header(5, T("En un solo vistazo podrás entender cuánto necesitas, cuál es tu objetivo "
+                       "y cuántas calorías debes consumir cada día.",
+                       "At a glance you'll understand how much you need, what your goal is, "
+                       "and how many calories you should eat each day."))
+        st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+            T("Bajar: RCD_Final = RCD×(1−%déficit)  |  Mantener: RCD_Final = RCD  |  "
+            "Subir: RCD_Final = RCD×(1+%superávit)",
+            "Lose: Final DCR = DCR×(1−%deficit)  |  Maintain: Final DCR = DCR  |  "
+            "Gain: Final DCR = DCR×(1+%surplus)"),
+            autor="OMS / FAO / UNU", referencia=T("Ajuste de Control de Peso", "Weight Control Adjustment"))}</div>""", unsafe_allow_html=True)
+    
+        _diferencia_rcd = rcd_final - rcd
+        _signo_dif = "" if abs(_diferencia_rcd) < 1 else ("+" if _diferencia_rcd > 0 else "")
+        _obj_emoji = {"Bajar de peso": "📉", "Subir de peso": "📈", "Mantenerse": "⚖️"}[objetivo]
+        _obj_color = {"Bajar de peso": "#FF9500", "Subir de peso": "#007AFF", "Mantenerse": "#34C759"}[objetivo]
+        _obj_txt = T(objetivo, _OBJ_EN.get(objetivo, objetivo))
+    
+        # ===== 1. HERO PRINCIPAL =====
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#1E5631 0%,#2E7D32 55%,#4CAF50 100%);border-radius:26px;
+                    padding:26px 30px;color:#FFFFFF;text-align:center;margin-bottom:18px;
+                    box-shadow:0 16px 36px rgba(30,86,49,0.28);">
+            <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">🎯 {T("Tu Plan de Control de Peso", "Your Weight Management Plan")}</div>
+            <div style="font-size:1rem;opacity:0.95;max-width:640px;margin:8px auto 0 auto;line-height:1.5;">
+                {T(f'"No es una dieta. Es un ajuste inteligente de tus calorías para ayudarte a alcanzar tu objetivo, {_nombre_saludo}, de forma segura."',
+                   f'"This is not a diet. It is a smart calorie adjustment to help you safely reach your goal, {_nombre_saludo}."')}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+        # ===== 2. FLUJO: RCD inicial → Objetivo → Ajuste → RCD objetivo (4 tarjetas grandes) =====
+        _sin_cambio_txt = T("0% (sin cambio)", "0% (no change)")
+        st.markdown(f"""
+        <div style="display:flex;flex-direction:column;gap:6px;max-width:520px;margin:0 auto;">
+            <div style="background:#EAFAEE;border:2px solid #34C759;border-radius:20px;padding:16px 20px;text-align:center;">
+                <div style="font-size:0.78rem;font-weight:800;color:#1E5631;text-transform:uppercase;">🟢 {T("RCD Inicial", "Initial DCR")}</div>
+                <div style="font-size:2rem;font-weight:900;color:#1E5631;letter-spacing:-0.02em;">{rcd:.0f} <span style="font-size:1rem;font-weight:700;">kcal/{T("día","day")}</span></div>
+                <div style="font-size:0.78rem;color:#3E7050;">{T("Las calorías que tu cuerpo necesita para mantener tu peso.", "The calories your body needs to maintain your weight.")}</div>
+            </div>
+            <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
+            <div style="background:{_obj_color}1A;border:2px solid {_obj_color};border-radius:20px;padding:14px 20px;text-align:center;">
+                <div style="font-size:0.78rem;font-weight:800;color:{_obj_color};text-transform:uppercase;">{T("Objetivo seleccionado", "Selected Goal")}</div>
+                <div style="font-size:1.5rem;font-weight:900;color:{_obj_color};">{_obj_emoji} {_obj_txt}</div>
+            </div>
+            <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
+            <div style="background:#EAF3FF;border:2px solid #007AFF;border-radius:20px;padding:14px 20px;text-align:center;">
+                <div style="font-size:0.78rem;font-weight:800;color:#007AFF;text-transform:uppercase;">🔵 {T("Ajuste aplicado", "Adjustment Applied")}</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#007AFF;">
+                    {("-" if objetivo == "Bajar de peso" else ("+" if objetivo == "Subir de peso" else "")) + f"{ajuste_aplicado*100:.0f}%" if ajuste_aplicado else _sin_cambio_txt}
+                </div>
+            </div>
+            <div style="text-align:center;font-size:1.4rem;color:#B0B8C1;">↓</div>
+            <div style="background:#FFEBF0;border:2px solid #FF2D55;border-radius:20px;padding:18px 20px;text-align:center;">
+                <div style="font-size:0.78rem;font-weight:800;color:#D81B60;text-transform:uppercase;">🎯 {T("RCD Objetivo", "Target DCR")}</div>
+                <div style="font-size:2.3rem;font-weight:900;color:#D81B60;letter-spacing:-0.02em;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">kcal/{T("día","day")}</span></div>
+                <div style="font-size:0.78rem;color:#9C1948;">{T("Las calorías recomendadas para cumplir tu meta.", "The recommended calories to reach your goal.")}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+        if _ico_recortada_por_tmb:
+            st.warning(T(f"⚠️ Tu ajuste se limitó automáticamente para nunca bajar de tu TMB ({tmb:.0f} kcal/día), "
+                       "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.",
+                       f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
+                       "your body's vital minimum. That's why your Target DCR didn't go any lower."))
+    
+        st.divider()
+    
+        # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
+        st.markdown(f"#### 📊 {T('Comparación de tu plan', 'Your Plan Comparison')}")
+        _c1, _c2, _c3 = st.columns(3)
+        with _c1:
+            st.markdown(f"""<div class="bento-card" style="text-align:center;">
+                <div class="bento-eyebrow">{T("Antes", "Before")}</div>
+                <div style="font-size:1.7rem;font-weight:900;color:#17301F;">{rcd:.0f} kcal</div>
+            </div>""", unsafe_allow_html=True)
+        with _c2:
+            st.markdown(f"""<div class="bento-card" style="text-align:center;">
+                <div class="bento-eyebrow">{T("Ahora", "Now")}</div>
+                <div style="font-size:1.7rem;font-weight:900;color:#D81B60;">{rcd_final:.0f} kcal</div>
+            </div>""", unsafe_allow_html=True)
+        with _c3:
+            st.markdown(f"""<div class="bento-card" style="text-align:center;">
+                <div class="bento-eyebrow">{T("Diferencia", "Difference")}</div>
+                <div style="font-size:1.7rem;font-weight:900;color:{_obj_color};">{_signo_dif}{_diferencia_rcd:.0f} kcal</div>
+            </div>""", unsafe_allow_html=True)
+    
+        _max_barra = max(rcd, rcd_final, 1)
+        _pct_antes = max(6, round(rcd / _max_barra * 100))
+        _pct_ahora = max(6, round(rcd_final / _max_barra * 100))
+        st.markdown(f"""
+        <div style="margin-top:16px;">
+            <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin-bottom:4px;">{T("Calorías necesarias (RCD)", "Calories Needed (DCR)")}</div>
+            <div style="height:26px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
+                <div style="width:{_pct_antes}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#34C759,#1E5631);
+                            display:flex;align-items:center;padding-left:12px;color:white;font-weight:800;font-size:0.8rem;">{rcd:.0f} kcal</div>
+            </div>
+            <div style="font-size:0.82rem;font-weight:700;color:#5C6B60;margin:12px 0 4px 0;">{T("Calorías objetivo (RCD Objetivo)", "Target Calories (Target DCR)")}</div>
+            <div style="height:26px;border-radius:999px;background:#EEF1F4;overflow:hidden;">
+                <div style="width:{_pct_ahora}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#FF2D55,#D81B60);
+                            display:flex;align-items:center;padding-left:12px;color:white;font-weight:800;font-size:0.8rem;">{rcd_final:.0f} kcal</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+        st.divider()
+    
+        # ===== 4. EXPLICACIÓN SENCILLA =====
+        st.markdown(f"#### 💬 {T('¿Qué significa este cambio?', 'What does this change mean?')}")
+        if objetivo == "Bajar de peso":
+            _texto_expl = T(f"Para alcanzar tu objetivo de **bajar de peso**, se aplicó un déficit calórico del "
+                            f"**{ajuste_aplicado*100:.0f}%**. Este ajuste favorece la pérdida gradual de grasa "
+                            "corporal sin reducir tu consumo por debajo del mínimo necesario para el funcionamiento "
+                            "del organismo.",
+                            f"To reach your goal of **losing weight**, a **{ajuste_aplicado*100:.0f}%** calorie "
+                            "deficit was applied. This adjustment supports gradual body fat loss without "
+                            "reducing your intake below the minimum your body needs to function.")
+        elif objetivo == "Subir de peso":
+            _texto_expl = T(f"Para alcanzar tu objetivo de **subir de peso**, se aplicó un superávit calórico del "
+                            f"**{ajuste_aplicado*100:.0f}%**. Este ajuste le da a tu cuerpo la energía extra "
+                            "necesaria para construir tejido nuevo de forma controlada.",
+                            f"To reach your goal of **gaining weight**, a **{ajuste_aplicado*100:.0f}%** calorie "
+                            "surplus was applied. This adjustment gives your body the extra energy "
+                            "needed to build new tissue in a controlled way.")
+        else:
+            _texto_expl = T("Para **mantener tu peso**, tu RCD Objetivo es igual a tu RCD Inicial: consumirás "
+                            "aproximadamente lo mismo que gastas, sin déficit ni superávit.",
+                            "To **maintain your weight**, your Target DCR equals your Initial DCR: you'll "
+                            "consume approximately the same as you burn, with no deficit or surplus.")
+        st.markdown(f"""<div class="info3-card">{_texto_expl}</div>""", unsafe_allow_html=True)
+    
+        st.divider()
+    
+        # ===== 5. TU OBJETIVO EXPLICADO (reemplaza el panel de misión) =====
+        st.markdown(f"#### 🧭 {T('Tu objetivo explicado', 'Your Goal Explained')}")
+        st.caption(T("Según el objetivo elegido, cambia el comportamiento de tus calorías.",
+                     "Depending on the goal you choose, how your calories behave changes."))
+        _oc1, _oc2, _oc3 = st.columns(3)
+        _objetivos_info = [
+            (_oc1, "Bajar de peso", "📉", "#FF9500", "#FFF3E0",
+             T("El cuerpo utilizará parte de la grasa almacenada como fuente de energía.",
+               "Your body will use some of its stored fat as an energy source.")),
+            (_oc2, "Mantenerse", "⚖️", "#34C759", "#EAFAEE",
+             T("Consumirás aproximadamente las mismas calorías que gastas.",
+               "You'll consume approximately the same calories you burn.")),
+            (_oc3, "Subir de peso", "📈", "#007AFF", "#EAF3FF",
+             T("Consumirás más energía para favorecer el crecimiento y desarrollo corporal.",
+               "You'll consume more energy to support body growth and development.")),
+        ]
+        for _col_o, _tit_o, _ic_o, _col_hex_o, _fon_o, _desc_o in _objetivos_info:
+            _es_sel_o = (_tit_o == objetivo)
+            _tit_o_disp = T(_tit_o, _OBJ_EN.get(_tit_o, _tit_o))
+            with _col_o:
+                _estilo_o = (f"border:2.5px solid {_col_hex_o};box-shadow:0 8px 20px {_col_hex_o}40;"
+                             if _es_sel_o else "border:1px solid rgba(0,0,0,0.06);")
+                st.markdown(f"""
+                <div style="background:{_fon_o};border-radius:18px;padding:16px 14px;height:100%;{_estilo_o}">
+                    <div style="font-size:1.8rem;text-align:center;">{_ic_o}</div>
+                    <div style="font-weight:800;color:{_col_hex_o};font-size:0.9rem;text-align:center;margin:4px 0;">{_tit_o_disp}{' ✓' if _es_sel_o else ''}</div>
+                    <div style="font-size:0.78rem;color:#3C3C43;text-align:center;">{_desc_o}</div>
+                </div>
+                """, unsafe_allow_html=True)
+    
+        st.info(T("🛡️ **¿Es seguro?** Sí — tu RCD Objetivo nunca baja de tu TMB (el mínimo vital de tu cuerpo), así que "
+                "siempre recibes la energía necesaria para funcionar bien. Este ajuste no reemplaza la evaluación de "
+                "un profesional de salud.",
+                "🛡️ **Is it safe?** Yes — your Target DCR never drops below your BMR (your body's vital minimum), so "
+                "you always get the energy you need to function well. This adjustment doesn't replace evaluation by "
+                "a health professional."))
+    
+        st.divider()
+    
+        # ===== 6. Distribución de macronutrientes (se conserva) =====
+        _build_panel_macros_creativo(gr_prot, gr_gras, gr_carb, peso, objetivo)
+    
+        caja_util(T("Esta sección transforma tu objetivo (bajar, mantener o subir de peso) en un requerimiento "
+                  "calórico diario personalizado. Así sabes exactamente cuántas calorías consumir para alcanzar "
+                  "tu meta de forma segura, respetando siempre las necesidades mínimas de tu organismo. Consulta "
+                  "la sección \"Proyección de Peso\" para visualizar cómo podría evolucionar tu peso si mantienes "
+                  "este plan.",
+                  "This section converts your goal (lose, maintain, or gain weight) into a personalized daily "
+                  "calorie requirement. This way you know exactly how many calories to consume to reach "
+                  "your goal safely, always respecting your body's minimum needs. Check "
+                  "the \"Weight Projection\" section to see how your weight might evolve if you follow "
+                  "this plan."),
+                  emoji="🎯", color="#FCE4EC", borde="#D81B60")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "6.-MACRONUTRIENTES":
