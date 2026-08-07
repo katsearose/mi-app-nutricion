@@ -2380,12 +2380,11 @@ def generar_pdf_reporte(datos):
         ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
         ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
     ]))
+    # ---- 🩹 El membrete institucional (logo del colegio) va PRIMERO, arriba de todo, y el
+    # encabezado azul se dibuja justo debajo de él. ----
+    _membrete_institucional()
     story.append(header_tbl)
     story.append(Spacer(1, 8))
-    # ---- 🩹 El membrete institucional (logo del colegio) ahora se imprime DEBAJO del
-    # encabezado azul, no encima: en el PDF de referencia el logo aparece después del banner
-    # de título, así que movemos la llamada aquí para que el orden visual coincida. ----
-    _membrete_institucional()
 
     # ---------------- BANNER DE IDENTIFICACIÓN DEL PACIENTE (fondo slate oscuro, 4 columnas) ----------------
     _sexo_txt = T("Femenino", "Female") if datos["genero"] == "Mujer" else T("Masculino", "Male")
@@ -2435,17 +2434,25 @@ def generar_pdf_reporte(datos):
         "Sin datos": "No data", "Baja / Hipotensión": "Low / Hypotension", "Normal / Óptima": "Normal / Optimal",
         "Elevado": "Elevated", "Emergencia Hipertensiva": "Hypertensive Emergency",
         "Hipertensión Estadio 2": "Hypertension Stage 2", "Hipertensión Estadio 1": "Hypertension Stage 1",
-        "Hipoxia": "Hypoxia", "Aceptable": "Acceptable", "Excelente": "Excellent",
-        "Hipotermia": "Hypothermia", "Temperatura baja": "Low Temperature", "Normal": "Normal",
+        "Sospecha de Preeclampsia": "Suspected Preeclampsia",
+        "Normal": "Normal", "Hipoxemia Leve": "Mild Hypoxemia", "Hipoxemia Moderada": "Moderate Hypoxemia",
+        "Hipoxemia Severa": "Severe Hypoxemia",
+        "Hipotermia": "Hypothermia", "Temperatura baja": "Low Temperature",
         "Febrícula": "Low-grade Fever", "Fiebre": "Fever", "Fiebre alta": "High Fever",
         "Bradicardia": "Bradycardia", "Taquicardia": "Tachycardia",
+        "Frecuencia Extrema (Urgencia)": "Extreme Heart Rate (Urgent)",
     }
 
     def _vt(etiqueta):
         return _VITAL_LABEL_EN.get(etiqueta, etiqueta) if _idioma_pdf_en else etiqueta
 
+    _edad_pdf_vitales = datos.get("edad", 0) or 0
+    _embarazada_vitales_pdf = bool(datos.get("embarazada", False))
+
     def _clasif_pa_pdf(_pas, _pad):
         if _pas <= 0 or _pad <= 0: return _vt("Sin datos"), "gris"
+        if _embarazada_vitales_pdf and (_pas >= 140 or _pad >= 90):
+            return _vt("Sospecha de Preeclampsia"), "rojo"
         if _pas < 90 or _pad < 60: return _vt("Baja / Hipotensión"), "ambar"
         if 90 <= _pas <= 119 and 60 <= _pad <= 79: return _vt("Normal / Óptima"), "verde"
         if 120 <= _pas <= 129 and _pad < 80: return _vt("Elevado"), "ambar"
@@ -2455,25 +2462,47 @@ def generar_pdf_reporte(datos):
         return _vt("Normal / Óptima"), "verde"
 
     def _clasif_spo2_pdf(_s):
+        # 🩹 Mismos 4 tramos sin huecos que en la Hoja 1B: ≥95 Normal · 90-94 Leve · 85-89 Moderada · <85 Severa.
         if _s <= 0: return _vt("Sin datos"), "gris"
-        if _s < 90: return _vt("Hipoxia"), "rojo"
-        if _s < 95: return _vt("Aceptable"), "ambar"
-        return _vt("Excelente"), "verde"
+        if _s >= 95: return _vt("Normal"), "verde"
+        if _embarazada_vitales_pdf:
+            return _vt("Hipoxemia Leve" if _s >= 90 else "Hipoxemia Moderada" if _s >= 85 else "Hipoxemia Severa"), "rojo"
+        if _s >= 90: return _vt("Hipoxemia Leve"), "ambar"
+        if _s >= 85: return _vt("Hipoxemia Moderada"), "rojo"
+        return _vt("Hipoxemia Severa"), "rojo"
 
     def _clasif_temp_pdf(_t):
         if _t <= 34.0: return _vt("Sin datos"), "gris"
-        if _t < 35.0: return _vt("Hipotermia"), "rojo"
-        if _t < 36.1: return _vt("Temperatura baja"), "ambar"
-        if _t <= 37.2: return _vt("Normal"), "verde"
-        if _t <= 37.9: return _vt("Febrícula"), "ambar"
-        if _t <= 39.5: return _vt("Fiebre"), "rojo"
+        if _edad_pdf_vitales <= 2:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 36.5, 36.6, 37.9, 38.0, 39.0
+        elif _edad_pdf_vitales <= 10:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 35.5, 35.5, 37.5, 38.0, 39.0
+        elif _edad_pdf_vitales <= 65:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 36.0, 36.0, 37.5, 38.0, 39.5
+        else:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 35.5, 35.8, 36.9, 37.5, 38.5
+        if _t < _hipo: return _vt("Hipotermia"), "rojo"
+        if _t < _n_lo: return _vt("Temperatura baja"), "ambar"
+        if _t <= _n_hi: return _vt("Normal"), "verde"
+        if _t < _fiebre: return _vt("Febrícula"), "ambar"
+        if _t <= _fiebre_alta: return _vt("Fiebre"), "rojo"
         return _vt("Fiebre alta"), "rojo"
 
     def _clasif_pulso_pdf(_p):
         if _p <= 0: return _vt("Sin datos"), "gris"
-        if _p < 60: return _vt("Bradicardia"), "ambar"
-        if _p <= 100: return _vt("Normal"), "verde"
-        return _vt("Taquicardia"), "ambar"
+        if _embarazada_vitales_pdf:
+            _brady, _n_lo, _n_hi = 65, 70, 110
+        elif 6 <= _edad_pdf_vitales <= 12:
+            _brady, _n_lo, _n_hi = 70, 70, 100
+        else:
+            _brady, _n_lo, _n_hi = 60, 60, 100
+        if _p < 40 or _p > 140:
+            return _vt("Frecuencia Extrema (Urgencia)"), "rojo"
+        if _p < _brady:
+            return _vt("Bradicardia"), "rojo" if _p < 50 else "ambar"
+        if _n_lo <= _p <= _n_hi:
+            return _vt("Normal"), "verde"
+        return _vt("Taquicardia"), "rojo" if _p > 120 else "ambar"
 
     _pas, _pad = datos.get("pas", 0), datos.get("pad", 0)
     _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 34.0), datos.get("pulso", 0)
@@ -2745,10 +2774,10 @@ def generar_pdf_reporte(datos):
         ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
         ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
     ]))
+    # 🩹 Membrete institucional primero, encabezado azul debajo (mismo criterio que en la página 1).
+    _membrete_institucional()
     story.append(header2)
     story.append(Spacer(1, 8))
-    # 🩹 Membrete institucional debajo del encabezado azul (mismo criterio que en la página 1).
-    _membrete_institucional()
 
     # ---------------- 6. DISTRIBUCIÓN DE PORCIONES POR TIEMPOS DEL DÍA ----------------
     _porciones_pdf = datos.get("porciones_dia") or {}
@@ -7140,18 +7169,24 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         "Baja / Hipotensión": "Low / Hypotension", "Normal / Óptima": "Normal / Optimal",
         "Elevado": "Elevated", "Emergencia Hipertensiva": "Hypertensive Emergency",
         "Hipertensión Estadio 2": "Hypertension Stage 2", "Hipertensión Estadio 1": "Hypertension Stage 1",
-        "Hipoxia": "Hypoxia", "Aceptable": "Acceptable", "Excelente": "Excellent",
-        "Hipotermia": "Hypothermia", "Temperatura baja": "Low Temperature", "Normal": "Normal",
+        "Sospecha de Preeclampsia": "Suspected Preeclampsia",
+        "Normal": "Normal", "Hipoxemia Leve": "Mild Hypoxemia", "Hipoxemia Moderada": "Moderate Hypoxemia",
+        "Hipoxemia Severa": "Severe Hypoxemia",
+        "Hipotermia": "Hypothermia", "Temperatura baja": "Low Temperature",
         "Febrícula": "Low-grade Fever", "Fiebre": "Fever", "Fiebre alta": "High Fever",
         "Bradicardia": "Bradycardia", "Taquicardia": "Tachycardia",
+        "Frecuencia Extrema (Urgencia)": "Extreme Heart Rate (Urgent)",
     }
 
     def _ctf(cat):
         return T(cat, _CAT_FISIO_EN.get(cat, cat))
 
     def _clasif_pa(_pas, _pad):
+        """Clasificación de presión arterial (AHA), con sobre-alerta de preeclampsia en Modo Embarazo."""
         if _pas <= 0 or _pad <= 0: return _ctf("Sin datos"), "gris"
         if _pas < 50 or _pas > 300 or _pad < 30 or _pad > 200: return _ctf("Valor no válido"), "gris"
+        if embarazada and (_pas >= 140 or _pad >= 90):
+            return _ctf("Sospecha de Preeclampsia"), "rojo"
         if _pas < 90 or _pad < 60: return _ctf("Baja / Hipotensión"), "ambar"
         if 90 <= _pas <= 119 and 60 <= _pad <= 79: return _ctf("Normal / Óptima"), "verde"
         if 120 <= _pas <= 129 and _pad < 80: return _ctf("Elevado"), "ambar"
@@ -7161,25 +7196,50 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         return _ctf("Normal / Óptima"), "verde"
 
     def _clasif_spo2(_s):
+        """Rangos OMS (sin huecos): ≥95 Normal · 90–94 Hipoxemia Leve · 85–89 Moderada · <85 Severa.
+        En Modo Embarazo el umbral de alerta se endurece a <95% (menor reserva de oxígeno fetal)."""
         if _s <= 0: return _ctf("Sin datos"), "gris"
-        if _s < 90: return _ctf("Hipoxia"), "rojo"
-        if _s < 95: return _ctf("Aceptable"), "ambar"
-        return _ctf("Excelente"), "verde"
+        if _s >= 95: return _ctf("Normal"), "verde"
+        if embarazada:
+            return _ctf("Hipoxemia Leve" if _s >= 90 else "Hipoxemia Moderada" if _s >= 85 else "Hipoxemia Severa"), "rojo"
+        if _s >= 90: return _ctf("Hipoxemia Leve"), "ambar"
+        if _s >= 85: return _ctf("Hipoxemia Moderada"), "rojo"
+        return _ctf("Hipoxemia Severa"), "rojo"
 
     def _clasif_temp(_t):
+        """Umbrales por grupo de edad, incluyendo Hipotermia (columna antes ausente)."""
         if _t <= 34.0: return _ctf("Sin datos"), "gris"
-        if _t < 35.0: return _ctf("Hipotermia"), "rojo"
-        if _t < 36.1: return _ctf("Temperatura baja"), "ambar"
-        if _t <= 37.2: return _ctf("Normal"), "verde"
-        if _t <= 37.9: return _ctf("Febrícula"), "ambar"
-        if _t <= 39.5: return _ctf("Fiebre"), "rojo"
+        if edad <= 2:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 36.5, 36.6, 37.9, 38.0, 39.0
+        elif edad <= 10:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 35.5, 35.5, 37.5, 38.0, 39.0
+        elif edad <= 65:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 36.0, 36.0, 37.5, 38.0, 39.5
+        else:
+            _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 35.5, 35.8, 36.9, 37.5, 38.5
+        if _t < _hipo: return _ctf("Hipotermia"), "rojo"
+        if _t < _n_lo: return _ctf("Temperatura baja"), "ambar"
+        if _t <= _n_hi: return _ctf("Normal"), "verde"
+        if _t < _fiebre: return _ctf("Febrícula"), "ambar"
+        if _t <= _fiebre_alta: return _ctf("Fiebre"), "rojo"
         return _ctf("Fiebre alta"), "rojo"
 
     def _clasif_pulso(_p):
+        """Umbrales por grupo de edad / gestación, con tramo de urgencia (&lt;40 o &gt;140 lpm)."""
         if _p <= 0: return _ctf("Sin datos"), "gris"
-        if _p < 60: return _ctf("Bradicardia"), "ambar"
-        if _p <= 100: return _ctf("Normal"), "verde"
-        return _ctf("Taquicardia"), "ambar"
+        if embarazada:
+            _brady, _n_lo, _n_hi = 65, 70, 110
+        elif 6 <= edad <= 12:
+            _brady, _n_lo, _n_hi = 70, 70, 100
+        else:
+            _brady, _n_lo, _n_hi = 60, 60, 100
+        if _p < 40 or _p > 140:
+            return _ctf("Frecuencia Extrema (Urgencia)"), "rojo"
+        if _p < _brady:
+            return _ctf("Bradicardia"), "rojo" if _p < 50 else "ambar"
+        if _n_lo <= _p <= _n_hi:
+            return _ctf("Normal"), "verde"
+        return _ctf("Taquicardia"), "rojo" if _p > 120 else "ambar"
 
     _cat_pa, _col_pa = _clasif_pa(pas, pad)
     _cat_ox, _col_ox = _clasif_spo2(spo2)
@@ -7241,6 +7301,55 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         "reco":  {"fondo": "#EAFAEE", "borde": "#9BD8AE", "titulo": "#1E5631"},
         "curio": {"fondo": "#FFF6E0", "borde": "#F4D27A", "titulo": "#B8860B"},
     }
+    def _reco_pa(_col_pa_v, _cat_pa_v):
+        if _col_pa_v == "gris":
+            return [("🩺", T("Registra tu presión en 'Mis Datos'", "Record your BP in 'My Data'"))]
+        if _cat_pa_v in (T("Baja / Hipotensión", "Low / Hypotension"),):
+            return [("💧", T("Hidratación adecuada y electrólitos", "Adequate hydration and electrolytes")),
+                    ("🛋️", T("Levántate despacio (evita mareo postural)", "Stand up slowly (avoid postural dizziness)")),
+                    ("🩺", T("Consulta si persiste baja", "See a doctor if it stays low"))]
+        if _cat_pa_v in (T("Sospecha de Preeclampsia", "Suspected Preeclampsia"),):
+            return [("🚨", T("Evaluación médica de urgencia", "Urgent medical evaluation")),
+                    ("🛌", T("Reposo y monitoreo estricto", "Rest and strict monitoring")),
+                    ("🩺", T("Acude de inmediato a tu obstetra", "Go to your OB-GYN immediately"))]
+        if _col_pa_v in ("rojo", "ambar") and _cat_pa_v not in (T("Normal / Óptima", "Normal / Optimal"),):
+            return [("🧂", T("Reducir sodio y sal añadida", "Reduce sodium and added salt")),
+                    ("🧘", T("Evitar estrés agudo", "Avoid acute stress")),
+                    ("🩺", T("Consulta si persiste alta", "See a doctor if it stays high"))]
+        return [("🥗", T("Dieta equilibrada, baja en ultraprocesados", "Balanced diet, low in ultra-processed food")),
+                ("🏃", T("Actividad física regular", "Regular physical activity")),
+                ("✅", T("Sigue con tus controles habituales", "Continue your usual check-ups"))]
+
+    def _reco_temp(_col_te_v, _cat_te_v):
+        if _col_te_v == "gris":
+            return [("🩺", T("Registra tu temperatura en 'Mis Datos'", "Record your temperature in 'My Data'"))]
+        if _cat_te_v in (T("Hipotermia", "Hypothermia"), T("Temperatura baja", "Low Temperature")):
+            return [("🧥", T("Abrigo y control térmico", "Warm clothing and thermal control")),
+                    ("☕", T("Bebidas tibias", "Warm drinks")),
+                    ("🩺", T("Consulta médica si no sube", "See a doctor if it doesn't rise"))]
+        if _cat_te_v in (T("Fiebre", "Fever"), T("Fiebre alta", "High Fever"), T("Febrícula", "Low-grade Fever")):
+            return [("💧", T("Hidratación constante", "Stay well hydrated")),
+                    ("🛌", T("Reposo mientras dure la fiebre", "Rest while the fever lasts")),
+                    ("🩺", T("Consulta si persiste o sube", "See a doctor if it persists or rises"))]
+        return [("💧", T("Hidratación constante", "Stay well hydrated")),
+                ("🌤️", T("Evita cambios bruscos de temperatura", "Avoid sudden temperature changes")),
+                ("✅", T("Todo dentro de lo esperado", "Everything within the expected range"))]
+
+    def _reco_pulso(_col_pu_v, _cat_pu_v):
+        if _col_pu_v == "gris":
+            return [("🩺", T("Registra tu pulso en 'Mis Datos'", "Record your pulse in 'My Data'"))]
+        if _cat_pu_v in (T("Bradicardia", "Bradycardia"), T("Frecuencia Extrema (Urgencia)", "Extreme Heart Rate (Urgent)")):
+            return [("🚨", T("Evaluación médica de urgencia", "Urgent medical evaluation")),
+                    ("🛑", T("Evita esfuerzo físico hasta ser evaluado/a", "Avoid physical exertion until evaluated")),
+                    ("🩺", T("No te quedes solo/a si sientes mareo", "Don't stay alone if you feel dizzy"))]
+        if _cat_pu_v in (T("Taquicardia", "Tachycardia"),):
+            return [("🧘", T("Respira lento y evita estimulantes", "Breathe slowly and avoid stimulants")),
+                    ("☕", T("Suspende cafeína / energizantes", "Stop caffeine / energy drinks")),
+                    ("🩺", T("Consulta si persiste muy alto", "See a doctor if it stays very high"))]
+        return [("🚶", T("Actividad física regular", "Regular physical activity")),
+                ("☕", T("Moderar la cafeína", "Moderate caffeine")),
+                ("✅", T("Tu ritmo cardíaco está en rango normal", "Your heart rate is within the normal range"))]
+
     _INFO_VITAL = {
         "Presión Arterial": {
             "icono": "❤️", "valor": f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", "categoria": _cat_pa, "color": _col_pa,
@@ -7248,9 +7357,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                           "Measures the force with which the heart pumps blood through the arteries to the rest of the body."),
             "sin_dato": T("Aún no ingresaste tu presión arterial. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
                           "You haven't entered your blood pressure yet. Go to 'My Data' → Block 3 to record it."),
-            "recomendaciones": [("🥗", T("Menos sal, más frutas y verduras", "Less salt, more fruits and vegetables")),
-                                 ("💧", T("Buena hidratación", "Good hydration")),
-                                 ("🩺", T("Consulta si persiste alta", "See a doctor if it stays high"))],
+            "recomendaciones": _reco_pa(_col_pa, _cat_pa),
             "curioso": T("La postura, el estrés y hasta hablar durante la medición pueden alterar el resultado hasta en 10 mmHg.",
                          "Posture, stress, and even talking during the measurement can alter the result by up to 10 mmHg."),
         },
@@ -7262,7 +7369,8 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                           "You haven't entered your oxygenation yet. Go to 'My Data' → Block 3 to record it."),
             "recomendaciones": [("🫁", T("Respiración profunda", "Deep breathing")),
                                  ("🚭", T("Evitar el humo/tabaco", "Avoid smoke/tobacco")),
-                                 ("🩺", T("Consulta si baja de 95%", "See a doctor if it drops below 95%"))],
+                                 ("🩺", T("Consulta si baja de 95%", "See a doctor if it drops below 95%")
+                                  if not embarazada else T("Consulta si baja de 95% (embarazo)", "See a doctor if it drops below 95% (pregnancy)"))],
             "curioso": T("La altura geográfica reduce naturalmente el SpO₂; a mayor altitud, el aire tiene menos oxígeno disponible.",
                          "Altitude naturally reduces SpO₂; the higher the altitude, the less oxygen the air has available."),
         },
@@ -7272,9 +7380,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                           "Reflects how well your body regulates internal heat to keep its vital functions running."),
             "sin_dato": T("Aún no ingresaste tu temperatura. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
                           "You haven't entered your temperature yet. Go to 'My Data' → Block 3 to record it."),
-            "recomendaciones": [("💧", T("Hidratación constante", "Stay well hydrated")),
-                                 ("🛌", T("Reposo si hay fiebre", "Rest if you have a fever")),
-                                 ("🩺", T("Consulta si persiste alta", "See a doctor if it stays high"))],
+            "recomendaciones": _reco_temp(_col_te, _cat_te),
             "curioso": T("El ejercicio intenso, la ropa abrigada o el ambiente caluroso pueden subir tu temperatura sin que estés enferma/o.",
                          "Intense exercise, warm clothing, or a hot environment can raise your temperature even if you're not sick."),
         },
@@ -7284,9 +7390,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                           "Counts how many times your heart beats in a minute while you're at rest."),
             "sin_dato": T("Aún no ingresaste tu pulso. Ve a 'Mis Datos' → Bloque 3 para registrarlo.",
                           "You haven't entered your pulse yet. Go to 'My Data' → Block 3 to record it."),
-            "recomendaciones": [("🚶", T("Actividad física regular", "Regular physical activity")),
-                                 ("☕", T("Moderar la cafeína", "Moderate caffeine")),
-                                 ("🩺", T("Consulta si es muy alto/bajo", "See a doctor if it's very high/low"))],
+            "recomendaciones": _reco_pulso(_col_pu, _cat_pu),
             "curioso": T("La cafeína, las emociones fuertes y la fiebre pueden acelerar tu pulso incluso en reposo.",
                          "Caffeine, strong emotions, and fever can speed up your pulse even while resting."),
         },
@@ -7356,27 +7460,48 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _rojos_v = [p for p, c in _con_dato_v if c == "rojo"]
     _ambar_v = [p for p, c in _con_dato_v if c == "ambar"]
 
+    # ---- 🩹 Red-flag: valores críticos activan una tarjeta de urgencia médica independiente,
+    # que se muestra SIEMPRE que corresponda (no compite con las demás tarjetas ni las oculta). ----
+    _es_urgencia_medica = (
+        (spo2 > 0 and spo2 < 85.0) or
+        (pulso > 0 and (pulso < 40 or pulso > 140)) or
+        (temp_corp > 34.0 and (_cat_te in (_ctf("Hipotermia"), _ctf("Fiebre alta")))) or
+        (pas > 0 and pad > 0 and (pas >= 180 or pad >= 120 or pas < 80 or pad < 50)) or
+        (_cat_pa == _ctf("Sospecha de Preeclampsia"))
+    )
+    if _es_urgencia_medica:
+        st.markdown(f"""
+        <div style="background:#8E1B12;border-radius:20px;padding:18px 24px;border-left:5px solid #5A0A0A;margin-bottom:12px;">
+        <p style="margin:0 0 6px 0;font-weight:900;color:#FFFFFF;">🚨 {T('ALERTA CLÍNICA CRÍTICA', 'CRITICAL CLINICAL ALERT')}</p>
+        <p style="margin:0;color:#FFEBEE;font-size:0.9rem;line-height:1.5;">
+        {T('Se detectaron signos vitales severamente fuera de rango. Estas mediciones requieren evaluación médica presencial inmediata. No tomes decisiones nutricionales o de ejercicio hasta ser evaluada/o por un profesional.', 'Severely out-of-range vital signs were detected. These readings require immediate in-person medical evaluation. Do not make nutritional or exercise decisions until evaluated by a professional.')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ---- 🩹 Antes: si había alertas rojas, las ámbar se ignoraban por completo (elif en
+    # cascada). Ahora se listan TODAS las métricas fuera de rango, agrupadas por severidad. ----
     if not _con_dato_v:
         st.info(T("Ingresa tus signos vitales en 'Mis Datos' → Bloque 3 para ver tu interpretación fisiológica.",
                   "Enter your vital signs in 'My Data' → Block 3 to see your physiological interpretation."))
-    elif _rojos_v:
-        _lista_r = ", ".join(T(p, _VITAL_EN.get(p, p)) for p in _rojos_v)
-        st.markdown(f"""
-        <div style="background:#FBEAE8;border-radius:20px;padding:18px 24px;border-left:5px solid #C0392B;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#C0392B;">🔴 {T('Atención Requerida', 'Attention Required')}</p>
-        <p style="margin:0;color:#7A2E27;font-size:0.9rem;line-height:1.5;">
-        {T('Se detectó un valor fuera de rango en', 'An out-of-range value was detected in')}: <b>{_lista_r}</b>. {T('Puede deberse a distintos factores fisiológicos o a una lectura incorrecta del sensor.', 'This may be due to various physiological factors or an incorrect sensor reading.')} <i>{T('Recomendación', 'Recommendation')}:</i> {T('si la medición persiste o sientes malestar, consulta con un profesional de salud.', 'if the reading persists or you feel unwell, consult a health professional.')}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    elif _ambar_v:
-        _lista_a = ", ".join(T(p, _VITAL_EN.get(p, p)) for p in _ambar_v)
-        st.markdown(f"""
-        <div style="background:#FDF1E4;border-radius:20px;padding:18px 24px;border-left:5px solid #E67E22;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#E67E22;">🟡 {T('Atención Ligera', 'Mild Attention')}</p>
-        <p style="margin:0;color:#7A5A26;font-size:0.9rem;line-height:1.5;">
-        <b>{_lista_a}</b> {T('se encuentra ligeramente fuera del rango habitual. No suele ser motivo de alarma, pero conviene observar cómo evoluciona.', 'is slightly outside the usual range. This is usually not a cause for alarm, but it is worth watching how it develops.')}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    elif _rojos_v or _ambar_v:
+        if _rojos_v:
+            _lista_r = ", ".join(T(p, _VITAL_EN.get(p, p)) for p in _rojos_v)
+            st.markdown(f"""
+            <div style="background:#FBEAE8;border-radius:20px;padding:18px 24px;border-left:5px solid #C0392B;margin-bottom:10px;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:#C0392B;">🔴 {T('Atención Requerida', 'Attention Required')}</p>
+            <p style="margin:0;color:#7A2E27;font-size:0.9rem;line-height:1.5;">
+            {T('Se detectaron valores fuera de rango en', 'Out-of-range values were detected in')}: <b>{_lista_r}</b>. {T('Puede deberse a distintos factores fisiológicos o a una lectura incorrecta del sensor.', 'This may be due to various physiological factors or an incorrect sensor reading.')} <i>{T('Recomendación', 'Recommendation')}:</i> {T('si la medición persiste o sientes malestar, consulta con un profesional de salud.', 'if the reading persists or you feel unwell, consult a health professional.')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        if _ambar_v:
+            _lista_a = ", ".join(T(p, _VITAL_EN.get(p, p)) for p in _ambar_v)
+            st.markdown(f"""
+            <div style="background:#FDF1E4;border-radius:20px;padding:18px 24px;border-left:5px solid #E67E22;">
+            <p style="margin:0 0 6px 0;font-weight:800;color:#E67E22;">🟡 {T('Atención Ligera', 'Mild Attention')}</p>
+            <p style="margin:0;color:#7A5A26;font-size:0.9rem;line-height:1.5;">
+            <b>{_lista_a}</b> {T('se encuentra ligeramente fuera del rango habitual. No suele ser motivo de alarma, pero conviene observar cómo evoluciona.', 'is slightly outside the usual range. This is usually not a cause for alarm, but it is worth watching how it develops.')}</p>
+            </div>
+            """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
         <div style="background:#EAFAEE;border-radius:20px;padding:18px 24px;border-left:5px solid #1E5631;">
@@ -7555,92 +7680,144 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
                      f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
 
-    # --- 2. Saturación de Oxígeno (SpO₂) ---
+    # --- 2. Saturación de Oxígeno (SpO₂) — 🩹 tabla sin huecos (antes saltaba de 85% a 67%) ---
     _idx_ox_activa = None
     if spo2 > 0:
-        if spo2 < 67:
-            _idx_ox_activa = 4
-        elif spo2 < 85:
-            _idx_ox_activa = 3
-        elif spo2 < 95:
-            _idx_ox_activa = 2
-        elif spo2 <= 100 and etapa in ("Niñez", "Adolescencia"):
+        if spo2 >= 95:
             _idx_ox_activa = 0
-        else:
+        elif spo2 >= 90:
             _idx_ox_activa = 1
+        elif spo2 >= 85:
+            _idx_ox_activa = 2
+        else:
+            _idx_ox_activa = 3   # spo2 < 85 — cubre TODO el resto del rango, sin huecos
 
     _ox_filas_data = [
-        (["≥ 97%", T("Normal (Lactantes/Niños)", "Normal (Infants/Children)"), T("Excelente oxigenación tisular", "Excellent tissue oxygenation")], "menta"),
-        (["95% – 100%", T("Normal (Adultos / &gt;70 años)", "Normal (Adults / &gt;70 years)"), T("Transporte idóneo de O₂", "Optimal O₂ transport")], "verde"),
-        (["85% – 94%", T("Anormal / Alerta Leve", "Abnormal / Mild Alert"), T("Hipoxemia leve / monitoreo", "Mild hypoxemia / monitoring")], "amarillo"),
-        (["80% – 85%", T("Compromiso Cerebral (Hipoxia)", "Cerebral Compromise (Hypoxia)"), T("Riesgo de alteración neurológica", "Risk of neurological impairment")], "naranja"),
-        (["&lt; 67%", T("Cianosis Severa", "Severe Cyanosis"), T("Coloración azulada (Urgencia)", "Bluish discoloration (Emergency)")], "rojo"),
+        (["95% – 100%", T("Normal", "Normal"), T("Oxigenación tisular idónea", "Optimal tissue oxygenation")], "verde"),
+        (["90% – 94%", T("Hipoxemia Leve", "Mild Hypoxemia"), T("Monitoreo y ventilación adecuada", "Monitoring and adequate ventilation")], "amarillo"),
+        (["85% – 89%", T("Hipoxemia Moderada", "Moderate Hypoxemia"), T("Dificultad respiratoria / requiere atención", "Respiratory distress / needs attention")], "naranja"),
+        (["&lt; 85%", T("Hipoxemia Severa", "Severe Hypoxemia"), T("Riesgo de compromiso sistémico (Urgencia)", "Risk of systemic compromise (Emergency)")], "rojo"),
     ]
     _ox_html = "".join(
         _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_ox_activa)
         for _i, (_d, _t) in enumerate(_ox_filas_data)
     )
     _render_tabla_html("🫁", T("Saturación de Oxígeno (SpO₂)", "Oxygen Saturation (SpO₂)"), T("Fuente: Organización Mundial de la Salud (OMS)", "Source: World Health Organization (WHO)"),
-                        [T("Rango de SpO₂", "SpO₂ Range"), T("Estado Clínico", "Clinical State"), T("Manifestación Fisiológica", "Physiological Manifestation")], _ox_html)
+                        [T("Rango de SpO₂", "SpO₂ Range"), T("Estado Clínico", "Clinical State"), T("Manifestación / Acción", "Manifestation / Action")], _ox_html)
+    if embarazada and spo2 > 0 and spo2 < 95:
+        st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     f'⚠️ {T("En el embarazo, SpO₂ &lt; 95% requiere valoración rápida por menor reserva de oxígeno fetal.", "During pregnancy, SpO₂ &lt; 95% requires prompt evaluation due to lower fetal oxygen reserve.")}</p>', unsafe_allow_html=True)
 
-    # --- 3. Temperatura Corporal (°C) ---
-    _idx_te_activa = None
-    if temp_corp > 34.0:
-        if edad <= 2:
-            _idx_te_activa = 0
-        elif edad <= 10:
-            _idx_te_activa = 1
-        elif edad <= 65:
-            _idx_te_activa = 2
-        else:
-            _idx_te_activa = 3
+    # --- 3. Temperatura Corporal (°C) — 🩹 se agrega la columna de Hipotermia (antes ausente)
+    # y el resaltado ahora marca la CELDA (grupo de edad × estado) que corresponde al valor real,
+    # no solo la fila por edad. ---
+    if edad <= 2:
+        _idx_te_fila = 0
+    elif edad <= 10:
+        _idx_te_fila = 1
+    elif edad <= 65:
+        _idx_te_fila = 2
+    else:
+        _idx_te_fila = 3
 
     _te_filas_data = [
-        ([T("Bebés (0–2 años)", "Infants (0–2 years)"), "36.6 – 38.0 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
-        ([T("Niños (3–10 años)", "Children (3–10 years)"), "35.5 – 37.5 °C", "≥ 38.0 °C", "&gt; 39.0 °C"], "verde"),
-        ([T("Adolescentes y Adultos (11–65 años)", "Adolescents and Adults (11–65 years)"), "36.4 – 37.6 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
-        ([T("Adultos (&gt;65 años)", "Adults (&gt;65 years)"), "35.8 – 36.9 °C", "≥ 38.0 °C", "&gt; 39.5 °C"], "verde"),
+        (T("Bebés (0–2 años)", "Infants (0–2 years)"), 36.5, 36.6, 37.9, 38.0, 39.0),
+        (T("Niños (3–10 años)", "Children (3–10 years)"), 35.5, 35.5, 37.5, 38.0, 39.0),
+        (T("Adolescentes y Adultos (11–65 años)", "Adolescents and Adults (11–65 years)"), 36.0, 36.0, 37.5, 38.0, 39.5),
+        (T("Adultos Mayores (&gt;65 años)", "Older Adults (&gt;65 years)"), 35.5, 35.8, 36.9, 37.5, 38.5),
     ]
-    _te_alerta = temp_corp >= 38.0
-    _te_html = "".join(
-        _fila_ref(_d, _TONO2["verde"]["pastel"], _TONO2["rojo" if _te_alerta else "verde"]["vibrante"],
-                  _i == _idx_te_activa)
-        for _i, (_d, _t) in enumerate(_te_filas_data)
-    )
+
+    def _te_estado_col(_t, _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta):
+        """Devuelve el índice de columna (0 Hipotermia · 1 Normal · 2 Fiebre · 3 Fiebre Alta)."""
+        if _t < _n_lo: return 0
+        if _t <= _n_hi: return 1
+        if _t < _fiebre_alta: return 2
+        return 3
+
+    _idx_te_col_activa = None
+    if temp_corp > 34.0:
+        _row = _te_filas_data[_idx_te_fila]
+        _idx_te_col_activa = _te_estado_col(temp_corp, _row[1], _row[2], _row[3], _row[4], _row[5])
+
+    _TE_COL_TONO = ["azul", "verde", "naranja", "rojo"]  # Hipotermia · Normal · Fiebre · Fiebre Alta
+
+    def _fila_temp_matriz(_i, _nombre, _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta):
+        _celdas_txt = [f"&lt; {_hipo:.1f} °C", f"{_n_lo:.1f} – {_n_hi:.1f} °C", f"≥ {_fiebre:.1f} °C", f"&gt; {_fiebre_alta:.1f} °C"]
+        _es_fila_activa = (_i == _idx_te_fila) and temp_corp > 34.0
+        _tds = f'<td style="background:#F8F9FA;font-weight:800;color:#17301F;">{_nombre}</td>'
+        for _c, _txt in enumerate(_celdas_txt):
+            _tono_key = _TE_COL_TONO[_c]
+            _activa_celda = _es_fila_activa and _c == _idx_te_col_activa
+            if _activa_celda:
+                _fondo, _texto = _TONO2[_tono_key]["vibrante"]["fondo"], _TONO2[_tono_key]["vibrante"]["texto"]
+                _borde = f"2px solid {_TONO2[_tono_key]['vibrante']['borde']}"
+                _glow = f"box-shadow:0 0 15px {_TONO2[_tono_key]['vibrante']['glow']};"
+                _badge = f'<span class="badge-activo">📍 {T("TU VALOR", "YOUR VALUE")}</span>'
+            else:
+                _fondo, _texto = _TONO2[_tono_key]["pastel"]["fondo"], _TONO2[_tono_key]["pastel"]["texto"]
+                _borde, _glow, _badge = "1px solid rgba(0,0,0,0.04)", "", ""
+            _tds += f'<td style="background:{_fondo};color:{_texto};border-top:{_borde};border-bottom:{_borde};{_glow}">{_txt}{_badge}</td>'
+        _clase = "fila-ref" + (" fila-pulse" if _es_fila_activa else "")
+        return f'<tr class="{_clase}">{_tds}</tr>'
+
+    _te_html = "".join(_fila_temp_matriz(_i, *_fila) for _i, _fila in enumerate(_te_filas_data))
     _render_tabla_html("🌡️", T("Temperatura Corporal (°C)", "Body Temperature (°C)"), T("Fuente: Rangos clínicos por grupo de edad", "Source: Clinical ranges by age group"),
-                        [T("Grupo de Edad", "Age Group"), T("Normal (°C)", "Normal (°C)"), T("Fiebre (°C)", "Fever (°C)"), T("Fiebre Alta (°C)", "High Fever (°C)")], _te_html)
-    if _idx_te_activa is not None and _te_alerta:
+                        [T("Grupo de Edad", "Age Group"), T("Hipotermia / Baja", "Hypothermia / Low"), T("Normal", "Normal"), T("Fiebre", "Fever"), T("Fiebre Alta", "High Fever")], _te_html)
+    if _idx_te_col_activa == 0:
+        st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     f'⚠️ {T("¡Atención: Hipotermia / temperatura baja detectada!", "Attention: Hypothermia / low temperature detected!")}</p>', unsafe_allow_html=True)
+    elif _idx_te_col_activa in (2, 3):
         st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
                      f'⚠️ {T("¡Atención: Fiebre detectada!", "Attention: Fever detected!")}</p>', unsafe_allow_html=True)
 
-    # --- 4. Frecuencia Cardíaca (Pulso en Reposo) ---
-    _idx_pu_activa = None
-    if pulso > 0:
-        if edad <= 3:
-            _idx_pu_activa = 3
-        elif edad <= 5:
-            _idx_pu_activa = 4
-        elif edad <= 12:
-            _idx_pu_activa = 5
-        else:
-            _idx_pu_activa = 6
+    # --- 4. Frecuencia Cardíaca (Pulso en Reposo) — 🩹 el resaltado ahora refleja si el valor
+    # está bajo/normal/alto para la fila de edad correspondiente (antes siempre se pintaba en
+    # verde sin importar el valor), y se agrega la fila de Gestantes. ---
+    if embarazada:
+        _idx_pu_fila = 7
+    elif edad <= 0.08:  # < 1 mes aprox.
+        _idx_pu_fila = 1
+    elif edad < 1:
+        _idx_pu_fila = 2
+    elif edad <= 3:
+        _idx_pu_fila = 3
+    elif edad <= 5:
+        _idx_pu_fila = 4
+    elif edad <= 12:
+        _idx_pu_fila = 5
+    else:
+        _idx_pu_fila = 6
 
     _lpm_txt = T("lpm", "bpm")
     _pu_filas_data = [
-        ([T("Pretérmino", "Preterm"), f"120 – 180 {_lpm_txt}", T(f"&lt; 120 o &gt; 180 {_lpm_txt}", f"&lt; 120 or &gt; 180 {_lpm_txt}")], "amarillo"),
-        ([T("Recién Nacido (0–1 mes)", "Newborn (0–1 month)"), f"100 – 160 {_lpm_txt}", T(f"&lt; 100 o &gt; 160 {_lpm_txt}", f"&lt; 100 or &gt; 160 {_lpm_txt}")], "verde"),
-        ([T("Bebé (1–12 meses)", "Infant (1–12 months)"), f"80 – 140 {_lpm_txt}", T(f"&lt; 80 o &gt; 140 {_lpm_txt}", f"&lt; 80 or &gt; 140 {_lpm_txt}")], "verde"),
-        ([T("Niño Pequeño (1–3 años)", "Toddler (1–3 years)"), f"80 – 130 {_lpm_txt}", T(f"&lt; 80 o &gt; 130 {_lpm_txt}", f"&lt; 80 or &gt; 130 {_lpm_txt}")], "verde"),
-        ([T("Preescolar (3–5 años)", "Preschool (3–5 years)"), f"80 – 110 {_lpm_txt}", T(f"&lt; 80 o &gt; 110 {_lpm_txt}", f"&lt; 80 or &gt; 110 {_lpm_txt}")], "verde"),
-        ([T("Edad Escolar (6–12 años)", "School Age (6–12 years)"), f"70 – 100 {_lpm_txt}", T(f"&lt; 70 o &gt; 100 {_lpm_txt}", f"&lt; 70 or &gt; 100 {_lpm_txt}")], "verde"),
-        ([T("Adolescentes y Adultos", "Adolescents and Adults"), f"60 – 100 {_lpm_txt}", T(f"&lt; 60 o &gt; 100 {_lpm_txt}", f"&lt; 60 or &gt; 100 {_lpm_txt}")], "verde"),
+        (T("Pretérmino", "Preterm"), 120, 180),
+        (T("Recién Nacido (0–1 mes)", "Newborn (0–1 month)"), 100, 160),
+        (T("Bebé (1–12 meses)", "Infant (1–12 months)"), 80, 140),
+        (T("Niño Pequeño (1–3 años)", "Toddler (1–3 years)"), 80, 130),
+        (T("Preescolar (3–5 años)", "Preschool (3–5 years)"), 80, 110),
+        (T("Edad Escolar (6–12 años)", "School Age (6–12 years)"), 70, 100),
+        (T("Adolescentes y Adultos", "Adolescents and Adults"), 60, 100),
+        (T("Gestantes (2°/3° Trimestre)", "Pregnant (2nd/3rd Trimester)"), 70, 110),
     ]
+    _idx_pu_activa = _idx_pu_fila if pulso > 0 else None
+    _pu_fuera_rango = False
+    if pulso > 0:
+        _lo, _hi = _pu_filas_data[_idx_pu_fila][1], _pu_filas_data[_idx_pu_fila][2]
+        _pu_fuera_rango = not (_lo <= pulso <= _hi)
     _pu_html = "".join(
-        _fila_ref(_d, _TONO2[_t]["pastel"], _TONO2[_t]["vibrante"], _i == _idx_pu_activa, _pulse=True)
-        for _i, (_d, _t) in enumerate(_pu_filas_data)
+        _fila_ref(
+            [_nom, f"{_lo} – {_hi} {_lpm_txt}", T(f"&lt; {_lo} o &gt; {_hi} {_lpm_txt}", f"&lt; {_lo} or &gt; {_hi} {_lpm_txt}")],
+            _TONO2["rojo" if (_i == _idx_pu_activa and _pu_fuera_rango) else "verde"]["pastel"],
+            _TONO2["rojo" if (_i == _idx_pu_activa and _pu_fuera_rango) else "verde"]["vibrante"],
+            _i == _idx_pu_activa, _pulse=(_i == _idx_pu_activa and _pu_fuera_rango),
+        )
+        for _i, (_nom, _lo, _hi) in enumerate(_pu_filas_data)
     )
     _render_tabla_html("💓", T("Frecuencia Cardíaca (Pulso en Reposo)", "Heart Rate (Resting Pulse)"), T("Fuente: American Heart Association (AHA)", "Source: American Heart Association (AHA)"),
                         [T("Grupo de Edad", "Age Group"), T("Rango Normal en Reposo", "Normal Resting Range"), T("Estado Anormal (Alerta)", "Abnormal State (Alert)")], _pu_html)
+    if _pu_fuera_rango:
+        st.markdown(f'<p style="color:#C0392B;font-weight:800;font-size:0.85rem;margin-top:-8px;">'
+                     f'⚠️ {T("¡Atención: pulso fuera del rango normal para tu grupo de edad!", "Attention: pulse outside the normal range for your age group!")}</p>', unsafe_allow_html=True)
 
     st.write("")
 
