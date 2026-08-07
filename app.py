@@ -4494,41 +4494,6 @@ def _meta_iom_por_imc(imc):
     return _TABLA_IOM_GANANCIA[1][0], 11.5, 16.0, 0.42, "#34C759", "#EAFAEE"  # respaldo: Normal
 
 
-def panel_diagnostico_pregestacional(imc, categoria):
-    """Sección 1 (Modo Embarazo): reemplaza el panel de diagnóstico estándar por 4 tarjetas
-    centradas en el embarazo — IMC Pregestacional, Meta de Ganancia Total, Estado Pregestacional
-    y Tasa Semanal recomendada — más una leyenda-resumen, siguiendo las guías IOM/ACOG."""
-    _etq, _min_kg, _max_kg, _tasa, _color, _fondo = _meta_iom_por_imc(imc)
-    tarjetas = [
-        (T("IMC Pregest.", "Pre-preg. BMI"), f"{imc:g}", "⚖️", "#8E24AA"),
-        (T("Ganancia Meta", "Gain Target"), f"+{_min_kg:g} a {_max_kg:g} kg" if st.session_state.get("idioma", "Español") != "English"
-         else f"+{_min_kg:g} to {_max_kg:g} kg", "🤰", "#E91E8C"),
-        (T("Estado", "Status"), _cat_imc_txt(categoria), "🩺", _color),
-        (T("Tasa Semanal", "Weekly Rate"), f"{_tasa:.2f} kg/{T('sem', 'wk')}", "🎯", "#5856D6"),
-    ]
-    _kpis = "".join(f"""
-        <div class="diag-kpi">
-            <div class="diag-kpi-icon">{ic}</div>
-            <div class="diag-kpi-label">{lbl}</div>
-            <div class="diag-kpi-val" style="color:{col};">{val}</div>
-        </div>""" for lbl, val, ic, col in tarjetas)
-    st.markdown(f"""
-    <div class="diag-panel">
-        <div class="diag-panel-title">🤰 {T("Tu Diagnóstico Nutricional Pregestacional", "Your Pre-pregnancy Nutritional Diagnosis")}</div>
-        <div class="diag-kpi-grid">{_kpis}</div>
-        <div class="diag-frase" style="border-left:5px solid {_color};background:{_fondo};">
-            <span style="font-size:1.3rem;">🟢</span>
-            <span>{T(f"Según tu IMC pregestacional de {imc:g} ({_cat_imc_txt(categoria)}), el Instituto de Medicina "
-                     f"(IOM) y la ACOG recomiendan un incremento total de peso de {_min_kg:g} a {_max_kg:g} kg al "
-                     f"llegar a la semana 40.",
-                     f"Based on your pre-pregnancy BMI of {imc:g} ({_cat_imc_txt(categoria)}), the Institute of "
-                     f"Medicine (IOM) and ACOG recommend a total weight gain of {_min_kg:g} to {_max_kg:g} kg "
-                     f"by week 40.")}</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
 def tabla_iom_ganancia_visual(imc_usuario):
     """Tabla cromática de ganancia de peso gestacional (IOM/ACOG), resaltando la fila que
     corresponde al IMC pregestacional del usuario. Sustituye a la tabla genérica de categorías
@@ -4562,6 +4527,143 @@ def tabla_iom_ganancia_visual(imc_usuario):
     """), unsafe_allow_html=True)
     st.caption(T("📚 Fuente: Institute of Medicine / National Academy of Medicine (IOM/NAM), ratificada por ACOG y OMS.",
                  "📚 Source: Institute of Medicine / National Academy of Medicine (IOM/NAM), endorsed by ACOG and WHO."))
+
+
+def _estado_gestacional_txt(categoria):
+    """Traduce la categoría de IMC pregestacional (Bajo Peso/Peso Saludable/Sobrepeso/Obesidad...)
+    a una etiqueta de 'Estado' pensada para la tarjeta de diagnóstico en Modo Embarazo, en vez
+    de mostrar la palabra de riesgo cardiovascular/metabólico que usa la vista de adultos."""
+    _en = st.session_state.get("idioma", "Español") == "English"
+    if categoria == "Peso Saludable":
+        return "Healthy Pregnancy" if _en else "Gestación Saludable"
+    if categoria == "Bajo Peso":
+        return "Underweight Pregnancy" if _en else "Gestación con Bajo Peso"
+    if categoria == "Sobrepeso":
+        return "Overweight Pregnancy" if _en else "Gestación con Sobrepeso"
+    return "High-risk Pregnancy (Obesity)" if _en else "Gestación con Obesidad"
+
+
+def panel_diagnostico_pregestacional(imc, categoria):
+    """Sección 1 (Modo Embarazo): reemplaza el panel de diagnóstico estándar por 4 tarjetas
+    centradas en el embarazo — IMC Pregestacional, Meta de Ganancia Total, Tasa Semanal
+    recomendada y Estado (en clave gestacional, no cardiovascular) — más una leyenda-resumen,
+    siguiendo las guías IOM/ACOG."""
+    _etq, _min_kg, _max_kg, _tasa, _color, _fondo = _meta_iom_por_imc(imc)
+    tarjetas = [
+        (T("IMC Pregest.", "Pre-preg. BMI"), f"{imc:g}", "⚖️", "#8E24AA"),
+        (T("Ganancia Meta", "Gain Target"), f"+{_min_kg:g} a {_max_kg:g} kg" if st.session_state.get("idioma", "Español") != "English"
+         else f"+{_min_kg:g} to {_max_kg:g} kg", "🤰", "#E91E8C"),
+        (T("Tasa Semanal", "Weekly Rate"), f"{_tasa:.2f} kg/{T('sem', 'wk')}", "🎯", "#5856D6"),
+        (T("Estado", "Status"), _estado_gestacional_txt(categoria), "🩺", _color),
+    ]
+    _kpis = "".join(f"""
+        <div class="diag-kpi">
+            <div class="diag-kpi-icon">{ic}</div>
+            <div class="diag-kpi-label">{lbl}</div>
+            <div class="diag-kpi-val" style="color:{col};">{val}</div>
+        </div>""" for lbl, val, ic, col in tarjetas)
+    st.markdown(f"""
+    <div class="diag-panel">
+        <div class="diag-panel-title">🤰 {T("Tu Diagnóstico Nutricional Pregestacional", "Your Pre-pregnancy Nutritional Diagnosis")}</div>
+        <div class="diag-kpi-grid">{_kpis}</div>
+        <div class="diag-frase" style="border-left:5px solid {_color};background:{_fondo};">
+            <span style="font-size:1.3rem;">🟢</span>
+            <span>{T(f"Según tu IMC pregestacional de {imc:g} ({_cat_imc_txt(categoria)}), el Instituto de Medicina "
+                     f"(IOM) y la ACOG recomiendan un incremento total de peso de {_min_kg:g} a {_max_kg:g} kg al "
+                     f"llegar a la semana 40.",
+                     f"Based on your pre-pregnancy BMI of {imc:g} ({_cat_imc_txt(categoria)}), the Institute of "
+                     f"Medicine (IOM) and ACOG recommend a total weight gain of {_min_kg:g} to {_max_kg:g} kg "
+                     f"by week 40.")}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+_ESTADO_CHECKLIST_GESTACIONAL = {
+    "Bajo Peso": ["Meta de ganancia total más alta: +12.5 a +18.0 kg", "Prioriza calidad y frecuencia de comidas",
+                  "Sigue tu curva semana a semana en Línea de Tiempo", "Recomendable acudir a nutrición/obstetricia"],
+    "Peso Saludable": ["Meta de ganancia total: +11.5 a +16.0 kg", "Ritmo esperado: ≈0.42 kg/semana (2°/3er trim.)",
+                        "Sigue tu curva semana a semana en Línea de Tiempo", "Continúa con tus controles prenatales"],
+    "Sobrepeso": ["Meta de ganancia total más baja: +7.0 a +11.5 kg", "El aporte calórico extra sigue siendo automático por trimestre",
+                  "Sigue tu curva semana a semana en Línea de Tiempo", "Recomendable acudir a nutrición/obstetricia"],
+    "Obesidad": ["Meta de ganancia total más baja: +5.0 a +9.0 kg", "Ganancia lenta y controlada, nunca en déficit",
+                 "Sigue tu curva semana a semana en Línea de Tiempo", "Seguimiento estrecho con obstetricia recomendado"],
+}
+_ESTADO_CHECKLIST_GESTACIONAL_EN = {
+    "Bajo Peso": ["Higher total gain target: +12.5 to +18.0 kg", "Prioritize meal quality and frequency",
+                  "Track your week-by-week curve in Timeline", "Recommended to see nutrition/obstetrics"],
+    "Peso Saludable": ["Total gain target: +11.5 to +16.0 kg", "Expected pace: ≈0.42 kg/week (2nd/3rd trim.)",
+                        "Track your week-by-week curve in Timeline", "Continue with your prenatal check-ups"],
+    "Sobrepeso": ["Lower total gain target: +7.0 to +11.5 kg", "Extra caloric intake is still automatic per trimester",
+                  "Track your week-by-week curve in Timeline", "Recommended to see nutrition/obstetrics"],
+    "Obesidad": ["Lower total gain target: +5.0 to +9.0 kg", "Slow, controlled gain — never a deficit",
+                 "Track your week-by-week curve in Timeline", "Close follow-up with obstetrics recommended"],
+}
+
+
+def tarjeta_estado_pregestacional(categoria):
+    """Versión gestacional de la tarjeta 'Estado Nutricional': reemplaza el checklist de riesgo
+    cardiovascular/metabólico (pensado para adultos no gestantes) por puntos centrados en la
+    meta de ganancia de peso IOM/ACOG y el seguimiento en la Línea de Tiempo."""
+    estilo = color_categoria_imc(categoria)
+    _en = st.session_state.get("idioma", "Español") == "English"
+    _dic = _ESTADO_CHECKLIST_GESTACIONAL_EN if _en else _ESTADO_CHECKLIST_GESTACIONAL
+    _fallback_key = "Sobrepeso"
+    _items = _dic.get(categoria, _dic[_fallback_key])
+    _lis = "".join(f'<div class="estado-nutri-item"><span>✓</span><span>{it}</span></div>' for it in _items)
+    st.markdown(f"""
+    <div class="bento-card" style="border-top:4px solid {estilo['hex']};">
+        <span class="bento-eyebrow">🤰 {T("Estado Gestacional", "Gestational Status")}</span>
+        <div style="font-weight:800;font-size:1.2rem;color:{estilo['hex']};margin:4px 0 8px 0;">{_estado_gestacional_txt(categoria)}</div>
+        {_lis}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def interpretacion_inteligente_pregestacional(imc, categoria):
+    """Versión gestacional de 'Interpretación Inteligente': en vez de recomendar mantener el
+    peso o reducir grasa (lógica de adulto no gestante), enfoca los puntos en el seguimiento
+    ponderal gestacional (IOM/ACOG) y remite a la Línea de Tiempo para el detalle semana a semana."""
+    _etq, _min_kg, _max_kg, _tasa, _color, _fondo = _meta_iom_por_imc(imc)
+    _en = st.session_state.get("idioma", "Español") == "English"
+    if _en:
+        _puntos = [
+            f"Your pre-pregnancy BMI ({imc:g}) places you in the '{_cat_imc_txt(categoria)}' IOM/ACOG category.",
+            f"Your total recommended gain by week 40 is +{_min_kg:g} to +{_max_kg:g} kg, at ≈{_tasa:.2f} kg/week in the 2nd/3rd trimester.",
+            "This is not about maintaining weight or losing fat: the goal is a controlled, adequate gain for feto-placental development.",
+            "Follow your week-by-week curve against this target in '13.-TIMELINE' (Gestational Weight Tracking).",
+        ]
+    else:
+        _puntos = [
+            f"Tu IMC pregestacional ({imc:g}) te ubica en la categoría IOM/ACOG '{_cat_imc_txt(categoria)}'.",
+            f"Tu ganancia total recomendada a la semana 40 es de +{_min_kg:g} a +{_max_kg:g} kg, a un ritmo de ≈{_tasa:.2f} kg/semana en el 2° y 3er trimestre.",
+            "Aquí no aplica 'mantener el peso' ni 'reducir grasa': la meta es una ganancia controlada y adecuada para el desarrollo feto-placentario.",
+            "Sigue tu curva semana a semana frente a esta meta en '13.-LÍNEA DE TIEMPO' (Seguimiento del Peso Gestacional).",
+        ]
+    _lis = "".join(f"<li>{p}</li>" for p in _puntos)
+    _seg_texto = T(f"Según tu IMC pregestacional ({_cat_imc_txt(categoria)}) y las guías IOM/ACOG:",
+                   f"Based on your pre-pregnancy BMI ({_cat_imc_txt(categoria)}) and IOM/ACOG guidelines:")
+    st.markdown(f"""
+    <div style="background:{_fondo};border-radius:18px;padding:16px 20px;margin-top:6px;">
+        <div style="font-weight:800;color:{_color};margin-bottom:6px;">🤰 {T("Interpretación Inteligente Pregestacional", "Smart Pre-pregnancy Interpretation")}</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;">{_seg_texto}</div>
+        <ul style="margin:6px 0 0 18px;padding:0;font-size:0.85rem;color:#3A3A3C;line-height:1.7;">{_lis}</ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def que_influye_ganancia_gestacional():
+    """Versión gestacional de '¿Qué puede influir en tu IMC?': cambia los factores genéricos
+    (bebidas azucaradas, sueño, genética...) por los que realmente mueven la ganancia de peso
+    durante el embarazo."""
+    st.markdown(f'<div class="info3-title" style="margin-top:4px;">🔎 {T("¿Qué influye en tu ganancia de peso gestacional?", "What influences your gestational weight gain?")}</div>', unsafe_allow_html=True)
+    fila_dominios_salud([
+        ("🤰", "#8E24AA", T("Trimestre actual", "Current Trimester")),
+        ("👶", "#E91E8C", T("Tejido feto-placentario", "Feto-placental Tissue")),
+        ("💧", "#1E88E5", T("Retención de líquidos", "Fluid Retention")),
+        ("🍽️", "#FF9500", T("Calidad de la alimentación", "Diet Quality")),
+        ("🧬", "#FF2D55", T("IMC pregestacional", "Pre-pregnancy BMI")),
+    ])
 
 
 _ESCALA_ADULTO_ZONAS = [("Bajo", "#42A5F5", 0, 18.5), ("Normal", "#34C759", 18.5, 25.0),
@@ -7466,12 +7568,20 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     else:
         panel_diagnostico_nutricional(imc, _percentil_usuario, _categoria_imc_usuario, con_percentil=_con_percentil)
 
-    # --- 2 y 4. Escala horizontal + Estado Nutricional (checklist) --------------------------
+    # --- 2 y 4. Escala horizontal + Estado Nutricional/Gestacional (checklist) --------------
     ec1, ec2 = st.columns([1.4, 1])
     with ec1:
         escala_horizontal_imc(imc, _categoria_imc_usuario, etapa, _percentil_usuario if _con_percentil else None)
+        if _es_gestante:
+            st.caption(T("🔎 Esta es tu categoría IOM/ACOG pregestacional — la fila destacada en la tabla "
+                         "de ganancia de peso más abajo muestra tu meta exacta.",
+                         "🔎 This is your pre-pregnancy IOM/ACOG category — the highlighted row in the "
+                         "weight-gain table below shows your exact target."))
     with ec2:
-        tarjeta_estado_nutricional(_categoria_imc_usuario)
+        if _es_gestante:
+            tarjeta_estado_pregestacional(_categoria_imc_usuario)
+        else:
+            tarjeta_estado_nutricional(_categoria_imc_usuario)
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
@@ -7483,7 +7593,10 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
         st.error(_categoria_imc_usuario)
 
     # --- 5. Interpretación Inteligente --------------------------------------------------------
-    interpretacion_inteligente_imc(imc, _categoria_imc_usuario, etapa, _riesgo_txt)
+    if _es_gestante:
+        interpretacion_inteligente_pregestacional(imc, _categoria_imc_usuario)
+    else:
+        interpretacion_inteligente_imc(imc, _categoria_imc_usuario, etapa, _riesgo_txt)
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
@@ -7491,7 +7604,10 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     ic1, ic2 = st.columns(2)
     with ic1:
         st.markdown('<div class="info3-card">', unsafe_allow_html=True)
-        que_influye_imc()
+        if _es_gestante:
+            que_influye_ganancia_gestacional()
+        else:
+            que_influye_imc()
         st.markdown('</div>', unsafe_allow_html=True)
     with ic2:
         recordar_alerta_clinica()
@@ -7500,7 +7616,7 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
     # --- 8. Más información — enlaces uniformes ----------------------------------------------
     links_uniformes_mas_info()
-    if _riesgo_imc:
+    if _riesgo_imc and not _es_gestante:
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
         cta1, cta2 = st.columns(2)
         with cta1:
