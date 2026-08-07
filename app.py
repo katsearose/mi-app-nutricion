@@ -10685,24 +10685,26 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
-    # ===== 🌸 Encabezado con degradado suave =====
+    # ===== 🌸 Banner principal — degradado Rosa Cuarzo ➔ Lavanda (Maternity Warmth) =====
     st.markdown(T("""
-    <div style="background:linear-gradient(120deg,#FFE1EC 0%,#E1F3FF 55%,#FFFFFF 100%);border-radius:22px;
-                padding:26px 28px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
-        <div style="font-size:1.35rem;font-weight:900;color:#B0205A;margin-bottom:4px;">
-            🤰 Seguimiento del Peso durante el Embarazo</div>
-        <div style="color:#5C6B78;font-size:0.92rem;line-height:1.5;max-width:640px;">
-            Conoce si tu aumento de peso está dentro del rango recomendado para la etapa de
-            embarazo que seleccionaste.</div>
+    <div style="background:linear-gradient(135deg,#FFF0F5 0%,#E6E6FA 100%);border-radius:16px;
+                padding:26px 28px;margin-bottom:18px;border:1px solid #F3E5F5;
+                box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+        <div style="font-size:1.4rem;font-weight:900;color:#4A2E35;margin-bottom:4px;">
+            🤰🌷 Seguimiento del Peso durante el Embarazo</div>
+        <div style="color:#6B5361;font-size:0.92rem;line-height:1.5;max-width:640px;">
+            Conoce si tu aumento de peso está dentro del rango recomendado para la semana de
+            embarazo en la que te encuentras.</div>
     </div>
     """, """
-    <div style="background:linear-gradient(120deg,#FFE1EC 0%,#E1F3FF 55%,#FFFFFF 100%);border-radius:22px;
-                padding:26px 28px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.05);">
-        <div style="font-size:1.35rem;font-weight:900;color:#B0205A;margin-bottom:4px;">
-            🤰 Weight Tracking During Pregnancy</div>
-        <div style="color:#5C6B78;font-size:0.92rem;line-height:1.5;max-width:640px;">
-            Find out if your weight gain is within the recommended range for the pregnancy
-            stage you selected.</div>
+    <div style="background:linear-gradient(135deg,#FFF0F5 0%,#E6E6FA 100%);border-radius:16px;
+                padding:26px 28px;margin-bottom:18px;border:1px solid #F3E5F5;
+                box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+        <div style="font-size:1.4rem;font-weight:900;color:#4A2E35;margin-bottom:4px;">
+            🤰🌷 Weight Tracking During Pregnancy</div>
+        <div style="color:#6B5361;font-size:0.92rem;line-height:1.5;max-width:640px;">
+            Find out if your weight gain is within the recommended range for the week
+            of pregnancy you're currently in.</div>
     </div>
     """), unsafe_allow_html=True)
 
@@ -10721,23 +10723,30 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
 
     _semanas_totales = 40
     _RANGO_TRIMESTRE = {"Primer trimestre": (1, 13), "Segundo trimestre": (14, 27), "Tercer trimestre": (28, 40)}
-    _sem_min_tri, _sem_max_tri = _RANGO_TRIMESTRE.get(trimestre, (1, 13))
+
+    # ---- 🩹 CORRECCIÓN DE INCOHERENCIA: la "Etapa actual" y el rango de semanas mostrados en la
+    # tarjeta superior deben derivarse de la SEMANA EXACTA registrada en esta misma hoja (no del
+    # trimestre general seleccionado en "Mis Datos"), para que nunca queden desacoplados. Leemos
+    # el valor ya guardado en session_state ANTES de dibujar el widget: Streamlit ya lo actualiza
+    # en cuanto la persona cambia la semana, así que ambas tarjetas siempre coinciden. ----
     _semana_default = st.session_state.get("semana_embarazo_exacta", semana_gestacion)
     _semana_default = min(max(_semana_default, 1), _semanas_totales)
-    _trimestre_disp_lt = T(trimestre, {"Primer trimestre": "First trimester", "Segundo trimestre": "Second trimester",
-                                        "Tercer trimestre": "Third trimester"}.get(trimestre, trimestre))
+    _trimestre_calc = _trimestre_desde_semana(_semana_default)
+    _sem_min_tri, _sem_max_tri = _RANGO_TRIMESTRE.get(_trimestre_calc, (1, 13))
+    _trimestre_disp_lt = T(_trimestre_calc, {"Primer trimestre": "First trimester", "Segundo trimestre": "Second trimester",
+                                              "Tercer trimestre": "Third trimester"}.get(_trimestre_calc, _trimestre_calc))
 
     _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso_actual)
 
-    # ===== 📋 Tarjetas resumen (fila única) =====
-    def _tarjeta_resumen(icono, titulo, valor, sub, color):
+    # ===== 📋 Tarjetas métricas flotantes (KPI cards) con borde superior dinámico según estado =====
+    def _tarjeta_resumen(icono, titulo, valor, sub, color_borde, fondo="#FFFFFF"):
         st.markdown(f"""
-        <div style="background:#FFFFFF;border-radius:18px;padding:16px 14px;height:118px;
-        border:1.5px solid {color}33;box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        <div style="background:{fondo};border-radius:12px;padding:16px 14px;height:118px;
+        border-top:4px solid {color_borde};box-shadow:0 4px 12px rgba(0,0,0,0.04);
         display:flex;flex-direction:column;justify-content:center;">
         <div style="font-size:1.3rem;">{icono}</div>
         <p style="margin:4px 0 0 0;color:#8E8E93;font-size:0.72rem;font-weight:800;text-transform:uppercase;">{titulo}</p>
-        <p style="margin:0;color:{color};font-size:1.15rem;font-weight:800;">{valor}</p>
+        <p style="margin:0;color:{color_borde};font-size:1.15rem;font-weight:800;">{valor}</p>
         <p style="margin:0;color:#8E8E93;font-size:0.7rem;">{sub}</p>
         </div>
         """, unsafe_allow_html=True)
@@ -10745,7 +10754,8 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
     _c1, _c2, _c3, _c4 = st.columns(4)
     with _c1:
         _tarjeta_resumen("🤰", T("Etapa actual", "Current stage"), _trimestre_disp_lt,
-                          T(f"Semanas {_sem_min_tri}–{_sem_max_tri}", f"Weeks {_sem_min_tri}–{_sem_max_tri}"), "#B0205A")
+                          T(f"Semanas {_sem_min_tri}–{_sem_max_tri}", f"Weeks {_sem_min_tri}–{_sem_max_tri}"),
+                          "#9B72CF", "#FAF6FF")
     with _c2:
         st.markdown(f'<p style="margin:0 0 4px 0;color:#8E8E93;font-size:0.72rem;font-weight:800;'
                      f'text-transform:uppercase;">📅 {T("Semana del embarazo", "Week of pregnancy")}</p>', unsafe_allow_html=True)
@@ -10753,47 +10763,47 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
                                          value=_semana_default, step=1, key="semana_embarazo_exacta",
                                          label_visibility="collapsed")
     with _c3:
-        _tarjeta_resumen("⚖️", T("Peso actual", "Current weight"), f"{_peso_hoy:.1f} kg", T("Tu último registro", "Your last entry"), "#007AFF")
+        _tarjeta_resumen("⚖️", T("Peso actual", "Current weight"), f"{_peso_hoy:.1f} kg",
+                          T("Tu último registro", "Your last entry"), "#3A86FF", "#F4F9FF")
 
     _kg_ganados = _peso_hoy - peso
     _min_esperado_hoy = (_canal_min / _semanas_totales) * semana_exacta
     _max_esperado_hoy = (_canal_max / _semanas_totales) * semana_exacta
     if _kg_ganados < _min_esperado_hoy - 1:
-        _estado_key, _estado_color, _estado_icono = "bajo", "#FF9500", "🟡"
+        _estado_key, _estado_color, _estado_icono, _estado_fondo = "bajo", "#FF8B94", "🟠", "#FFF5F5"
     elif _kg_ganados > _max_esperado_hoy + 1:
-        _estado_key, _estado_color, _estado_icono = "alto", "#FF3B30", "🔴"
+        _estado_key, _estado_color, _estado_icono, _estado_fondo = "alto", "#FF8B94", "🔴", "#FFF5F5"
     else:
-        _estado_key, _estado_color, _estado_icono = "ok", "#34C759", "🟢"
+        _estado_key, _estado_color, _estado_icono, _estado_fondo = "ok", "#A8E6CF", "🟢", "#F0FFF4"
     _estado_txt = {"bajo": T("Por debajo del rango", "Below range"),
                     "alto": T("Por encima del rango", "Above range"),
                     "ok": T("Dentro del rango", "Within range")}[_estado_key]
     with _c4:
-        _tarjeta_resumen(_estado_icono, T("Estado", "Status"), _estado_txt, T("Según tu semana", "Based on your week"), _estado_color)
+        _tarjeta_resumen(_estado_icono, T("Estado", "Status"), _estado_txt, T("Según tu semana", "Based on your week"),
+                          _estado_color, _estado_fondo)
 
     st.write("")
 
-    # ===== 💡 Caja informativa =====
+    # ===== 💡 Caja informativa tipo "nube pastel" =====
     st.markdown(T("""
-    <div style="background:#E9F3FF;border-radius:16px;padding:16px 20px;margin-bottom:16px;
-                border:1px solid #B9DBFF;">
-    <p style="margin:0 0 6px 0;font-weight:800;color:#0B4DA8;font-size:0.92rem;">
-        ℹ️ ¿Cómo funciona este gráfico?</p>
-    <p style="margin:0;color:#31465F;font-size:0.85rem;line-height:1.55;">
+    <div style="background:#F0FFF4;border-radius:16px;padding:16px 20px;margin-bottom:16px;
+                border:1px solid #A8E6CF88;">
+    <p style="margin:0 0 6px 0;font-weight:800;color:#1B4332;font-size:0.92rem;">
+        ☁️ ¿Cómo funciona este gráfico?</p>
+    <p style="margin:0;color:#3C5A4E;font-size:0.85rem;line-height:1.55;">
         El gráfico utiliza la semana exacta de embarazo que registraste.<br>
-        Aunque hayas seleccionado el trimestre, el seguimiento del peso se realiza semana por
-        semana para ser más preciso.<br>
-        Por eso el punto aparece en la semana correspondiente.</p>
+        El seguimiento del peso se realiza semana por semana para ser más preciso.<br>
+        Por eso el punto y la etapa mostrada arriba siempre corresponden a esa misma semana.</p>
     </div>
     """, """
-    <div style="background:#E9F3FF;border-radius:16px;padding:16px 20px;margin-bottom:16px;
-                border:1px solid #B9DBFF;">
-    <p style="margin:0 0 6px 0;font-weight:800;color:#0B4DA8;font-size:0.92rem;">
-        ℹ️ How does this chart work?</p>
-    <p style="margin:0;color:#31465F;font-size:0.85rem;line-height:1.55;">
+    <div style="background:#F0FFF4;border-radius:16px;padding:16px 20px;margin-bottom:16px;
+                border:1px solid #A8E6CF88;">
+    <p style="margin:0 0 6px 0;font-weight:800;color:#1B4332;font-size:0.92rem;">
+        ☁️ How does this chart work?</p>
+    <p style="margin:0;color:#3C5A4E;font-size:0.85rem;line-height:1.55;">
         The chart uses the exact week of pregnancy you entered.<br>
-        Even though you selected a trimester, weight tracking is done week by week
-        to be more precise.<br>
-        That's why the point appears on the corresponding week.</p>
+        Weight tracking is done week by week to be more precise.<br>
+        That's why the point and the stage shown above always match that same week.</p>
     </div>
     """), unsafe_allow_html=True)
 
@@ -10803,17 +10813,17 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
                  "Based on the recommendations of the Institute of Medicine (IOM)."))
     _b1, _b2, _b3, _b4 = st.columns(4)
     with _b1:
-        st.markdown(f'<span style="background:#EAF3FF;color:#007AFF;font-weight:800;font-size:0.76rem;'
+        st.markdown(f'<span style="background:#EAF0FF;color:#3A86FF;font-weight:800;font-size:0.76rem;'
                      f'padding:5px 10px;border-radius:999px;">🔵 {T("Tu peso", "Your weight")}</span>', unsafe_allow_html=True)
     with _b2:
-        st.markdown(f'<span style="background:{_canal_color}22;color:{_canal_color};font-weight:800;'
+        st.markdown(f'<span style="background:#D4EFDF;color:#1B4332;font-weight:800;'
                      f'font-size:0.76rem;padding:5px 10px;border-radius:999px;">🟩 {T("Zona saludable", "Healthy zone")}</span>',
                      unsafe_allow_html=True)
     with _b3:
-        st.markdown(f'<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
+        st.markdown(f'<span style="background:#F5EFFA;color:#9B72CF;font-weight:800;font-size:0.76rem;'
                      f'padding:5px 10px;border-radius:999px;">⬇️ {T("Mínimo recomendado", "Recommended minimum")}</span>', unsafe_allow_html=True)
     with _b4:
-        st.markdown(f'<span style="background:#F2F2F7;color:#5C6B78;font-weight:800;font-size:0.76rem;'
+        st.markdown(f'<span style="background:#F5EFFA;color:#9B72CF;font-weight:800;font-size:0.76rem;'
                      f'padding:5px 10px;border-radius:999px;">⬆️ {T("Máximo recomendado", "Recommended maximum")}</span>', unsafe_allow_html=True)
 
     st.write("")
@@ -10826,38 +10836,42 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
     _txt_tu_peso = T("Tu peso", "Your weight")
     _txt_semana = T("Semana", "Week")
 
+    # ===== Gráfico Plotly — línea suavizada verde salvia, relleno menta translúcido, marcador halo =====
     fig_iom = go.Figure()
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_max], mode="lines",
-                                  name=_txt_max_rec, line=dict(color=_canal_color, width=2, dash="dash")))
+                                  name=_txt_max_rec, line=dict(color="#52B788", width=2, dash="dash", shape="spline")))
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_min], mode="lines",
-                                  name=_txt_min_rec, line=dict(color=_canal_color, width=2, dash="dash"),
-                                  fill="tonexty", fillcolor=_hex_a_rgba(_canal_color, 0.14)))
+                                  name=_txt_min_rec, line=dict(color="#52B788", width=2, dash="dash", shape="spline"),
+                                  fill="tonexty", fillcolor="rgba(168, 230, 207, 0.25)"))
     fig_iom.add_trace(go.Scatter(x=[semana_exacta], y=[_peso_hoy], mode="markers+text",
-                                  name=_txt_tu_peso, marker=dict(size=14, color="#007AFF",
-                                  line=dict(color="#FFFFFF", width=3)),
+                                  name=_txt_tu_peso, marker=dict(size=12, color="#3A86FF",
+                                  line=dict(color="#FFFFFF", width=4)),
                                   text=[f"{_txt_semana} {semana_exacta}: {_peso_hoy:.1f} kg"], textposition="top center",
-                                  textfont=dict(size=13, color="#17301F")))
+                                  textfont=dict(size=13, color="#4A2E35")))
     fig_iom.update_layout(
         title=dict(text=f"📈 {T('Comparación de tu peso con el rango saludable', 'Comparison of your weight with the healthy range')}", x=0.02, xanchor="left",
-                   font=dict(size=17, color="#17301F", family="-apple-system")),
+                   font=dict(size=17, color="#4A2E35", family="-apple-system")),
         xaxis_title=T("Semana de embarazo", "Week of pregnancy"), yaxis_title=T("Peso (kg)", "Weight (kg)"),
         height=420, margin=dict(t=60, l=10, r=10, b=10),
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig_iom, use_container_width=True)
 
-    # ===== 🌈 Barra visual tipo progreso =====
+    # ===== 🌈 Barra visual tipo "pin" flotante estilizado =====
     st.markdown(f"##### 🌈 {T('Tu posición dentro del rango', 'Your position within the range')}")
     _rango_barra = max(_max_esperado_hoy - _min_esperado_hoy, 0.1)
     _pct_barra = (_kg_ganados - _min_esperado_hoy) / _rango_barra
     _pct_barra = min(max(_pct_barra, -0.3), 1.3)
     _pos_pct = round((_pct_barra + 0.3) / 1.6 * 100, 1)
     st.markdown(f"""
-    <div style="position:relative;background:linear-gradient(90deg,#FFCC00 0%,#FFCC00 22%,#34C759 22%,
-                #34C759 78%,#FFCC00 78%,#FFCC00 100%);border-radius:999px;height:22px;margin:10px 0 6px 0;">
+    <div style="position:relative;background:linear-gradient(90deg,#FFD3B6 0%,#FFD3B6 22%,#A8E6CF 22%,
+                #A8E6CF 78%,#FFD3B6 78%,#FFD3B6 100%);border-radius:20px;height:22px;margin:16px 0 6px 0;">
+        <div style="position:absolute;left:{_pos_pct}%;top:-14px;transform:translateX(-50%);
+                    width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;
+                    border-top:12px solid #E8A5C8;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.25));"></div>
         <div style="position:absolute;left:{_pos_pct}%;top:-6px;transform:translateX(-50%);
-                    width:14px;height:34px;background:#007AFF;border-radius:8px;border:3px solid #FFFFFF;
-                    box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>
+                    width:14px;height:34px;background:#9B72CF;border-radius:8px;border:3px solid #FFFFFF;
+                    box-shadow:0 3px 8px rgba(0,0,0,0.25);"></div>
     </div>
     <div style="display:flex;justify-content:space-between;color:#8E8E93;font-size:0.76rem;font-weight:700;">
         <span>⬇️ {T("Debajo", "Below")}</span><span>🟩 {T("Saludable", "Healthy")}</span><span>{T("Encima", "Above")} ⬆️</span>
@@ -10886,15 +10900,17 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         (gaining too much).
         """))
 
-    # ===== 📚 Respaldo de fuente oficial + tabla de referencia semanal completa (coloreada) =====
+    # ===== 📚 Respaldo de fuente oficial + Tabla de Canales de Ganancia Ponderal Semanal =====
+    # Rediseñada como tarjetas listadas independientes: cabecera coloreada, columnas pastel por
+    # rango (Debajo / Zona Saludable / Encima) y highlight dinámico ⭐ en la fila de la semana activa.
     with st.expander(f"📚 {T('Tabla de Canales de Ganancia Ponderal Semanal (IOM/ACOG) — Fuente y detalle completo', 'Weekly Weight-Gain Channel Table (IOM/ACOG) — Source and full detail')}"):
         st.markdown(f"""
-        <div style="background:linear-gradient(120deg,#F3E8FB 0%,#EDE0F7 100%);border-radius:18px;
-                    padding:16px 20px;margin-bottom:14px;border:1.5px solid #8E24AA33;">
-        <p style="margin:0 0 4px 0;color:#6A1B9A;font-weight:800;font-size:0.88rem;">📚 {T("Respaldo de la Fuente Oficial", "Official Source Backing")}</p>
-        <p style="margin:0 0 3px 0;color:#3C3C43;font-size:0.82rem;">🏛️ {T("Organismo de origen:", "Source organization:")} <b>{T("Institute of Medicine (IOM) &amp; National Research Council (NRC)", "Institute of Medicine (IOM) &amp; National Research Council (NRC)")}</b></p>
-        <p style="margin:0 0 3px 0;color:#3C3C43;font-size:0.82rem;">📖 {T("Publicación:", "Publication:")} <i>{T("Weight Gain During Pregnancy: Reexamining the Guidelines", "Weight Gain During Pregnancy: Reexamining the Guidelines")}</i> ({T("Washington, DC: The National Academies Press, 2009", "Washington, DC: The National Academies Press, 2009")})</p>
-        <p style="margin:0;color:#3C3C43;font-size:0.82rem;">🩺 {T("Aprobación obstétrica:", "Obstetric endorsement:")} {T("Ratificado por la American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)", "Ratified by the American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)")}</p>
+        <div style="background:linear-gradient(120deg,#F5EFFA 0%,#FFF0F5 100%);border-radius:18px;
+                    padding:16px 20px;margin-bottom:14px;border:1.5px solid #9B72CF33;">
+        <p style="margin:0 0 4px 0;color:#6A4C93;font-weight:800;font-size:0.88rem;">📚 {T("Respaldo de la Fuente Oficial", "Official Source Backing")}</p>
+        <p style="margin:0 0 3px 0;color:#4A2E35;font-size:0.82rem;">🏛️ {T("Organismo de origen:", "Source organization:")} <b>{T("Institute of Medicine (IOM) &amp; National Research Council (NRC)", "Institute of Medicine (IOM) &amp; National Research Council (NRC)")}</b></p>
+        <p style="margin:0 0 3px 0;color:#4A2E35;font-size:0.82rem;">📖 {T("Publicación:", "Publication:")} <i>{T("Weight Gain During Pregnancy: Reexamining the Guidelines", "Weight Gain During Pregnancy: Reexamining the Guidelines")}</i> ({T("Washington, DC: The National Academies Press, 2009", "Washington, DC: The National Academies Press, 2009")})</p>
+        <p style="margin:0;color:#4A2E35;font-size:0.82rem;">🩺 {T("Aprobación obstétrica:", "Obstetric endorsement:")} {T("Ratificado por la American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)", "Ratified by the American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)")}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -10904,37 +10920,52 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
             f"Values calculated specifically for your profile (Initial weight: {peso:.1f} kg | Height: {estatura_m:.2f} m | "
             f"IOM Category: {_canal_etiqueta})."))
 
-        _filas_canal_html = ""
+        _cab_txt_semana = T('Semana de Gestación', 'Gestation Week')
+        _cab_txt_debajo = T('Debajo (Insuficiente)', 'Below (Insufficient)')
+        _cab_txt_sano = T('Zona Saludable (IOM)', 'Healthy Zone (IOM)')
+        _cab_txt_encima = T('Encima (Excesivo)', 'Above (Excessive)')
+        _txt_tu_semana_badge = T('TÚ AQUÍ', 'YOU ARE HERE')
+
+        _tarjetas_canal_html = ""
         for _s in _sem_eje:
-            _bajo_kg = round(peso + _linea_min[_s] - (0.3 if _s > 0 else 0), 1)
-            _alto_kg = round(peso + _linea_max[_s] + (0.3 if _s > 0 else 0), 1)
             _min_kg_s = round(peso + _linea_min[_s], 1)
             _max_kg_s = round(peso + _linea_max[_s], 1)
-            _filas_canal_html += f"""
-            <tr>
-                <td style="text-align:left;font-weight:700;color:#17301F;padding:6px 10px;">{T('Semana', 'Week')} {_s}</td>
-                <td style="text-align:center;color:#FF3B30;background:#FFEBE8;padding:6px 10px;">&lt; {_min_kg_s:.1f} kg</td>
-                <td style="text-align:center;font-weight:800;color:#1E5631;background:#EAFAEE;padding:6px 10px;">{_min_kg_s:.1f} – {_max_kg_s:.1f} kg</td>
-                <td style="text-align:center;color:#D84315;background:#FFF3E0;padding:6px 10px;">&gt; {_max_kg_s:.1f} kg</td>
-            </tr>"""
+            _es_semana_activa = (_s == semana_exacta)
+            _estilo_fila = ("border:2px solid #34C759;background:#E8F8F5;box-shadow:0 4px 10px rgba(52,199,89,0.18);"
+                             if _es_semana_activa else "border:1px solid #ECECEC;background:#FFFFFF;")
+            _badge_html = (f'<span style="background:#34C759;color:#FFFFFF;font-weight:800;font-size:0.68rem;'
+                            f'padding:3px 9px;border-radius:999px;margin-left:8px;white-space:nowrap;">⭐ {_txt_tu_semana_badge}</span>'
+                            if _es_semana_activa else "")
+            _peso_semana_txt = (f"<div style='font-size:0.72rem;color:#1E5631;font-weight:700;margin-top:2px;'>"
+                                 f"{T('Tu peso', 'Your weight')}: {_peso_hoy:.1f} kg</div>" if _es_semana_activa else "")
+            _tarjetas_canal_html += f"""
+            <div style="display:flex;align-items:center;gap:0;{_estilo_fila}border-radius:10px;
+                        margin-bottom:6px;overflow:hidden;">
+                <div style="flex:1.1;padding:10px 12px;">
+                    <span style="font-weight:800;color:#17301F;font-size:0.84rem;">{T('Semana', 'Week')} {_s}</span>{_badge_html}
+                    {_peso_semana_txt}
+                </div>
+                <div style="flex:1;text-align:center;background:#FADBD8;color:#B71C1C;padding:10px 8px;font-size:0.8rem;font-weight:600;">&lt; {_min_kg_s:.1f} kg</div>
+                <div style="flex:1.3;text-align:center;background:#D4EFDF;color:#1B4332;padding:10px 8px;font-size:0.82rem;font-weight:800;">{_min_kg_s:.1f} – {_max_kg_s:.1f} kg</div>
+                <div style="flex:1;text-align:center;background:#FCF3CF;color:#9A6B00;padding:10px 8px;font-size:0.8rem;font-weight:600;">&gt; {_max_kg_s:.1f} kg</div>
+            </div>"""
+
         st.markdown(f"""
-        <div style="max-height:420px;overflow-y:auto;border-radius:14px;border:1px solid #E5E5EA;">
-        <table style="width:100%;border-collapse:collapse;font-family:var(--font-round);font-size:0.82rem;">
-            <thead style="position:sticky;top:0;background:#FFFFFF;">
-            <tr>
-                <th style="text-align:left;padding:8px 10px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Semana de Gestación', 'Gestation Week')}</th>
-                <th style="padding:8px 10px;color:#FF3B30;font-size:0.72rem;text-transform:uppercase;">⬇️ {T('Debajo (Insuficiente)', 'Below (Insufficient)')}</th>
-                <th style="padding:8px 10px;color:#1E5631;font-size:0.72rem;text-transform:uppercase;">🟩 {T('Zona Saludable (IOM)', 'Healthy Zone (IOM)')}</th>
-                <th style="padding:8px 10px;color:#D84315;font-size:0.72rem;text-transform:uppercase;">⬆️ {T('Encima (Excesivo)', 'Above (Excessive)')}</th>
-            </tr></thead>
-            <tbody>{_filas_canal_html}</tbody>
-        </table>
+        <div style="background:linear-gradient(120deg,#D4EFDF 0%,#EAF3FF 100%);border-radius:12px 12px 0 0;
+                    display:flex;padding:8px 0;margin-top:4px;">
+            <div style="flex:1.1;padding:0 12px;color:#17301F;font-size:0.7rem;font-weight:800;text-transform:uppercase;">{_cab_txt_semana}</div>
+            <div style="flex:1;text-align:center;color:#B71C1C;font-size:0.68rem;font-weight:800;text-transform:uppercase;">⬇️ {_cab_txt_debajo}</div>
+            <div style="flex:1.3;text-align:center;color:#1B4332;font-size:0.68rem;font-weight:800;text-transform:uppercase;">🟩 {_cab_txt_sano}</div>
+            <div style="flex:1;text-align:center;color:#9A6B00;font-size:0.68rem;font-weight:800;text-transform:uppercase;">⬆️ {_cab_txt_encima}</div>
+        </div>
+        <div style="max-height:440px;overflow-y:auto;padding-top:6px;">
+            {_tarjetas_canal_html}
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown(f"""
-        <div style="background:#EAF3FF;border-radius:14px;padding:14px 18px;margin-top:12px;border:1px solid #B9DBFF;">
-        <p style="margin:0;color:#0B4DA8;font-size:0.82rem;line-height:1.5;">🔍 {T(
+        <div style="background:#F5EFFA;border-radius:14px;padding:14px 18px;margin-top:12px;border:1px solid #9B72CF33;">
+        <p style="margin:0;color:#6A4C93;font-size:0.82rem;line-height:1.5;">🔍 {T(
             f"Con tus datos actuales: en la Semana {semana_exacta}, el rango saludable es de "
             f"{round(peso + _linea_min[semana_exacta],1):.1f} kg a {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
             f"Tu peso registrado es {_peso_hoy:.1f} kg, lo que te ubica '{_estado_txt}'.",
