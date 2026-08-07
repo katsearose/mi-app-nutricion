@@ -3165,12 +3165,12 @@ DIETA = {
     "Merienda 1": {
         "Carbohidrato": {"Piña": 50, "Manzana verde": 52, "Uvas": 69, "Kiwi": 61, "Pan pita integral": 275, "Zanahoria cruda": 41, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Yogur natural": 61, "Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Pistachos": 52, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 104, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Pistachos": 560, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Almuerzo": {
         "Carbohidrato": {"Arroz integral": 123, "Quinoa cocida": 120, "Couscous cocido": 112, "Garbanzos cocidos": 164, "Lentejas": 116, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Pechuga de pollo": 165, "Fillete de res magra": 217, "Pescado blanco": 96, "Salmón a la plancha": 208, "Pavo al horno": 135, "Bacalao a la plancha": 105, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Aceite de oliva": 104, "Aceitunas verdes": 45, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 84, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Aceite de oliva": 884, "Aceitunas verdes": 145, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
     "Merienda 2": {
         "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89, "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
@@ -3180,9 +3180,32 @@ DIETA = {
     "Cena": {
         "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Palomitas de maíz": 387, "Camote": 86, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Huevos revueltos": 148, "Sardinas": 208, "Pechuga de pavo": 135, "Pechuga de pollo": 165, "Filete de pescado blanco": 96, "Pechuga de pollo (sin piel)": 165, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Aceitunas": 55, "Queso crema": 202, "Aceite de aguacate": 84, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Aceitunas": 145, "Queso crema": 202, "Aceite de aguacate": 884, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
     },
 }
+
+# =========================================================================================
+# LÍMITE DE SEGURIDAD (SANITY RANGE CHECK) — evita gramajes físicamente imposibles cuando el
+# alimento de Grasa es un aceite/grasa líquida de alta densidad calórica (~884 kcal/100g).
+# Ningún gramaje de grasa líquida debe superar los 40 g por tiempo de comida; el resto de
+# alimentos conserva el tope general de 400 g.
+# =========================================================================================
+_ALIMENTOS_GRASA_LIQUIDA = {"Aceite de oliva", "Aceite de aguacate", "Aceite de linaza"}
+
+
+def _tope_gramos_seguro(macro, alimento):
+    """Devuelve el tope máximo de gramos permitido para el sanity check de porciones."""
+    if macro == "Grasa" and alimento in _ALIMENTOS_GRASA_LIQUIDA:
+        return 40.0
+    return 400.0
+
+
+def _gramos_finales_seguros(porcion_kcal, kcal_alimento, macro, alimento):
+    """Fórmula centralizada y normalizada: Gramos = (Porción corregida / kcal_100g) × 100,
+    redondeada a 1 decimal, con validación de división por cero y tope de seguridad físico."""
+    if not kcal_alimento:
+        return 0.0
+    return min(round((porcion_kcal / kcal_alimento) * 100, 1), _tope_gramos_seguro(macro, alimento))
 
 # =========================================================================================
 # FILTRO DE SEGURIDAD ALIMENTARIA — MODO EMBARAZO (FDA, "Seguridad Alimentaria para Futuras
@@ -10223,7 +10246,7 @@ elif hoja_activa == "9.-DIETA":
             alimento = alimentos[macro]
             kcal_alimento = DIETA[comida][macro][alimento]
             porcion_kcal = round(porciones[comida]["kcal"] * PCT_MACRO_MOMENTO[macro], 2)
-            gramos = min(round((porcion_kcal / kcal_alimento) * 100, 1), 400.0)
+            gramos = _gramos_finales_seguros(porcion_kcal, kcal_alimento, macro, alimento)
             fila[macro] = alimento
             fila[f"kcal ({col_prefix})"] = kcal_alimento
             fila[f"Porción corregida ({col_prefix})"] = porcion_kcal
@@ -10371,31 +10394,116 @@ elif hoja_activa == "9.-DIETA":
     ), emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA" and genero == "Mujer" and embarazada:
+    # =================================================================================
+    # MÓDULO EXCLUSIVO: Consumo Seguro de Cafeína en Gestación (ACOG / OMS·EFSA)
+    # No calcula horarios de sueño: en el embarazo lo relevante es la dosis TOTAL diaria,
+    # no la hora de consumo (la cafeína puede tardar hasta 18h en eliminarse).
+    # =================================================================================
     hoja_header(12, subtitulo=T(
-        "En el embarazo, el hígado procesa la cafeína mucho más lento (su vida media "
-        "sube hasta 15 horas) y atraviesa la placenta libremente. Por eso, en Modo "
-        "Embarazo esta hoja deja de calcular horarios de sueño y se convierte en un "
-        "tope fijo de consumo diario.",
-        "During pregnancy, the liver processes caffeine much more slowly (its half-life "
-        "rises to up to 15 hours) and it crosses the placenta freely. That's why, in "
-        "Pregnancy Mode, this sheet stops calculating sleep schedules and becomes a "
-        "fixed daily intake cap."
-    ), tip=T("☕ Máximo 200 mg de cafeína al día", "☕ Maximum 200 mg of caffeine per day"))
+        "Límite diario recomendado para proteger el desarrollo y crecimiento de tu bebé.",
+        "Recommended daily limit to protect your baby's development and growth."))
+
+    # ===== 1. Encabezado adaptado al embarazo =====
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#1B2A4A 0%,#3B3A75 55%,#8E24AA 100%);border-radius:26px;
+                padding:26px 30px;color:#FFFFFF;text-align:center;margin-bottom:18px;
+                box-shadow:0 16px 36px rgba(27,42,74,0.30);">
+        <div style="font-size:1.9rem;font-weight:900;letter-spacing:-0.01em;">☕🤰 {T("Consumo Seguro de Cafeína en Gestación", "Safe Caffeine Intake During Pregnancy")}</div>
+        <div style="font-size:1rem;opacity:0.95;max-width:640px;margin:8px auto 0 auto;line-height:1.5;">
+            {T("Límite diario recomendado para proteger el desarrollo y crecimiento de tu bebé.",
+               "Recommended daily limit to protect your baby's development and growth.")}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 2. Bloque de explicación fisiológica (tarjeta morada suave) =====
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#F3E8FB 0%,#EDE0F7 100%);border-radius:20px;
+                padding:20px 24px;margin-bottom:18px;border:1.5px solid #8E24AA33;">
+        <p style="margin:0 0 8px 0;color:#6A1B9A;font-weight:800;font-size:0.95rem;">🧬 {T("¿Por qué cambia esta regla durante el embarazo?", "Why does this rule change during pregnancy?")}</p>
+        <p style="margin:0 0 6px 0;color:#3C3C43;font-size:0.86rem;line-height:1.55;">{T(
+            "Durante el embarazo, el cuerpo elimina la cafeína más lentamente debido a los cambios hormonales. "
+            "Por eso, la cafeína puede permanecer en el organismo mucho más tiempo de lo habitual: en lugar de "
+            "eliminarse en unas pocas horas, puede tardar hasta 18 horas.",
+            "During pregnancy, the body clears caffeine more slowly due to hormonal changes. Because of this, "
+            "caffeine can stay in your system much longer than usual: instead of clearing in a few hours, it "
+            "can take up to 18 hours.")}</p>
+        <p style="margin:0 0 6px 0;color:#3C3C43;font-size:0.86rem;line-height:1.55;">{T(
+            "Además, la cafeína puede atravesar la placenta y llegar al bebé.",
+            "Additionally, caffeine can cross the placenta and reach the baby.")}</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.86rem;line-height:1.55;">{T(
+            "Por eso, durante el embarazo no importa tanto a qué hora consumes cafeína, sino cuánta consumes "
+            "en total durante el día.",
+            "That's why, during pregnancy, what matters isn't the time you consume caffeine, but how much "
+            "you consume in total during the day.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         T("Límite gestacional = 200 mg de cafeína / día (tope fijo, no calculadora de horario)",
           "Gestational limit = 200 mg of caffeine / day (fixed cap, not a schedule calculator)"),
-        referencia=T("Organización Mundial de la Salud (OMS) — Recomendaciones sobre Atención Prenatal",
-                      "World Health Organization (WHO) — Antenatal Care Recommendations"))}</div>""",
+        referencia=T("ACOG (Committee Opinion No. 462) · OMS / EFSA",
+                      "ACOG (Committee Opinion No. 462) · WHO / EFSA"))}</div>""",
         unsafe_allow_html=True)
-    st.error("🚫 " + T(
-        "**Máximo 200 mg de cafeína al día.** Superar esta dosis se asocia a restricción del "
-        "crecimiento intrauterino y bajo peso al nacer (OMS). Referencia rápida: 1 taza de café "
-        "filtrado ≈ 95 mg · 1 taza de té ≈ 47 mg · 1 lata de gaseosa cola ≈ 34 mg · 1 barra de "
-        "chocolate negro (50 g) ≈ 25 mg.",
-        "**Maximum 200 mg of caffeine per day.** Exceeding this dose is associated with intrauterine "
-        "growth restriction and low birth weight (WHO). Quick reference: 1 cup of filtered coffee ≈ "
-        "95 mg · 1 cup of tea ≈ 47 mg · 1 can of cola soda ≈ 34 mg · 1 dark chocolate bar (50 g) ≈ 25 mg."
-    ))
+
+    # ===== 3. Círculo de seguridad / target calibrado =====
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#FF2D55 0%,#D81B60 100%);border-radius:26px;
+                padding:24px 26px;text-align:center;color:#FFFFFF;margin:18px 0;
+                box-shadow:0 16px 36px rgba(216,27,96,0.30);">
+        <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
+            🚫 {T("LÍMITE MÁXIMO DIARIO", "MAXIMUM DAILY LIMIT")}</div>
+        <div style="font-size:3rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">200 <span style="font-size:1.1rem;font-weight:700;">mg/{T("día","day")}</span></div>
+        <div style="font-size:0.84rem;opacity:0.92;">{T("Superar esta dosis se asocia a restricción del crecimiento intrauterino y bajo peso al nacer.",
+                                                          "Exceeding this dose is associated with intrauterine growth restriction and low birth weight.")}</div>
+        <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <span style="background:rgba(255,255,255,0.18);border-radius:999px;padding:6px 14px;font-size:0.78rem;font-weight:700;">🩺 {T("ACOG — Committee Opinion No. 462", "ACOG — Committee Opinion No. 462")}</span>
+            <span style="background:rgba(255,255,255,0.18);border-radius:999px;padding:6px 14px;font-size:0.78rem;font-weight:700;">🌐 {T("OMS / EFSA", "WHO / EFSA")}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ===== 4. Guía visual de equivalencias (rejilla de tarjetas coloridas) =====
+    st.markdown(f"#### 🧮 {T('¿Cuánto aporta cada bebida o alimento?', 'How much does each drink or food contribute?')}")
+    _cafeina_items = [
+        ("☕", T("1 Taza de Café Filtrado", "1 Cup of Filtered Coffee"), 95,
+         T("Máximo 2 tazas al día", "Maximum 2 cups a day"), "#FF9500", "#FFF3E0"),
+        ("🍵", T("1 Taza de Té (Negro / Verde)", "1 Cup of Tea (Black / Green)"), 47,
+         T("Máximo 4 tazas al día", "Maximum 4 cups a day"), "#34C759", "#EAFAEE"),
+        ("🥤", T("1 Lata de Gaseosa Cola (355 ml)", "1 Can of Cola Soda (355 ml)"), 34,
+         T("Máximo 5 latas al día", "Maximum 5 cans a day"), "#5AC8FA", "#E5F6FE"),
+        ("🍫", T("1 Barra de Chocolate Negro (50 g)", "1 Dark Chocolate Bar (50 g)"), 25,
+         T("Máximo 8 barras al día", "Maximum 8 bars a day"), "#A1887F", "#F5E9E4"),
+    ]
+    _cols_cafeina = st.columns(4)
+    for _col_c, (_ico_c, _nom_c, _mg_c, _equiv_c, _color_c, _fondo_c) in zip(_cols_cafeina, _cafeina_items):
+        with _col_c:
+            st.markdown(f"""
+            <div style="background:{_fondo_c};border-radius:18px;padding:16px 12px;height:100%;
+                        border:2px solid {_color_c};text-align:center;">
+                <div style="font-size:1.8rem;">{_ico_c}</div>
+                <div style="font-weight:800;color:{_color_c};font-size:0.82rem;margin:6px 0 4px 0;">{_nom_c}</div>
+                <div style="font-size:1.4rem;font-weight:900;color:#17301F;">{_mg_c} <span style="font-size:0.75rem;font-weight:700;">mg</span></div>
+                <div style="font-size:0.74rem;color:#3C3C43;margin-top:4px;">{_equiv_c}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ===== 5. Preguntas frecuentes =====
+    with st.expander(T("❓ ¿Qué pasa si un día supero los 200 mg?", "❓ What happens if I go over 200 mg one day?")):
+        st.markdown(T(
+            "No te alarmes. Si un día consumes un poco más de 200 mg, no significa que vaya a ocurrir un daño "
+            "inmediato. El objetivo es evitar que el consumo elevado se vuelva frecuente o habitual.\n\n"
+            "Si ocurrió de manera puntual, simplemente retoma el límite de 200 mg al día siguiente y procura "
+            "mantener el consumo dentro de ese límite durante el embarazo.",
+            "Don't worry. If one day you consume a bit more than 200 mg, it doesn't mean immediate harm will "
+            "occur. The goal is to avoid making high intake frequent or habitual.\n\n"
+            "If it happened just once, simply return to the 200 mg limit the next day and try to keep your "
+            "intake within that limit throughout your pregnancy."))
+
     st.caption("⚕️ " + T(
         "Esta herramienta es orientativa y no reemplaza la indicación de tu médico "
         "ginecólogo-obstetra o nutricionista.",
@@ -10778,6 +10886,64 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         (gaining too much).
         """))
 
+    # ===== 📚 Respaldo de fuente oficial + tabla de referencia semanal completa (coloreada) =====
+    with st.expander(f"📚 {T('Tabla de Canales de Ganancia Ponderal Semanal (IOM/ACOG) — Fuente y detalle completo', 'Weekly Weight-Gain Channel Table (IOM/ACOG) — Source and full detail')}"):
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#F3E8FB 0%,#EDE0F7 100%);border-radius:18px;
+                    padding:16px 20px;margin-bottom:14px;border:1.5px solid #8E24AA33;">
+        <p style="margin:0 0 4px 0;color:#6A1B9A;font-weight:800;font-size:0.88rem;">📚 {T("Respaldo de la Fuente Oficial", "Official Source Backing")}</p>
+        <p style="margin:0 0 3px 0;color:#3C3C43;font-size:0.82rem;">🏛️ {T("Organismo de origen:", "Source organization:")} <b>{T("Institute of Medicine (IOM) &amp; National Research Council (NRC)", "Institute of Medicine (IOM) &amp; National Research Council (NRC)")}</b></p>
+        <p style="margin:0 0 3px 0;color:#3C3C43;font-size:0.82rem;">📖 {T("Publicación:", "Publication:")} <i>{T("Weight Gain During Pregnancy: Reexamining the Guidelines", "Weight Gain During Pregnancy: Reexamining the Guidelines")}</i> ({T("Washington, DC: The National Academies Press, 2009", "Washington, DC: The National Academies Press, 2009")})</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.82rem;">🩺 {T("Aprobación obstétrica:", "Obstetric endorsement:")} {T("Ratificado por la American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)", "Ratified by the American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.caption(T(
+            f"Valores calculados específicamente para tu perfil (Peso inicial: {peso:.1f} kg | Estatura: {estatura_m:.2f} m | "
+            f"Categoría IOM: {_canal_etiqueta}).",
+            f"Values calculated specifically for your profile (Initial weight: {peso:.1f} kg | Height: {estatura_m:.2f} m | "
+            f"IOM Category: {_canal_etiqueta})."))
+
+        _filas_canal_html = ""
+        for _s in _sem_eje:
+            _bajo_kg = round(peso + _linea_min[_s] - (0.3 if _s > 0 else 0), 1)
+            _alto_kg = round(peso + _linea_max[_s] + (0.3 if _s > 0 else 0), 1)
+            _min_kg_s = round(peso + _linea_min[_s], 1)
+            _max_kg_s = round(peso + _linea_max[_s], 1)
+            _filas_canal_html += f"""
+            <tr>
+                <td style="text-align:left;font-weight:700;color:#17301F;padding:6px 10px;">{T('Semana', 'Week')} {_s}</td>
+                <td style="text-align:center;color:#FF3B30;background:#FFEBE8;padding:6px 10px;">&lt; {_min_kg_s:.1f} kg</td>
+                <td style="text-align:center;font-weight:800;color:#1E5631;background:#EAFAEE;padding:6px 10px;">{_min_kg_s:.1f} – {_max_kg_s:.1f} kg</td>
+                <td style="text-align:center;color:#D84315;background:#FFF3E0;padding:6px 10px;">&gt; {_max_kg_s:.1f} kg</td>
+            </tr>"""
+        st.markdown(f"""
+        <div style="max-height:420px;overflow-y:auto;border-radius:14px;border:1px solid #E5E5EA;">
+        <table style="width:100%;border-collapse:collapse;font-family:var(--font-round);font-size:0.82rem;">
+            <thead style="position:sticky;top:0;background:#FFFFFF;">
+            <tr>
+                <th style="text-align:left;padding:8px 10px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Semana de Gestación', 'Gestation Week')}</th>
+                <th style="padding:8px 10px;color:#FF3B30;font-size:0.72rem;text-transform:uppercase;">⬇️ {T('Debajo (Insuficiente)', 'Below (Insufficient)')}</th>
+                <th style="padding:8px 10px;color:#1E5631;font-size:0.72rem;text-transform:uppercase;">🟩 {T('Zona Saludable (IOM)', 'Healthy Zone (IOM)')}</th>
+                <th style="padding:8px 10px;color:#D84315;font-size:0.72rem;text-transform:uppercase;">⬆️ {T('Encima (Excesivo)', 'Above (Excessive)')}</th>
+            </tr></thead>
+            <tbody>{_filas_canal_html}</tbody>
+        </table>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div style="background:#EAF3FF;border-radius:14px;padding:14px 18px;margin-top:12px;border:1px solid #B9DBFF;">
+        <p style="margin:0;color:#0B4DA8;font-size:0.82rem;line-height:1.5;">🔍 {T(
+            f"Con tus datos actuales: en la Semana {semana_exacta}, el rango saludable es de "
+            f"{round(peso + _linea_min[semana_exacta],1):.1f} kg a {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
+            f"Tu peso registrado es {_peso_hoy:.1f} kg, lo que te ubica '{_estado_txt}'.",
+            f"With your current data: in Week {semana_exacta}, the healthy range is "
+            f"{round(peso + _linea_min[semana_exacta],1):.1f} kg to {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
+            f"Your recorded weight is {_peso_hoy:.1f} kg, which places you '{_estado_txt}'.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     st.write("")
     st.markdown(f"##### 📝 {T('Registra tu peso de esta semana', 'Log your weight for this week')}")
     _peso_registro = st.number_input(T("Tu peso actual (kg):", "Your current weight (kg):"), min_value=20.0, max_value=300.0,
@@ -11155,7 +11321,7 @@ elif hoja_activa == "📄 MI REPORTE":
                     alimento_sel = next(iter(opciones_macro))  # fallback: primera opción disponible
                 kcal_alimento = opciones_macro[alimento_sel]
                 porcion_kcal = round(porciones[comida]["kcal"] * _PCT_MACRO_MOMENTO_PDF[macro], 2)
-                gramos_finales = min(round((porcion_kcal / kcal_alimento) * 100, 1), 400.0) if kcal_alimento else 0.0
+                gramos_finales = _gramos_finales_seguros(porcion_kcal, kcal_alimento, macro, alimento_sel)
                 fila_macro_pdf[macro] = {
                     "alimento": alimento_sel, "kcal": kcal_alimento,
                     "porcion": porcion_kcal, "gramos": gramos_finales,
