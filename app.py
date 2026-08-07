@@ -1915,13 +1915,16 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
     """, unsafe_allow_html=True)
 
 
-def hoja_header(idx, subtitulo=None, ilustracion=None, tip=None):
+def hoja_header(idx, subtitulo=None, ilustracion=None, tip=None, titulo_override=None, badge_override=None):
     """Encabezado tipo banner: degradado pastel suave, título profesional SIN el prefijo
     'Hoja N:', subtítulo descriptivo y un badge de color al costado (p. ej. 'Módulo Clínico').
     Admite opcionalmente una ilustración SVG decorativa a la derecha y una burbuja de
-    'tip' tipo chat, para las hojas con hero enriquecido (Bento Grid)."""
+    'tip' tipo chat, para las hojas con hero enriquecido (Bento Grid).
+    `titulo_override` / `badge_override` permiten reemplazar el título y el badge por defecto
+    de la hoja (p. ej. Modo Embarazo en la Hoja 2: 'IMC Pregestacional' / 'MÓDULO GESTACIONAL')."""
     numero, titulo, emoji, borde, fondo = (COLORES_EN if st.session_state.get("idioma", "Español") == "English" else COLORES)[idx]
-    badge = (BADGE_HOJAS_EN if st.session_state.get("idioma", "Español") == "English" else BADGE_HOJAS).get(idx, "Módulo")
+    titulo = titulo_override or titulo
+    badge = badge_override or (BADGE_HOJAS_EN if st.session_state.get("idioma", "Español") == "English" else BADGE_HOJAS).get(idx, "Módulo")
     sub_html = f"<p style='margin:6px 0 0 0;color:#5C6B60;font-size:0.92rem;font-weight:500;line-height:1.5;max-width:480px;'>{subtitulo}</p>" if subtitulo else ""
     ilustracion_html = f'<div style="flex-shrink:0;position:relative;">{ilustracion}</div>' if ilustracion else ""
     tip_html = (
@@ -4463,6 +4466,104 @@ def panel_diagnostico_nutricional(imc, percentil_valor, categoria, con_percentil
     """, unsafe_allow_html=True)
 
 
+_TABLA_IOM_GANANCIA = [
+    (T("🩵 Bajo peso", "🩵 Underweight"), "< 18.5", 12.5, 18.0, 0.51, "#5AC8FA", "#E9F8FF"),
+    (T("💚 Normal", "💚 Normal"), "18.5 – 24.9", 11.5, 16.0, 0.42, "#34C759", "#EAFAEE"),
+    (T("🧡 Sobrepeso", "🧡 Overweight"), "25.0 – 29.9", 7.0, 11.5, 0.28, "#FF9500", "#FFF3E5"),
+    (T("❤️ Obesidad", "❤️ Obesity"), "≥ 30.0", 5.0, 9.0, 0.22, "#FF3B30", "#FFEDEC"),
+]
+
+
+def _fila_iom_activa(imc, rango_imc_iom):
+    """Determina si `imc` (pregestacional) cae dentro del rango de esta fila de la tabla IOM."""
+    return (
+        (imc < 18.5 and rango_imc_iom == "< 18.5") or
+        (18.5 <= imc <= 24.9 and rango_imc_iom == "18.5 – 24.9") or
+        (25.0 <= imc <= 29.9 and rango_imc_iom == "25.0 – 29.9") or
+        (imc >= 30.0 and rango_imc_iom == "≥ 30.0")
+    )
+
+
+def _meta_iom_por_imc(imc):
+    """Devuelve (etiqueta, min_kg, max_kg, tasa_semanal, color, fondo) de la fila IOM/ACOG que
+    corresponde al IMC pregestacional indicado — usado tanto en la tarjeta resumen como en la
+    tabla completa, para no calcular el rango dos veces con lógica distinta."""
+    for etq, rango, _min, _max, tasa, color, fondo in _TABLA_IOM_GANANCIA:
+        if _fila_iom_activa(imc, rango):
+            return etq, _min, _max, tasa, color, fondo
+    return _TABLA_IOM_GANANCIA[1][0], 11.5, 16.0, 0.42, "#34C759", "#EAFAEE"  # respaldo: Normal
+
+
+def panel_diagnostico_pregestacional(imc, categoria):
+    """Sección 1 (Modo Embarazo): reemplaza el panel de diagnóstico estándar por 4 tarjetas
+    centradas en el embarazo — IMC Pregestacional, Meta de Ganancia Total, Estado Pregestacional
+    y Tasa Semanal recomendada — más una leyenda-resumen, siguiendo las guías IOM/ACOG."""
+    _etq, _min_kg, _max_kg, _tasa, _color, _fondo = _meta_iom_por_imc(imc)
+    tarjetas = [
+        (T("IMC Pregest.", "Pre-preg. BMI"), f"{imc:g}", "⚖️", "#8E24AA"),
+        (T("Ganancia Meta", "Gain Target"), f"+{_min_kg:g} a {_max_kg:g} kg" if st.session_state.get("idioma", "Español") != "English"
+         else f"+{_min_kg:g} to {_max_kg:g} kg", "🤰", "#E91E8C"),
+        (T("Estado", "Status"), _cat_imc_txt(categoria), "🩺", _color),
+        (T("Tasa Semanal", "Weekly Rate"), f"{_tasa:.2f} kg/{T('sem', 'wk')}", "🎯", "#5856D6"),
+    ]
+    _kpis = "".join(f"""
+        <div class="diag-kpi">
+            <div class="diag-kpi-icon">{ic}</div>
+            <div class="diag-kpi-label">{lbl}</div>
+            <div class="diag-kpi-val" style="color:{col};">{val}</div>
+        </div>""" for lbl, val, ic, col in tarjetas)
+    st.markdown(f"""
+    <div class="diag-panel">
+        <div class="diag-panel-title">🤰 {T("Tu Diagnóstico Nutricional Pregestacional", "Your Pre-pregnancy Nutritional Diagnosis")}</div>
+        <div class="diag-kpi-grid">{_kpis}</div>
+        <div class="diag-frase" style="border-left:5px solid {_color};background:{_fondo};">
+            <span style="font-size:1.3rem;">🟢</span>
+            <span>{T(f"Según tu IMC pregestacional de {imc:g} ({_cat_imc_txt(categoria)}), el Instituto de Medicina "
+                     f"(IOM) y la ACOG recomiendan un incremento total de peso de {_min_kg:g} a {_max_kg:g} kg al "
+                     f"llegar a la semana 40.",
+                     f"Based on your pre-pregnancy BMI of {imc:g} ({_cat_imc_txt(categoria)}), the Institute of "
+                     f"Medicine (IOM) and ACOG recommend a total weight gain of {_min_kg:g} to {_max_kg:g} kg "
+                     f"by week 40.")}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def tabla_iom_ganancia_visual(imc_usuario):
+    """Tabla cromática de ganancia de peso gestacional (IOM/ACOG), resaltando la fila que
+    corresponde al IMC pregestacional del usuario. Sustituye a la tabla genérica de categorías
+    de IMC en la Hoja 2 cuando el Modo Embarazo está activo."""
+    _filas_html = ""
+    for _etq, _rango, _min, _max, _tasa, _color, _fondo in _TABLA_IOM_GANANCIA:
+        _activa = _fila_iom_activa(imc_usuario, _rango)
+        _resalte = f"box-shadow:inset 0 0 0 2.5px {_color};transform:scale(1.01);" if _activa else ""
+        _filas_html += f"""
+        <tr style="background:{_fondo};{_resalte}">
+            <td style="text-align:left;font-weight:900;color:{_color};padding:12px 14px;border-radius:12px 0 0 12px;font-size:0.86rem;">
+                {_etq}{' ⭐ ' + T('TÚ AQUÍ', 'YOU ARE HERE') if _activa else ''}</td>
+            <td style="text-align:center;color:#3C3C43;padding:12px 10px;font-size:0.82rem;">{_rango}</td>
+            <td style="text-align:center;font-weight:800;color:#17301F;padding:12px 10px;font-size:0.86rem;">{_min:.1f}–{_max:.1f} kg</td>
+            <td style="text-align:center;color:#3C3C43;padding:12px 14px;border-radius:0 12px 12px 0;font-size:0.82rem;">≈ {_tasa:.2f} kg/{T('sem', 'wk')}</td>
+        </tr>"""
+    st.markdown(T("#### 🎯 Categorías de Ganancia de Peso Gestacional (IOM/ACOG)",
+                  "#### 🎯 Gestational Weight-Gain Categories (IOM/ACOG)"))
+    st.caption(T("Calculada con tu IMC PREGESTACIONAL — no con tu peso actual, que ya incluye al bebé.",
+                 "Calculated with your PRE-PREGNANCY BMI — not your current weight, which already includes the baby."))
+    st.markdown(_html_sin_lineas_vacias(f"""
+    <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-family:var(--font-round);">
+        <thead><tr>
+            <th style="text-align:left;padding:0 14px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Clasificación Pregestacional', 'Pre-pregnancy Classification')}</th>
+            <th style="padding:0 10px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">IMC (kg/m²)</th>
+            <th style="padding:0 10px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Ganancia Total', 'Total Gain')}</th>
+            <th style="padding:0 14px;color:#5C6B60;font-size:0.72rem;text-transform:uppercase;">{T('Tasa 2°/3er trim.', 'Rate 2nd/3rd trim.')}</th>
+        </tr></thead>
+        <tbody>{_filas_html}</tbody>
+    </table>
+    """), unsafe_allow_html=True)
+    st.caption(T("📚 Fuente: Institute of Medicine / National Academy of Medicine (IOM/NAM), ratificada por ACOG y OMS.",
+                 "📚 Source: Institute of Medicine / National Academy of Medicine (IOM/NAM), endorsed by ACOG and WHO."))
+
+
 _ESCALA_ADULTO_ZONAS = [("Bajo", "#42A5F5", 0, 18.5), ("Normal", "#34C759", 18.5, 25.0),
                          ("Sobrepeso", "#FF9F43", 25.0, 30.0), ("Obesidad", "#FF5C7C", 30.0, 40.0)]
 _ESCALA_INFANTIL_ZONAS = [("Bajo Peso", "#42A5F5", "< 5"), ("Saludable", "#34C759", "5 – 85"),
@@ -6393,12 +6494,22 @@ porciones = {
 # "sobrepeso" por el tejido feto-placentario). Se usa el IMC PREGESTACIONAL sobre la tabla de
 # adultos del IOM en su lugar.
 _es_adolescente_gestante = (genero == "Mujer" and embarazada and edad < 20)
+# Bandera general de "Modo Embarazo" (cualquier edad) — controla el rediseño de la Hoja 2
+# (IMC Pregestacional) y qué versión de sus tarjetas/tabla se muestra.
+_es_gestante = (genero == "Mujer" and embarazada)
 if _es_adolescente_gestante:
     _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
 elif etapa in ["Niñez", "Adolescencia"]:
     _percentil_usuario, _categoria_imc_usuario = clasif_percentil(imc, edad, genero)
 else:
     _percentil_usuario, _categoria_imc_usuario = None, clasif_imc_adulto(imc)
+
+# Conexión de estado: el IMC pregestacional y su clasificación quedan disponibles en
+# session_state para que "Control de Peso" y "Seguimiento de Peso Gestacional" (Línea de
+# Tiempo) coordinen sus metas con el mismo dato, sin recalcularlo cada vez.
+if _es_gestante:
+    st.session_state["imc_pregestacional"] = imc
+    st.session_state["clasificacion_pregestacional"] = _categoria_imc_usuario
 
 # =========================================================================================
 # CONTENIDO PRINCIPAL — la navegación vive en el sidebar (pills verticales); aquí solo se
@@ -7324,12 +7435,23 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.divider()
 
 elif hoja_activa == "2.-IMC Y PERCENTIL":
-    hoja_header(2, T("El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
-                   "En adolescentes y niños se incluye también el Percentil.",
-                   "BMI helps determine whether a person has a healthy weight for their height. "
-                   "In teens and children, the Percentile is also included."),
-                ilustracion=_ilustracion_imc_svg(), tip=T("¡Conoce tu IMC y cuida tu salud! 👍",
-                                                            "Know your BMI and take care of your health! 👍"))
+    if _es_gestante:
+        hoja_header(2, T(
+            "Evaluamos tu estado nutricional previo al embarazo para establecer tu rango de "
+            "ganancia de peso ideal y proteger el desarrollo de tu bebé.",
+            "We assess your nutritional status prior to pregnancy to establish your ideal "
+            "weight-gain range and protect your baby's development."),
+            ilustracion=_ilustracion_imc_svg(),
+            tip=T("¡Conoce tu IMC pregestacional! 🤰", "Know your pre-pregnancy BMI! 🤰"),
+            titulo_override=T("⚖️ Índice de Masa Corporal Pregestacional", "⚖️ Pre-pregnancy Body Mass Index"),
+            badge_override=T("🤰 MÓDULO GESTACIONAL ACTIVO", "🤰 PREGNANCY MODULE ACTIVE"))
+    else:
+        hoja_header(2, T("El IMC sirve para saber si una persona tiene un peso saludable según su altura y peso. "
+                       "En adolescentes y niños se incluye también el Percentil.",
+                       "BMI helps determine whether a person has a healthy weight for their height. "
+                       "In teens and children, the Percentile is also included."),
+                    ilustracion=_ilustracion_imc_svg(), tip=T("¡Conoce tu IMC y cuida tu salud! 👍",
+                                                                "Know your BMI and take care of your health! 👍"))
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
         "IMC = Peso (kg) / [Altura (m)]²" if st.session_state.get("idioma", "Español") != "English" else "BMI = Weight (kg) / [Height (m)]²",
         referencia=T("Organización Mundial de la Salud (OMS)", "World Health Organization (WHO)"))}</div>""", unsafe_allow_html=True)
@@ -7339,7 +7461,10 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
     _riesgo_txt, _ = _riesgo_imc_txt(_categoria_imc_usuario)
 
     # --- 1. Tu Diagnóstico Nutricional ------------------------------------------------------
-    panel_diagnostico_nutricional(imc, _percentil_usuario, _categoria_imc_usuario, con_percentil=_con_percentil)
+    if _es_gestante:
+        panel_diagnostico_pregestacional(imc, _categoria_imc_usuario)
+    else:
+        panel_diagnostico_nutricional(imc, _percentil_usuario, _categoria_imc_usuario, con_percentil=_con_percentil)
 
     # --- 2 y 4. Escala horizontal + Estado Nutricional (checklist) --------------------------
     ec1, ec2 = st.columns([1.4, 1])
@@ -7391,12 +7516,17 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    # --- 9. Tabla de categorías de IMC (con columna de Riesgo) ------------------------------
-    tabla_categorias_imc_visual(imc_usuario=imc)
+    # --- 9. Tabla de categorías de IMC (con columna de Riesgo) / Tabla IOM en Modo Embarazo -
+    if _es_gestante:
+        tabla_iom_ganancia_visual(imc)
+    else:
+        tabla_categorias_imc_visual(imc_usuario=imc)
 
-    # --- 13. Progreso hacia una meta saludable ------------------------------------------------
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    progreso_hacia_meta_imc(imc, _categoria_imc_usuario)
+    # --- 13. Progreso hacia una meta saludable (no aplica en Modo Embarazo: la meta no es
+    #         "bajar" el IMC, sino ganar peso dentro del rango IOM/ACOG de la tabla anterior) --
+    if not _es_gestante:
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+        progreso_hacia_meta_imc(imc, _categoria_imc_usuario)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
