@@ -2191,11 +2191,12 @@ def generar_pdf_reporte(datos):
 
     styles = getSampleStyleSheet()
     estilo_titulo = ParagraphStyle("TituloInforme", parent=styles["Title"], fontName="Helvetica-Bold",
-                                    fontSize=15, textColor=_rl_hex(AZUL_TXT), spaceAfter=1, alignment=TA_LEFT, leading=17.5)
+                                    fontSize=15, textColor=rl_colors.white, spaceAfter=1, alignment=TA_LEFT, leading=17.5)
     estilo_subtitulo = ParagraphStyle("SubtituloInforme", parent=styles["Normal"], fontName="Helvetica",
-                                       fontSize=8.6, textColor=_rl_hex(GRIS_SUAVE), alignment=TA_LEFT)
+                                       fontSize=8.6, textColor=_rl_hex("#cbd5e1"), alignment=TA_LEFT)
     estilo_meta = ParagraphStyle("MetaInforme", parent=styles["Normal"], fontName="Helvetica",
-                                  fontSize=8.2, textColor=_rl_hex(GRIS_TXT), alignment=TA_RIGHT, leading=11.6)
+                                  fontSize=8.2, textColor=rl_colors.white, alignment=TA_RIGHT, leading=11.6)
+
     estilo_modulo = ParagraphStyle("ModuloHeader", parent=styles["Normal"], fontName="Helvetica-Bold",
                                     fontSize=9.2, textColor=_rl_hex(AZUL_TXT))
     estilo_texto = ParagraphStyle("Texto", parent=styles["Normal"], fontName="Helvetica",
@@ -2206,7 +2207,10 @@ def generar_pdf_reporte(datos):
     estilo_pill = ParagraphStyle("Pill", parent=styles["Normal"], fontName="Helvetica-Bold",
                                   fontSize=7.4, alignment=TA_CENTER)
     estilo_pagina2_tit = ParagraphStyle("Pag2Tit", parent=styles["Heading1"], fontName="Helvetica-Bold",
-                                         fontSize=13, textColor=_rl_hex(AZUL_TXT), spaceAfter=1)
+                                         fontSize=13, textColor=rl_colors.white, spaceAfter=1)
+    estilo_cafeina_disclaimer = ParagraphStyle("CafeinaDisclaimer", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                                fontSize=6.8, textColor=_rl_hex("#991b1b"), leading=9.6,
+                                                spaceBefore=4)
     estilo_seccion2 = ParagraphStyle("Seccion2", parent=styles["Heading2"], fontName="Helvetica-Bold",
                                       fontSize=10.2, textColor=_rl_hex(CYAN), spaceBefore=10, spaceAfter=5)
     estilo_banner_nombre = ParagraphStyle("BannerNombre", parent=styles["Normal"], fontName="Helvetica-Bold",
@@ -2356,28 +2360,32 @@ def generar_pdf_reporte(datos):
     # ==========================================================================================
     # PÁGINA 1 — EVALUACIÓN Y PARÁMETROS CLÍNICOS
     # ==========================================================================================
-    _membrete_institucional()
-
     _grupo_txt = datos.get("grupo", 'N°04 - 5° "C"')
     _etapa_hdr_txt = T(datos['etapa'], _ETAPA_EN.get(datos['etapa'], datos['etapa']))
     _id_expediente = datos.get("id_expediente") or f"CIAMSUNI-{abs(hash(datos.get('nombre', ''))) % 1000:03d}"
+    estilo_eyebrow_hdr = ParagraphStyle("EyebrowHdr", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                         fontSize=7.6, textColor=_rl_hex(CYAN_CLARO), alignment=TA_LEFT)
     header_tbl = Table([
-        [Paragraph(T("INFORME DE ORIENTACIÓN NUTRICIONAL CLÍNICA", "CLINICAL NUTRITIONAL GUIDANCE REPORT"), estilo_titulo),
-         Paragraph(f"ID: {_id_expediente}", estilo_id_badge)],
-        [Paragraph(T('Programa de Salud Escolar CIAM&amp;SUNI | C.E.P. "Santa María Reina", Chiclayo',
-                      'CIAM&amp;SUNI School Health Program | C.E.P. "Santa María Reina", Chiclayo'), estilo_subtitulo),
+        [Paragraph(T('C.E.P. "SANTA MARÍA REINA" — CHICLAYO', 'C.E.P. "SANTA MARÍA REINA" — CHICLAYO'), estilo_eyebrow_hdr),
          Paragraph(f"<b>{T('Fecha', 'Date')}:</b> {datos['fecha']}", estilo_meta)],
-        ["", Paragraph(f"<b>{T('Grupo', 'Group')}:</b> {_grupo_txt}", estilo_meta)],
+        [Paragraph(T("INFORME DE ORIENTACIÓN NUTRICIONAL CLÍNICA", "CLINICAL NUTRITIONAL GUIDANCE REPORT"), estilo_titulo),
+         Paragraph(f"<b>{T('Grupo', 'Group')}:</b> {_grupo_txt}", estilo_meta)],
+        [Paragraph(T('Programa de Salud Escolar CIAM&amp;SUNI', 'CIAM&amp;SUNI School Health Program'), estilo_subtitulo),
+         Paragraph(f"ID: {_id_expediente}", estilo_id_badge)],
     ], colWidths=[CONTENT_W - 55 * mm, 55 * mm])
     header_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(AZUL_TXT)),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
     ]))
     story.append(header_tbl)
-    story.append(Spacer(1, 6))
-    story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(CYAN)))
     story.append(Spacer(1, 8))
+    # ---- 🩹 El membrete institucional (logo del colegio) ahora se imprime DEBAJO del
+    # encabezado azul, no encima: en el PDF de referencia el logo aparece después del banner
+    # de título, así que movemos la llamada aquí para que el orden visual coincida. ----
+    _membrete_institucional()
 
     # ---------------- BANNER DE IDENTIFICACIÓN DEL PACIENTE (fondo slate oscuro, 4 columnas) ----------------
     _sexo_txt = T("Femenino", "Female") if datos["genero"] == "Mujer" else T("Masculino", "Male")
@@ -2540,26 +2548,41 @@ def generar_pdf_reporte(datos):
         "Sobrepeso", "Obesidad", "Obesidad Clase 1", "Obesidad Clase 2", "Obesidad Clase 3", "Bajo Peso") else VERDE_TXT
     _kpi_gap = 3 * mm
     _kpi_ancho_c = (CONTENT_W - _kpi_gap * 3) / 4
+    if _embarazada_pdf and datos.get("canal_min") is not None:
+        _kpi3 = _kpi_card("🤰", T("Ganancia Gestacional", "Gestational Gain"),
+                           f"+{datos['kg_ganados']:.1f} kg",
+                           T(f"Canal IOM: {datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg", f"IOM channel: {datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg"),
+                           VERDE_TXT if datos.get("gestacion_en_rango") else NARANJA_GRA, _kpi_ancho_c)
+    else:
+        _kpi3 = _kpi_card("📉", T("Proyección (60 días)", "Projection (60 days)"),
+                           f"{datos['peso_proyectado']:.1f} kg", T("Meta estimada", "Estimated goal"), VERDE_TXT, _kpi_ancho_c)
     _kpi_row = _fila_kpis([
         _kpi_card("⚖️", T("Peso y Talla", "Weight & Height"), f"{datos['peso']:.1f} kg",
                   f"{datos['estatura']} cm", AZUL_TXT, _kpi_ancho_c),
         _kpi_card("📏", T("IMC Actual", "Current BMI"), f"{datos['imc']} kg/m²",
                   _cat_imc_pdf_txt, _color_imc_kpi, _kpi_ancho_c),
-        _kpi_card("📉", T("Proyección (60 días)", "Projection (60 days)"),
-                  f"{datos['peso_proyectado']:.1f} kg", T("Meta estimada", "Estimated goal"), VERDE_TXT, _kpi_ancho_c),
+        _kpi3,
         _kpi_card("🔥", T("Meta Calórica Diaria", "Daily Caloric Goal"),
                   f"{datos['rcd_final']:.0f} kcal", T("por día", "per day"), CYAN, _kpi_ancho_c),
     ], gap=_kpi_gap)
     story.append(_kpi_row)
     story.append(Spacer(1, 8))
 
+    if _embarazada_pdf and datos.get("canal_min") is not None:
+        _fila_proy_mod3 = (T("Ganancia Ponderal (IOM/ACOG)", "Weight Gain (IOM/ACOG)"),
+                            f"+{datos['kg_ganados']:.1f} kg  —  {T('canal', 'channel')} {datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg"
+                            + (f"  ({T('en rango', 'in range')})" if datos.get("gestacion_en_rango") else f"  ({T('fuera de rango', 'out of range')})"))
+    else:
+        _fila_proy_mod3 = (T("Proyección (60 días)", "Projection (60 days)"),
+                            f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)")
     mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 2),
             _tabla_kv([
-                (T("Peso Actual", "Current Weight"), f"{datos['peso']:.2f} kg"),
+                (T("Peso Actual", "Current Weight"), f"{datos['peso']:.2f} kg")
+                 if not _embarazada_pdf else (T("Peso Pregestacional / Actual", "Pre-pregnancy / Current Weight"), f"{datos['peso']:.2f} kg → {datos.get('peso_actual', datos['peso']):.2f} kg"),
                 (T("Estatura", "Height"), f"{datos['estatura']} cm ({datos['estatura']/100:.2f} m)"),
-                (T("IMC Actual", "Current BMI"), f"{datos['imc']} kg/m²  —  {_cat_imc_pdf_txt}"
-                 + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
-                (T("Proyección (60 días)", "Projection (60 days)"), f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)"),
+                (T("IMC Actual", "Current BMI") if not _embarazada_pdf else T("IMC Pregestacional", "Pre-pregnancy BMI"),
+                 f"{datos['imc']} kg/m²  —  {_cat_imc_pdf_txt}" + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
+                _fila_proy_mod3,
             ])]
     _edad_pdf = datos.get("edad", 0) or 0
     if _embarazada_pdf:
@@ -2581,20 +2604,26 @@ def generar_pdf_reporte(datos):
     story.append(_fila_doble(mod3, mod4))
 
     if _embarazada_pdf:
+        _canal_frase_es = (f"Con una ganancia de +{datos['kg_ganados']:.1f} kg hasta la semana {datos.get('semana_gestacion', '—')}, "
+                            f"tu trayectoria está {'dentro' if datos.get('gestacion_en_rango') else 'fuera'} del canal recomendado "
+                            f"({datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg) según el IOM/ACOG."
+                            if datos.get("canal_min") is not None else "")
+        _canal_frase_en = (f"With a gain of +{datos['kg_ganados']:.1f} kg through week {datos.get('semana_gestacion', '—')}, "
+                            f"your trajectory is {'within' if datos.get('gestacion_en_rango') else 'outside'} the recommended channel "
+                            f"({datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg) per IOM/ACOG."
+                            if datos.get("canal_min") is not None else "")
         _explic2 = T(
-            f"Tu IMC actual de {datos['imc']} se clasifica en un rango {_cat_imc_pdf_txt.lower()}"
+            f"Tu IMC pregestacional de {datos['imc']} se clasifica en un rango {_cat_imc_pdf_txt.lower()}"
             + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
             f"Para el {_trimestre_expl_txt.lower()} se suma un bono calórico de "
             f"+{_bono_gestacional:.0f} kcal sobre tu tasa basal para garantizar el desarrollo fetal adecuado. "
-            f"La ganancia ponderal estimada en 60 días ({datos['peso_proyectado']:.2f} kg) sigue una curva "
-            "saludable, sin restricciones calóricas severas. La cafeína debe mantenerse estrictamente "
+            f"{_canal_frase_es} La cafeína debe mantenerse estrictamente "
             "<200 mg/día para mitigar riesgos gestacionales.",
-            f"Your current BMI of {datos['imc']} is classified in a {_cat_imc_pdf_txt.lower()} range"
+            f"Your pre-pregnancy BMI of {datos['imc']} is classified in a {_cat_imc_pdf_txt.lower()} range"
             + (f" (Percentile {datos['percentil']})" if datos.get("percentil") else "") + ". "
             f"For the {_trimestre_expl_txt.lower()}, a caloric bonus of "
             f"+{_bono_gestacional:.0f} kcal is added to your basal rate to ensure proper fetal development. "
-            f"The estimated weight gain over 60 days ({datos['peso_proyectado']:.2f} kg) follows a healthy "
-            "curve, without severe caloric restrictions. Caffeine must be kept strictly under 200 mg/day "
+            f"{_canal_frase_en} Caffeine must be kept strictly under 200 mg/day "
             "to mitigate gestational risks.")
     else:
         _explic2 = T(
@@ -2687,7 +2716,6 @@ def generar_pdf_reporte(datos):
     # PÁGINA 2 — PLAN ALIMENTARIO DETALLADO Y RECOMENDACIONES CLÍNICAS
     # ==========================================================================================
     story.append(PageBreak())
-    _membrete_institucional()
 
     _MOMENTO_EN_PDF = {"Desayuno": "Breakfast", "Merienda 1": "Morning Snack", "Almuerzo": "Lunch",
                         "Merienda 2": "Afternoon Snack", "Cena": "Dinner"}
@@ -2703,21 +2731,58 @@ def generar_pdf_reporte(datos):
         return T(nombre, DIETA_NOMBRE_EN.get(nombre, nombre)) if _idioma_pdf_en else nombre
 
     header2 = Table([
-        [Paragraph(T("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", "MEAL PLAN & DIETARY PRESCRIPTION"), estilo_pagina2_tit),
+        [Paragraph(T('C.E.P. "SANTA MARÍA REINA" — CHICLAYO', 'C.E.P. "SANTA MARÍA REINA" — CHICLAYO'), estilo_eyebrow_hdr),
          Paragraph(T("Página 2 de 2", "Page 2 of 2"), estilo_meta)],
-        [Paragraph(f"{T('Programa de Salud Escolar', 'School Health Program')} CIAM&amp;SUNI | {T('Paciente', 'Patient')}: {datos['nombre'].upper()} ({datos['edad']} {T('años', 'years')})",
-                    estilo_subtitulo),
+        [Paragraph(T("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", "MEAL PLAN & DIETARY PRESCRIPTION"), estilo_pagina2_tit),
          Paragraph(f"<b>{T('Meta:', 'Goal:')}</b> {datos['rcd_final']:.2f} kcal/{T('día', 'day')}", estilo_meta)],
+        [Paragraph(f"{T('Programa de Salud Escolar', 'School Health Program')} CIAM&amp;SUNI | {T('Paciente', 'Patient')}: {datos['nombre'].upper()} ({datos['edad']} {T('años', 'years')})",
+                    estilo_subtitulo), ""],
     ], colWidths=[CONTENT_W - 45 * mm, 45 * mm])
     header2.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(AZUL_TXT)),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
     ]))
     story.append(header2)
-    story.append(Spacer(1, 5))
-    story.append(HRFlowable(width="100%", thickness=1.1, color=_rl_hex(AZUL_TXT)))
     story.append(Spacer(1, 8))
+    # 🩹 Membrete institucional debajo del encabezado azul (mismo criterio que en la página 1).
+    _membrete_institucional()
+
+    # ---------------- 6. DISTRIBUCIÓN DE PORCIONES POR TIEMPOS DEL DÍA ----------------
+    _porciones_pdf = datos.get("porciones_dia") or {}
+    if _porciones_pdf:
+        story.append(Paragraph(T("6. DISTRIBUCIÓN DE PORCIONES POR TIEMPOS DEL DÍA", "6. PORTION DISTRIBUTION BY TIME OF DAY"), estilo_seccion2))
+        _MOMENTO_ICONO = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+        _mom_orden_pdf = ["Desayuno", "Merienda 1", "Almuerzo", "Merienda 2", "Cena"]
+        _tot_pct_pdf, _tot_kcal_pdf = 0.0, 0.0
+        _filas_dist = [[Paragraph(f"<b>{T('Momento', 'Meal')}</b>", estilo_texto_bold),
+                        Paragraph(f"<b>{T('Porcentaje', 'Percentage')}</b>", estilo_texto_bold),
+                        Paragraph(f"<b>{T('Kcal', 'Kcal')}</b>", estilo_texto_bold)]]
+        for _m in _mom_orden_pdf:
+            if _m not in _porciones_pdf:
+                continue
+            _pct = _porciones_pdf[_m]["pct"]
+            _kc = _porciones_pdf[_m]["kcal"]
+            _tot_pct_pdf += _pct
+            _tot_kcal_pdf += _kc
+            _filas_dist.append([Paragraph(f"{_MOMENTO_ICONO.get(_m, '')} {_mom_pdf(_m)}", estilo_texto),
+                                 Paragraph(f"{_pct*100:.0f}%", estilo_texto),
+                                 Paragraph(f"{_kc:.2f} kcal", estilo_texto)])
+        _filas_dist.append([Paragraph(f"<b>{T('TOTAL', 'TOTAL')}</b>", estilo_texto_bold),
+                             Paragraph(f"<b>{_tot_pct_pdf*100:.0f}%</b>", estilo_texto_bold),
+                             Paragraph(f"<b>{_tot_kcal_pdf:.2f} kcal</b>", estilo_texto_bold)])
+        _tabla_dist = Table(_filas_dist, colWidths=[70 * mm, 44 * mm, 64 * mm])
+        _tabla_dist.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(AZUL_TXT)), ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
+            ("BACKGROUND", (0, -1), (-1, -1), _rl_hex(GRIS_MOD)),
+            ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        story.append(_tabla_dist)
+        story.append(Spacer(1, 10))
 
     # ---------------- 7. PLAN ALIMENTARIO (5 bloques por momento de comida, con badges de macro) ----------------
     story.append(Paragraph(T("7. PRESCRIPCIÓN DIETÉTICA DETALLADA POR MOMENTOS", "7. DETAILED DIETARY PRESCRIPTION BY MEAL"), estilo_seccion2))
@@ -2927,6 +2992,53 @@ def generar_pdf_reporte(datos):
         ("LEFTPADDING", (3, 0), (3, 0), 0), ("RIGHTPADDING", (3, 0), (3, 0), 0),
     ]))
     story.append(_matriz_recom)
+
+    # ---------------- BLOQUE DEDICADO: LÍMITE Y RECOMENDACIONES DE CAFEÍNA ----------------
+    story.append(Spacer(1, 10))
+    story.append(Paragraph(T("9. LÍMITE Y RECOMENDACIONES DE CAFEÍNA", "9. CAFFEINE LIMIT & RECOMMENDATIONS"), estilo_seccion2))
+    if _embarazada_pdf:
+        _cafeina_banner_txt = T("☕ Recomendación de Cafeína en Gestación: Máximo 200 mg/día (ACOG / OMS).",
+                                 "☕ Caffeine Recommendation During Pregnancy: Maximum 200 mg/day (ACOG / WHO).")
+        _cafeina_puntos = [
+            T("En el embarazo, la cafeína tarda entre 10.5 y 18 horas en metabolizarse y cruza la placenta.",
+              "During pregnancy, caffeine takes between 10.5 and 18 hours to metabolize and crosses the placenta."),
+            T("Equivalencias rápidas: 1 taza de café filtrado ≈ 95 mg | 1 taza de té ≈ 47 mg | 1 barra de chocolate (50g) ≈ 25 mg.",
+              "Quick equivalents: 1 cup of filtered coffee ≈ 95 mg | 1 cup of tea ≈ 47 mg | 1 chocolate bar (50g) ≈ 25 mg."),
+            T("Prefiere infusiones libres de cafeína (manzanilla, menta) o café descafeinado.",
+              "Prefer caffeine-free infusions (chamomile, mint) or decaffeinated coffee."),
+        ]
+        _cafeina_disclaimer_txt = T(
+            "🚨 AVISO IMPORTANTE: Esta recomendación es orientativa y educativa. NO REEMPLAZA LA EVALUACIÓN, "
+            "DIAGNÓSTICO NI EL CRITERIO DEL MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA TRATANTE.",
+            "🚨 IMPORTANT NOTICE: This recommendation is informational and educational. IT DOES NOT REPLACE THE "
+            "EVALUATION, DIAGNOSIS, OR JUDGMENT OF THE ATTENDING OB-GYN OR NUTRITIONIST.")
+    else:
+        _cafeina_banner_txt = T("☕ Recomendación de Cafeína: Límite máximo general de 400 mg/día (EFSA/FDA).",
+                                 "☕ Caffeine Recommendation: General maximum limit of 400 mg/day (EFSA/FDA).")
+        _cafeina_puntos = [
+            T("Equivalencias rápidas: 1 taza de café filtrado ≈ 95 mg | 1 taza de té ≈ 47 mg | 1 barra de chocolate (50g) ≈ 25 mg.",
+              "Quick equivalents: 1 cup of filtered coffee ≈ 95 mg | 1 cup of tea ≈ 47 mg | 1 chocolate bar (50g) ≈ 25 mg."),
+            T(_limite_cafeina_txt, _limite_cafeina_txt),
+        ]
+        _cafeina_disclaimer_txt = T(
+            "⚠️ AVISO: Esta información es de carácter orientativo y NO REEMPLAZA LA EVALUACIÓN O INDICACIÓN "
+            "DE UN MÉDICO O NUTRICIONISTA PROFESIONAL.",
+            "⚠️ NOTICE: This information is for guidance only and DOES NOT REPLACE THE EVALUATION OR INDICATION "
+            "OF A PROFESSIONAL DOCTOR OR NUTRITIONIST.")
+    _cafeina_celda = [
+        Paragraph(f"<b>{_cafeina_banner_txt}</b>", estilo_texto_bold),
+        Spacer(1, 4),
+    ] + [Paragraph(f"•&nbsp;&nbsp;{p}", estilo_texto) for p in _cafeina_puntos] + [
+        Spacer(1, 6), Paragraph(_cafeina_disclaimer_txt, estilo_cafeina_disclaimer),
+    ]
+    _tabla_cafeina = Table([[_cafeina_celda]], colWidths=[CONTENT_W])
+    _tabla_cafeina.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(NARANJA_GRA_CLARO)),
+        ("LINEBEFORE", (0, 0), (0, -1), 2.6, _rl_hex(NARANJA_GRA)),
+        ("TOPPADDING", (0, 0), (-1, -1), 10), ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+    ]))
+    story.append(_tabla_cafeina)
 
     # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
     story.append(Spacer(1, 10))
@@ -10685,26 +10797,59 @@ elif hoja_activa == "12.-APORTE 2: CAFEÍNA":
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
-    # ===== 🌸 ENCABEZADO / HERO — ligero, cálido, sin banner enorme =====
-    st.markdown(T("""
-    <div style="background:linear-gradient(135deg,#FFF9F5 0%,#F5F0FF 100%);border-radius:16px;
-                padding:20px 26px;margin-bottom:14px;border:1px solid #F3E5F5;">
-        <div style="font-size:1.5rem;font-weight:900;color:#4A2E35;margin-bottom:2px;">
-            🤰 Seguimiento de tu peso</div>
-        <div style="color:#8A7484;font-size:0.9rem;line-height:1.5;max-width:600px;">
-            Descubre cómo evoluciona tu peso durante el embarazo y si estás dentro del rango
-            recomendado para tu semana.</div>
-    </div>
-    """, """
-    <div style="background:linear-gradient(135deg,#FFF9F5 0%,#F5F0FF 100%);border-radius:16px;
-                padding:20px 26px;margin-bottom:14px;border:1px solid #F3E5F5;">
-        <div style="font-size:1.5rem;font-weight:900;color:#4A2E35;margin-bottom:2px;">
-            🤰 Your Weight Tracking</div>
-        <div style="color:#8A7484;font-size:0.9rem;line-height:1.5;max-width:600px;">
-            Discover how your weight is evolving during pregnancy and whether you're within
-            the recommended range for your week.</div>
-    </div>
+    # ===== 🎨 SISTEMA DE DISEÑO "MATERNITY CARE" — tipografía, paleta y componentes reutilizables =====
+    st.markdown(_html_sin_lineas_vacias("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+        .mc-hero{background:linear-gradient(135deg,#7209B7 0%,#B5179E 50%,#FF85A1 100%);padding:28px 30px;border-radius:22px;color:#FFFFFF;box-shadow:0px 10px 25px rgba(114,9,183,0.18);margin-bottom:18px;}
+        .mc-hero h1{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;margin:0;color:#FFFFFF;}
+        .mc-hero p{font-family:'Poppins',sans-serif;font-size:15px;opacity:0.92;margin:8px 0 0 0;max-width:640px;line-height:1.5;}
+        .mc-kpi{background:#FFFFFF;border-radius:18px;padding:18px 20px;height:118px;box-shadow:0 8px 20px rgba(0,0,0,0.05);border:1px solid #F0F0F0;display:flex;flex-direction:column;justify-content:center;font-family:'Poppins',sans-serif;}
+        .mc-kpi-purple{border-top:5px solid #7209B7;}
+        .mc-kpi-pink{border-top:5px solid #FF85A1;}
+        .mc-kpi-green{border-top:5px solid #2EC4B6;background:#E6FFFA;}
+        .mc-kpi-coral{border-top:5px solid #FF9F1C;background:#FFF3E0;}
+        .mc-kpi-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#718096;}
+        .mc-kpi-value{font-size:32px;font-weight:700;color:#1A202C;margin:3px 0;line-height:1.1;}
+        .mc-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+        .mc-badge-purple{background:#F3E8FF;color:#7209B7;}
+        .mc-badge-green{background:#DCFCE7;color:#15803D;}
+        .mc-badge-coral{background:#FFE8CC;color:#B45F06;}
+        .mc-gauge-card{background:#FFFFFF;border-radius:16px;padding:22px 20px 14px 20px;margin:8px 0 4px 0;box-shadow:0 8px 20px rgba(0,0,0,0.04);border:1px solid #F0F0F0;font-family:'Poppins',sans-serif;}
+        .mc-gauge-track{position:relative;height:18px;border-radius:10px;margin:30px 4px 10px 4px;background:linear-gradient(90deg,#FFE5D9 0%,#D4EFDF 25%,#D4EFDF 75%,#FFE5D9 100%);}
+        .mc-gauge-pin{position:absolute;top:-4px;width:26px;height:26px;border-radius:50%;background:#7209B7;border:3px solid #FFFFFF;transform:translateX(-50%);box-shadow:0 0 12px rgba(114,9,183,0.5);}
+        .mc-gauge-tip{position:absolute;top:-32px;transform:translateX(-50%);background:#7209B7;color:#FFFFFF;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;}
+        .mc-gauge-legend{display:flex;justify-content:space-between;color:#8E8E93;font-size:0.76rem;font-weight:700;padding:0 4px;}
+        .mc-guide{border-radius:16px;padding:18px 20px;height:100%;font-family:'Poppins',sans-serif;}
+        .mc-guide-purple{background:#F3E8FF;border-left:6px solid #7209B7;}
+        .mc-guide-green{background:#E6FFFA;border-left:6px solid #2EC4B6;}
+        .mc-guide h4{margin:0 0 8px 0;font-weight:700;font-size:16px;}
+        .mc-guide ul{padding-left:18px;margin:0;font-size:13px;color:#4A5568;line-height:1.75;}
+        .mc-guide p{font-size:13.5px;color:#4A5568;margin:0;line-height:1.75;}
+        .mc-source{background:linear-gradient(120deg,#F3E8FF 0%,#FFE5EF 100%);border-radius:18px;padding:16px 20px;margin-bottom:14px;border:1.5px solid #7209B733;font-family:'Poppins',sans-serif;}
+        .mc-source p{margin:0 0 4px 0;font-size:0.82rem;color:#4A2E35;}
+        .mc-summary{background:#F3E8FF;border-radius:14px;padding:14px 18px;margin-top:12px;border:1px solid #7209B733;font-family:'Poppins',sans-serif;}
+        .mc-summary p{margin:0;color:#6A4C93;font-size:0.82rem;line-height:1.5;}
+        .mc-table-head{background:#7209B7;border-radius:12px 12px 0 0;display:flex;padding:10px 0;margin-top:4px;font-family:'Poppins',sans-serif;}
+        .mc-table-head div{color:#FFFFFF;font-size:0.7rem;font-weight:800;text-transform:uppercase;text-align:center;}
+        .mc-row{display:flex;align-items:center;border-radius:10px;margin-bottom:6px;overflow:hidden;border:1px solid #ECECEC;background:#FFFFFF;font-family:'Poppins',sans-serif;}
+        .mc-row-active{border:2px solid #2EC4B6;background:#D4EFDF;box-shadow:0 4px 10px rgba(46,196,182,0.22);}
+        .mc-row .c1{flex:1.1;padding:10px 12px;}
+        .mc-row .c2{flex:1;text-align:center;background:#FFF3E0;color:#B45F06;padding:10px 8px;font-size:0.8rem;font-weight:600;}
+        .mc-row .c3{flex:1.3;text-align:center;background:#D4EFDF;color:#1B4332;padding:10px 8px;font-size:0.82rem;font-weight:800;}
+        .mc-row .c4{flex:1;text-align:center;background:#FFF3E0;color:#B45F06;padding:10px 8px;font-size:0.8rem;font-weight:600;}
+    </style>
     """), unsafe_allow_html=True)
+
+    # ===== 💖 BANNER DE ACOMPAÑAMIENTO (HERO HEADER) =====
+    st.markdown(_html_sin_lineas_vacias(T(
+        '<div class="mc-hero"><h1>🤰 Seguimiento de tu Peso y Crecimiento</h1>'
+        '<p>¡Cada semana es un paso más en el viaje junto a tu bebé! Monitorea tu ganancia de peso '
+        'con el respaldo del IOM/ACOG.</p></div>',
+        '<div class="mc-hero"><h1>🤰 Your Weight &amp; Growth Tracking</h1>'
+        '<p>Every week is one more step in the journey with your baby! Track your weight gain '
+        'backed by IOM/ACOG guidelines.</p></div>'
+    )), unsafe_allow_html=True)
 
     # Canal de Ganancia de Peso Gestacional (IOM / National Research Council — Weight Gain During Pregnancy)
     _CANALES_IOM = [
@@ -10736,94 +10881,75 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
 
     _peso_hoy = st.session_state.get("peso_gestacional_hoy", peso_actual)
 
-    # ===== ✨ RESUMEN PRINCIPAL — "Tu momento actual" (composición asimétrica) =====
-    st.markdown(f"##### ✨ {T('Tu momento actual', 'Your current moment')}")
-    _col_sem, _col_peso = st.columns([1.3, 1])
-    with _col_sem:
-        st.markdown(f"""
-        <div style="background:#FAF6FF;border-radius:16px;padding:18px 20px;height:112px;
-                    border:1px solid #9B72CF22;display:flex;flex-direction:column;justify-content:center;">
-            <span style="color:#9B72CF;font-size:0.72rem;font-weight:800;text-transform:uppercase;">🗓️ {T('Semana', 'Week')}</span>
-            <span style="color:#4A2E35;font-size:1.9rem;font-weight:900;line-height:1.1;">{_semana_default}</span>
-            <span style="color:#8A7484;font-size:0.78rem;">{_trimestre_disp_lt} · {T('Semanas', 'Weeks')} {_sem_min_tri}–{_sem_max_tri}</span>
-        </div>
-        """, unsafe_allow_html=True)
-        semana_exacta = st.number_input(T("Cambiar semana:", "Change week:"), min_value=1, max_value=_semanas_totales,
-                                         value=_semana_default, step=1, key="semana_embarazo_exacta")
-    with _col_peso:
-        st.markdown(f"""
-        <div style="background:#F4F9FF;border-radius:16px;padding:18px 20px;height:112px;
-                    border:1px solid #3A86FF22;display:flex;flex-direction:column;justify-content:center;">
-            <span style="color:#3A86FF;font-size:0.72rem;font-weight:800;text-transform:uppercase;">⚖️ {T('Tu peso actual', 'Your current weight')}</span>
-            <span style="color:#4A2E35;font-size:1.9rem;font-weight:900;line-height:1.1;">{_peso_hoy:.1f} kg</span>
-            <span style="color:#8A7484;font-size:0.78rem;">{T('Tu último registro', 'Your last entry')}</span>
-        </div>
-        """, unsafe_allow_html=True)
-
     _kg_ganados = _peso_hoy - peso
-    _min_esperado_hoy = (_canal_min / _semanas_totales) * semana_exacta
-    _max_esperado_hoy = (_canal_max / _semanas_totales) * semana_exacta
+    _min_esperado_hoy = (_canal_min / _semanas_totales) * _semana_default
+    _max_esperado_hoy = (_canal_max / _semanas_totales) * _semana_default
     if _kg_ganados < _min_esperado_hoy - 1:
-        _estado_key, _estado_color, _estado_icono, _estado_fondo = "bajo", "#FF9500", "🟠", "#FFF8F0"
+        _estado_key, _estado_icono = "bajo", "🟧"
     elif _kg_ganados > _max_esperado_hoy + 1:
-        _estado_key, _estado_color, _estado_icono, _estado_fondo = "alto", "#FF3B30", "🔴", "#FFF5F5"
+        _estado_key, _estado_icono = "alto", "🟧"
     else:
-        _estado_key, _estado_color, _estado_icono, _estado_fondo = "ok", "#34C759", "🟢", "#F0FFF4"
+        _estado_key, _estado_icono = "ok", "🟢"
     _estado_txt = {"bajo": T("Por debajo del rango", "Below range"),
                     "alto": T("Por encima del rango", "Above range"),
                     "ok": T("Dentro del rango recomendado", "Within the recommended range")}[_estado_key]
-    _estado_desc = {"bajo": T("Tu peso está por debajo del canal saludable para esta semana.",
-                               "Your weight is below the healthy channel for this week."),
-                     "alto": T("Tu peso está por encima del canal saludable para esta semana.",
-                               "Your weight is above the healthy channel for this week."),
-                     "ok": T("Tu peso está dentro del canal saludable para esta semana.",
-                             "Your weight is within the healthy channel for this week.")}[_estado_key]
+    _estado_clase = "mc-kpi-green" if _estado_key == "ok" else "mc-kpi-coral"
+    _estado_badge_clase = "mc-badge-green" if _estado_key == "ok" else "mc-badge-coral"
+    _estado_msg = T("Dentro del canal óptimo", "Within the optimal channel") if _estado_key == "ok" \
+        else T("Requiere atención nutricional", "Needs nutritional attention")
+    _estado_color_txt = "#15803D" if _estado_key == "ok" else "#B45F06"
 
-    # ===== 🟢 GRAN ESTADO — el elemento visual más importante después del peso =====
-    st.markdown(f"""
-    <div style="background:{_estado_fondo};border-radius:16px;padding:18px 22px;margin-top:10px;
-                border:2px solid {_estado_color}44;display:flex;align-items:center;gap:16px;">
-        <div style="font-size:2.1rem;line-height:1;">{_estado_icono}</div>
-        <div>
-            <div style="color:{_estado_color};font-weight:900;font-size:1.05rem;">{_estado_txt}</div>
-            <div style="color:#6B5361;font-size:0.82rem;">{_estado_desc}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # ===== 📊 GRID DE TARJETAS DE MÉTRICA (KPI CARDS) =====
+    _col_k1, _col_k2, _col_k3 = st.columns(3)
+    with _col_k1:
+        st.markdown(_html_sin_lineas_vacias(
+            f'<div class="mc-kpi mc-kpi-purple"><div class="mc-kpi-label">🗓️ {T("Semana Gestacional", "Gestational Week")}</div>'
+            f'<div class="mc-kpi-value">{_semana_default}</div>'
+            f'<span class="mc-badge mc-badge-purple">{_trimestre_disp_lt} · {T("Semanas", "Weeks")} {_sem_min_tri}–{_sem_max_tri}</span></div>'
+        ), unsafe_allow_html=True)
+        semana_exacta = st.number_input(T("Cambiar semana:", "Change week:"), min_value=1, max_value=_semanas_totales,
+                                         value=_semana_default, step=1, key="semana_embarazo_exacta")
+    with _col_k2:
+        st.markdown(_html_sin_lineas_vacias(
+            f'<div class="mc-kpi mc-kpi-pink"><div class="mc-kpi-label">⚖️ {T("Peso Registrado", "Recorded Weight")}</div>'
+            f'<div class="mc-kpi-value">{_peso_hoy:.1f} <span style="font-size:18px;">kg</span></div>'
+            f'<span style="color:#A0AEC0;font-size:12px;">{T("Último control", "Latest check-in")}</span></div>'
+        ), unsafe_allow_html=True)
+    with _col_k3:
+        st.markdown(_html_sin_lineas_vacias(
+            f'<div class="mc-kpi {_estado_clase}"><div class="mc-kpi-label">🎯 {T("Estado Clínico", "Clinical Status")}</div>'
+            f'<div class="mc-kpi-value" style="color:{_estado_color_txt};font-size:22px;">{_estado_icono} {_estado_txt}</div>'
+            f'<span class="mc-badge {_estado_badge_clase}">{_estado_msg}</span></div>'
+        ), unsafe_allow_html=True)
 
     st.write("")
 
-    # ===== 📍 ¿DÓNDE ESTÁS DENTRO DEL RANGO? — barra visual con marcador =====
-    st.markdown(f"##### 📍 {T('¿Dónde estás dentro del rango?', 'Where are you within the range?')}")
+    # ===== 🌈 BARRA TRICOLOR DE POSICIÓN (GAUGE) =====
+    st.markdown(f"<h5 style='color:#7209B7;font-family:Poppins,sans-serif;'>📍 {T('¿Dónde estás dentro del rango?', 'Where are you within the range?')}</h5>",
+                unsafe_allow_html=True)
     _rango_barra = max(_max_esperado_hoy - _min_esperado_hoy, 0.1)
     _pct_barra = (_kg_ganados - _min_esperado_hoy) / _rango_barra
     _pct_barra = min(max(_pct_barra, -0.3), 1.3)
     _pos_pct = round((_pct_barra + 0.3) / 1.6 * 100, 1)
     _min_kg_hoy_txt = round(peso + _min_esperado_hoy, 1)
     _max_kg_hoy_txt = round(peso + _max_esperado_hoy, 1)
-    st.markdown(f"""
-    <div style="position:relative;background:linear-gradient(90deg,#FFE3D3 0%,#FFE3D3 22%,#D4EFDF 22%,
-                #D4EFDF 78%,#FFE3D3 78%,#FFE3D3 100%);border-radius:20px;height:22px;margin:14px 0 6px 0;">
-        <div style="position:absolute;left:{_pos_pct}%;top:-14px;transform:translateX(-50%);
-                    width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;
-                    border-top:12px solid #9B72CF;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2));"></div>
-        <div style="position:absolute;left:{_pos_pct}%;top:-6px;transform:translateX(-50%);
-                    width:14px;height:34px;background:#9B72CF;border-radius:8px;border:3px solid #FFFFFF;
-                    box-shadow:0 3px 8px rgba(0,0,0,0.22);"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;color:#8E8E93;font-size:0.76rem;font-weight:700;">
-        <span>⬇️ {T("Debajo", "Below")}</span><span>🟩 {T("Zona saludable", "Healthy zone")}</span><span>{T("Encima", "Above")} ⬆️</span>
-    </div>
-    <p style="margin:10px 0 0 0;color:#6B5361;font-size:0.85rem;">
-        {T(f"Tu posición: <b>{_estado_txt.lower()}</b> para la semana {semana_exacta}.", f"Your position: <b>{_estado_txt.lower()}</b> for week {semana_exacta}.")}
-        <span style="color:#8E8E93;"> · {T('Rango recomendado', 'Recommended range')}: {_min_kg_hoy_txt:.1f}–{_max_kg_hoy_txt:.1f} kg</span>
-    </p>
-    """, unsafe_allow_html=True)
+    st.markdown(_html_sin_lineas_vacias(
+        '<div class="mc-gauge-card">'
+        f'<div class="mc-gauge-track">'
+        f'<div class="mc-gauge-tip" style="left:{_pos_pct}%;">{T("Tu posición", "Your position")}: {_peso_hoy:.1f} kg</div>'
+        f'<div class="mc-gauge-pin" style="left:{_pos_pct}%;"></div>'
+        '</div>'
+        f'<div class="mc-gauge-legend"><span>⬇️ {T("Debajo", "Below")}</span><span>🟩 {T("Zona saludable", "Healthy zone")}</span><span>{T("Encima", "Above")} ⬆️</span></div>'
+        f'<p style="margin:10px 0 0 0;color:#6B5361;font-size:0.85rem;">{T(f"Tu posición: <b>{_estado_txt.lower()}</b> para la semana {semana_exacta}.", f"Your position: <b>{_estado_txt.lower()}</b> for week {semana_exacta}.")}'
+        f'<span style="color:#8E8E93;"> · {T("Rango recomendado", "Recommended range")}: {_min_kg_hoy_txt:.1f}–{_max_kg_hoy_txt:.1f} kg</span></p>'
+        '</div>'
+    ), unsafe_allow_html=True)
 
     st.write("")
 
-    # ===== 📈 CÓMO ESTÁ EVOLUCIONANDO TU PESO — el gráfico como protagonista =====
-    st.markdown(f"##### 📈 {T('Cómo está evolucionando tu peso', 'How your weight is evolving')}")
+    # ===== 📈 GRÁFICO PLOTLY REINVENTADO (EVOLUCIÓN DE PESO) =====
+    st.markdown(f"<h5 style='color:#7209B7;font-family:Poppins,sans-serif;'>📈 {T('Cómo está evolucionando tu peso', 'How your weight is evolving')}</h5>",
+                unsafe_allow_html=True)
 
     _sem_eje = list(range(0, _semanas_totales + 1))
     _linea_min = [round((_canal_min / _semanas_totales) * s, 2) for s in _sem_eje]
@@ -10835,58 +10961,57 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
 
     fig_iom = go.Figure()
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_max], mode="lines",
-                                  name=_txt_max_rec, line=dict(color="#52B788", width=2, dash="dash", shape="spline")))
+                                  name=_txt_max_rec, line=dict(color="#2EC4B6", width=2, dash="dash", shape="spline")))
     fig_iom.add_trace(go.Scatter(x=_sem_eje, y=[peso + v for v in _linea_min], mode="lines",
-                                  name=_txt_min_rec, line=dict(color="#52B788", width=2, dash="dash", shape="spline"),
-                                  fill="tonexty", fillcolor="rgba(168, 230, 207, 0.25)"))
-    fig_iom.add_trace(go.Scatter(x=[semana_exacta], y=[_peso_hoy], mode="markers+text",
-                                  name=_txt_tu_peso, marker=dict(size=12, color="#3A86FF",
-                                  line=dict(color="#FFFFFF", width=4)),
-                                  text=[f"{_txt_semana} {semana_exacta} · {_peso_hoy:.1f} kg"], textposition="top center",
-                                  textfont=dict(size=13, color="#4A2E35")))
+                                  name=_txt_min_rec, line=dict(color="#2EC4B6", width=2, dash="dash", shape="spline"),
+                                  fill="tonexty", fillcolor="rgba(46, 196, 182, 0.15)"))
+    fig_iom.add_trace(go.Scatter(x=[semana_exacta], y=[_peso_hoy], mode="markers",
+                                  name=_txt_tu_peso, marker=dict(size=14, color="#FF85A1",
+                                  line=dict(color="#FFFFFF", width=4))))
+    fig_iom.add_annotation(x=semana_exacta, y=_peso_hoy, text=f"{_txt_semana} {semana_exacta}: {_peso_hoy:.1f} kg",
+                            showarrow=True, arrowhead=2, arrowcolor="#FF85A1", ax=0, ay=-42,
+                            bgcolor="#FF85A1", font=dict(color="#FFFFFF", size=12, family="Poppins"),
+                            bordercolor="#FF85A1", borderpad=5, borderwidth=1)
     fig_iom.update_layout(
         showlegend=False,
         xaxis_title=T("Semana de embarazo", "Week of pregnancy"), yaxis_title=T("Peso (kg)", "Weight (kg)"),
         height=380, margin=dict(t=20, l=10, r=10, b=10),
         plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#4A5568", size=12, family="Poppins"),
+        xaxis=dict(gridcolor="#EDF2F7"), yaxis=dict(gridcolor="#EDF2F7"),
     )
     st.plotly_chart(fig_iom, use_container_width=True)
 
-    # ===== 💡 ¿Cómo leer este gráfico? — lectura rápida en vez de texto largo =====
-    st.markdown(f"""
-    <div style="background:#F0FFF4;border-radius:14px;padding:14px 18px;margin-top:6px;border:1px solid #A8E6CF88;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#1B4332;font-size:0.85rem;">💡 {T('¿Cómo leer este gráfico?', 'How to read this chart?')}</p>
-        <p style="margin:0;color:#3C5A4E;font-size:0.82rem;line-height:1.6;">
-            🟩 {T('Verde = rango recomendado', 'Green = recommended range')}<br>
-            🔵 {T('Tu punto = tu peso registrado en esta semana', 'Your point = your recorded weight this week')}<br>
-            📍 {T('Punto actual = la semana que estás registrando', 'Current point = the week you are logging')}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.write("")
 
-    with st.expander(f"❓ {T('¿Por qué cambia el rango cada semana?', 'Why does the range change every week?')}"):
-        st.markdown(T("""
-        Durante el embarazo el aumento de peso no ocurre de golpe. Cada semana existe un rango
-        recomendado. Por eso esta herramienta compara tu peso con la semana que registraste y no
-        únicamente con el trimestre.
-
-        El aumento de peso en el embarazo no sigue un patrón estético: mantenerte dentro de este
-        rango médico ayuda a evitar partos prematuros (ganar muy poco) o diabetes gestacional
-        (ganar demasiado).
-        """, """
-        During pregnancy, weight gain doesn't happen all at once. Each week has a
-        recommended range. That's why this tool compares your weight to the week you entered,
-        not just the trimester.
-
-        Pregnancy weight gain isn't about aesthetics: staying within this medical
-        range helps avoid preterm birth (gaining too little) or gestational diabetes
-        (gaining too much).
-        """))
+    # ===== 💡 TARJETAS GUIADAS Y ACOMPAÑAMIENTO =====
+    _g_col1, _g_col2 = st.columns(2)
+    with _g_col1:
+        st.markdown(_html_sin_lineas_vacias(T(
+            '<div class="mc-guide mc-guide-purple"><h4 style="color:#7209B7;">💡 ¿Cómo interpretar tu avance?</h4>'
+            '<ul><li><b>🟩 Canal Verde Menta:</b> representa la franja de ganancia ponderal recomendada para tu IMC pregestacional.</li>'
+            '<li><b>🌸 Punto Rosa Flotante:</b> indica tu peso registrado en la semana activa.</li>'
+            '<li><b>🎯 Objetivo:</b> mantener la trayectoria dentro de la franja para proteger el desarrollo placentario.</li></ul></div>',
+            '<div class="mc-guide mc-guide-purple"><h4 style="color:#7209B7;">💡 How to read your progress?</h4>'
+            '<ul><li><b>🟩 Mint Green Channel:</b> represents the recommended weight-gain band for your pre-pregnancy BMI.</li>'
+            '<li><b>🌸 Floating Pink Point:</b> shows your recorded weight for the active week.</li>'
+            '<li><b>🎯 Goal:</b> keep your trajectory inside the band to support healthy placental development.</li></ul></div>'
+        )), unsafe_allow_html=True)
+    with _g_col2:
+        st.markdown(_html_sin_lineas_vacias(T(
+            '<div class="mc-guide mc-guide-green"><h4 style="color:#0D9488;">🛡️ ¿Por qué es importante el rango semanal?</h4>'
+            '<p>El aumento de peso gestacional no sigue un patrón estético. Mantenerte dentro del rango médico '
+            'previene complicaciones como la diabetes gestacional o la restricción del crecimiento intrauterino (RCIU).</p></div>',
+            '<div class="mc-guide mc-guide-green"><h4 style="color:#0D9488;">🛡️ Why does the weekly range matter?</h4>'
+            '<p>Gestational weight gain isn\'t about aesthetics. Staying within the medical range helps prevent '
+            'complications such as gestational diabetes or intrauterine growth restriction (IUGR).</p></div>'
+        )), unsafe_allow_html=True)
 
     st.write("")
 
     # ===== 📝 REGISTRA TU PESO — tarjeta compacta con resultado inmediato =====
-    st.markdown(f"##### 📝 {T('Registra tu peso', 'Log your weight')}")
+    st.markdown(f"<h5 style='color:#7209B7;font-family:Poppins,sans-serif;'>📝 {T('Registra tu peso', 'Log your weight')}</h5>",
+                unsafe_allow_html=True)
     st.markdown(f"<p style='margin:0 0 6px 0;color:#8A7484;font-size:0.85rem;'>{T('¿Cuánto pesas esta semana?', 'How much do you weigh this week?')}</p>",
                 unsafe_allow_html=True)
     _peso_registro = st.number_input(T("Tu peso actual (kg):", "Your current weight (kg):"), min_value=20.0, max_value=300.0,
@@ -10896,31 +11021,32 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         st.success(T("🟢 ¡Estás dentro del rango recomendado!",
                       "🟢 You're within the recommended range!"))
     else:
-        st.warning(T(f"🟨 {_estado_txt}. Coméntalo con tu médico ginecólogo-obstetra o nutricionista.",
-                      f"🟨 {_estado_txt}. Discuss this with your OB-GYN or nutritionist."))
+        st.warning(T(f"🟧 {_estado_txt}. Coméntalo con tu médico ginecólogo-obstetra o nutricionista.",
+                      f"🟧 {_estado_txt}. Discuss this with your OB-GYN or nutritionist."))
 
     st.write("")
 
     # ===== 📚 INFORMACIÓN Y RECOMENDACIONES — contenido médico secundario, oculto por defecto =====
-    st.markdown(f"##### 📚 {T('Información y recomendaciones', 'Information and recommendations')}")
+    st.markdown(f"<h5 style='color:#7209B7;font-family:Poppins,sans-serif;'>📚 {T('Información y recomendaciones', 'Information and recommendations')}</h5>",
+                unsafe_allow_html=True)
 
-    # ===== 📚 Respaldo de fuente oficial + Tabla de Canales de Ganancia Ponderal Semanal =====
-    # Rediseñada como tarjetas listadas independientes: cabecera coloreada, columnas pastel por
-    # rango (Debajo / Zona Saludable / Encima) y highlight dinámico ⭐ en la fila de la semana activa.
-    # 🩹 CORRECCIÓN DE ERROR: la tabla arrancaba en la "Semana 0", donde el rango mín/máx colapsa
-    # en un único valor (p. ej. "55.0 – 55.0 kg"), mostrando una franja verde de ancho cero y
-    # confundiendo el mínimo con el máximo. La Semana 0 no es una semana real de seguimiento
-    # (el embarazo se cuenta desde la Semana 1), así que la tabla ahora empieza en la Semana 1.
+    # ===== 📋 TABLA IOM/ACOG CON HIGHLIGHT DE LA SEMANA SELECCIONADA =====
+    # 🩹 CORRECCIÓN DE ERROR: cada fila se construye ahora como una única línea de HTML (sin
+    # líneas en blanco ni líneas compuestas solo por espacios). Antes, cuando la semana no era la
+    # activa, `{_peso_semana_txt}` insertaba una línea vacía dentro del bloque de HTML "crudo": al
+    # llegar a esa línea en blanco, Streamlit/CommonMark daba por terminado el HTML y renderizaba
+    # todo el resto de la tabla como texto plano (el bug de las etiquetas <div> visibles). Al
+    # construir cada fila sin saltos de línea internos —y envolver el bloque final con
+    # `_html_sin_lineas_vacias`— el HTML permanece continuo y se renderiza correctamente.
     with st.expander(f"📚 {T('Tabla de Canales de Ganancia Ponderal Semanal (IOM/ACOG) — Fuente y detalle completo', 'Weekly Weight-Gain Channel Table (IOM/ACOG) — Source and full detail')}"):
-        st.markdown(f"""
-        <div style="background:linear-gradient(120deg,#F5EFFA 0%,#FFF0F5 100%);border-radius:18px;
-                    padding:16px 20px;margin-bottom:14px;border:1.5px solid #9B72CF33;">
-        <p style="margin:0 0 4px 0;color:#6A4C93;font-weight:800;font-size:0.88rem;">📚 {T("Respaldo de la Fuente Oficial", "Official Source Backing")}</p>
-        <p style="margin:0 0 3px 0;color:#4A2E35;font-size:0.82rem;">🏛️ {T("Organismo de origen:", "Source organization:")} <b>{T("Institute of Medicine (IOM) &amp; National Research Council (NRC)", "Institute of Medicine (IOM) &amp; National Research Council (NRC)")}</b></p>
-        <p style="margin:0 0 3px 0;color:#4A2E35;font-size:0.82rem;">📖 {T("Publicación:", "Publication:")} <i>{T("Weight Gain During Pregnancy: Reexamining the Guidelines", "Weight Gain During Pregnancy: Reexamining the Guidelines")}</i> ({T("Washington, DC: The National Academies Press, 2009", "Washington, DC: The National Academies Press, 2009")})</p>
-        <p style="margin:0;color:#4A2E35;font-size:0.82rem;">🩺 {T("Aprobación obstétrica:", "Obstetric endorsement:")} {T("Ratificado por la American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)", "Ratified by the American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)")}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(_html_sin_lineas_vacias(
+            '<div class="mc-source">'
+            f'<p style="font-weight:800;color:#7209B7;font-size:0.88rem;">📚 {T("Respaldo de la Fuente Oficial", "Official Source Backing")}</p>'
+            f'<p>🏛️ {T("Organismo de origen:", "Source organization:")} <b>{T("Institute of Medicine (IOM) &amp; National Research Council (NRC)", "Institute of Medicine (IOM) &amp; National Research Council (NRC)")}</b></p>'
+            f'<p>📖 {T("Publicación:", "Publication:")} <i>{T("Weight Gain During Pregnancy: Reexamining the Guidelines", "Weight Gain During Pregnancy: Reexamining the Guidelines")}</i> ({T("Washington, DC: The National Academies Press, 2009", "Washington, DC: The National Academies Press, 2009")})</p>'
+            f'<p style="margin:0;">🩺 {T("Aprobación obstétrica:", "Obstetric endorsement:")} {T("Ratificado por la American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)", "Ratified by the American College of Obstetricians and Gynecologists (ACOG, Committee Opinion No. 548)")}</p>'
+            '</div>'
+        ), unsafe_allow_html=True)
 
         st.caption(T(
             f"Valores calculados específicamente para tu perfil (Peso inicial: {peso:.1f} kg | Estatura: {estatura_m:.2f} m | "
@@ -10932,58 +11058,52 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         _cab_txt_debajo = T('Debajo (Insuficiente)', 'Below (Insufficient)')
         _cab_txt_sano = T('Zona Saludable (IOM)', 'Healthy Zone (IOM)')
         _cab_txt_encima = T('Encima (Excesivo)', 'Above (Excessive)')
-        _txt_tu_semana_badge = T('TÚ AQUÍ', 'YOU ARE HERE')
+        _txt_tu_semana_badge = T('TU SEMANA ACTUAL', 'YOUR CURRENT WEEK')
 
         _sem_eje_tabla = list(range(1, _semanas_totales + 1))  # 🩹 arranca en Semana 1, no en 0
 
-        _tarjetas_canal_html = ""
+        _filas_tabla = []
         for _s in _sem_eje_tabla:
             _min_kg_s = round(peso + _linea_min[_s], 1)
             _max_kg_s = round(peso + _linea_max[_s], 1)
             _es_semana_activa = (_s == semana_exacta)
-            _estilo_fila = ("border:2px solid #34C759;background:#E8F8F5;box-shadow:0 4px 10px rgba(52,199,89,0.18);"
-                             if _es_semana_activa else "border:1px solid #ECECEC;background:#FFFFFF;")
-            _badge_html = (f'<span style="background:#34C759;color:#FFFFFF;font-weight:800;font-size:0.68rem;'
-                            f'padding:3px 9px;border-radius:999px;margin-left:8px;white-space:nowrap;">⭐ {_txt_tu_semana_badge}</span>'
-                            if _es_semana_activa else "")
-            _peso_semana_txt = (f"<div style='font-size:0.72rem;color:#1E5631;font-weight:700;margin-top:2px;'>"
-                                 f"{T('Tu peso', 'Your weight')}: {_peso_hoy:.1f} kg</div>" if _es_semana_activa else "")
-            _tarjetas_canal_html += f"""
-            <div style="display:flex;align-items:center;gap:0;{_estilo_fila}border-radius:10px;
-                        margin-bottom:6px;overflow:hidden;">
-                <div style="flex:1.1;padding:10px 12px;">
-                    <span style="font-weight:800;color:#17301F;font-size:0.84rem;">{T('Semana', 'Week')} {_s}</span>{_badge_html}
-                    {_peso_semana_txt}
-                </div>
-                <div style="flex:1;text-align:center;background:#FADBD8;color:#B71C1C;padding:10px 8px;font-size:0.8rem;font-weight:600;">&lt; {_min_kg_s:.1f} kg</div>
-                <div style="flex:1.3;text-align:center;background:#D4EFDF;color:#1B4332;padding:10px 8px;font-size:0.82rem;font-weight:800;">{_min_kg_s:.1f} – {_max_kg_s:.1f} kg</div>
-                <div style="flex:1;text-align:center;background:#FCF3CF;color:#9A6B00;padding:10px 8px;font-size:0.8rem;font-weight:600;">&gt; {_max_kg_s:.1f} kg</div>
-            </div>"""
+            _row_cls = "mc-row mc-row-active" if _es_semana_activa else "mc-row"
+            _prefijo_fila = "⭐ " if _es_semana_activa else ""
+            _badge_fila = (f'<span class="mc-badge mc-badge-green" style="margin-left:8px;">⭐ {_txt_tu_semana_badge}</span>'
+                           if _es_semana_activa else "")
+            _peso_fila = (f'<div style="font-size:0.72rem;color:#1B4332;font-weight:700;margin-top:2px;">'
+                          f'{T("Tu peso", "Your weight")}: {_peso_hoy:.1f} kg</div>' if _es_semana_activa else "")
+            _filas_tabla.append(
+                f'<div class="{_row_cls}">'
+                f'<div class="c1"><span style="font-weight:800;color:#17301F;font-size:0.84rem;">{_prefijo_fila}{T("Semana", "Week")} {_s}</span>{_badge_fila}{_peso_fila}</div>'
+                f'<div class="c2">&lt; {_min_kg_s:.1f} kg</div>'
+                f'<div class="c3">{_min_kg_s:.1f} – {_max_kg_s:.1f} kg</div>'
+                f'<div class="c4">&gt; {_max_kg_s:.1f} kg</div>'
+                f'</div>'
+            )
+        _tarjetas_canal_html = "".join(_filas_tabla)
 
-        st.markdown(f"""
-        <div style="background:linear-gradient(120deg,#D4EFDF 0%,#EAF3FF 100%);border-radius:12px 12px 0 0;
-                    display:flex;padding:8px 0;margin-top:4px;">
-            <div style="flex:1.1;padding:0 12px;color:#17301F;font-size:0.7rem;font-weight:800;text-transform:uppercase;">{_cab_txt_semana}</div>
-            <div style="flex:1;text-align:center;color:#B71C1C;font-size:0.68rem;font-weight:800;text-transform:uppercase;">⬇️ {_cab_txt_debajo}</div>
-            <div style="flex:1.3;text-align:center;color:#1B4332;font-size:0.68rem;font-weight:800;text-transform:uppercase;">🟩 {_cab_txt_sano}</div>
-            <div style="flex:1;text-align:center;color:#9A6B00;font-size:0.68rem;font-weight:800;text-transform:uppercase;">⬆️ {_cab_txt_encima}</div>
-        </div>
-        <div style="max-height:440px;overflow-y:auto;padding-top:6px;">
-            {_tarjetas_canal_html}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(_html_sin_lineas_vacias(
+            '<div class="mc-table-head">'
+            f'<div style="flex:1.1;padding:0 12px;text-align:left;">{_cab_txt_semana}</div>'
+            f'<div style="flex:1;">⬇️ {_cab_txt_debajo}</div>'
+            f'<div style="flex:1.3;">🟩 {_cab_txt_sano}</div>'
+            f'<div style="flex:1;">⬆️ {_cab_txt_encima}</div>'
+            '</div>'
+            f'<div style="max-height:440px;overflow-y:auto;padding-top:6px;">{_tarjetas_canal_html}</div>'
+        ), unsafe_allow_html=True)
 
-        st.markdown(f"""
-        <div style="background:#F5EFFA;border-radius:14px;padding:14px 18px;margin-top:12px;border:1px solid #9B72CF33;">
-        <p style="margin:0;color:#6A4C93;font-size:0.82rem;line-height:1.5;">🔍 {T(
-            f"Con tus datos actuales: en la Semana {semana_exacta}, el rango saludable es de "
-            f"{round(peso + _linea_min[semana_exacta],1):.1f} kg a {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
-            f"Tu peso registrado es {_peso_hoy:.1f} kg, lo que te ubica '{_estado_txt}'.",
-            f"With your current data: in Week {semana_exacta}, the healthy range is "
-            f"{round(peso + _linea_min[semana_exacta],1):.1f} kg to {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
-            f"Your recorded weight is {_peso_hoy:.1f} kg, which places you '{_estado_txt}'.")}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(_html_sin_lineas_vacias(
+            '<div class="mc-summary"><p>🔍 ' + T(
+                f"Con tus datos actuales: en la Semana {semana_exacta}, el rango saludable es de "
+                f"{round(peso + _linea_min[semana_exacta],1):.1f} kg a {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
+                f"Tu peso registrado es {_peso_hoy:.1f} kg, lo que te ubica '{_estado_txt}'.",
+                f"With your current data: in Week {semana_exacta}, the healthy range is "
+                f"{round(peso + _linea_min[semana_exacta],1):.1f} kg to {round(peso + _linea_max[semana_exacta],1):.1f} kg. "
+                f"Your recorded weight is {_peso_hoy:.1f} kg, which places you '{_estado_txt}'."
+            ) + '</p></div>'
+        ), unsafe_allow_html=True)
+
 
 elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hoja_header(13, T("Manteniendo tus hábitos actuales y el plan de calorías calculado, esta es una estimación "
@@ -11267,13 +11387,48 @@ elif hoja_activa == "📄 MI REPORTE":
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Bloque 1: Datos antropométricos ---
+    # --- Bloque 1: Datos antropométricos (cabecera dual si está en Modo Embarazo) ---
+    _es_gestante_r14 = (genero == "Mujer" and embarazada)
     st.markdown(f"#### 📏 {T('Datos antropométricos', 'Anthropometric Data')}")
-    r1, r2, r3 = st.columns(3)
-    r1.metric(T("Peso", "Weight"), f"{peso:.2f} kg")
-    r2.metric(T("Estatura", "Height"), f"{estatura} cm")
-    with r3:
-        tarjeta_categoria_imc(f"{T('IMC', 'BMI')}: {imc}", _categoria_imc_usuario)
+    if _es_gestante_r14:
+        _peso_actual_r14 = st.session_state.get("peso_actual", peso_actual)
+        _semana_r14 = st.session_state.get("semana_gestacion", semana_gestacion)
+        _trimestre_r14 = _trimestre_desde_semana(_semana_r14)
+        _trimestre_r14_txt = T(_trimestre_r14, {"Primer trimestre": "First trimester", "Segundo trimestre": "Second trimester",
+                                                  "Tercer trimestre": "Third trimester"}.get(_trimestre_r14, _trimestre_r14))
+        rg1, rg2, rg3 = st.columns(3)
+        rg1.metric(T("Peso Pregestacional", "Pre-pregnancy Weight"), f"{peso:.2f} kg")
+        rg2.metric(T("Peso Actual", "Current Weight"), f"{_peso_actual_r14:.2f} kg")
+        rg3.metric(T("Estatura", "Height"), f"{estatura} cm")
+        rg4, rg5, rg6 = st.columns(3)
+        rg4.metric(T("Edad", "Age"), f"{edad} {T('años', 'years')}")
+        rg5.metric(T("Semana de Gestación", "Gestation Week"), f"{T('Semana', 'Week')} {_semana_r14} ({_trimestre_r14_txt})")
+        with rg6:
+            tarjeta_categoria_imc(f"{T('IMC Pregestacional', 'Pre-pregnancy BMI')}: {imc}", _categoria_imc_usuario)
+
+        # ---- Canal IOM/ACOG de ganancia ponderal para la semana actual (misma lógica que la
+        # Hoja 13.-LÍNEA DE TIEMPO, recalculada aquí para que el reporte y el PDF coincidan) ----
+        _CANALES_IOM_R14 = [
+            (18.5, T("Bajo peso (IMC < 18.5)", "Underweight (BMI < 18.5)"), 12.5, 18.0),
+            (25.0, T("Normal (IMC 18.5–24.9)", "Normal (BMI 18.5–24.9)"), 11.5, 16.0),
+            (30.0, T("Sobrepeso (IMC 25.0–29.9)", "Overweight (BMI 25.0–29.9)"), 7.0, 11.5),
+            (999.0, T("Obesidad (IMC ≥ 30.0)", "Obesity (BMI ≥ 30.0)"), 5.0, 9.0),
+        ]
+        for _tope_r14, _etq_r14, _min_kg_r14, _max_kg_r14 in _CANALES_IOM_R14:
+            if imc < _tope_r14:
+                _canal_min_r14, _canal_max_r14 = _min_kg_r14, _max_kg_r14
+                break
+        _semanas_totales_r14 = 40
+        _kg_ganados_r14 = _peso_actual_r14 - peso
+        _canal_min_hoy_r14 = (_canal_min_r14 / _semanas_totales_r14) * _semana_r14
+        _canal_max_hoy_r14 = (_canal_max_r14 / _semanas_totales_r14) * _semana_r14
+        _en_rango_r14 = _canal_min_hoy_r14 - 1 <= _kg_ganados_r14 <= _canal_max_hoy_r14 + 1
+    else:
+        r1, r2, r3 = st.columns(3)
+        r1.metric(T("Peso", "Weight"), f"{peso:.2f} kg")
+        r2.metric(T("Estatura", "Height"), f"{estatura} cm")
+        with r3:
+            tarjeta_categoria_imc(f"{T('IMC', 'BMI')}: {imc}", _categoria_imc_usuario)
 
     st.markdown(f"#### 🔥 {T('Requerimiento energético', 'Energy Requirement')}")
     r4, r5, r6 = st.columns(3)
@@ -11404,12 +11559,89 @@ elif hoja_activa == "📄 MI REPORTE":
         st.info(T("Aún no armaste tu plan de comidas en la Hoja 9.-DIETA. Visítala para que aparezca aquí.",
                    "You haven't built your meal plan in Sheet 9.-DIET yet. Visit it so it appears here."))
 
-    # --- Bloque 4: Proyección a 60 días ---
-    st.markdown(f"#### 📈 {T('Proyección estimada (60 días)', 'Estimated Projection (60 days)')}")
+    # --- Bloque 3B: Distribución de porciones por tiempos del día ---
+    st.markdown(f"#### ⏰ {T('Distribución de porciones por tiempos del día', 'Portion Distribution by Time of Day')}")
+    _MOM_ICONO_R14 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _MOM_ORDEN_R14 = ["Desayuno", "Merienda 1", "Almuerzo", "Merienda 2", "Cena"]
+    _filas_dist_html = "".join(
+        f'<tr><td style="padding:8px 10px;">{_MOM_ICONO_R14[m]} {_mom_r14(m)}</td>'
+        f'<td style="padding:8px 10px;text-align:center;">{porciones[m]["pct"]*100:.0f}%</td>'
+        f'<td style="padding:8px 10px;text-align:right;">{porciones[m]["kcal"]:.2f} kcal</td></tr>'
+        for m in _MOM_ORDEN_R14
+    )
+    _tot_pct_r14 = sum(porciones[m]["pct"] for m in _MOM_ORDEN_R14)
+    _tot_kcal_r14 = sum(porciones[m]["kcal"] for m in _MOM_ORDEN_R14)
+    st.markdown(_html_sin_lineas_vacias(f"""
+    <div class="print-only-report" style="background:#FFFFFF;border:1px solid #E5E5EA;border-radius:16px;overflow:hidden;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+    <table style="width:100%;border-collapse:collapse;font-size:0.86rem;">
+        <thead><tr style="background:#32ADE6;color:#FFFFFF;">
+            <th style="padding:8px 10px;text-align:left;">{T('Momento', 'Meal')}</th>
+            <th style="padding:8px 10px;">{T('Porcentaje', 'Percentage')}</th>
+            <th style="padding:8px 10px;text-align:right;">Kcal</th>
+        </tr></thead>
+        <tbody>{_filas_dist_html}
+        <tr style="background:#F2F2F7;font-weight:800;">
+            <td style="padding:8px 10px;">{T('TOTAL', 'TOTAL')}</td>
+            <td style="padding:8px 10px;text-align:center;">{_tot_pct_r14*100:.0f}%</td>
+            <td style="padding:8px 10px;text-align:right;">{_tot_kcal_r14:.2f} kcal</td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+    """), unsafe_allow_html=True)
+
+    st.write("")
+
+    # --- Bloque 4: Proyección a 60 días — reemplazada por el Canal IOM/ACOG en Modo Embarazo ---
     _deficit_r = rcd - rcd_final
     _peso_cambio_r = (_deficit_r * 60) / 7700
     _peso_proyectado_r = peso - _peso_cambio_r
-    st.metric(T("Peso estimado en 60 días", "Estimated Weight in 60 Days"), f"{_peso_proyectado_r:.1f} kg")
+    if _es_gestante_r14:
+        st.markdown(f"#### 🤰 {T('Estado de Ganancia Ponderal Gestacional (IOM 2009)', 'Gestational Weight-Gain Status (IOM 2009)')}")
+        _estado_r14_ok = _en_rango_r14
+        _estado_r14_color = "#34C759" if _estado_r14_ok else "#FF9500"
+        _estado_r14_fondo = "#F0FFF4" if _estado_r14_ok else "#FFF8F0"
+        _estado_r14_icono = "🟢" if _estado_r14_ok else "🟧"
+        _estado_r14_txt = T("¡Dentro del rango saludable!", "Within the healthy range!") if _estado_r14_ok \
+            else T("Fuera del rango recomendado — coméntalo con tu médico.", "Outside the recommended range — discuss it with your doctor.")
+        st.markdown(_html_sin_lineas_vacias(f"""
+        <div class="print-only-report" style="background:{_estado_r14_fondo};border:2px solid {_estado_r14_color}44;border-radius:18px;
+                    padding:18px 22px;box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+            <div style="font-weight:800;color:#17301F;font-size:0.95rem;">{T('Semana', 'Week')} {_semana_r14}: {T('tu peso actual es', 'your current weight is')} {_peso_actual_r14:.1f} kg (+{_kg_ganados_r14:.1f} kg {T('ganados', 'gained')}).</div>
+            <div style="color:#3C3C43;font-size:0.86rem;margin-top:6px;">{T('Canal Recomendado IOM', 'IOM Recommended Channel')}: {peso + _canal_min_hoy_r14:.1f} kg {T('a', 'to')} {peso + _canal_max_hoy_r14:.1f} kg.</div>
+            <div style="color:{_estado_r14_color};font-weight:800;font-size:0.92rem;margin-top:8px;">{_estado_r14_icono} {_estado_r14_txt}</div>
+        </div>
+        """), unsafe_allow_html=True)
+    else:
+        st.markdown(f"#### 📈 {T('Proyección estimada (60 días)', 'Estimated Projection (60 days)')}")
+        st.metric(T("Peso estimado en 60 días", "Estimated Weight in 60 Days"), f"{_peso_proyectado_r:.1f} kg")
+
+    st.write("")
+
+    # --- Bloque: Límite y recomendaciones de cafeína (con disclaimer obligatorio) ---
+    st.markdown(f"#### ☕ {T('Límite y recomendaciones de cafeína', 'Caffeine Limit & Recommendations')}")
+    if _es_gestante_r14:
+        st.markdown(_html_sin_lineas_vacias(f"""
+        <div class="print-only-report" style="background:#FFF3E0;border-left:5px solid #FF9F1C;border-radius:16px;padding:16px 20px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+            <p style="margin:0 0 8px 0;font-weight:800;color:#B45F06;font-size:0.9rem;">{T('☕ Recomendación de Cafeína en Gestación: Máximo 200 mg/día (ACOG / OMS).', '☕ Caffeine Recommendation During Pregnancy: Maximum 200 mg/day (ACOG / WHO).')}</p>
+            <ul style="margin:0 0 8px 0;padding-left:20px;color:#4A5568;font-size:0.82rem;line-height:1.7;">
+                <li>{T('En el embarazo, la cafeína tarda entre 10.5 y 18 horas en metabolizarse y cruza la placenta.', 'During pregnancy, caffeine takes 10.5 to 18 hours to metabolize and crosses the placenta.')}</li>
+                <li>{T('Equivalencias rápidas: 1 taza de café filtrado ≈ 95 mg | 1 taza de té ≈ 47 mg | 1 barra chocolate (50g) ≈ 25 mg.', 'Quick equivalents: 1 cup filtered coffee ≈ 95 mg | 1 cup tea ≈ 47 mg | 1 chocolate bar (50g) ≈ 25 mg.')}</li>
+                <li>{T('Prefiere infusiones libres de cafeína (manzanilla, menta) o café descafeinado.', 'Prefer caffeine-free infusions (chamomile, mint) or decaffeinated coffee.')}</li>
+            </ul>
+            <p style="margin:0;font-weight:800;color:#B71C1C;font-size:0.76rem;line-height:1.5;">{T('🚨 AVISO IMPORTANTE: Esta recomendación es orientativa y educativa. NO REEMPLAZA LA EVALUACIÓN, DIAGNÓSTICO NI EL CRITERIO DEL MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA TRATANTE.', '🚨 IMPORTANT NOTICE: This recommendation is informational and educational. IT DOES NOT REPLACE THE EVALUATION, DIAGNOSIS, OR JUDGMENT OF THE ATTENDING OB-GYN OR NUTRITIONIST.')}</p>
+        </div>
+        """), unsafe_allow_html=True)
+    else:
+        st.markdown(_html_sin_lineas_vacias(f"""
+        <div class="print-only-report" style="background:#F2F2F7;border-left:5px solid #8E8E93;border-radius:16px;padding:16px 20px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+            <p style="margin:0 0 8px 0;font-weight:800;color:#3C3C43;font-size:0.9rem;">{T('☕ Recomendación de Cafeína: Límite máximo general de 400 mg/día (EFSA/FDA).', '☕ Caffeine Recommendation: General maximum limit of 400 mg/day (EFSA/FDA).')}</p>
+            <p style="margin:0;font-weight:800;color:#B71C1C;font-size:0.76rem;line-height:1.5;">{T('⚠️ AVISO: Esta información es de carácter orientativo y NO REEMPLAZA LA EVALUACIÓN O INDICACIÓN DE UN MÉDICO O NUTRICIONISTA PROFESIONAL.', '⚠️ NOTICE: This information is for guidance only and DOES NOT REPLACE THE EVALUATION OR INDICATION OF A PROFESSIONAL DOCTOR OR NUTRITIONIST.')}</p>
+        </div>
+        """), unsafe_allow_html=True)
 
     # =====================================================================================
     # BLOQUE 5: RESUMEN CLÍNICO Y RECOMENDACIONES — estilo informe médico profesional
@@ -11498,7 +11730,7 @@ elif hoja_activa == "📄 MI REPORTE":
         "grupo": 'N°04 - 5° "C"',
         "actividad": actividad,
         "peso": peso,
-        "peso_actual": peso_actual,
+        "peso_actual": (_peso_actual_r14 if _es_gestante_r14 else peso_actual),
         "estatura": estatura,
         "imc": imc,
         "categoria_imc": _categoria_imc_usuario,
@@ -11521,6 +11753,12 @@ elif hoja_activa == "📄 MI REPORTE":
         "dieta_totales": _dieta_totales_pdf,
         "peso_proyectado": _peso_proyectado_r,
         "recomendaciones": _recomendaciones,
+        "canal_min": (peso + _canal_min_hoy_r14) if _es_gestante_r14 else None,
+        "canal_max": (peso + _canal_max_hoy_r14) if _es_gestante_r14 else None,
+        "kg_ganados": _kg_ganados_r14 if _es_gestante_r14 else None,
+        "gestacion_en_rango": _en_rango_r14 if _es_gestante_r14 else None,
+        "semana_gestacion": _semana_r14 if _es_gestante_r14 else None,
+        "porciones_dia": porciones,
     }
 
     _pdf_bytes = generar_pdf_reporte(_datos_pdf)
