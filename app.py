@@ -6445,12 +6445,31 @@ def _panel_llenar_datos():
         T("✓ Sí, quiero personalizar mis resultados con mi Somatotipo", "✓ Yes, I want to personalize my results with my Somatotype"),
         key="usar_somatotipo")
     st.caption(T(
-        "Activar esta opción adapta tu TMB a la masa muscular real de tu cuerpo (🧬 Somatotipo), en vez de "
-        "usar sólo tu peso total. Es completamente opcional: si no la activas, calculamos todo de forma estándar.",
-        "Turning this on adapts your BMR to your body's real muscle mass (🧬 Somatotype), instead of using only "
-        "your total weight. It's completely optional: if you don't enable it, we calculate everything the standard way."))
+        "Activar esta opción permite adaptar tus resultados a las características de tu cuerpo. Es "
+        "completamente opcional: si no la activas, la plataforma calculará tus resultados de la forma estándar.",
+        "Turning this on lets us adapt your results to your body's characteristics. It's completely optional: "
+        "if you don't enable it, the platform will calculate your results the standard way."))
 
     if usar_somatotipo:
+        st.sidebar.success(T("📌 Esto ayuda a adaptar mejor tus resultados", "📌 This helps better adapt your results"))
+
+        st.markdown(f"**{T('📏 Tus Medidas de Cinta Métrica', '📏 Your Tape-Measure Data')}**")
+        cuello_cm = st.number_input(T("Perímetro de Cuello (cm)", "Neck Circumference (cm)"),
+                                     min_value=20.0, max_value=60.0,
+                                     value=float(st.session_state.get("cuello_cm", 38.0)), step=0.5, key="cuello_cm")
+        st.caption(T(
+            "📐 ¿Cómo medir? Rodea el cuello justo debajo de la laringe (nuez de Adán), pegado a la piel, sin apretar.",
+            "📐 How to measure? Wrap the tape right below the larynx (Adam's apple), snug to the skin, not tight."))
+        cintura_cm = st.number_input(T("Perímetro de Cintura (cm)", "Waist Circumference (cm)"),
+                                      min_value=40.0, max_value=160.0,
+                                      value=float(st.session_state.get("cintura_cm", 80.0)), step=0.5, key="cintura_cm")
+        if genero == "Mujer":
+            cadera_cm = st.number_input(T("Perímetro de Cadera (cm)", "Hip Circumference (cm)"),
+                                         min_value=40.0, max_value=160.0,
+                                         value=float(st.session_state.get("cadera_cm", 95.0)), step=0.5, key="cadera_cm")
+        else:
+            st.caption(T("↳ Cadera no requerida para varones.", "↳ Hip not required for males."))
+
         _som_sb = calcular_composicion_somatotipo(
             peso, estatura, genero,
             st.session_state.get("cuello_cm", 38.0), st.session_state.get("cintura_cm", 80.0),
@@ -6469,10 +6488,10 @@ def _panel_llenar_datos():
             <div style="background:#FFFBEB;border-radius:14px;padding:10px 14px;margin:4px 0 12px 0;
             border:1px solid #F59E0B55;">
             <p style="margin:0;color:#B06000;font-size:0.78rem;font-weight:700;">⚠️ {T(
-            "Aún no tenemos medidas válidas de cuello/cintura/cadera. Visita la hoja 🧬 Somatotipo para "
-            "ingresarlas — mientras tanto usamos el cálculo estándar.",
-            "We don't have valid neck/waist/hip measurements yet. Visit the 🧬 Somatotype sheet to enter "
-            "them — meanwhile we use the standard calculation.")}</p>
+            "Revisa tus medidas: la cintura debe ser mayor que el cuello (y, en mujeres, cintura + cadera "
+            "mayor que el cuello). Mientras tanto usamos el cálculo estándar.",
+            "Check your measurements: waist must be greater than neck (and, for women, waist + hip greater "
+            "than neck). Meanwhile we use the standard calculation.")}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -8169,26 +8188,29 @@ elif hoja_activa == "2B.-SOMATOTIPO":
                      "Hodgdon & Beckett, U.S. Navy · Heath & Carter (1990)"))}</div>""", unsafe_allow_html=True)
 
     caja_titulo(T("📏 Tus Medidas de Cinta Métrica", "📏 Your Tape-Measure Data"), 2)
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        cuello_cm = st.number_input(T("Perímetro de Cuello (cm)", "Neck Circumference (cm)"),
-                                     min_value=20.0, max_value=60.0,
-                                     value=float(st.session_state.get("cuello_cm", 38.0)), step=0.5, key="cuello_cm")
-        st.caption(T(
-            "📐 ¿Cómo medir? Rodea el cuello justo debajo de la laringe (nuez de Adán), pegado a la piel, sin apretar.",
-            "📐 How to measure? Wrap the tape right below the larynx (Adam's apple), snug to the skin, not tight."))
-    with c2:
-        cintura_cm = st.number_input(T("Perímetro de Cintura (cm)", "Waist Circumference (cm)"),
-                                      min_value=40.0, max_value=160.0,
-                                      value=float(st.session_state.get("cintura_cm", 80.0)), step=0.5, key="cintura_cm")
-    with c3:
-        if genero == "Mujer":
-            cadera_cm = st.number_input(T("Perímetro de Cadera (cm)", "Hip Circumference (cm)"),
-                                         min_value=40.0, max_value=160.0,
-                                         value=float(st.session_state.get("cadera_cm", 95.0)), step=0.5, key="cadera_cm")
-        else:
-            cadera_cm = 0.0
-            st.caption(T("↳ No requerido para varones.", "↳ Not required for males."))
+
+    if not st.session_state.get("usar_somatotipo", False):
+        st.info(T(
+            "🧍 Para ver tu composición corporal, activa la casilla **'Sí, quiero personalizar mis "
+            "resultados con mi Somatotipo'** en el sidebar (Bloque 2 · Estilo de Vida y Objetivos). "
+            "Ahí también encontrarás los campos de Cuello, Cintura y Cadera.",
+            "🧍 To see your body composition, enable the **'Yes, I want to personalize my results with my "
+            "Somatotype'** checkbox in the sidebar (Block 2 · Lifestyle and Goals). You'll also find the "
+            "Neck, Waist and Hip fields there."))
+        st.stop()
+
+    cuello_cm = float(st.session_state.get("cuello_cm", 38.0))
+    cintura_cm = float(st.session_state.get("cintura_cm", 80.0))
+    cadera_cm = float(st.session_state.get("cadera_cm", 95.0)) if genero == "Mujer" else 0.0
+    _m1, _m2, _m3 = st.columns(3)
+    with _m1:
+        st.metric(T("Cuello", "Neck"), f"{cuello_cm:g} cm")
+    with _m2:
+        st.metric(T("Cintura", "Waist"), f"{cintura_cm:g} cm")
+    with _m3:
+        st.metric(T("Cadera", "Hip"), f"{cadera_cm:g} cm" if genero == "Mujer" else "—")
+    st.caption(T("✏️ ¿Necesitas corregir alguna medida? Edítala desde el sidebar.",
+                 "✏️ Need to fix a measurement? Edit it from the sidebar."))
 
     # --- Validación sanitaria -----------------------------------------------------------
     _error_validacion = None
