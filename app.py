@@ -8297,27 +8297,24 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         _py = _pad + (_Y_MAX - _sy_clamp) / (_Y_MAX - _Y_MIN) * (_h - 2 * _pad)
         _fuera_de_rango = (_sx != _sx_clamp) or (_sy != _sy_clamp)
 
-        # --- Clasificación del Biotipo ------------------------------------------------------
+        # --- Clasificación del Biotipo (convención Heath-Carter: nombre híbrido cuando el
+        # componente secundario supera claramente al terciario, sin importar la brecha con el
+        # dominante) ---------------------------------------------------------------------------
         def _clasificar_somatotipo(endo, meso, ecto):
-            if meso > endo and meso > ecto:
-                if endo > ecto and (meso - endo) < 2.0:
-                    return T("Endo-Mesomorfo", "Endo-Mesomorph")
-                elif ecto > endo and (meso - ecto) < 2.0:
-                    return T("Ecto-Mesomorfo", "Ecto-Mesomorph")
-                return T("Mesomorfo Balanceado", "Balanced Mesomorph")
-            elif endo > meso and endo > ecto:
-                if meso > ecto and (endo - meso) < 2.0:
-                    return T("Meso-Endomorfo", "Meso-Endomorph")
-                elif ecto > meso and (endo - ecto) < 2.0:
-                    return T("Ecto-Endomorfo", "Ecto-Endomorph")
-                return T("Endomorfo Balanceado", "Balanced Endomorph")
-            elif ecto > endo and ecto > meso:
-                if meso > endo and (ecto - meso) < 2.0:
-                    return T("Meso-Ectomorfo", "Meso-Ectomorph")
-                elif endo > meso and (ecto - endo) < 2.0:
-                    return T("Endo-Ectomorfo", "Endo-Ectomorph")
-                return T("Ectomorfo Balanceado", "Balanced Ectomorph")
-            return T("Central / Somatotipo Neutro", "Central / Neutral Somatotype")
+            _comp = {"endo": endo, "meso": meso, "ecto": ecto}
+            _orden = sorted(_comp.items(), key=lambda kv: kv[1], reverse=True)
+            (_dom, _dom_v), (_sec, _sec_v), (_ter, _ter_v) = _orden
+            _CORTO = {"endo": "Endo", "meso": "Meso", "ecto": "Ecto"}
+            _LARGO = {"endo": T("Endomorfo", "Endomorph"), "meso": T("Mesomorfo", "Mesomorph"),
+                      "ecto": T("Ectomorfo", "Ectomorph")}
+            # Los tres componentes están próximos entre sí: no hay predominancia clara
+            if (_dom_v - _sec_v) < 0.5 and (_sec_v - _ter_v) < 0.5:
+                return T("Central / Somatotipo Neutro", "Central / Neutral Somatotype")
+            # El secundario supera con claridad al terciario → nombre híbrido (secundario-dominante)
+            if (_sec_v - _ter_v) >= 1.0:
+                return f"{_CORTO[_sec]}-{_LARGO[_dom]}"
+            # El secundario y el terciario están cerca entre sí → el dominante manda solo
+            return T(f"{_LARGO[_dom]} Balanceado", f"Balanced {_LARGO[_dom]}")
 
         _biotipo = _clasificar_somatotipo(_endo, _meso, _ecto)
 
@@ -8363,8 +8360,26 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         _pf = _PERFILES[_dominante]
 
         # --- BLOQUE 1: Evaluación cruzada con el IMC del paso anterior --------------------
-        _clasif_imc_txt = T("Sobrepeso", "Overweight") if imc >= 25 else (
-            T("Bajo Peso", "Underweight") if imc < 18.5 else T("Peso Saludable / Normal", "Healthy / Normal Weight"))
+        # Rangos OMS: <18.5 Bajo Peso · 18.5-24.9 Normal · 25-29.9 Sobrepeso ·
+        # 30-34.9 Obesidad I · 35-39.9 Obesidad II · ≥40 Obesidad III
+        if imc >= 40.0:
+            _clasif_imc_base = T("Obesidad III", "Obesity III")
+        elif imc >= 35.0:
+            _clasif_imc_base = T("Obesidad II", "Obesity II")
+        elif imc >= 30.0:
+            _clasif_imc_base = T("Obesidad I", "Obesity I")
+        elif imc >= 25.0:
+            _clasif_imc_base = T("Sobrepeso", "Overweight")
+        elif imc < 18.5:
+            _clasif_imc_base = T("Bajo Peso", "Underweight")
+        else:
+            _clasif_imc_base = T("Peso Saludable / Normal", "Healthy / Normal Weight")
+
+        if imc >= 30.0 and _estructura == "Grande":
+            _clasif_imc_txt = T(f"{_clasif_imc_base} (Ajustada por Complexión Robusta)",
+                                 f"{_clasif_imc_base} (Adjusted for Robust Frame)")
+        else:
+            _clasif_imc_txt = _clasif_imc_base
         st.markdown(f"""
         <div style="background:linear-gradient(120deg,#EFF6FF 0%,#FFFFFF 70%);border-radius:20px;
         padding:16px 22px;margin:6px 0 16px 0;border-left:6px solid #2563EB;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
@@ -8472,7 +8487,7 @@ elif hoja_activa == "2B.-SOMATOTIPO":
             ]
             for _ic, _lbl, _v, _cl, _tag in _triada:
                 _v_barra = min(max(_v, 1.0), 8.0)  # truncado visual: escala legible de 1 a 8
-                _pct_barra = ((_v_barra - 1.0) / 7.0) * 100
+                _pct_barra = min(100.0, max(0.0, ((_v_barra - 1.0) / 7.0) * 100))
                 _tag_html = f"<span style='background:{_cl};color:#FFF;font-size:0.62rem;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;'>{_tag}</span>" if _tag else ""
                 st.markdown(f"""
                 <p style="margin:10px 0 2px 0;font-weight:800;color:{_cl};font-size:0.85rem;">{_ic} {_lbl}: {_v:.1f} / 7 {_tag_html}</p>
