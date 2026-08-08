@@ -6738,6 +6738,7 @@ if genero == "Mujer" and embarazada:
 else:
     tmb_base_gestacion = None
     ajuste_gestacion = 0
+    usar_somatotipo = st.session_state.get("usar_somatotipo", False)
     _som_tmb = calcular_composicion_somatotipo(
         peso, estatura, genero,
         st.session_state.get("cuello_cm", 38.0), st.session_state.get("cintura_cm", 80.0),
