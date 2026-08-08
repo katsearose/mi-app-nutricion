@@ -25,6 +25,35 @@ def _hex_a_rgba(color_hex, alpha=0.12):
         r, g, b = 52, 199, 89
     return f"rgba({r},{g},{b},{alpha})"
 
+def calcular_composicion_somatotipo(peso, estatura, genero, cuello_cm, cintura_cm, cadera_cm):
+    """Calcula % de grasa (U.S. Navy) y masa magra a partir de las medidas de cinta métrica.
+    Reutilizable desde el sidebar, la hoja de Somatotipo y el cálculo de TMB (Katch-McArdle).
+    Devuelve dict con: ok (bool), error (str|None), pct_grasa, masa_grasa_kg, masa_magra_kg."""
+    try:
+        if cintura_cm <= cuello_cm:
+            return {"ok": False, "error": "cuello_mayor_cintura", "pct_grasa": None,
+                    "masa_grasa_kg": None, "masa_magra_kg": None}
+        if genero == "Mujer" and (cintura_cm + cadera_cm) <= cuello_cm:
+            return {"ok": False, "error": "medidas_incoherentes", "pct_grasa": None,
+                    "masa_grasa_kg": None, "masa_magra_kg": None}
+        if genero == "Mujer":
+            _delta = math.log10(cintura_cm + cadera_cm - cuello_cm)
+            _den = 1.29579 - 0.35004 * _delta + 0.22100 * math.log10(estatura)
+        else:
+            _delta = math.log10(cintura_cm - cuello_cm)
+            _den = 1.0324 - 0.19077 * _delta + 0.15456 * math.log10(estatura)
+        _pct_grasa = (495.0 / _den) - 450.0
+        _piso = 10.0 if genero == "Mujer" else 3.0
+        _pct_grasa = max(_pct_grasa, _piso)
+        _masa_grasa = peso * (_pct_grasa / 100.0)
+        _masa_magra = peso - _masa_grasa
+        return {"ok": True, "error": None, "pct_grasa": _pct_grasa,
+                "masa_grasa_kg": _masa_grasa, "masa_magra_kg": _masa_magra}
+    except (ValueError, ZeroDivisionError):
+        return {"ok": False, "error": "calculo_invalido", "pct_grasa": None,
+                "masa_grasa_kg": None, "masa_magra_kg": None}
+
+
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎",
                     initial_sidebar_state="expanded")
 
@@ -6014,7 +6043,7 @@ _DEFAULTS_SESION = {
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
-    "cuello_cm": 38.0, "cintura_cm": 80.0, "cadera_cm": 95.0,
+    "cuello_cm": 38.0, "cintura_cm": 80.0, "cadera_cm": 95.0, "usar_somatotipo": False,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -6404,6 +6433,49 @@ def _panel_llenar_datos():
                    "your daily calories from your Daily Caloric Requirement (DCR). ⚡ The Balanced pace is usually "
                    "the recommended option, since it combines good results with better long-term adherence."))
 
+    # ===== 🎯 NUEVO: Personaliza aún más tus cálculos (Casilla de Somatotipo) =====
+    st.markdown("""
+    <div style="background:linear-gradient(120deg,#FFECF1 0%,#FFF6FA 100%);border-radius:18px;
+    padding:14px 16px;margin:16px 0 8px 0;border:1.5px solid #FF375F55;box-shadow:0 4px 12px rgba(255,55,95,0.08);">
+    <p style="margin:0;font-weight:900;color:#D6336C;font-size:0.92rem;">🧍 """ + T(
+        "PERSONALIZA TU CÁLCULO SEGÚN TU CUERPO", "PERSONALIZE YOUR CALCULATION BASED ON YOUR BODY") + """</p>
+    </div>
+    """, unsafe_allow_html=True)
+    usar_somatotipo = st.checkbox(
+        T("✓ Sí, quiero personalizar mis resultados con mi Somatotipo", "✓ Yes, I want to personalize my results with my Somatotype"),
+        key="usar_somatotipo")
+    st.caption(T(
+        "Activar esta opción adapta tu TMB a la masa muscular real de tu cuerpo (🧬 Somatotipo), en vez de "
+        "usar sólo tu peso total. Es completamente opcional: si no la activas, calculamos todo de forma estándar.",
+        "Turning this on adapts your BMR to your body's real muscle mass (🧬 Somatotype), instead of using only "
+        "your total weight. It's completely optional: if you don't enable it, we calculate everything the standard way."))
+
+    if usar_somatotipo:
+        _som_sb = calcular_composicion_somatotipo(
+            peso, estatura, genero,
+            st.session_state.get("cuello_cm", 38.0), st.session_state.get("cintura_cm", 80.0),
+            st.session_state.get("cadera_cm", 95.0))
+        if _som_sb["ok"]:
+            st.markdown(f"""
+            <div style="background:#ECFDF5;border-radius:14px;padding:10px 14px;margin:4px 0 12px 0;
+            border:1px solid #10B98155;">
+            <p style="margin:0;color:#0E9C63;font-size:0.78rem;font-weight:700;">✅ {T(
+            f"Masa Magra detectada: {_som_sb['masa_magra_kg']:.1f} kg — se usará en tu TMB.",
+            f"Detected Lean Mass: {_som_sb['masa_magra_kg']:.1f} kg — will be used in your BMR.")}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="background:#FFFBEB;border-radius:14px;padding:10px 14px;margin:4px 0 12px 0;
+            border:1px solid #F59E0B55;">
+            <p style="margin:0;color:#B06000;font-size:0.78rem;font-weight:700;">⚠️ {T(
+            "Aún no tenemos medidas válidas de cuello/cintura/cadera. Visita la hoja 🧬 Somatotipo para "
+            "ingresarlas — mientras tanto usamos el cálculo estándar.",
+            "We don't have valid neck/waist/hip measurements yet. Visit the 🧬 Somatotype sheet to enter "
+            "them — meanwhile we use the standard calculation.")}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
     # ===== BLOQUE 3: Monitoreo de Signos Vitales =====
     st.markdown('<div style="background:linear-gradient(120deg,#FFEBEE 0%,#FFD9DE 100%);border-radius:20px;'
                 'padding:18px 22px;margin:18px 0 14px 0;border:1px solid #C0392B22;">'
@@ -6666,11 +6738,21 @@ if genero == "Mujer" and embarazada:
 else:
     tmb_base_gestacion = None
     ajuste_gestacion = 0
-    if genero == "Hombre":
-        tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
+    _som_tmb = calcular_composicion_somatotipo(
+        peso, estatura, genero,
+        st.session_state.get("cuello_cm", 38.0), st.session_state.get("cintura_cm", 80.0),
+        st.session_state.get("cadera_cm", 95.0)) if usar_somatotipo else {"ok": False}
+    if usar_somatotipo and _som_tmb["ok"]:
+        masa_magra_kg = _som_tmb["masa_magra_kg"]
+        tmb = round(370 + (21.6 * masa_magra_kg))
+        tmb_fuente = "katch_mcardle_somatotipo"
     else:
-        tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
-    tmb_fuente = "mifflin_st_jeor"
+        if genero == "Hombre":
+            tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
+        else:
+            tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
+        tmb_fuente = "mifflin_st_jeor"
+        masa_magra_kg = None
 
     factor = FACTOR_ACTIVIDAD[actividad][genero]
     rcd_base = tmb * factor  # RCD base = TMB x Factor de actividad
@@ -8468,14 +8550,68 @@ elif hoja_activa == "3.-TMB":
 
     # --- 2. ¿Cuál es tu resultado? --------------------------------------------------------
     st.markdown(T("#### 🔥 ¿Cuál es tu resultado?", "#### 🔥 What is your result?"))
+    if tmb_fuente == "katch_mcardle_somatotipo":
+        st.markdown(f"""
+        <div style="background:#FFECF1;border-radius:16px;padding:12px 18px;margin-bottom:10px;
+        border:1.5px solid #FF375F55;">
+        <p style="margin:0;font-weight:800;color:#D6336C;font-size:0.88rem;">🎯 {T(
+        f"Ajuste Activado: Tu TMB está calculada según tus {masa_magra_kg:.1f} kg de Masa Magra derivada de tu Somatotipo.",
+        f"Adjustment Enabled: Your BMR is calculated from your {masa_magra_kg:.1f} kg of Lean Mass derived from your Somatotype.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div style="background:#EAF3FF;border-radius:16px;padding:12px 18px;margin-bottom:10px;
+        border:1.5px solid #007AFF55;">
+        <p style="margin:0;font-weight:800;color:#0B5FCC;font-size:0.88rem;">⚙️ {T(
+        "Modo Estándar: calculado mediante tu peso total con la fórmula de Mifflin-St Jeor.",
+        "Standard Mode: calculated using your total weight with the Mifflin-St Jeor formula.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
     tarjeta_resultado_tmb(tmb)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
     # --- 3. ¿Cómo se calculó? — fórmula horizontal Hombre/Mujer, flechas a la derecha ----
     st.markdown(T("#### 🧪 ¿Cómo se calculó?", "#### 🧪 How was it calculated?"))
-    formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
-    tarjeta_quien_creo_formula()
+    if tmb_fuente == "katch_mcardle_somatotipo":
+        st.markdown(f"""
+        <div style="background:linear-gradient(120deg,#FFECF1 0%,#FFF6FA 100%);border-radius:18px;
+        padding:18px 22px;border:1.5px solid #FF375F44;box-shadow:0 6px 16px rgba(255,55,95,0.07);">
+        <p style="margin:0 0 10px 0;font-weight:900;color:#D6336C;">🧪 {T(
+        "¿Cómo se calculó tu TMB por Somatotipo?", "How was your Somatotype-based BMR calculated?")}</p>
+        <p style="margin:0 0 12px 0;font-size:0.82rem;color:#6A1B9A;">{T(
+        "Fórmula de Katch-McArdle (basada en tu Masa Libre de Grasa / músculo)",
+        "Katch-McArdle Formula (based on your Fat-Free Mass / muscle)")}</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;">
+            <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Constante','Constant')}</p>
+            <p style="margin:0;font-weight:900;color:#17301F;">370 kcal</p></div>
+            <span style="font-size:1.2rem;color:#D6336C;">+</span>
+            <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Masa Magra','Lean Mass')}</p>
+            <p style="margin:0;font-weight:900;color:#17301F;">{masa_magra_kg:.2f} kg</p></div>
+            <span style="font-size:1.2rem;color:#D6336C;">×</span>
+            <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Multiplicador','Multiplier')}</p>
+            <p style="margin:0;font-weight:900;color:#17301F;">21.6</p></div>
+            <span style="font-size:1.2rem;color:#D6336C;">=</span>
+            <div style="background:#D6336C;border-radius:12px;padding:10px 18px;text-align:center;box-shadow:0 4px 12px rgba(214,51,108,0.3);">
+            <p style="margin:0;font-size:0.7rem;color:#FFECF1;">TMB</p>
+            <p style="margin:0;font-weight:900;color:#FFFFFF;">{tmb:.0f} kcal</p></div>
+        </div>
+        <p style="margin:14px 0 0 0;font-size:0.82rem;color:#17301F;line-height:1.6;">🧬 {T(
+        "<b>¿Quién desarrolló esta fórmula?</b> La ecuación de Katch-McArdle es el estándar de la nutrición "
+        "deportiva. A diferencia de las fórmulas tradicionales, no calcula sobre la grasa, sino sobre el "
+        "músculo real que identificó la cinta métrica en tu evaluación de Somatotipo.",
+        "<b>Who developed this formula?</b> The Katch-McArdle equation is the sports-nutrition standard. "
+        "Unlike traditional formulas, it doesn't calculate over fat, but over the real muscle your tape-measure "
+        "assessment identified in your Somatotype evaluation.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        formula_horizontal_tmb(peso, estatura, edad, genero, tmb)
+        tarjeta_quien_creo_formula()
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
