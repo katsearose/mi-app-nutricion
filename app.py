@@ -8212,8 +8212,14 @@ elif hoja_activa == "2B.-SOMATOTIPO":
     st.caption(T("✏️ ¿Necesitas corregir alguna medida? Edítala desde el sidebar.",
                  "✏️ Need to fix a measurement? Edit it from the sidebar."))
 
-    # --- Validación sanitaria -----------------------------------------------------------
+    # --- Validación de Coherencia Antropométrica (rangos dinámicos según estatura/peso/sexo) ---
+    _cuello_min_esperado = round(max(33.0, estatura * 0.19), 1) if genero == "Hombre" else round(max(26.0, estatura * 0.16), 1)
+    _cintura_min_esperada = round(estatura * 0.38, 1)
+    _diferencia_cc = (cintura_cm + cadera_cm - cuello_cm) if genero == "Mujer" else (cintura_cm - cuello_cm)
+    _diferencia_min = 22.0
+
     _error_validacion = None
+    _sugerencias = []
     if cintura_cm <= cuello_cm:
         _error_validacion = T(
             "🛑 Error en las medidas: la cintura no puede ser menor o igual al cuello. "
@@ -8225,9 +8231,52 @@ elif hoja_activa == "2B.-SOMATOTIPO":
             "🛑 Error en las medidas: la suma de cintura y cadera debe ser mayor que el cuello. "
             "Verifica tus medidas.",
             "🛑 Measurement error: waist plus hip must be greater than neck. Please check your measurements.")
+    elif cuello_cm < _cuello_min_esperado:
+        _error_validacion = T(
+            f"⚠️ Error de Coherencia Antropométrica: tu cuello ({cuello_cm:g} cm) es inusualmente bajo para "
+            f"un(a) {'hombre' if genero=='Hombre' else 'mujer'} de {estatura} cm. Se esperaba un mínimo de "
+            f"~{_cuello_min_esperado} cm.",
+            f"⚠️ Anthropometric Coherence Error: your neck ({cuello_cm:g} cm) is unusually low for a "
+            f"{'man' if genero=='Hombre' else 'woman'} of {estatura} cm. A minimum of ~{_cuello_min_esperado} cm "
+            "was expected.")
+        _sugerencias.append(T(
+            f"Para tu estatura, el perímetro de cuello esperado debe ser mayor a {_cuello_min_esperado} cm.",
+            f"For your height, the expected neck circumference should be greater than {_cuello_min_esperado} cm."))
+        _sugerencias.append(T(
+            "Revisa si mediste el cuello justo debajo de la nuez de Adán, sin presionar la cinta métrica.",
+            "Check whether you measured the neck right below the Adam's apple, without pressing the tape."))
+    elif cintura_cm < _cintura_min_esperada or cintura_cm < 55 or cintura_cm > 160:
+        _error_validacion = T(
+            f"⚠️ Error de Coherencia Antropométrica: tu cintura ({cintura_cm:g} cm) está fuera del rango "
+            f"esperado (~{_cintura_min_esperada} cm a 160 cm) para tu estatura.",
+            f"⚠️ Anthropometric Coherence Error: your waist ({cintura_cm:g} cm) is outside the expected range "
+            f"(~{_cintura_min_esperada} cm to 160 cm) for your height.")
+        _sugerencias.append(T("Verifica que mediste la cintura a la altura del ombligo, sin comprimir la piel.",
+                               "Check that you measured your waist at navel height, without compressing the skin."))
+    elif _diferencia_cc < _diferencia_min:
+        _error_validacion = T(
+            f"⚠️ Error de Coherencia Antropométrica: la diferencia entre cintura y cuello ({_diferencia_cc:.1f} cm) "
+            f"es demasiado pequeña (mínimo esperado: {_diferencia_min:.0f} cm). Esto genera un cálculo de "
+            "% de grasa poco fiable.",
+            f"⚠️ Anthropometric Coherence Error: the waist-neck difference ({_diferencia_cc:.1f} cm) is too "
+            f"small (minimum expected: {_diferencia_min:.0f} cm). This makes the fat % calculation unreliable.")
+        _sugerencias.append(T("Revisa ambas medidas: es probable que el cuello esté sobreestimado o la cintura subestimada.",
+                               "Recheck both measurements: the neck is likely overestimated or the waist underestimated."))
+    elif genero == "Hombre" and peso > 85 and cintura_cm < 78:
+        _error_validacion = T(
+            f"⚠️ Error de Coherencia Antropométrica: con {peso:g} kg de peso, una cintura de {cintura_cm:g} cm "
+            "es físicamente poco probable salvo en atletas de élite con densidad muscular extrema.",
+            f"⚠️ Anthropometric Coherence Error: with {peso:g} kg of weight, a {cintura_cm:g} cm waist is "
+            "physically unlikely except in elite athletes with extreme muscle density.")
+        _sugerencias.append(T("Verifica tu peso y tu medida de cintura; probablemente uno de los dos está mal ingresado.",
+                               "Double-check your weight and waist measurement; one of the two is likely misentered."))
 
     if _error_validacion:
         st.error(_error_validacion)
+        if _sugerencias:
+            st.warning("💡 " + T("**Sugerencia de Corrección:**", "**Suggested Fix:**") + "\n\n" +
+                       "\n".join(f"• {s}" for s in _sugerencias))
+        st.stop()
     else:
         # --- Aviso de rango anatómico improbable en el cuello ----------------------------
         _cuello_esperado_max = (estatura * 0.20) if genero == "Mujer" else (estatura * 0.225)
@@ -8274,8 +8323,8 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         # --- Paso 3: Coordenadas de la Somatocarta ----------------------------------------
         _sx = _ecto - _endo
         _sy = (2 * _meso) - (_endo + _ecto)
-        # Rango extendido del plano — evita que el punto quede "flotando" fuera del contenedor
-        _X_MIN, _X_MAX, _Y_MIN, _Y_MAX = -9.0, 9.0, -8.0, 12.0
+        # Recorte de seguridad (clipping): evita que el punto se salga del contenedor visual
+        _X_MIN, _X_MAX, _Y_MIN, _Y_MAX = -8.0, 8.0, -9.0, 10.0
         _sx_clamp = min(max(_sx, _X_MIN), _X_MAX)
         _sy_clamp = min(max(_sy, _Y_MIN), _Y_MAX)
         _pad = 34
@@ -8458,7 +8507,8 @@ elif hoja_activa == "2B.-SOMATOTIPO":
                  T("Tu valor principal", "Your main value") if _dominante == "ecto" else ""),
             ]
             for _ic, _lbl, _v, _cl, _tag in _triada:
-                _pct_barra = min(max(_v / 7.0, 0), 1) * 100
+                _v_barra = min(max(_v, 1.0), 8.0)  # truncado visual: escala legible de 1 a 8
+                _pct_barra = ((_v_barra - 1.0) / 7.0) * 100
                 _tag_html = f"<span style='background:{_cl};color:#FFF;font-size:0.62rem;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;'>{_tag}</span>" if _tag else ""
                 st.markdown(f"""
                 <p style="margin:10px 0 2px 0;font-weight:800;color:{_cl};font-size:0.85rem;">{_ic} {_lbl}: {_v:.1f} / 7 {_tag_html}</p>
