@@ -8310,6 +8310,10 @@ elif hoja_activa == "2B.-SOMATOTIPO":
             # Los tres componentes están próximos entre sí: no hay predominancia clara
             if (_dom_v - _sec_v) < 0.5 and (_sec_v - _ter_v) < 0.5:
                 return T("Central / Somatotipo Neutro", "Central / Neutral Somatotype")
+            # Dominancia extrema: el componente principal supera al secundario por 5+ puntos →
+            # el secundario es fisiológicamente irrelevante, se declara "Puro/Extremo"
+            if (_dom_v - _sec_v) >= 5.0:
+                return T(f"{_LARGO[_dom]} Puro", f"Pure {_LARGO[_dom]}")
             # El secundario supera con claridad al terciario → nombre híbrido (secundario-dominante)
             if (_sec_v - _ter_v) >= 1.0:
                 return f"{_CORTO[_sec]}-{_LARGO[_dom]}"
@@ -8500,10 +8504,33 @@ elif hoja_activa == "2B.-SOMATOTIPO":
 
         # --- BLOQUE 4: Guía Nutricional y de Entrenamiento (según % GRASA REAL) -----------
         caja_titulo(T("🧭 Guía Personalizada Según tu Composición", "🧭 Personalized Guidance Based on your Composition"), 2)
+
+        # --- Filtro de Seguridad Clínica: IMC crítico (< 16.0 kg/m²) ----------------------
+        _alerta_medica_critica = imc < 16.0
+        if _alerta_medica_critica:
+            st.error(T(
+                f"🚨 **Alerta de Emergencia Médica:** tu IMC ({imc:.1f} kg/m²) indica Delgadez Severa / "
+                "Desnutrición Grado III, un estado que puede comprometer la vida. Esta plataforma NO puede "
+                "sustituir una evaluación médica. Por favor busca supervisión intrahospitalaria o atención "
+                "médica urgente antes de iniciar cualquier plan de ejercicio o dieta.",
+                f"🚨 **Medical Emergency Alert:** your BMI ({imc:.1f} kg/m²) indicates Severe Underweight / "
+                "Grade III Malnutrition, a life-threatening condition. This platform CANNOT replace a medical "
+                "evaluation. Please seek in-hospital supervision or urgent medical care before starting any "
+                "exercise or diet plan."))
+
         _umbral_grasa = 25.0 if genero == "Mujer" else 18.0
         _grasa_alta = _pct_grasa >= _umbral_grasa
 
-        if _grasa_alta:
+        if _alerta_medica_critica:
+            _titulo_ali = T("⛔ Recomendación Bloqueada por Riesgo Vital", "⛔ Recommendation Blocked — Life-Threatening Risk")
+            _ali = T(
+                "No se muestran metas calóricas automáticas porque tu IMC está en rango de riesgo vital. "
+                "La renutrición en estos casos debe ser guiada y monitoreada por un equipo médico (riesgo de "
+                "síndrome de realimentación).",
+                "No automatic calorie targets are shown because your BMI is in a life-threatening range. "
+                "Renutrition in these cases must be medically guided and monitored (risk of refeeding "
+                "syndrome).")
+        elif _grasa_alta:
             _titulo_ali = T("Recomposición Corporal / Déficit Moderado", "Body Recomposition / Moderate Deficit")
             _ali = T(
                 f"Con {_pct_grasa:.1f}% de grasa real, mantén un consumo normocalórico o un ligero déficit "
@@ -8520,7 +8547,13 @@ elif hoja_activa == "2B.-SOMATOTIPO":
                 f"With {_pct_grasa:.1f}% real body fat (low/controlled), you can add 200-400 kcal daily above "
                 "your baseline, prioritizing complex carbs to build lean mass.")
 
-        if _dominante == "endo" or _grasa_alta:
+        if _alerta_medica_critica:
+            _ent = T(
+                "⛔ No se recomienda ningún plan de entrenamiento con pesas ni cargas. Prioriza descanso y "
+                "evaluación médica; la actividad física intensa en este estado puede ser peligrosa.",
+                "⛔ No weight-training or loaded exercise plan is recommended. Prioritize rest and medical "
+                "evaluation; intense physical activity in this state can be dangerous.")
+        elif _dominante == "endo" or _grasa_alta:
             _ent = T(
                 "Combina fuerza (3-4 días/semana) con intervalos de acondicionamiento metabólico. Ayuda a "
                 "preservar la masa magra mientras optimizas el gasto calórico y la sensibilidad a la insulina.",
@@ -8540,6 +8573,10 @@ elif hoja_activa == "2B.-SOMATOTIPO":
                 "beforehand to sustain training intensity.")
 
         _consejo = T(
+            "⛔ Este consejo no aplica en tu caso: prioriza atención médica antes que cualquier meta de peso "
+            "o composición corporal.",
+            "⛔ This tip does not apply to your case: prioritize medical care before any weight or body "
+            "composition goal.") if _alerta_medica_critica else T(
             "No busques bajar la balanza drásticamente. Enfócate en reducir tu % de grasa real "
             "(manteniendo la fuerza) en lugar de fijarte solo en el número del peso.",
             "Don't chase a drastic drop on the scale. Focus on lowering your real fat % (while keeping your "
