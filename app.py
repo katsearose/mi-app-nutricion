@@ -6519,7 +6519,7 @@ def _panel_llenar_datos():
         if _som_sb["ok"]:
             _estructura_sb = T({"Pequeña": "Pequeña", "Mediana": "Mediana", "Grande": "Grande"}[_som_sb["estructura"]],
                                 {"Pequeña": "Small", "Mediana": "Medium", "Grande": "Large"}[_som_sb["estructura"]])
-            st.sidebar.success(T(
+            st.success(T(
                 f"✅ Masa Magra calculada: {_som_sb['masa_magra_kg']:.1f} kg (Estructura: {_estructura_sb}) — Lista para TMB",
                 f"✅ Calculated Lean Mass: {_som_sb['masa_magra_kg']:.1f} kg (Structure: {_estructura_sb}) — Ready for BMR"))
         else:
