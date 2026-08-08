@@ -6451,7 +6451,7 @@ def _panel_llenar_datos():
         "if you don't enable it, the platform will calculate your results the standard way."))
 
     if usar_somatotipo:
-        st.sidebar.success(T("📌 Esto ayuda a adaptar mejor tus resultados", "📌 This helps better adapt your results"))
+        st.success(T("📌 Esto ayuda a adaptar mejor tus resultados", "📌 This helps better adapt your results"))
 
         st.markdown(f"**{T('📏 Tus Medidas de Cinta Métrica', '📏 Your Tape-Measure Data')}**")
         cuello_cm = st.number_input(T("Perímetro de Cuello (cm)", "Neck Circumference (cm)"),
