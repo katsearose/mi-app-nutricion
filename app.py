@@ -25,33 +25,84 @@ def _hex_a_rgba(color_hex, alpha=0.12):
         r, g, b = 52, 199, 89
     return f"rgba({r},{g},{b},{alpha})"
 
-def calcular_composicion_somatotipo(peso, estatura, genero, cuello_cm, cintura_cm, cadera_cm):
-    """Calcula % de grasa (U.S. Navy) y masa magra a partir de las medidas de cinta métrica.
-    Reutilizable desde el sidebar, la hoja de Somatotipo y el cálculo de TMB (Katch-McArdle).
-    Devuelve dict con: ok (bool), error (str|None), pct_grasa, masa_grasa_kg, masa_magra_kg."""
+def calcular_composicion_somatotipo(peso, estatura, genero, edad, muneca_cm):
+    """Calcula composición corporal y somatotipo mediante el método clínico de
+    Complexión Ósea por Muñeca (Grant & Frame, 1980) + Ecuación de Deurenberg (1991)
+    + Tríada de Heath-Carter. Reutilizable desde el sidebar, la hoja de Somatotipo y
+    el cálculo de TMB (Katch-McArdle) / RCD (Factor Somatotípico).
+    Devuelve dict con: ok, error, imc, r_oseo, estructura, pct_grasa, masa_grasa_kg,
+    masa_magra_kg, ip, endomorfia, mesomorfia, ectomorfia, dominante, factor_somatotipico."""
+    _vacio = {"ok": False, "error": None, "imc": None, "r_oseo": None, "estructura": None,
+              "pct_grasa": None, "masa_grasa_kg": None, "masa_magra_kg": None, "ip": None,
+              "endomorfia": None, "mesomorfia": None, "ectomorfia": None, "dominante": None,
+              "factor_somatotipico": 1.0}
     try:
-        if cintura_cm <= cuello_cm:
-            return {"ok": False, "error": "cuello_mayor_cintura", "pct_grasa": None,
-                    "masa_grasa_kg": None, "masa_magra_kg": None}
-        if genero == "Mujer" and (cintura_cm + cadera_cm) <= cuello_cm:
-            return {"ok": False, "error": "medidas_incoherentes", "pct_grasa": None,
-                    "masa_grasa_kg": None, "masa_magra_kg": None}
-        if genero == "Mujer":
-            _delta = math.log10(cintura_cm + cadera_cm - cuello_cm)
-            _den = 1.29579 - 0.35004 * _delta + 0.22100 * math.log10(estatura)
+        # --- Control de Rango en la Muñeca (validación clínica) ---
+        if muneca_cm < 12.0 or muneca_cm > 25.0:
+            _r = dict(_vacio)
+            _r["error"] = "muneca_fuera_rango"
+            return _r
+
+        # --- Paso 1: IMC ---
+        imc = peso / ((estatura / 100.0) ** 2)
+
+        # --- Paso 2: Índice de Complexión Ósea r = Estatura / Muñeca [Grant & Frame, 1980] ---
+        r_oseo = estatura / muneca_cm
+        if genero == "Hombre":
+            if r_oseo > 10.4:
+                estructura = "Pequeña"
+            elif r_oseo >= 9.6:
+                estructura = "Mediana"
+            else:
+                estructura = "Grande"
         else:
-            _delta = math.log10(cintura_cm - cuello_cm)
-            _den = 1.0324 - 0.19077 * _delta + 0.15456 * math.log10(estatura)
-        _pct_grasa = (495.0 / _den) - 450.0
-        _piso = 10.0 if genero == "Mujer" else 3.0
-        _pct_grasa = max(_pct_grasa, _piso)
-        _masa_grasa = peso * (_pct_grasa / 100.0)
-        _masa_magra = peso - _masa_grasa
-        return {"ok": True, "error": None, "pct_grasa": _pct_grasa,
-                "masa_grasa_kg": _masa_grasa, "masa_magra_kg": _masa_magra}
+            if r_oseo > 11.0:
+                estructura = "Pequeña"
+            elif r_oseo >= 10.1:
+                estructura = "Mediana"
+            else:
+                estructura = "Grande"
+
+        # --- Paso 3: % Grasa Corporal Ajustado [Deurenberg et al., 1991] ---
+        sexo_val = 1.0 if genero == "Hombre" else 0.0
+        _pct_base = (1.20 * imc) + (0.23 * edad) - (10.8 * sexo_val) - 5.4
+        if estructura == "Grande":
+            pct_grasa = _pct_base - 2.5
+        elif estructura == "Pequeña":
+            pct_grasa = _pct_base + 2.0
+        else:
+            pct_grasa = _pct_base
+        _piso = 3.0 if genero == "Hombre" else 10.0
+        pct_grasa = max(pct_grasa, _piso)
+
+        # --- Paso 4: Desglose de Composición Corporal ---
+        masa_grasa_kg = peso * (pct_grasa / 100.0)
+        masa_magra_kg = peso - masa_grasa_kg
+
+        # --- Paso 5: Componentes del Somatotipo (Heath-Carter Modificado) ---
+        ip = estatura / (peso ** (1.0 / 3.0))
+        endomorfia = max(0.1, pct_grasa / 5.0)
+        if ip > 40.75:
+            ectomorfia = (0.732 * ip) - 28.58
+        elif ip >= 38.25:
+            ectomorfia = (0.463 * ip) - 17.63
+        else:
+            ectomorfia = 0.1
+        ectomorfia = max(0.1, ectomorfia)
+        mesomorfia = max(0.1, (0.85 * imc) - (0.5 * endomorfia) - (0.5 * ectomorfia) - 12.0)
+
+        _triada = {"endo": endomorfia, "meso": mesomorfia, "ecto": ectomorfia}
+        dominante = max(_triada, key=_triada.get)
+        _FACTOR_SOMATOTIPICO = {"ecto": 1.08, "meso": 1.00, "endo": 0.95}
+
+        return {"ok": True, "error": None, "imc": imc, "r_oseo": r_oseo, "estructura": estructura,
+                "pct_grasa": pct_grasa, "masa_grasa_kg": masa_grasa_kg, "masa_magra_kg": masa_magra_kg,
+                "ip": ip, "endomorfia": endomorfia, "mesomorfia": mesomorfia, "ectomorfia": ectomorfia,
+                "dominante": dominante, "factor_somatotipico": _FACTOR_SOMATOTIPICO[dominante]}
     except (ValueError, ZeroDivisionError):
-        return {"ok": False, "error": "calculo_invalido", "pct_grasa": None,
-                "masa_grasa_kg": None, "masa_magra_kg": None}
+        _r = dict(_vacio)
+        _r["error"] = "calculo_invalido"
+        return _r
 
 
 st.set_page_config(page_title="CIAM&SUNI: Tu Salud, Personalizada", layout="wide", page_icon="🍎",
@@ -6043,7 +6094,7 @@ _DEFAULTS_SESION = {
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
-    "cuello_cm": 38.0, "cintura_cm": 80.0, "cadera_cm": 95.0, "usar_somatotipo": False,
+    "muneca_cm": 17.5, "usar_somatotipo": False,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -6453,45 +6504,32 @@ def _panel_llenar_datos():
     if usar_somatotipo:
         st.success(T("📌 Esto ayuda a adaptar mejor tus resultados", "📌 This helps better adapt your results"))
 
-        st.markdown(f"**{T('📏 Tus Medidas de Cinta Métrica', '📏 Your Tape-Measure Data')}**")
-        cuello_cm = st.number_input(T("Perímetro de Cuello (cm)", "Neck Circumference (cm)"),
-                                     min_value=20.0, max_value=60.0,
-                                     value=float(st.session_state.get("cuello_cm", 38.0)), step=0.5, key="cuello_cm")
+        st.markdown(f"**{T('📏 Tu Complexión Ósea (Método Clínico)', '📏 Your Bone Structure (Clinical Method)')}**")
+        muneca_cm = st.number_input(T("Perímetro de Muñeca (cm)", "Wrist Circumference (cm)"),
+                                     min_value=12.0, max_value=25.0,
+                                     value=float(st.session_state.get("muneca_cm", 17.5)), step=0.1, key="muneca_cm")
         st.caption(T(
-            "📐 ¿Cómo medir? Rodea el cuello justo debajo de la laringe (nuez de Adán), pegado a la piel, sin apretar.",
-            "📐 How to measure? Wrap the tape right below the larynx (Adam's apple), snug to the skin, not tight."))
-        cintura_cm = st.number_input(T("Perímetro de Cintura (cm)", "Waist Circumference (cm)"),
-                                      min_value=40.0, max_value=160.0,
-                                      value=float(st.session_state.get("cintura_cm", 80.0)), step=0.5, key="cintura_cm")
-        if genero == "Mujer":
-            cadera_cm = st.number_input(T("Perímetro de Cadera (cm)", "Hip Circumference (cm)"),
-                                         min_value=40.0, max_value=160.0,
-                                         value=float(st.session_state.get("cadera_cm", 95.0)), step=0.5, key="cadera_cm")
-        else:
-            st.caption(T("↳ Cadera no requerida para varones.", "↳ Hip not required for males."))
+            "📏 Rodea la muñeca de tu mano dominante justo por encima del hueso prominente (apófisis estiloides "
+            "del cúbito y radio) con la cinta firme pero sin apretar.",
+            "📏 Wrap the tape around your dominant wrist, right above the prominent bone (ulnar/radial styloid "
+            "process), snug but not tight."))
 
         _som_sb = calcular_composicion_somatotipo(
-            peso, estatura, genero,
-            st.session_state.get("cuello_cm", 38.0), st.session_state.get("cintura_cm", 80.0),
-            st.session_state.get("cadera_cm", 95.0))
+            peso, estatura, genero, edad, st.session_state.get("muneca_cm", 17.5))
         if _som_sb["ok"]:
-            st.markdown(f"""
-            <div style="background:#ECFDF5;border-radius:14px;padding:10px 14px;margin:4px 0 12px 0;
-            border:1px solid #10B98155;">
-            <p style="margin:0;color:#0E9C63;font-size:0.78rem;font-weight:700;">✅ {T(
-            f"Masa Magra detectada: {_som_sb['masa_magra_kg']:.1f} kg — se usará en tu TMB.",
-            f"Detected Lean Mass: {_som_sb['masa_magra_kg']:.1f} kg — will be used in your BMR.")}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            _estructura_sb = T({"Pequeña": "Pequeña", "Mediana": "Mediana", "Grande": "Grande"}[_som_sb["estructura"]],
+                                {"Pequeña": "Small", "Mediana": "Medium", "Grande": "Large"}[_som_sb["estructura"]])
+            st.sidebar.success(T(
+                f"✅ Masa Magra calculada: {_som_sb['masa_magra_kg']:.1f} kg (Estructura: {_estructura_sb}) — Lista para TMB",
+                f"✅ Calculated Lean Mass: {_som_sb['masa_magra_kg']:.1f} kg (Structure: {_estructura_sb}) — Ready for BMR"))
         else:
             st.markdown(f"""
             <div style="background:#FFFBEB;border-radius:14px;padding:10px 14px;margin:4px 0 12px 0;
             border:1px solid #F59E0B55;">
             <p style="margin:0;color:#B06000;font-size:0.78rem;font-weight:700;">⚠️ {T(
-            "Revisa tus medidas: la cintura debe ser mayor que el cuello (y, en mujeres, cintura + cadera "
-            "mayor que el cuello). Mientras tanto usamos el cálculo estándar.",
-            "Check your measurements: waist must be greater than neck (and, for women, waist + hip greater "
-            "than neck). Meanwhile we use the standard calculation.")}</p>
+            "Revisa tu medida de muñeca: debe estar entre 12 y 25 cm. Mientras tanto usamos el cálculo estándar.",
+            "Check your wrist measurement: it must be between 12 and 25 cm. Meanwhile we use the standard "
+            "calculation.")}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -6759,13 +6797,13 @@ else:
     ajuste_gestacion = 0
     usar_somatotipo = st.session_state.get("usar_somatotipo", False)
     _som_tmb = calcular_composicion_somatotipo(
-        peso, estatura, genero,
-        st.session_state.get("cuello_cm", 38.0), st.session_state.get("cintura_cm", 80.0),
-        st.session_state.get("cadera_cm", 95.0)) if usar_somatotipo else {"ok": False}
+        peso, estatura, genero, edad,
+        st.session_state.get("muneca_cm", 17.5)) if usar_somatotipo else {"ok": False}
     if usar_somatotipo and _som_tmb["ok"]:
         masa_magra_kg = _som_tmb["masa_magra_kg"]
         tmb = round(370 + (21.6 * masa_magra_kg))
         tmb_fuente = "katch_mcardle_somatotipo"
+        _factor_somatotipico = _som_tmb["factor_somatotipico"]
     else:
         if genero == "Hombre":
             tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) + 5
@@ -6773,9 +6811,11 @@ else:
             tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161
         tmb_fuente = "mifflin_st_jeor"
         masa_magra_kg = None
+        _factor_somatotipico = 1.0
 
     factor = FACTOR_ACTIVIDAD[actividad][genero]
-    rcd_base = tmb * factor  # RCD base = TMB x Factor de actividad
+    # RCD Base = TMB × Factor de Actividad Física × Factor Somatotípico (FS, según biotipo dominante)
+    rcd_base = tmb * factor * _factor_somatotipico
     rcd = rcd_base * 0.95 if vive_en_chiclayo else rcd_base  # RCD (con ajuste de clima si vive en Chiclayo)
     ajuste_clima_aplicado = vive_en_chiclayo
 
@@ -8183,148 +8223,72 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         tip=T("¡Descubre tu verdadero cuerpo! 🧬", "Discover your real body! 🧬"))
 
     st.markdown(f"""<div class="formula-badge-row">{formula_badge(
-        "% Grasa = 495 / Densidad Corporal − 450  (U.S. Navy)",
-        referencia=T("Hodgdon & Beckett, U.S. Navy · Heath & Carter (1990)",
-                     "Hodgdon & Beckett, U.S. Navy · Heath & Carter (1990)"))}</div>""", unsafe_allow_html=True)
+        "% Grasa = (1.20×IMC) + (0.23×Edad) − (10.8×Sexo) − 5.4  (Deurenberg)",
+        referencia=T("Grant & Frame (1980) · Deurenberg et al. (1991) · Heath & Carter (1990)",
+                     "Grant & Frame (1980) · Deurenberg et al. (1991) · Heath & Carter (1990)"))}</div>""",
+        unsafe_allow_html=True)
 
-    caja_titulo(T("📏 Tus Medidas de Cinta Métrica", "📏 Your Tape-Measure Data"), 2)
+    caja_titulo(T("📏 Tu Complexión Ósea (Método Clínico)", "📏 Your Bone Structure (Clinical Method)"), 2)
 
     if not st.session_state.get("usar_somatotipo", False):
         st.info(T(
             "🧍 Para ver tu composición corporal, activa la casilla **'Sí, quiero personalizar mis "
             "resultados con mi Somatotipo'** en el sidebar (Bloque 2 · Estilo de Vida y Objetivos). "
-            "Ahí también encontrarás los campos de Cuello, Cintura y Cadera.",
+            "Ahí también encontrarás el campo de Perímetro de Muñeca.",
             "🧍 To see your body composition, enable the **'Yes, I want to personalize my results with my "
             "Somatotype'** checkbox in the sidebar (Block 2 · Lifestyle and Goals). You'll also find the "
-            "Neck, Waist and Hip fields there."))
+            "Wrist Circumference field there."))
         st.stop()
 
-    cuello_cm = float(st.session_state.get("cuello_cm", 38.0))
-    cintura_cm = float(st.session_state.get("cintura_cm", 80.0))
-    cadera_cm = float(st.session_state.get("cadera_cm", 95.0)) if genero == "Mujer" else 0.0
+    muneca_cm = float(st.session_state.get("muneca_cm", 17.5))
+
+    # --- Control de Rango en la Muñeca: interrumpe el cálculo de forma segura ---------------
+    if muneca_cm < 12.0 or muneca_cm > 25.0:
+        st.warning(T(
+            f"⚠️ El valor de muñeca ingresado ({muneca_cm:g} cm) está fuera del rango clínico (12–25 cm). "
+            "Verifica tu medida en el sidebar antes de continuar.",
+            f"⚠️ The entered wrist value ({muneca_cm:g} cm) is outside the clinical range (12–25 cm). "
+            "Please check your measurement in the sidebar before continuing."))
+        st.stop()
+
+    _som = calcular_composicion_somatotipo(peso, estatura, genero, edad, muneca_cm)
+    if not _som["ok"]:
+        st.warning(T(
+            "⚠️ No fue posible calcular tu composición corporal con los datos actuales. Verifica tu peso, "
+            "estatura y perímetro de muñeca en el sidebar.",
+            "⚠️ We couldn't calculate your body composition with the current data. Please check your weight, "
+            "height and wrist circumference in the sidebar."))
+        st.stop()
+
+    _r_oseo = _som["r_oseo"]
+    _estructura = _som["estructura"]
+    _estructura_lbl = T({"Pequeña": "Pequeña (Fina)", "Mediana": "Mediana (Estándar)", "Grande": "Grande (Robusta)"}[_estructura],
+                         {"Pequeña": "Small (Fine)", "Mediana": "Medium (Standard)", "Grande": "Large (Robust)"}[_estructura])
+
     _m1, _m2, _m3 = st.columns(3)
     with _m1:
-        st.metric(T("Cuello", "Neck"), f"{cuello_cm:g} cm")
+        st.metric(T("Perímetro de Muñeca", "Wrist Circumference"), f"{muneca_cm:g} cm")
     with _m2:
-        st.metric(T("Cintura", "Waist"), f"{cintura_cm:g} cm")
+        st.metric(T("Índice de Complexión Ósea (r)", "Bone-Structure Index (r)"), f"{_r_oseo:.2f}")
     with _m3:
-        st.metric(T("Cadera", "Hip"), f"{cadera_cm:g} cm" if genero == "Mujer" else "—")
-    st.caption(T("✏️ ¿Necesitas corregir alguna medida? Edítala desde el sidebar.",
-                 "✏️ Need to fix a measurement? Edit it from the sidebar."))
+        st.metric(T("Clasificación de Estructura", "Structure Classification"), _estructura_lbl)
+    st.caption(T("✏️ ¿Necesitas corregir tu medida de muñeca? Edítala desde el sidebar.",
+                 "✏️ Need to fix your wrist measurement? Edit it from the sidebar."))
 
-    # --- Validación de Coherencia Antropométrica (rangos dinámicos según estatura/peso/sexo) ---
-    _cuello_min_esperado = round(max(33.0, estatura * 0.19), 1) if genero == "Hombre" else round(max(26.0, estatura * 0.16), 1)
-    _cintura_min_esperada = round(estatura * 0.38, 1)
-    _diferencia_cc = (cintura_cm + cadera_cm - cuello_cm) if genero == "Mujer" else (cintura_cm - cuello_cm)
-    _diferencia_min = 22.0
+    if True:
+        _pct_grasa = _som["pct_grasa"]
+        _masa_grasa = _som["masa_grasa_kg"]
+        _masa_magra = _som["masa_magra_kg"]
+        _ip = _som["ip"]
+        _endo = _som["endomorfia"]
+        _meso = _som["mesomorfia"]
+        _ecto = _som["ectomorfia"]
 
-    _error_validacion = None
-    _sugerencias = []
-    if cintura_cm <= cuello_cm:
-        _error_validacion = T(
-            "🛑 Error en las medidas: la cintura no puede ser menor o igual al cuello. "
-            "Verifica tus medidas con la cinta métrica antes de continuar.",
-            "🛑 Measurement error: waist cannot be less than or equal to neck. "
-            "Please double-check your tape-measure readings before continuing.")
-    elif genero == "Mujer" and (cintura_cm + cadera_cm) <= cuello_cm:
-        _error_validacion = T(
-            "🛑 Error en las medidas: la suma de cintura y cadera debe ser mayor que el cuello. "
-            "Verifica tus medidas.",
-            "🛑 Measurement error: waist plus hip must be greater than neck. Please check your measurements.")
-    elif cuello_cm < _cuello_min_esperado:
-        _error_validacion = T(
-            f"⚠️ Error de Coherencia Antropométrica: tu cuello ({cuello_cm:g} cm) es inusualmente bajo para "
-            f"un(a) {'hombre' if genero=='Hombre' else 'mujer'} de {estatura} cm. Se esperaba un mínimo de "
-            f"~{_cuello_min_esperado} cm.",
-            f"⚠️ Anthropometric Coherence Error: your neck ({cuello_cm:g} cm) is unusually low for a "
-            f"{'man' if genero=='Hombre' else 'woman'} of {estatura} cm. A minimum of ~{_cuello_min_esperado} cm "
-            "was expected.")
-        _sugerencias.append(T(
-            f"Para tu estatura, el perímetro de cuello esperado debe ser mayor a {_cuello_min_esperado} cm.",
-            f"For your height, the expected neck circumference should be greater than {_cuello_min_esperado} cm."))
-        _sugerencias.append(T(
-            "Revisa si mediste el cuello justo debajo de la nuez de Adán, sin presionar la cinta métrica.",
-            "Check whether you measured the neck right below the Adam's apple, without pressing the tape."))
-    elif cintura_cm < _cintura_min_esperada or cintura_cm < 55 or cintura_cm > 160:
-        _error_validacion = T(
-            f"⚠️ Error de Coherencia Antropométrica: tu cintura ({cintura_cm:g} cm) está fuera del rango "
-            f"esperado (~{_cintura_min_esperada} cm a 160 cm) para tu estatura.",
-            f"⚠️ Anthropometric Coherence Error: your waist ({cintura_cm:g} cm) is outside the expected range "
-            f"(~{_cintura_min_esperada} cm to 160 cm) for your height.")
-        _sugerencias.append(T("Verifica que mediste la cintura a la altura del ombligo, sin comprimir la piel.",
-                               "Check that you measured your waist at navel height, without compressing the skin."))
-    elif _diferencia_cc < _diferencia_min:
-        _error_validacion = T(
-            f"⚠️ Error de Coherencia Antropométrica: la diferencia entre cintura y cuello ({_diferencia_cc:.1f} cm) "
-            f"es demasiado pequeña (mínimo esperado: {_diferencia_min:.0f} cm). Esto genera un cálculo de "
-            "% de grasa poco fiable.",
-            f"⚠️ Anthropometric Coherence Error: the waist-neck difference ({_diferencia_cc:.1f} cm) is too "
-            f"small (minimum expected: {_diferencia_min:.0f} cm). This makes the fat % calculation unreliable.")
-        _sugerencias.append(T("Revisa ambas medidas: es probable que el cuello esté sobreestimado o la cintura subestimada.",
-                               "Recheck both measurements: the neck is likely overestimated or the waist underestimated."))
-    elif genero == "Hombre" and peso > 85 and cintura_cm < 78:
-        _error_validacion = T(
-            f"⚠️ Error de Coherencia Antropométrica: con {peso:g} kg de peso, una cintura de {cintura_cm:g} cm "
-            "es físicamente poco probable salvo en atletas de élite con densidad muscular extrema.",
-            f"⚠️ Anthropometric Coherence Error: with {peso:g} kg of weight, a {cintura_cm:g} cm waist is "
-            "physically unlikely except in elite athletes with extreme muscle density.")
-        _sugerencias.append(T("Verifica tu peso y tu medida de cintura; probablemente uno de los dos está mal ingresado.",
-                               "Double-check your weight and waist measurement; one of the two is likely misentered."))
-
-    if _error_validacion:
-        st.error(_error_validacion)
-        if _sugerencias:
-            st.warning("💡 " + T("**Sugerencia de Corrección:**", "**Suggested Fix:**") + "\n\n" +
-                       "\n".join(f"• {s}" for s in _sugerencias))
-        st.stop()
-    else:
-        # --- Aviso de rango anatómico improbable en el cuello ----------------------------
-        _cuello_esperado_max = (estatura * 0.20) if genero == "Mujer" else (estatura * 0.225)
-        if cuello_cm > _cuello_esperado_max:
-            st.warning(T(
-                f"⚠️ Aviso de verificación: ingresaste **{cuello_cm:g} cm** de cuello. Para tu estatura "
-                f"({estatura} cm) este valor es inusualmente alto. Asegúrate de no estar midiendo la base "
-                "de los hombros o el pecho — mide justo debajo de la laringe.",
-                f"⚠️ Verification notice: you entered **{cuello_cm:g} cm** for neck. For your height "
-                f"({estatura} cm) this value is unusually high. Make sure you're not measuring the shoulder "
-                "base or chest — measure right below the larynx."))
-
-        # --- Paso 1: % Grasa Corporal (U.S. Navy) ---------------------------------------
-        if genero == "Mujer":
-            _delta = _math_som.log10(cintura_cm + cadera_cm - cuello_cm)
-            _den = 1.29579 - 0.35004 * _delta + 0.22100 * _math_som.log10(estatura)
-        else:
-            _delta = _math_som.log10(cintura_cm - cuello_cm)
-            _den = 1.0324 - 0.19077 * _delta + 0.15456 * _math_som.log10(estatura)
-        _pct_grasa = (495.0 / _den) - 450.0
-        _piso = 10.0 if genero == "Mujer" else 3.0
-        _pct_grasa = max(_pct_grasa, _piso)
-
-        _masa_grasa = peso * (_pct_grasa / 100.0)
-        _masa_magra = peso - _masa_grasa
-
-        # --- Paso 2: Tríada Heath-Carter --------------------------------------------------
-        _endo = (_pct_grasa * 0.18) + 0.5
-
-        _ip = estatura / (peso ** (1 / 3))
-        if _ip > 40.75:
-            _ecto = (0.732 * _ip) - 28.58
-        elif _ip >= 38.28:
-            _ecto = (0.463 * _ip) - 17.63
-        else:
-            _ecto = 0.1
-        _ecto = max(_ecto, 0.1)
-
-        _est_m = estatura / 100.0
-        _ffmi = _masa_magra / (_est_m ** 2)
-        _ffmi_adj = _ffmi + 6.1 * (1.80 - _est_m)
-        _meso = max((_ffmi_adj * 0.35) - 1.5, 0.1)
-
-        # --- Paso 3: Coordenadas de la Somatocarta ----------------------------------------
+        # --- Coordenadas de la Somatocarta -------------------------------------------------
         _sx = _ecto - _endo
         _sy = (2 * _meso) - (_endo + _ecto)
-        # Recorte de seguridad (clipping): evita que el punto se salga del contenedor visual
-        _X_MIN, _X_MAX, _Y_MIN, _Y_MAX = -8.0, 8.0, -9.0, 10.0
+        # Recorte de seguridad (clipping): evita que el punto se salga del triángulo de la Somatocarta
+        _X_MIN, _X_MAX, _Y_MIN, _Y_MAX = -7.0, 7.0, -8.0, 7.5
         _sx_clamp = min(max(_sx, _X_MIN), _X_MAX)
         _sy_clamp = min(max(_sy, _Y_MIN), _Y_MAX)
         _pad = 34
@@ -8333,7 +8297,7 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         _py = _pad + (_Y_MAX - _sy_clamp) / (_Y_MAX - _Y_MIN) * (_h - 2 * _pad)
         _fuera_de_rango = (_sx != _sx_clamp) or (_sy != _sy_clamp)
 
-        # --- Paso 4: Clasificación del Biotipo ---------------------------------------------
+        # --- Clasificación del Biotipo ------------------------------------------------------
         def _clasificar_somatotipo(endo, meso, ecto):
             if meso > endo and meso > ecto:
                 if endo > ecto and (meso - endo) < 2.0:
@@ -8410,9 +8374,9 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         {T("Tu IMC previo:", "Your previous BMI:")} <b style="color:#2563EB;">{imc} kg/m²</b> 👉
         {T("Clasificación Estándar:", "Standard classification:")} <b>"{_clasif_imc_txt}"</b></p>
         <p style="margin:0;color:#17301F;font-size:0.87rem;line-height:1.65;">💡 {T(
-        f"La cinta métrica muestra la composición real: tu somatotipo detecta un {_pct_grasa:.1f}% de masa "
+        f"Tu complexión ósea muestra la composición real: tu somatotipo detecta un {_pct_grasa:.1f}% de masa "
         f"adiposa y una Endomorfia de {_endo:.1f}. La balanza y el IMC por sí solos no cuentan esta historia.",
-        f"The tape measure shows the real composition: your somatotype detects {_pct_grasa:.1f}% fat mass and "
+        f"Your bone structure shows the real composition: your somatotype detects {_pct_grasa:.1f}% fat mass and "
         f"an Endomorphy of {_endo:.1f}. The scale and BMI alone don't tell this story.")}</p>
         </div>
         """, unsafe_allow_html=True)
@@ -8432,11 +8396,11 @@ elif hoja_activa == "2B.-SOMATOTIPO":
         m1, m2, m3, m4 = st.columns(4)
         _tarjetas = [
             (m1, "#007AFF", "#EAF3FF", "🔵", T("% GRASA REAL", "REAL FAT %"), f"{_pct_grasa:.1f}%",
-             T("Cinta U.S. Navy", "U.S. Navy tape")),
+             T("Deurenberg + Complexión Ósea", "Deurenberg + Bone Structure")),
             (m2, "#34C759", "#EAFAEE", "🟢", T("MASA MAGRA", "LEAN MASS"), f"{_masa_magra:.1f} kg",
-             T("Músculo + hueso", "Muscle + bone")),
+             T("Músculo + Hueso + Órganos", "Muscle + Bone + Organs")),
             (m3, "#FF3B30", "#FFEDEC", "🔴", T("MASA GRASA", "FAT MASS"), f"{_masa_grasa:.1f} kg",
-             T("Reserva adiposa", "Adipose reserve")),
+             T("Reserva Adiposa Real", "Real Adipose Reserve")),
             (m4, "#AF52DE", "#F6ECFC", "🟣", T("BIOTIPO ESTIMADO", "ESTIMATED BIOTYPE"), _biotipo,
              T("Clasificación Heath-Carter", "Heath-Carter classification")),
         ]
@@ -8561,14 +8525,14 @@ elif hoja_activa == "2B.-SOMATOTIPO":
                 "beforehand to sustain training intensity.")
 
         _consejo = T(
-            "No busques bajar la balanza drásticamente. Enfócate en perder centímetros de cintura "
-            "(manteniendo la fuerza) para mejorar tu % de grasa real, no solo el número del peso.",
-            "Don't chase a drastic drop on the scale. Focus on losing waist centimeters (while keeping your "
-            "strength) to improve your real fat %, not just the weight number.") if _grasa_alta else T(
-            "La balanza tradicional no cuenta toda la historia. Sigue tu progreso con la cinta métrica y tu "
-            "fuerza en el gimnasio.",
-            "The traditional scale doesn't tell the whole story. Track progress with the tape measure and "
-            "your strength in the gym.")
+            "No busques bajar la balanza drásticamente. Enfócate en reducir tu % de grasa real "
+            "(manteniendo la fuerza) en lugar de fijarte solo en el número del peso.",
+            "Don't chase a drastic drop on the scale. Focus on lowering your real fat % (while keeping your "
+            "strength) instead of just watching the weight number.") if _grasa_alta else T(
+            "La balanza tradicional no cuenta toda la historia. Sigue tu progreso con tu composición corporal "
+            "y tu fuerza en el gimnasio.",
+            "The traditional scale doesn't tell the whole story. Track progress with your body composition "
+            "and your strength in the gym.")
 
         gk1, gk2, gk3 = st.columns(3)
         with gk1:
@@ -8586,18 +8550,88 @@ elif hoja_activa == "2B.-SOMATOTIPO":
 
         st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-        with st.expander(T("❓ ¿Puedo cambiar mi Somatotipo?", "❓ Can I change my Somatotype?")):
+        # --- Sección de Respaldo Científico -------------------------------------------------
+        caja_titulo(T("🔬 Respaldo Científico", "🔬 Scientific Backing"), 2)
+        with st.expander(T("📐 Ver el paso a paso matemático completo", "📐 See the full step-by-step math")):
+            st.markdown(T(
+                "**Paso 1 — IMC**\n\n"
+                "IMC = Peso (kg) / [Estatura (m)]²\n\n"
+                f"IMC = {peso:g} / ({estatura/100:.2f})² = **{_som['imc']:.2f} kg/m²**\n\n"
+                "**Paso 2 — Índice de Complexión Ósea [Grant & Frame, 1980]**\n\n"
+                "r = Estatura (cm) / Perímetro de Muñeca (cm)\n\n"
+                f"r = {estatura:g} / {muneca_cm:g} = **{_r_oseo:.2f}**\n\n"
+                + (T(
+                    "Hombres: r > 10.4 → Pequeña · 9.6 ≤ r ≤ 10.4 → Mediana · r < 9.6 → Grande",
+                    "") if genero == "Hombre" else T(
+                    "Mujeres: r > 11.0 → Pequeña · 10.1 ≤ r ≤ 11.0 → Mediana · r < 10.1 → Grande", ""))
+                + f"\n\n→ {T('Estructura detectada', 'Detected structure')}: **{_estructura_lbl}**\n\n"
+                "**Paso 3 — % Grasa Corporal Ajustado [Deurenberg et al., 1991]**\n\n"
+                "% Grasa Base = (1.20 × IMC) + (0.23 × Edad) − (10.8 × Sexo) − 5.4\n\n"
+                f"(Sexo = {'1 (Hombre)' if genero=='Hombre' else '0 (Mujer)'})\n\n"
+                f"{T('Ajuste por estructura ósea', 'Bone-structure adjustment')}: "
+                f"{'−2.5%' if _estructura=='Grande' else ('+2.0%' if _estructura=='Pequeña' else '0% (Mediana)')}\n\n"
+                f"→ **% Grasa Final = {_pct_grasa:.1f}%**\n\n"
+                "**Paso 4 — Desglose de Composición Corporal**\n\n"
+                f"Masa Grasa = {peso:g} × ({_pct_grasa:.1f}/100) = **{_masa_grasa:.1f} kg**\n\n"
+                f"Masa Magra = {peso:g} − {_masa_grasa:.1f} = **{_masa_magra:.1f} kg**\n\n"
+                "**Paso 5 — Componentes del Somatotipo (Heath-Carter Modificado)**\n\n"
+                f"Índice Ponderal (IP) = Estatura / ∛Peso = **{_ip:.2f}**\n\n"
+                f"Endomorfia = max(0.1, % Grasa Final / 5) = **{_endo:.2f}**\n\n"
+                f"Ectomorfia (según IP) = **{_ecto:.2f}**\n\n"
+                f"Mesomorfia = max(0.1, (0.85×IMC) − (0.5×Endo) − (0.5×Ecto) − 12.0) = **{_meso:.2f}**",
+                "**Step 1 — BMI**\n\n"
+                "BMI = Weight (kg) / [Height (m)]²\n\n"
+                f"BMI = {peso:g} / ({estatura/100:.2f})² = **{_som['imc']:.2f} kg/m²**\n\n"
+                "**Step 2 — Bone-Structure Index [Grant & Frame, 1980]**\n\n"
+                "r = Height (cm) / Wrist Circumference (cm)\n\n"
+                f"r = {estatura:g} / {muneca_cm:g} = **{_r_oseo:.2f}**\n\n"
+                + (T("", "Men: r > 10.4 → Small · 9.6 ≤ r ≤ 10.4 → Medium · r < 9.6 → Large") if genero == "Hombre"
+                   else T("", "Women: r > 11.0 → Small · 10.1 ≤ r ≤ 11.0 → Medium · r < 10.1 → Large"))
+                + f"\n\n→ Detected structure: **{_estructura_lbl}**\n\n"
+                "**Step 3 — Adjusted Body Fat % [Deurenberg et al., 1991]**\n\n"
+                "Base Fat % = (1.20 × BMI) + (0.23 × Age) − (10.8 × Sex) − 5.4\n\n"
+                f"(Sex = {'1 (Male)' if genero=='Hombre' else '0 (Female)'})\n\n"
+                f"Bone-structure adjustment: "
+                f"{'−2.5%' if _estructura=='Grande' else ('+2.0%' if _estructura=='Pequeña' else '0% (Medium)')}\n\n"
+                f"→ **Final Fat % = {_pct_grasa:.1f}%**\n\n"
+                "**Step 4 — Body Composition Breakdown**\n\n"
+                f"Fat Mass = {peso:g} × ({_pct_grasa:.1f}/100) = **{_masa_grasa:.1f} kg**\n\n"
+                f"Lean Mass = {peso:g} − {_masa_grasa:.1f} = **{_masa_magra:.1f} kg**\n\n"
+                "**Step 5 — Somatotype Components (Modified Heath-Carter)**\n\n"
+                f"Ponderal Index (PI) = Height / ∛Weight = **{_ip:.2f}**\n\n"
+                f"Endomorphy = max(0.1, Final Fat % / 5) = **{_endo:.2f}**\n\n"
+                f"Ectomorphy (from PI) = **{_ecto:.2f}**\n\n"
+                f"Mesomorphy = max(0.1, (0.85×BMI) − (0.5×Endo) − (0.5×Ecto) − 12.0) = **{_meso:.2f}**"
+            ))
+
+        # --- Preguntas Frecuentes -----------------------------------------------------------
+        caja_titulo(T("❓ Preguntas Frecuentes", "❓ Frequently Asked Questions"), 2)
+        with st.expander(T("❓ ¿Por qué la muñeca reemplaza al cuello y la cintura?",
+                            "❓ Why does the wrist replace the neck and waist?")):
             st.write(T(
-                "¡Sí, totalmente! Tu somatotipo no es una condena genética. Si entrenas fuerza y mejoras tu "
-                "alimentación, reducirás tu Endomorfia y aumentarás tu Mesomorfia, moviendo tu punto hacia arriba.",
-                "Yes, absolutely! Your somatotype isn't a genetic sentence. Strength training and better nutrition "
-                "lower your Endomorphy and raise your Mesomorphy, moving your point upward."))
-        with st.expander(T("❓ ¿Por qué la cinta métrica es mejor que la balanza?", "❓ Why is the tape better than the scale?")):
+                "El perímetro de muñeca refleja el tamaño de tu estructura ósea (Complexión Ósea de Grant & "
+                "Frame, 1980), un dato que casi no cambia con el peso corporal. Las medidas de cuello y cintura, "
+                "en cambio, cambian constantemente y son fáciles de medir mal, lo que rompía los cálculos "
+                "anteriores. Al fijar tu estructura ósea, la Ecuación de Deurenberg (1991) obtiene un % de "
+                "grasa mucho más estable y confiable a partir de tu IMC, edad y sexo.",
+                "Wrist circumference reflects the size of your bone frame (Grant & Frame Bone Structure, 1980), "
+                "a value that barely changes with body weight. Neck and waist measurements, by contrast, change "
+                "constantly and are easy to mismeasure, which broke the previous calculations. By fixing your "
+                "bone structure, the Deurenberg Equation (1991) produces a much more stable and reliable fat % "
+                "from your BMI, age and sex."))
+        with st.expander(T("❓ ¿Cómo garantiza esto exactitud en tu TMB y RCD?",
+                            "❓ How does this guarantee accuracy in your BMR and DCR?")):
             st.write(T(
-                "Porque mide volumen en zonas clave (cuello, cintura, cadera). Como la grasa ocupa más volumen "
-                "que el músculo por kilo, la cinta detecta cambios en tu composición aunque la balanza no se mueva.",
-                "Because it measures volume at key sites (neck, waist, hip). Since fat takes up more volume than "
-                "muscle per kilogram, the tape detects composition changes even if the scale doesn't move."))
+                "Tu Masa Magra (kg), calculada con este método, alimenta directamente la fórmula de Katch-McArdle "
+                "para tu TMB — la ecuación estándar basada en tejido muscular real, no solo en tu peso total. "
+                "Luego, tu Biotipo dominante (Ecto/Meso/Endomorfo) aplica un Factor Somatotípico a tu RCD, "
+                "ajustando tu requerimiento calórico diario según tu metabolismo real. Todo el sistema respeta "
+                "un límite fisiológico: tus calorías de meta nunca caen por debajo de tu TMB.",
+                "Your Lean Mass (kg), calculated with this method, feeds directly into the Katch-McArdle formula "
+                "for your BMR — the standard equation based on real muscle tissue, not just your total weight. "
+                "Then, your dominant Biotype (Ecto/Meso/Endomorph) applies a Somatotype Factor to your DCR, "
+                "adjusting your daily caloric requirement to your real metabolism. The whole system respects a "
+                "physiological floor: your target calories never fall below your BMR."))
 
         caja_util(T(
             "El Somatotipo desglosa tu peso en 3 componentes: cuánta grasa (Endomorfia), cuánto músculo "
