@@ -985,6 +985,7 @@ COLORES = {
     0:  ("0", "¡Introduce tus datos!",                       "📝", "#007AFF", "#EAF3FF"),  # systemBlue
     1:  ("1", "Análisis Sanguíneo",                          "🩸", "#FF3B30", "#FFEDEC"),  # systemRed
     2:  ("2", "Índice de Masa Corporal y Percentil",         "⚖️", "#AF52DE", "#F6ECFC"),  # systemPurple
+    "2B": ("2B", "Somatotipo y Composición Corporal",       "🧬", "#FF375F", "#FFECF1"),  # systemPink intenso
     3:  ("3", "Tasa Metabólica Basal (TMB)",                 "⚡", "#FF9500", "#FFF3E5"),  # systemOrange
     4:  ("4", "Requerimiento Calórico Diario (RCD)",         "🔥", "#34C759", "#EAFAEE"),  # systemGreen
     5:  ("5", "Control de Peso",                              "🎯", "#FF2D55", "#FFEBF0"),  # systemPink
@@ -1004,6 +1005,7 @@ COLORES_EN = {
     0:  ("0", "Enter your data!",                            "📝", "#007AFF", "#EAF3FF"),
     1:  ("1", "Blood Test",                                  "🩸", "#FF3B30", "#FFEDEC"),
     2:  ("2", "Body Mass Index and Percentile",              "⚖️", "#AF52DE", "#F6ECFC"),
+    "2B": ("2B", "Somatotype & Body Composition",            "🧬", "#FF375F", "#FFECF1"),
     3:  ("3", "Basal Metabolic Rate (BMR)",                  "⚡", "#FF9500", "#FFF3E5"),
     4:  ("4", "Daily Caloric Requirement (DCR)",             "🔥", "#34C759", "#EAFAEE"),
     5:  ("5", "Weight Control",                              "🎯", "#FF2D55", "#FFEBF0"),
@@ -1021,14 +1023,16 @@ COLORES_EN = {
 
 # Etiqueta/badge corta que acompaña cada encabezado de sección (reemplaza el prefijo "Hoja N:")
 BADGE_HOJAS = {
-    0: "Configuración", 1: "Módulo Clínico", 2: "Módulo Clínico", 3: "Módulo Energético",
+    0: "Configuración", 1: "Módulo Clínico", 2: "Módulo Clínico", "2B": "Módulo Clínico Avanzado",
+    3: "Módulo Energético",
     4: "Módulo Energético", 5: "Control de Peso", 6: "Módulo Nutricional", 7: "Módulo Nutricional",
     8: "Recurso Externo", 9: "Plan Alimenticio", 10: "Módulo Climático", 11: "Aporte Especial",
     12: "Aporte Especial", 13: "Proyección", 14: "Reporte Final", 15: "Equipo",
 }
 
 BADGE_HOJAS_EN = {
-    0: "Setup", 1: "Clinical Module", 2: "Clinical Module", 3: "Energy Module",
+    0: "Setup", 1: "Clinical Module", 2: "Clinical Module", "2B": "Advanced Clinical Module",
+    3: "Energy Module",
     4: "Energy Module", 5: "Weight Control", 6: "Nutrition Module", 7: "Nutrition Module",
     8: "External Resource", 9: "Meal Plan", 10: "Climate Module", 11: "Special Bonus",
     12: "Special Bonus", 13: "Projection", 14: "Final Report", 15: "Team",
@@ -5944,6 +5948,7 @@ OPCIONES_HOJAS = [
     "1.-ANÁLISIS SANGUÍNEO",
     "1B.-ESTADO FISIOLÓGICO",
     "2.-IMC Y PERCENTIL",
+    "2B.-SOMATOTIPO",
     "3.-TMB",
     "4.-RCD",
     "5.-CONTROL DE PESO",
@@ -5963,6 +5968,7 @@ ETIQUETAS_NAV = {
     "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Análisis de Sangre"),
     "1B.-ESTADO FISIOLÓGICO":      ("❤️", "Estado Fisiológico"),
     "2.-IMC Y PERCENTIL":          ("⚖️", "Índice de Masa Corporal (IMC)"),
+    "2B.-SOMATOTIPO":              ("🧬", "Somatotipo y Composición Corporal"),
     "3.-TMB":                      ("🔥", "Tasa Metabólica Basal"),
     "4.-RCD":                      ("⚡", "Requerimiento Calórico Diario"),
     "5.-CONTROL DE PESO":          ("📈", "Control de Peso"),
@@ -5981,6 +5987,7 @@ ETIQUETAS_NAV_EN = {
     "1.-ANÁLISIS SANGUÍNEO":       ("🩸", "Blood Test"),
     "1B.-ESTADO FISIOLÓGICO":      ("❤️", "Physiological State"),
     "2.-IMC Y PERCENTIL":          ("⚖️", "Body Mass Index (BMI)"),
+    "2B.-SOMATOTIPO":              ("🧬", "Somatotype & Body Composition"),
     "3.-TMB":                      ("🔥", "Basal Metabolic Rate"),
     "4.-RCD":                      ("⚡", "Daily Caloric Requirement"),
     "5.-CONTROL DE PESO":          ("📈", "Weight Control"),
@@ -6007,6 +6014,7 @@ _DEFAULTS_SESION = {
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
+    "cuello_cm": 38.0, "cintura_cm": 80.0, "cadera_cm": 95.0,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
     if _clave not in st.session_state:
@@ -8060,6 +8068,308 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
               "In children and teens, the 'percentile' is also used, comparing you with other kids of your same "
               "age and sex — because a growing child's body isn't measured the same way as an adult's. 📏⚖️"),
               emoji="⚖️", color="#F3E5F5", borde="#8E24AA")
+
+# ---------------------------------------------------------------------------------------
+elif hoja_activa == "2B.-SOMATOTIPO":
+    import math as _math_som
+
+    hoja_header("2B", T(
+        "Tu IMC no distingue músculo de grasa. Aquí cruzamos ese número con tu Somatotipo "
+        "(Heath-Carter) para mostrarte de qué está hecho realmente tu peso.",
+        "Your BMI can't tell muscle from fat. Here we cross that number with your Somatotype "
+        "(Heath-Carter) to show what your weight is really made of."),
+        tip=T("¡Descubre tu verdadero cuerpo! 🧬", "Discover your real body! 🧬"))
+
+    st.markdown(f"""<div class="formula-badge-row">{formula_badge(
+        "% Grasa = 495 / Densidad Corporal − 450  (U.S. Navy)",
+        referencia=T("Hodgdon & Beckett, U.S. Navy · Heath & Carter (1990)",
+                     "Hodgdon & Beckett, U.S. Navy · Heath & Carter (1990)"))}</div>""", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#EFF6FF 0%,#FFFFFF 70%);border-radius:20px;
+    padding:16px 22px;margin:6px 0 16px 0;border-left:6px solid #2563EB;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+    <p style="margin:0;color:#1E3A8A;font-size:0.88rem;line-height:1.6;">
+    ⚖️ {T("Tu IMC de tu paso anterior es de", "Your BMI from the previous step is")}
+    <b style="color:#2563EB;">{imc} kg/m²</b>. {T("A continuación, la cinta métrica cuenta la historia completa 👇",
+    "Below, the tape measure tells the full story 👇")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    caja_titulo(T("📏 Tus Medidas de Cinta Métrica", "📏 Your Tape-Measure Data"), 2)
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        cuello_cm = st.number_input(T("Perímetro de Cuello (cm)", "Neck Circumference (cm)"),
+                                     min_value=20.0, max_value=60.0,
+                                     value=float(st.session_state.get("cuello_cm", 38.0)), step=0.5, key="cuello_cm")
+    with c2:
+        cintura_cm = st.number_input(T("Perímetro de Cintura (cm)", "Waist Circumference (cm)"),
+                                      min_value=40.0, max_value=160.0,
+                                      value=float(st.session_state.get("cintura_cm", 80.0)), step=0.5, key="cintura_cm")
+    with c3:
+        if genero == "Mujer":
+            cadera_cm = st.number_input(T("Perímetro de Cadera (cm)", "Hip Circumference (cm)"),
+                                         min_value=40.0, max_value=160.0,
+                                         value=float(st.session_state.get("cadera_cm", 95.0)), step=0.5, key="cadera_cm")
+        else:
+            cadera_cm = 0.0
+            st.caption(T("↳ No requerido para varones.", "↳ Not required for males."))
+
+    # --- Validación sanitaria -----------------------------------------------------------
+    _error_validacion = None
+    if cintura_cm <= cuello_cm:
+        _error_validacion = T(
+            "⚠️ La cintura debe ser mayor que el cuello para poder calcular tu % de grasa. Revisa tus medidas.",
+            "⚠️ Waist must be greater than neck to calculate your body-fat %. Please check your measurements.")
+    elif genero == "Mujer" and (cintura_cm + cadera_cm) <= cuello_cm:
+        _error_validacion = T(
+            "⚠️ La suma de cintura y cadera debe ser mayor que el cuello. Revisa tus medidas.",
+            "⚠️ Waist plus hip must be greater than neck. Please check your measurements.")
+
+    if _error_validacion:
+        st.error(_error_validacion)
+    else:
+        # --- Paso 1: % Grasa Corporal (U.S. Navy) ---------------------------------------
+        if genero == "Mujer":
+            _delta = _math_som.log10(cintura_cm + cadera_cm - cuello_cm)
+            _den = 1.29579 - 0.35004 * _delta + 0.22100 * _math_som.log10(estatura)
+        else:
+            _delta = _math_som.log10(cintura_cm - cuello_cm)
+            _den = 1.0324 - 0.19077 * _delta + 0.15456 * _math_som.log10(estatura)
+        _pct_grasa = (495.0 / _den) - 450.0
+        _piso = 10.0 if genero == "Mujer" else 3.0
+        _pct_grasa = max(_pct_grasa, _piso)
+
+        _masa_grasa = peso * (_pct_grasa / 100.0)
+        _masa_magra = peso - _masa_grasa
+
+        # --- Paso 2: Tríada Heath-Carter --------------------------------------------------
+        _endo = (_pct_grasa * 0.18) + 0.5
+
+        _ip = estatura / (peso ** (1 / 3))
+        if _ip > 40.75:
+            _ecto = (0.732 * _ip) - 28.58
+        elif _ip >= 38.28:
+            _ecto = (0.463 * _ip) - 17.63
+        else:
+            _ecto = 0.1
+        _ecto = max(_ecto, 0.1)
+
+        _est_m = estatura / 100.0
+        _ffmi = _masa_magra / (_est_m ** 2)
+        _ffmi_adj = _ffmi + 6.1 * (1.80 - _est_m)
+        _meso = max((_ffmi_adj * 0.35) - 1.5, 0.1)
+
+        # --- Paso 3: Coordenadas de la Somatocarta ----------------------------------------
+        _sx = _ecto - _endo
+        _sy = (2 * _meso) - (_endo + _ecto)
+        _px = 150 + (_sx * 16.5)
+        _py = 150 - (_sy * 14.2)
+
+        # --- Paso 4: Clasificación del Biotipo ---------------------------------------------
+        def _clasificar_somatotipo(endo, meso, ecto):
+            if meso > endo and meso > ecto:
+                if endo > ecto and (meso - endo) < 2.0:
+                    return T("Endo-Mesomorfo", "Endo-Mesomorph")
+                elif ecto > endo and (meso - ecto) < 2.0:
+                    return T("Ecto-Mesomorfo", "Ecto-Mesomorph")
+                return T("Mesomorfo Balanceado", "Balanced Mesomorph")
+            elif endo > meso and endo > ecto:
+                if meso > ecto and (endo - meso) < 2.0:
+                    return T("Meso-Endomorfo", "Meso-Endomorph")
+                elif ecto > meso and (endo - ecto) < 2.0:
+                    return T("Ecto-Endomorfo", "Ecto-Endomorph")
+                return T("Endomorfo Balanceado", "Balanced Endomorph")
+            elif ecto > endo and ecto > meso:
+                if meso > endo and (ecto - meso) < 2.0:
+                    return T("Meso-Ectomorfo", "Meso-Ectomorph")
+                elif endo > meso and (ecto - endo) < 2.0:
+                    return T("Endo-Ectomorfo", "Endo-Ectomorph")
+                return T("Ectomorfo Balanceado", "Balanced Ectomorph")
+            return T("Central / Somatotipo Neutro", "Central / Neutral Somatotype")
+
+        _biotipo = _clasificar_somatotipo(_endo, _meso, _ecto)
+
+        # --- Paso 5: Detector de Falso Positivo de IMC -------------------------------------
+        if imc >= 25.0 and _meso >= 4.5 and _endo < 4.0:
+            _perfil = "A"
+        elif imc < 25.0 and _endo >= 4.5 and _meso < 3.0:
+            _perfil = "B"
+        elif imc >= 25.0 and _endo >= 4.5:
+            _perfil = "C"
+        elif imc < 18.5 and _ecto >= 4.5:
+            _perfil = "D"
+        else:
+            _perfil = "D"
+
+        _PERFILES = {
+            "A": dict(color="#10B981", fondo="#ECFDF5", icono="🟢",
+                titulo=T("¡Tu IMC ha sido desmentido!", "Your BMI has been debunked!"),
+                texto=T(
+                    f"Tu IMC de <b>{imc} kg/m²</b> te clasifica como 'Sobrepeso', pero tu Mesomorfia es "
+                    f"<b>alta ({_meso:.1f})</b> y tu grasa corporal es de sólo <b>{_pct_grasa:.1f}%</b>. "
+                    "Tu exceso de peso es tejido muscular activo y densidad ósea, no grasa. "
+                    "¡Excelente composición corporal!",
+                    f"Your BMI of <b>{imc} kg/m²</b> classifies you as 'Overweight', but your Mesomorphy is "
+                    f"<b>high ({_meso:.1f})</b> and your body fat is only <b>{_pct_grasa:.1f}%</b>. "
+                    "Your extra weight is active muscle tissue and bone density, not fat. "
+                    "Excellent body composition!")),
+            "B": dict(color="#F59E0B", fondo="#FFFBEB", icono="⚠️",
+                titulo=T("Atención con la falsa delgadez", "Beware of false thinness"),
+                texto=T(
+                    f"Tu IMC de <b>{imc} kg/m²</b> parece 'Normal', pero tu Endomorfia es "
+                    f"<b>elevada ({_endo:.1f})</b> y tu Mesomorfia es baja. Posees un % de grasa alto "
+                    "y poca masa muscular ('skinny-fat'). Tu meta ideal es la recomposición corporal, no bajar de peso.",
+                    f"Your BMI of <b>{imc} kg/m²</b> looks 'Normal', but your Endomorphy is "
+                    f"<b>elevated ({_endo:.1f})</b> and your Mesomorphy is low ('skinny-fat'). "
+                    "Your ideal goal is body recomposition, not weight loss.")),
+            "C": dict(color="#2563EB", fondo="#EFF6FF", icono="🔵",
+                titulo=T("Composición en Proceso de Cambio", "Composition in Progress"),
+                texto=T(
+                    f"Tu IMC de <b>{imc} kg/m²</b> concuerda con tu Endomorfia elevada "
+                    f"(<b>{_endo:.1f}</b>): tienes una reserva energética real en forma de grasa. "
+                    "El plan se enfocará en un déficit calórico progresivo, protegiendo tu masa muscular.",
+                    f"Your BMI of <b>{imc} kg/m²</b> matches your elevated Endomorphy "
+                    f"(<b>{_endo:.1f}</b>): a real energy reserve stored as fat. "
+                    "The plan will focus on a progressive caloric deficit while protecting muscle mass.")),
+            "D": dict(color="#8B5CF6", fondo="#F5F0FE", icono="🟣",
+                titulo=T("Estructura Delgado-Lineal", "Lean-Linear Structure"),
+                texto=T(
+                    f"Tu composición muestra un perfil más lineal y estilizado (Ectomorfia {_ecto:.1f}). "
+                    "Tu metabolismo tiende a quemar calorías con rapidez. Se recomienda un plan con "
+                    "superávit calórico enfocado en hipertrofia.",
+                    f"Your composition shows a leaner, more linear profile (Ectomorphy {_ecto:.1f}). "
+                    "Your metabolism tends to burn calories fast. A caloric-surplus plan focused on "
+                    "hypertrophy is recommended.")),
+        }
+        _pf = _PERFILES[_perfil]
+
+        # --- BLOQUE 1: Banner de diagnóstico cruzado ---------------------------------------
+        st.markdown(f"""
+        <div style="background:{_pf['fondo']};border:2px solid {_pf['color']};border-radius:22px;
+        padding:20px 26px;margin:10px 0 20px 0;box-shadow:0 8px 22px rgba(0,0,0,0.06);">
+        <p style="margin:0 0 6px 0;font-weight:900;color:{_pf['color']};font-size:1.05rem;">
+        {_pf['icono']} {_pf['titulo']}</p>
+        <p style="margin:0;color:#17301F;font-size:0.92rem;line-height:1.7;">{_pf['texto']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # --- BLOQUE 2: Tarjetas de métricas clave -------------------------------------------
+        caja_titulo(T("🎯 Tus Métricas Clave", "🎯 Your Key Metrics"), 2)
+        m1, m2, m3, m4 = st.columns(4)
+        _tarjetas = [
+            (m1, "#007AFF", "#EAF3FF", "🔵", T("% GRASA REAL", "REAL FAT %"), f"{_pct_grasa:.1f}%",
+             T("Cinta U.S. Navy", "U.S. Navy tape")),
+            (m2, "#34C759", "#EAFAEE", "🟢", T("MASA MAGRA", "LEAN MASS"), f"{_masa_magra:.1f} kg",
+             T("Músculo + hueso", "Muscle + bone")),
+            (m3, "#FF3B30", "#FFEDEC", "🔴", T("MASA GRASA", "FAT MASS"), f"{_masa_grasa:.1f} kg",
+             T("Reserva adiposa", "Adipose reserve")),
+            (m4, "#AF52DE", "#F6ECFC", "🟣", T("BIOTIPO ESTIMADO", "ESTIMATED BIOTYPE"), _biotipo,
+             T("Clasificación Heath-Carter", "Heath-Carter classification")),
+        ]
+        for _col, _bd, _fd, _ic, _lbl, _val, _sub in _tarjetas:
+            with _col:
+                st.markdown(f"""
+                <div style="background:{_fd};border:2px solid {_bd};border-radius:18px;padding:16px 12px;
+                text-align:center;min-height:132px;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                <div style="font-size:1.3rem;">{_ic}</div>
+                <p style="margin:4px 0 2px 0;font-weight:800;font-size:0.68rem;letter-spacing:0.04em;
+                text-transform:uppercase;color:{_bd};">{_lbl}</p>
+                <p style="margin:0;font-weight:900;font-size:1.25rem;color:#17301F;">{_val}</p>
+                <p style="margin:2px 0 0 0;font-size:0.7rem;color:#5C6B60;">{_sub}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+        # --- BLOQUE 3: Somatocarta + Tríada de valores --------------------------------------
+        caja_titulo(T("🔺 Tu Somatocarta", "🔺 Your Somatochart"), 2)
+        g1, g2 = st.columns([1.1, 1])
+        with g1:
+            _svg = f"""
+            <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:320px;">
+                <polygon points="150,20 40,250 260,250" fill="#FFF6FA" stroke="#FF375F" stroke-width="2.5"/>
+                <text x="150" y="14" text-anchor="middle" font-size="13" font-weight="800" fill="#34C759">🏔️ {T('MESOMORFIA','MESOMORPHY')}</text>
+                <text x="30" y="268" text-anchor="middle" font-size="12" font-weight="800" fill="#007AFF">🛋️ {T('ENDOMORFIA','ENDOMORPHY')}</text>
+                <text x="270" y="268" text-anchor="middle" font-size="12" font-weight="800" fill="#FF9500">📏 {T('ECTOMORFIA','ECTOMORPHY')}</text>
+                <circle cx="{_px:.1f}" cy="{(_py*0.85+20):.1f}" r="10" fill="#FF375F" stroke="#FFFFFF" stroke-width="3"/>
+                <circle cx="{_px:.1f}" cy="{(_py*0.85+20):.1f}" r="16" fill="none" stroke="#FF375F" stroke-width="2" opacity="0.35"/>
+            </svg>
+            """
+            st.markdown(f"<div style='text-align:center;'>{_svg}</div>", unsafe_allow_html=True)
+            st.caption(T(f"📍 Coordenadas: ({_sx:+.2f}, {_sy:+.2f})", f"📍 Coordinates: ({_sx:+.2f}, {_sy:+.2f})"))
+        with g2:
+            _triada = [
+                ("🔴", T("ENDOMORFIA (Grasa)", "ENDOMORPHY (Fat)"), _endo, "#FF3B30"),
+                ("🟢", T("MESOMORFIA (Músculo)", "MESOMORPHY (Muscle)"), _meso, "#34C759"),
+                ("🔵", T("ECTOMORFIA (Estilo)", "ECTOMORPHY (Style)"), _ecto, "#007AFF"),
+            ]
+            for _ic, _lbl, _v, _cl in _triada:
+                _pct_barra = min(max(_v / 7.0, 0), 1) * 100
+                st.markdown(f"""
+                <p style="margin:10px 0 2px 0;font-weight:800;color:{_cl};font-size:0.85rem;">{_ic} {_lbl}: {_v:.1f} / 7</p>
+                <div style="background:#EEE;border-radius:10px;height:14px;overflow:hidden;">
+                <div style="background:{_cl};width:{_pct_barra:.0f}%;height:100%;border-radius:10px;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+        # --- BLOQUE 4: Guía de acompañamiento -----------------------------------------------
+        caja_titulo(T("🧭 Guía Según tu Biotipo", "🧭 Guidance Based on your Biotype"), 2)
+        _GUIA = {
+            "A": (T("Prioriza fuerza y pesas. Tu cuerpo responde excelente al estímulo de hipertrofia.",
+                    "Prioritize strength and weights. Your body responds great to hypertrophy training."),
+                  T("Toleras muy bien los carbohidratos. Mantén un 50% de carbohidratos sanos.",
+                    "You tolerate carbs very well. Keep about 50% healthy carbohydrates.")),
+            "B": (T("Entrenamiento de fuerza progresivo 3-4 veces por semana para ganar masa muscular.",
+                    "Progressive strength training 3-4 times a week to build muscle."),
+                  T("Aumenta tu ingesta de proteína y mantén un ligero superávit calórico.",
+                    "Increase protein intake and keep a slight caloric surplus.")),
+            "C": (T("Cardio moderado + fuerza para preservar músculo mientras reduces grasa.",
+                    "Moderate cardio + strength training to preserve muscle while losing fat."),
+                  T("Déficit calórico progresivo con buen aporte de proteínas.",
+                    "Progressive caloric deficit with good protein intake.")),
+            "D": (T("Entrenamiento de fuerza con cargas altas y pocas repeticiones para ganar volumen.",
+                    "Heavy-load, low-rep strength training to gain size."),
+                  T("Superávit calórico con comidas frecuentes y densas en nutrientes.",
+                    "Caloric surplus with frequent, nutrient-dense meals.")),
+        }
+        _ent, _ali = _GUIA[_perfil]
+        gk1, gk2, gk3 = st.columns(3)
+        with gk1:
+            st.markdown(f"""<div style="background:#EAFAEE;border-radius:16px;padding:16px;min-height:150px;
+            border:1px solid #34C75955;"><p style="margin:0 0 6px;font-weight:800;color:#1E5631;">🏋️ {T('Entrenamiento Ideal','Ideal Training')}</p>
+            <p style="margin:0;font-size:0.85rem;color:#17301F;line-height:1.55;">{_ent}</p></div>""", unsafe_allow_html=True)
+        with gk2:
+            st.markdown(f"""<div style="background:#FFF3E5;border-radius:16px;padding:16px;min-height:150px;
+            border:1px solid #FF950055;"><p style="margin:0 0 6px;font-weight:800;color:#B06000;">🥑 {T('Estrategia Alimentaria','Nutrition Strategy')}</p>
+            <p style="margin:0;font-size:0.85rem;color:#17301F;line-height:1.55;">{_ali}</p></div>""", unsafe_allow_html=True)
+        with gk3:
+            st.markdown(f"""<div style="background:#F6ECFC;border-radius:16px;padding:16px;min-height:150px;
+            border:1px solid #AF52DE55;"><p style="margin:0 0 6px;font-weight:800;color:#6A1B9A;">💡 {T('Consejo de Mentalidad','Mindset Tip')}</p>
+            <p style="margin:0;font-size:0.85rem;color:#17301F;line-height:1.55;">{T('La balanza tradicional miente. Mídete con la cinta métrica y por tu fuerza en el gimnasio.','The traditional scale lies. Measure yourself with the tape and your strength in the gym.')}</p></div>""", unsafe_allow_html=True)
+
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+        with st.expander(T("❓ ¿Puedo cambiar mi Somatotipo?", "❓ Can I change my Somatotype?")):
+            st.write(T(
+                "¡Sí, totalmente! Tu somatotipo no es una condena genética. Si entrenas fuerza y mejoras tu "
+                "alimentación, reducirás tu Endomorfia y aumentarás tu Mesomorfia, moviendo tu punto hacia arriba.",
+                "Yes, absolutely! Your somatotype isn't a genetic sentence. Strength training and better nutrition "
+                "lower your Endomorphy and raise your Mesomorphy, moving your point upward."))
+        with st.expander(T("❓ ¿Por qué la cinta métrica es mejor que la balanza?", "❓ Why is the tape better than the scale?")):
+            st.write(T(
+                "Porque mide volumen en zonas clave (cuello, cintura, cadera). Como la grasa ocupa más volumen "
+                "que el músculo por kilo, la cinta detecta cambios en tu composición aunque la balanza no se mueva.",
+                "Because it measures volume at key sites (neck, waist, hip). Since fat takes up more volume than "
+                "muscle per kilogram, the tape detects composition changes even if the scale doesn't move."))
+
+        caja_util(T(
+            "El Somatotipo desglosa tu peso en 3 componentes: cuánta grasa (Endomorfia), cuánto músculo "
+            "(Mesomorfia) y cuán lineal es tu cuerpo (Ectomorfia). Así sabes de qué está hecho realmente tu peso. 🧬",
+            "Somatotype breaks your weight into 3 components: fat (Endomorphy), muscle (Mesomorphy), and "
+            "linearity (Ectomorphy) — so you know what your weight is really made of. 🧬"),
+            emoji="🧬", color="#FFECF1", borde="#FF375F")
 
 # ---------------------------------------------------------------------------------------
 elif hoja_activa == "3.-TMB":
