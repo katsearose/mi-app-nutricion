@@ -2259,13 +2259,13 @@ def generar_pdf_reporte(datos):
 
     AZUL_TXT    = "#0f172a"   # Slate oscuro institucional (antes #17324A)
     AZUL_TXT2   = "#1e293b"   # Slate oscuro secundario, para degradados simulados del banner
-    CYAN        = "#0284c7"   # Azul cyan clínico (acentos, títulos de sección)
-    CYAN_CLARO  = "#38bdf8"
+    CYAN        = "#0d9488"   # Verde esmeralda institucional (acentos, títulos de sección)
+    CYAN_CLARO  = "#2dd4bf"
     VERDE       = "#065f46"
     GRIS_TXT    = "#3C3C43"
     GRIS_SUAVE  = "#6C6C70"
-    LINEA       = "#e2e8f0"
-    GRIS_MOD    = "#f8fafc"
+    LINEA       = "#cbd5e1"
+    GRIS_MOD    = "#f1f5f9"
     AZUL_CARB, AZUL_CARB_CLARO       = "#2980b9", "#ebf5fb"
     MORADO_PROT, MORADO_PROT_CLARO   = "#8e44ad", "#f4ecf7"
     NARANJA_GRA, NARANJA_GRA_CLARO   = "#d35400", "#fbeee6"
@@ -2303,6 +2303,16 @@ def generar_pdf_reporte(datos):
                                           fontSize=6.4, textColor=_rl_hex("#cbd5e1"))
     estilo_banner_valor = ParagraphStyle("BannerValor", parent=styles["Normal"], fontName="Helvetica-Bold",
                                           fontSize=8.6, textColor=rl_colors.white, leading=10.5)
+    # ---- Tarjeta clara del paciente (estilo "Dashboard Card"): fondo gris/azul pastel,
+    # etiquetas grises y valores en texto oscuro institucional. ----
+    estilo_card_label = ParagraphStyle("CardLabel", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                        fontSize=6.4, textColor=_rl_hex("#64748b"), leading=8)
+    estilo_card_nombre = ParagraphStyle("CardNombre", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                         fontSize=11.5, textColor=_rl_hex(AZUL_TXT), leading=13.5)
+    estilo_card_valor = ParagraphStyle("CardValor", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                        fontSize=8.6, textColor=_rl_hex(AZUL_TXT), leading=10.5)
+    estilo_card_badge = ParagraphStyle("CardBadge", parent=styles["Normal"], fontName="Helvetica-Bold",
+                                        fontSize=6.6, textColor=_rl_hex("#065f46"), alignment=TA_CENTER)
     estilo_id_badge = ParagraphStyle("IdBadge", parent=styles["Normal"], fontName="Courier-Bold",
                                       fontSize=7, textColor=_rl_hex(CYAN_CLARO), alignment=TA_RIGHT)
     estilo_footer = ParagraphStyle("Footer", parent=styles["Normal"], fontName="Helvetica",
@@ -2470,7 +2480,7 @@ def generar_pdf_reporte(datos):
     story.append(header_tbl)
     story.append(Spacer(1, 8))
 
-    # ---------------- BANNER DE IDENTIFICACIÓN DEL PACIENTE (fondo slate oscuro, 4 columnas) ----------------
+    # ---------------- TARJETA DE PRESENTACIÓN DEL PACIENTE (Dashboard Card clara, 5 columnas) ----------------
     _sexo_txt = T("Femenino", "Female") if datos["genero"] == "Mujer" else T("Masculino", "Male")
     _idioma_pdf_en = st.session_state.get("idioma", "Español") == "English"
     _trimestre_txt = datos.get('trimestre', '')
@@ -2484,22 +2494,35 @@ def generar_pdf_reporte(datos):
         _estado_fisio_txt = f"Gestacional ({_trimestre_txt})" if _embarazada_pdf else "No gestante"
         _etapa_pdf_txt = datos['etapa']
 
-    def _banner_celda(label, valor):
-        return [Paragraph(label.upper(), estilo_banner_label), Paragraph(valor, estilo_banner_valor)]
+    def _card_celda(label, valor):
+        return [Paragraph(label.upper(), estilo_card_label), Spacer(1, 2), Paragraph(valor, estilo_card_valor)]
 
-    _banner_col_w = CONTENT_W / 4
+    _id_badge_tbl = Table([[Paragraph(T("✓ REGISTRADO", "✓ REGISTERED"), estilo_card_badge)]], colWidths=[26 * mm])
+    _id_badge_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(VERDE_BG)),
+        ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    _celda_id_estado = [Paragraph(T("ID / ESTADO", "ID / STATUS"), estilo_card_label), Spacer(1, 2),
+                         Paragraph(f"ID: {_id_expediente}", ParagraphStyle("CardId", parent=estilo_card_valor, fontName="Courier-Bold", fontSize=7.6)),
+                         Spacer(1, 3), _id_badge_tbl]
+
+    _banner_col_w = CONTENT_W / 5
     banner_tbl = Table([[
-        [Paragraph(T("PACIENTE", "PATIENT"), estilo_banner_label), Paragraph(datos['nombre'].upper(), estilo_banner_nombre)],
-        _banner_celda(T("Edad / Etapa", "Age / Stage"), f"{datos['edad']} {T('años', 'yrs')} · {_etapa_pdf_txt}"),
-        _banner_celda(T("Sexo Biológico", "Biological Sex"), _sexo_txt),
-        _banner_celda(T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
-    ]], colWidths=[_banner_col_w] * 4)
+        [Paragraph(T("PACIENTE", "PATIENT"), estilo_card_label), Spacer(1, 2), Paragraph(datos['nombre'].upper(), estilo_card_nombre)],
+        _card_celda(T("Edad / Etapa", "Age / Stage"), f"{datos['edad']} {T('años', 'yrs')} · {_etapa_pdf_txt}"),
+        _card_celda(T("Sexo Biológico", "Biological Sex"), _sexo_txt),
+        _card_celda(T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
+        _celda_id_estado,
+    ]], colWidths=[_banner_col_w] * 5)
     banner_tbl.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(AZUL_TXT)),
+        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(GRIS_MOD)),
+        ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex(LINEA)),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LINEBEFORE", (1, 0), (1, 0), 0.5, _rl_hex("#334155")),
-        ("LINEBEFORE", (2, 0), (2, 0), 0.5, _rl_hex("#334155")),
-        ("LINEBEFORE", (3, 0), (3, 0), 0.5, _rl_hex("#334155")),
+        ("LINEBEFORE", (1, 0), (1, 0), 0.5, _rl_hex(LINEA)),
+        ("LINEBEFORE", (2, 0), (2, 0), 0.5, _rl_hex(LINEA)),
+        ("LINEBEFORE", (3, 0), (3, 0), 0.5, _rl_hex(LINEA)),
+        ("LINEBEFORE", (4, 0), (4, 0), 0.5, _rl_hex(LINEA)),
         ("TOPPADDING", (0, 0), (-1, -1), 9), ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
         ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
     ]))
@@ -2956,8 +2979,7 @@ def generar_pdf_reporte(datos):
 
     if datos["tiene_dieta"]:
         for _fila_comida in datos["dieta_filas"]:
-            story.append(_bloque_comida(_fila_comida))
-            story.append(Spacer(1, 5))
+            story.append(KeepTogether([_bloque_comida(_fila_comida), Spacer(1, 5)]))
 
         _tot_c, _tot_p, _tot_g = (datos["dieta_totales"]["Carbohidrato"], datos["dieta_totales"]["Proteína"],
                                    datos["dieta_totales"]["Grasa"])
