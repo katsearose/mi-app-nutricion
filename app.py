@@ -2235,6 +2235,7 @@ def generar_pdf_reporte(datos):
     esta librería solo se usa en esta función (página 'MI REPORTE'), así que cargarla solo
     cuando realmente se genera el PDF evita ese costo en el arranque y en cada rerun normal
     de la app, acelerando notablemente la carga inicial."""
+    import re
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
     from reportlab.lib import colors as rl_colors
@@ -2408,7 +2409,7 @@ def generar_pdf_reporte(datos):
 
     def _pill(texto, color_key, ancho=38 * mm):
         est = SEMAFORO_ESTILO[color_key]
-        p = Paragraph(f"{est['emoji']} {texto}",
+        p = Paragraph(texto,
                       ParagraphStyle("PillTxt", parent=estilo_pill, textColor=_rl_hex(est["hex"])))
         t = Table([[p]], colWidths=[ancho])
         t.setStyle(TableStyle([
@@ -2497,7 +2498,7 @@ def generar_pdf_reporte(datos):
     def _card_celda(label, valor):
         return [Paragraph(label.upper(), estilo_card_label), Spacer(1, 2), Paragraph(valor, estilo_card_valor)]
 
-    _id_badge_tbl = Table([[Paragraph(T("✓ REGISTRADO", "✓ REGISTERED"), estilo_card_badge)]], colWidths=[26 * mm])
+    _id_badge_tbl = Table([[Paragraph(T("REGISTRADO", "REGISTERED"), estilo_card_badge)]], colWidths=[26 * mm])
     _id_badge_tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(VERDE_BG)),
         ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
@@ -2534,7 +2535,8 @@ def generar_pdf_reporte(datos):
                 (T("Etapa de Vida", "Life Stage"), f"{_etapa_pdf_txt} ({datos['edad']} {T('años', 'years')})"),
                 (T("Sexo Biológico", "Biological Sex"), _sexo_txt),
                 (T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
-                (T("Nivel de Actividad", "Activity Level"), T(_ACT_LABEL_ES.get(datos.get("actividad"), datos.get("actividad", "—")), _ACT_LABEL_EN.get(datos.get("actividad"), datos.get("actividad", "—")))),
+                (T("Nivel de Actividad", "Activity Level"),
+                 re.sub(r'^[^\w(]+\s*', '', T(_ACT_LABEL_ES.get(datos.get("actividad"), datos.get("actividad", "—")), _ACT_LABEL_EN.get(datos.get("actividad"), datos.get("actividad", "—"))))),
             ])]
 
     _VITAL_LABEL_EN = {
@@ -2569,7 +2571,7 @@ def generar_pdf_reporte(datos):
         return _vt("Normal / Óptima"), "verde"
 
     def _clasif_spo2_pdf(_s):
-        # 🩹 Mismos 4 tramos sin huecos que en la Hoja 1B: ≥95 Normal · 90-94 Leve · 85-89 Moderada · <85 Severa.
+        # Mismos 4 tramos sin huecos que en la Hoja 1B: >=95 Normal · 90-94 Leve · 85-89 Moderada · <85 Severa.
         if _s <= 0: return _vt("Sin datos"), "gris"
         if _s >= 95: return _vt("Normal"), "verde"
         if _embarazada_vitales_pdf:
@@ -2685,20 +2687,20 @@ def generar_pdf_reporte(datos):
     _kpi_gap = 3 * mm
     _kpi_ancho_c = (CONTENT_W - _kpi_gap * 3) / 4
     if _embarazada_pdf and datos.get("canal_min") is not None:
-        _kpi3 = _kpi_card("🤰", T("Ganancia Gestacional", "Gestational Gain"),
+        _kpi3 = _kpi_card("•", T("Ganancia Gestacional", "Gestational Gain"),
                            f"+{datos['kg_ganados']:.1f} kg",
                            T(f"Canal IOM: {datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg", f"IOM channel: {datos['canal_min']:.1f}–{datos['canal_max']:.1f} kg"),
                            VERDE_TXT if datos.get("gestacion_en_rango") else NARANJA_GRA, _kpi_ancho_c)
     else:
-        _kpi3 = _kpi_card("📉", T("Proyección (60 días)", "Projection (60 days)"),
+        _kpi3 = _kpi_card("•", T("Proyección (60 días)", "Projection (60 days)"),
                            f"{datos['peso_proyectado']:.1f} kg", T("Meta estimada", "Estimated goal"), VERDE_TXT, _kpi_ancho_c)
     _kpi_row = _fila_kpis([
-        _kpi_card("⚖️", T("Peso y Talla", "Weight & Height"), f"{datos['peso']:.1f} kg",
+        _kpi_card("•", T("Peso y Talla", "Weight & Height"), f"{datos['peso']:.1f} kg",
                   f"{datos['estatura']} cm", AZUL_TXT, _kpi_ancho_c),
-        _kpi_card("📏", T("IMC Actual", "Current BMI"), f"{datos['imc']} kg/m²",
+        _kpi_card("•", T("IMC Actual", "Current BMI"), f"{datos['imc']} kg/m²",
                   _cat_imc_pdf_txt, _color_imc_kpi, _kpi_ancho_c),
         _kpi3,
-        _kpi_card("🔥", T("Meta Calórica Diaria", "Daily Caloric Goal"),
+        _kpi_card("•", T("Meta Calórica Diaria", "Daily Caloric Goal"),
                   f"{datos['rcd_final']:.0f} kcal", T("por día", "per day"), CYAN, _kpi_ancho_c),
     ], gap=_kpi_gap)
     story.append(_kpi_row)
@@ -2714,7 +2716,7 @@ def generar_pdf_reporte(datos):
     mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 2),
             _tabla_kv([
                 (T("Peso Actual", "Current Weight"), f"{datos['peso']:.2f} kg")
-                 if not _embarazada_pdf else (T("Peso Pregestacional / Actual", "Pre-pregnancy / Current Weight"), f"{datos['peso']:.2f} kg → {datos.get('peso_actual', datos['peso']):.2f} kg"),
+                 if not _embarazada_pdf else (T("Peso Pregestacional / Actual", "Pre-pregnancy / Current Weight"), f"{datos['peso']:.2f} kg -> {datos.get('peso_actual', datos['peso']):.2f} kg"),
                 (T("Estatura", "Height"), f"{datos['estatura']} cm ({datos['estatura']/100:.2f} m)"),
                 (T("IMC Actual", "Current BMI") if not _embarazada_pdf else T("IMC Pregestacional", "Pre-pregnancy BMI"),
                  f"{datos['imc']} kg/m²  —  {_cat_imc_pdf_txt}" + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
@@ -2892,7 +2894,7 @@ def generar_pdf_reporte(datos):
     # ---------------- 6. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES (5 bloques por momento de comida) ----------------
     story.append(Paragraph(T("6. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", "6. DETAILED MEAL PLAN BY MACRONUTRIENT"), estilo_seccion2))
 
-    _MOMENTO_ICONO = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+    _MOMENTO_ICONO = {"Desayuno": "•", "Merienda 1": "•", "Almuerzo": "•", "Merienda 2": "•", "Cena": "•"}
     _MACRO_BADGE = {
         "Carbohidrato": (AZUL_CARB_CLARO, AZUL_CARB),
         "Proteína":     (MORADO_PROT_CLARO, MORADO_PROT),
@@ -2914,7 +2916,7 @@ def generar_pdf_reporte(datos):
 
     def _bloque_comida(fila):
         _momento = fila["momento"]
-        _icono = _MOMENTO_ICONO.get(_momento, "🍽️")
+        _icono = _MOMENTO_ICONO.get(_momento, "•")
         _cab_txt = Paragraph(f"{_icono} <font color='white'><b>{_mom_pdf(_momento)}</b></font>",
                               ParagraphStyle("BloqueCab", parent=estilo_texto, fontSize=9, textColor=rl_colors.white))
         filas_html = [[_cab_txt, "", "", ""],
@@ -3078,11 +3080,11 @@ def generar_pdf_reporte(datos):
     _col_gap = 3 * mm
     _col_w_recom = (CONTENT_W - _col_gap * 2) / 3
     _matriz_recom = Table([[
-        _celda_recom_matriz(T("✔ Alimentos Recomendados", "✔ Recommended Foods"), _alimentos_recom, VERDE_BG, VERDE_TXT),
+        _celda_recom_matriz(T("+ Alimentos Recomendados", "+ Recommended Foods"), _alimentos_recom, VERDE_BG, VERDE_TXT),
         "",
-        _celda_recom_matriz(T("💡 Acciones Saludables", "💡 Healthy Actions"), _acciones_recom, "#dbeafe", "#1e40af"),
+        _celda_recom_matriz(T("• Acciones Saludables", "• Healthy Actions"), _acciones_recom, "#dbeafe", "#1e40af"),
         "",
-        _celda_recom_matriz(T("✖ A Evitar", "✖ To Avoid"), _evitar_recom, ROJO_BG, ROJO_TXT),
+        _celda_recom_matriz(T("- A Evitar", "- To Avoid"), _evitar_recom, ROJO_BG, ROJO_TXT),
     ]], colWidths=[_col_w_recom, _col_gap, _col_w_recom, _col_gap, _col_w_recom])
     _matriz_recom.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
