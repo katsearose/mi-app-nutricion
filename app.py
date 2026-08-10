@@ -5214,10 +5214,11 @@ def _svg_silueta_cuerpo(tipo, color):
 
 
 def advertencia_imc_composicion_corporal():
-    """Advertencia 'El IMC no lo es todo': se muestra justo después del resultado de IMC/Percentil
-    (paneles de diagnóstico, escala, percentil) y antes de la sección '¿Qué puedes hacer desde hoy?',
-    para que el usuario lea esta salvedad inmediatamente después de ver su clasificación. Incluye
-    las 3 tarjetas de somatotipo (ecto/endo/mesomorfo) con siluetas SVG propias y una nota ampliada."""
+    """Advertencia 'El IMC es una referencia, no toda la historia': se muestra justo después del
+    resultado de IMC/Percentil (paneles de diagnóstico, escala, percentil) y antes de la sección
+    '¿Qué puedes hacer desde hoy?'. Flujo: 1) explica el problema del IMC, 2) ejemplo visual
+    compacto con los 3 somatotipos (imágenes horizontales, ancho medio, clic para ampliar),
+    3) tabla de qué SÍ y qué NO puede distinguir el IMC, 4) ejemplo concreto, 5) conclusión."""
     st.markdown("""
     <style>
     .imc-warn-hero {
@@ -5241,40 +5242,59 @@ def advertencia_imc_composicion_corporal():
     }
     .imc-warn-text { margin: 0; color: #5C4A1E; font-size: 0.94rem; line-height: 1.65; max-width: 720px; }
     .bodytype-sub {
-        margin: 4px 0 14px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
+        margin: 18px 0 4px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
     }
+    .bodytype-sub-hint { margin: 0 0 14px 0; color: #6E6E73; font-size: 0.85rem; line-height: 1.5; }
     .bodytype-card {
-        border-radius: 24px; overflow: hidden; text-align: center; height: 100%;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.14); border: 1px solid rgba(0,0,0,0.05);
-        background: #FFFFFF; display: flex; flex-direction: column;
+        border-radius: 18px; overflow: hidden; text-align: center; height: 100%;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.12); border: 1px solid rgba(0,0,0,0.05);
+        background: #FFFFFF; display: flex; flex-direction: column; margin-bottom: 10px;
     }
     .bodytype-photo-wrap {
-        width: 100%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;
-        padding: 6px 6px 4px 6px;
+        width: 100%; background: #F5F5F7; display: flex; align-items: center; justify-content: center;
+        aspect-ratio: 16 / 9; overflow: hidden; cursor: zoom-in;
     }
     .bodytype-photo {
-        width: 100%; height: 560px; object-fit: cover; object-position: center top;
-        display: block; border-radius: 14px;
+        width: 100%; height: 100%; object-fit: contain; object-position: center; display: block;
     }
-    .bodytype-info { padding: 16px 18px 20px 18px; flex-grow: 1; }
-    .bodytype-name { font-weight: 900; font-size: 1.02rem; color: #fff; margin: 2px 0 6px 0; letter-spacing: -0.01em; }
-    .bodytype-desc { font-size: 0.82rem; color: rgba(255,255,255,0.95); line-height: 1.55; margin-bottom: 10px; }
+    .bodytype-info { padding: 10px 14px 14px 14px; flex-grow: 1; }
+    .bodytype-name { font-weight: 900; font-size: 0.92rem; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.01em; }
     .bodytype-chip {
-        display: inline-block; background: rgba(255,255,255,0.28); color: #fff; font-size: 0.72rem;
-        font-weight: 700; padding: 3px 10px; border-radius: 999px; margin: 2px 3px;
+        display: inline-block; background: rgba(255,255,255,0.28); color: #fff; font-size: 0.68rem;
+        font-weight: 700; padding: 2px 9px; border-radius: 999px; margin: 2px 2px 0 0;
     }
     .imc-warn-note {
-        margin-top: 18px; border-radius: 20px; padding: 18px 22px;
+        margin-top: 8px; border-radius: 20px; padding: 18px 22px;
         background: linear-gradient(120deg,#EAF4FF 0%,#F3EAFF 100%); border-left: 6px solid #5856D6;
         box-shadow: 0 6px 16px rgba(88,86,214,0.10);
     }
     .imc-warn-note b { color: #3730A3; }
-    .bodytype-lightbox-checkbox { display: none; }
-    .bodytype-photo-trigger { cursor: zoom-in; }
-    .bodytype-caption {
-        margin: 6px 0 0 0; padding: 0 18px 14px 18px; text-align: center; font-size: 0.74rem;
-        font-style: italic; color: #8E8E93;
+    .imc-table-wrap {
+        margin: 18px 0; border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
     }
+    .imc-table-head {
+        display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .imc-table-head div {
+        padding: 12px 16px; font-weight: 900; font-size: 0.85rem; color: #fff;
+    }
+    .imc-table-head .si { background: #34C759; }
+    .imc-table-head .no { background: #FF3B30; }
+    .imc-table-row { display: grid; grid-template-columns: 1fr 1fr; background: #fff; }
+    .imc-table-row:nth-child(even) { background: #FAFAFC; }
+    .imc-table-row div {
+        padding: 10px 16px; font-size: 0.86rem; color: #3C3C43; border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .imc-example-box {
+        margin: 18px 0; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#FFF7E6 0%,#FFEFEF 100%); border-left: 6px solid #FF9500;
+    }
+    .imc-conclusion-box {
+        margin: 18px 0 4px 0; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#EAFBF1 0%,#E6F7FF 100%); border-left: 6px solid #34C759;
+    }
+    .bodytype-lightbox-checkbox { display: none; }
     .bodytype-lightbox-overlay {
         display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center;
@@ -5292,99 +5312,108 @@ def advertencia_imc_composicion_corporal():
     </style>
     """, unsafe_allow_html=True)
 
-    # ===== Encabezado: "¡OJO! El IMC no lo es todo" =====
+    # ===== 1) El problema del IMC =====
     st.markdown(f"""
     <div class="imc-warn-hero">
         <span class="imc-warn-badge">⚠️ {T("¡OJO!", "HEADS UP!")}</span>
-        <p class="imc-warn-title">⚠️ {T("¡OJO! El IMC no lo es todo", "Watch out! BMI isn't everything")}</p>
+        <p class="imc-warn-title">⚠️ {T("El IMC es una referencia, no toda la historia",
+                                        "BMI is a reference, not the full picture")}</p>
         <p class="imc-warn-text">{T(
-            "El IMC relaciona tu peso con tu estatura, pero no indica cuánto de ese peso corresponde a "
-            "grasa o músculo. Por eso, <b>dos personas pueden tener el mismo IMC y presentar una "
-            "composición corporal totalmente diferente</b>.",
-            "BMI relates your weight to your height, but it doesn't show how much of that weight is fat "
-            "or muscle. That's why <b>two people can share the same BMI and have a completely different "
-            "body composition</b>.")}</p>
+            "El IMC se calcula únicamente con tu <b>peso</b> y tu <b>estatura</b>. Por eso, dos personas "
+            "pueden tener un IMC similar aunque su cuerpo esté compuesto de manera diferente: el IMC no "
+            "distingue cuánto de ese peso corresponde a grasa, músculo, huesos u otros tejidos.",
+            "BMI is calculated using only your <b>weight</b> and <b>height</b>. That's why two people can "
+            "have a similar BMI even though their body composition is different: BMI can't tell how much "
+            "of that weight comes from fat, muscle, bone, or other tissue.")}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== Tipos de cuerpo (somatotipos) =====
-    st.markdown(f'<p class="bodytype-sub">🧍 {T("Tipos de cuerpo", "Body Types")}</p>', unsafe_allow_html=True)
+    # ===== 2) Ejemplo visual compacto: mismo indicador, cuerpos diferentes =====
+    st.markdown(f'<p class="bodytype-sub">🧍‍♀️ {T("Un mismo indicador puede representar cuerpos diferentes", "The same indicator can represent different bodies")}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="bodytype-sub-hint">{T(
+        "Estas imágenes son solo ejemplos visuales de diferentes características corporales. No determinan por sí solas tu IMC ni tu estado de salud.",
+        "These images are only visual examples of different body characteristics. They don\'t determine your BMI or health on their own.")}</p>', unsafe_allow_html=True)
 
     _TIPOS_CUERPO = [
         {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
          "drive_id": T("1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN", "1bTETLcXCyZSLxJwxDmkYl1rN_O-v3XCK"),
          "nombre": T("Ectomorfo", "Ectomorph"),
-         "desc": T("Cuerpo delgado, extremidades largas y le cuesta ganar peso o masa muscular.",
-                    "Slim build, long limbs, finds it hard to gain weight or muscle."),
-         "chips": [T("Metabolismo rápido", "Fast metabolism"), T("Complexión fina", "Slight frame")]},
+         "chips": [T("Estructura fina", "Slight frame"), T("Extremidades largas", "Long limbs")]},
         {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
          "drive_id": T("1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV", "1vXQxIOZGSbQJdSQEVLUmpiM9MRdD7fbQ"),
          "nombre": T("Endomorfo", "Endomorph"),
-         "desc": T("Estructura más redondeada, mayor facilidad para acumular grasa y metabolismo más lento.",
-                    "Rounder frame, tends to store fat more easily and has a slower metabolism."),
-         "chips": [T("Acumula grasa fácil", "Stores fat easily"), T("Estructura ancha", "Wider frame")]},
+         "chips": [T("Estructura ancha", "Wider frame"), T("Mayor volumen", "Higher volume")]},
         {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
          "drive_id": T("1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv", "17ZSWhc64JcCXOXPcReRwfJt-9DH9-liC"),
          "nombre": T("Mesomorfo", "Mesomorph"),
-         "desc": T("Complexión atlética, hombros anchos y cintura estrecha; gana músculo con facilidad.",
-                    "Athletic build, broad shoulders and narrow waist; gains muscle easily."),
-         "chips": [T("Complexión atlética", "Athletic build"), T("Gana músculo fácil", "Builds muscle easily")]},
+         "chips": [T("Complexión atlética", "Athletic build"), T("Más masa muscular", "More muscle mass")]},
     ]
-    for _tp in _TIPOS_CUERPO:
-        # Foto real desde Google Drive (el archivo debe estar compartido como "Cualquier
-        # persona con el enlace puede ver"). Si la imagen no carga (permisos, cuota de
-        # Drive, etc.) se usa automáticamente la silueta SVG dibujada como respaldo, para
-        # que la tarjeta nunca se vea rota. La foto ocupa toda la parte superior de la
-        # tarjeta sobre fondo blanco (object-fit: contain) para que se vea grande y completa,
-        # sin recortes; el degradado de color queda solo en el panel inferior de texto.
-        # Las tarjetas se muestran apiladas, una debajo de la otra (no en columnas).
-        _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
-        _img_url_full = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w2000"
-        _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
-        _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
-        _lb_id = f"bodytype-lb-{_tp['clave']}"
-        st.markdown(f"""
-        <input type="checkbox" id="{_lb_id}" class="bodytype-lightbox-checkbox">
-        <div class="bodytype-card" style="margin-bottom:6px;">
-            <label for="{_lb_id}" class="bodytype-photo-wrap">
-                <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo bodytype-photo-trigger"
-                     onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
-            </label>
-            <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
-                <div class="bodytype-name">{_tp['nombre']}</div>
-                <div class="bodytype-desc">{_tp['desc']}</div>
-                <div>{_chips_html}</div>
+    _cols_tipos = st.columns(3)
+    for _col, _tp in zip(_cols_tipos, _TIPOS_CUERPO):
+        with _col:
+            # Fotos horizontales (anchas, poca altura) desde Google Drive; object-fit: contain
+            # para que se vea la imagen completa sin recortar la información. Clic para ampliar
+            # en una capa a pantalla completa (lightbox 100% CSS, sin JavaScript).
+            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
+            _img_url_full = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w2000"
+            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
+            _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
+            _lb_id = f"bodytype-lb-{_tp['clave']}"
+            st.markdown(f"""
+            <input type="checkbox" id="{_lb_id}" class="bodytype-lightbox-checkbox">
+            <div class="bodytype-card">
+                <label for="{_lb_id}" class="bodytype-photo-wrap">
+                    <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
+                         onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
+                </label>
+                <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
+                    <div class="bodytype-name">{_tp['nombre']}</div>
+                    <div>{_chips_html}</div>
+                </div>
             </div>
-        </div>
-        <p class="bodytype-caption">🔍 {T("Haz clic en la imagen para ver la información completa",
-                                          "Click on the image to see the full information")}</p>
-        <label for="{_lb_id}" class="bodytype-lightbox-overlay">
-            <span class="bodytype-lightbox-hint">✕ {T("Cerrar", "Close")}</span>
-            <img src="{_img_url_full}" alt="{_tp['nombre']}" />
-        </label>
-        """, unsafe_allow_html=True)
+            <label for="{_lb_id}" class="bodytype-lightbox-overlay">
+                <span class="bodytype-lightbox-hint">✕ {T("Cerrar", "Close")}</span>
+                <img src="{_img_url_full}" alt="{_tp['nombre']}" />
+            </label>
+            """, unsafe_allow_html=True)
 
-    # ===== 📌 Importante =====
+    # ===== 3) ¿Qué SÍ y qué NO puede distinguir el IMC? =====
     st.markdown(f"""
-    <div class="imc-warn-note">
-        <p style="margin:0 0 8px 0;font-weight:900;color:#3730A3;font-size:0.98rem;">📌 {T("Importante", "Important")}</p>
-        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "El IMC solo tiene en cuenta tu peso y tu estatura. No puede saber si ese peso corresponde "
-            "principalmente a músculo, grasa, huesos u otros tejidos.",
-            "BMI only takes your weight and height into account. It can't tell whether that weight comes "
-            "mainly from muscle, fat, bone, or other tissue.")}</p>
-        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "Por ejemplo, una persona que hace mucho ejercicio puede tener bastante masa muscular. Como el "
-            "músculo también pesa, su IMC puede indicar <b>&quot;sobrepeso&quot;</b>, aunque en realidad tenga poca "
-            "grasa corporal y una buena condición física.",
-            "For example, someone who trains a lot may carry a lot of muscle mass. Since muscle also has "
-            "weight, their BMI can show <b>&quot;overweight&quot;</b> even though they actually have low body fat "
-            "and good physical condition.")}</p>
+    <div class="imc-table-wrap">
+        <div class="imc-table-head">
+            <div class="si">✅ {T("El IMC sí utiliza", "BMI does use")}</div>
+            <div class="no">🚫 {T("El IMC no puede distinguir", "BMI can't distinguish")}</div>
+        </div>
+        <div class="imc-table-row"><div>⚖️ {T("Peso", "Weight")}</div><div>💪 {T("Masa muscular", "Muscle mass")}</div></div>
+        <div class="imc-table-row"><div>📏 {T("Estatura", "Height")}</div><div>🫧 {T("Cantidad de grasa", "Fat amount")}</div></div>
+        <div class="imc-table-row"><div></div><div>🦴 {T("Masa ósea", "Bone mass")}</div></div>
+        <div class="imc-table-row"><div></div><div>🧬 {T("Distribución de la grasa", "Fat distribution")}</div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 4) Ejemplo concreto =====
+    st.markdown(f"""
+    <div class="imc-example-box">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#B06000;font-size:0.98rem;">📌 {T("Ejemplo", "Example")}</p>
         <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "Por eso, el IMC es un <b>indicador de referencia</b>, pero no debe utilizarse por sí solo para "
-            "determinar si una persona tiene exceso de grasa.",
-            "That's why BMI is a <b>reference indicator</b>, but it shouldn't be used on its own to decide "
-            "whether someone has excess body fat.")}</p>
+            "Una persona que entrena con frecuencia puede tener bastante masa muscular. Como el músculo "
+            "también pesa, su IMC puede indicar <b>&quot;sobrepeso&quot;</b>, aunque en realidad tenga poca grasa "
+            "corporal y una buena condición física.",
+            "Someone who trains often may carry a lot of muscle mass. Since muscle also has weight, their "
+            "BMI can show <b>&quot;overweight&quot;</b> even though they actually have low body fat and good "
+            "physical condition.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 5) Conclusión =====
+    st.markdown(f"""
+    <div class="imc-conclusion-box">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#1E7E4B;font-size:0.98rem;">💡 {T("Conclusión", "Conclusion")}</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "El IMC es útil como <b>indicador inicial</b>, pero debe interpretarse junto con otros datos de "
+            "composición corporal y salud.",
+            "BMI is useful as an <b>initial indicator</b>, but it should be interpreted together with other "
+            "body-composition and health data.")}</p>
     </div>
     """, unsafe_allow_html=True)
 
