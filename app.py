@@ -5155,6 +5155,165 @@ def acciones_desde_hoy():
             """, unsafe_allow_html=True)
 
 
+def _svg_silueta_cuerpo(tipo, color):
+    """Devuelve un SVG inline (silueta simplificada) para cada somatotipo: 'ecto' (delgado),
+    'endo' (redondeado) o 'meso' (en V, atlético). Se usa en las tarjetas de tipos de cuerpo
+    de la advertencia 'El IMC no lo es todo'."""
+    if tipo == "ecto":
+        return f"""<svg viewBox="0 0 100 160" width="72" height="115">
+            <circle cx="50" cy="18" r="13" fill="{color}"/>
+            <rect x="41" y="33" width="18" height="56" rx="9" fill="{color}"/>
+            <rect x="27" y="35" width="8" height="48" rx="4" fill="{color}" opacity="0.8"/>
+            <rect x="65" y="35" width="8" height="48" rx="4" fill="{color}" opacity="0.8"/>
+            <rect x="40" y="91" width="9" height="58" rx="4" fill="{color}"/>
+            <rect x="51" y="91" width="9" height="58" rx="4" fill="{color}"/>
+        </svg>"""
+    if tipo == "meso":
+        return f"""<svg viewBox="0 0 100 160" width="72" height="115">
+            <circle cx="50" cy="16" r="14" fill="{color}"/>
+            <polygon points="22,34 78,34 63,80 37,80" fill="{color}"/>
+            <rect x="10" y="36" width="13" height="44" rx="6" fill="{color}" opacity="0.85"/>
+            <rect x="77" y="36" width="13" height="44" rx="6" fill="{color}" opacity="0.85"/>
+            <rect x="35" y="80" width="13" height="60" rx="5" fill="{color}"/>
+            <rect x="52" y="80" width="13" height="60" rx="5" fill="{color}"/>
+        </svg>"""
+    return f"""<svg viewBox="0 0 100 160" width="72" height="115">
+        <circle cx="50" cy="17" r="14" fill="{color}"/>
+        <ellipse cx="50" cy="60" rx="31" ry="35" fill="{color}"/>
+        <rect x="12" y="40" width="13" height="40" rx="6" fill="{color}" opacity="0.85"/>
+        <rect x="75" y="40" width="13" height="40" rx="6" fill="{color}" opacity="0.85"/>
+        <rect x="29" y="96" width="17" height="53" rx="7" fill="{color}"/>
+        <rect x="54" y="96" width="17" height="53" rx="7" fill="{color}"/>
+    </svg>"""
+
+
+def advertencia_imc_composicion_corporal():
+    """Advertencia 'El IMC no lo es todo': se muestra justo después del resultado de IMC/Percentil
+    (paneles de diagnóstico, escala, percentil) y antes de la sección '¿Qué puedes hacer desde hoy?',
+    para que el usuario lea esta salvedad inmediatamente después de ver su clasificación. Incluye
+    las 3 tarjetas de somatotipo (ecto/endo/mesomorfo) con siluetas SVG propias y una nota ampliada."""
+    st.markdown("""
+    <style>
+    .imc-warn-hero {
+        background: linear-gradient(120deg,#FFF3D6 0%,#FFE1E8 50%,#FDECFF 100%);
+        border-radius: 26px; padding: 24px 28px; margin: 4px 0 18px 0;
+        border: 1px solid rgba(255,149,0,0.25); box-shadow: 0 10px 26px rgba(255,94,58,0.14);
+        position: relative; overflow: hidden;
+    }
+    .imc-warn-hero::before {
+        content: ""; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px;
+        background: radial-gradient(circle, rgba(255,149,0,0.25) 0%, rgba(255,149,0,0) 70%);
+        border-radius: 50%;
+    }
+    .imc-warn-badge {
+        display: inline-block; background: #FF3B30; color: #fff; font-weight: 900; font-size: 0.78rem;
+        letter-spacing: 0.04em; padding: 5px 12px; border-radius: 999px; margin-bottom: 10px;
+        box-shadow: 0 4px 10px rgba(255,59,48,0.35);
+    }
+    .imc-warn-title {
+        margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 900; color: #B33A00; letter-spacing: -0.02em;
+    }
+    .imc-warn-text { margin: 0; color: #5C4A1E; font-size: 0.94rem; line-height: 1.65; max-width: 720px; }
+    .bodytype-sub {
+        margin: 4px 0 14px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
+    }
+    .bodytype-card {
+        border-radius: 22px; padding: 18px 14px 16px 14px; text-align: center; height: 100%;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.10); transition: transform 0.15s ease;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    .bodytype-icon-wrap {
+        background: rgba(255,255,255,0.55); border-radius: 18px; padding: 8px 0 2px 0; margin-bottom: 10px;
+    }
+    .bodytype-name { font-weight: 900; font-size: 1.02rem; color: #fff; margin: 2px 0 6px 0; letter-spacing: -0.01em; }
+    .bodytype-desc { font-size: 0.82rem; color: rgba(255,255,255,0.95); line-height: 1.55; margin-bottom: 10px; }
+    .bodytype-chip {
+        display: inline-block; background: rgba(255,255,255,0.28); color: #fff; font-size: 0.72rem;
+        font-weight: 700; padding: 3px 10px; border-radius: 999px; margin: 2px 3px;
+    }
+    .imc-warn-note {
+        margin-top: 18px; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#EAF4FF 0%,#F3EAFF 100%); border-left: 6px solid #5856D6;
+        box-shadow: 0 6px 16px rgba(88,86,214,0.10);
+    }
+    .imc-warn-note b { color: #3730A3; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ===== Encabezado: "¡OJO! El IMC no lo es todo" =====
+    st.markdown(f"""
+    <div class="imc-warn-hero">
+        <span class="imc-warn-badge">⚠️ {T("¡OJO!", "HEADS UP!")}</span>
+        <p class="imc-warn-title">⚠️ {T("¡OJO! El IMC no lo es todo", "Watch out! BMI isn't everything")}</p>
+        <p class="imc-warn-text">{T(
+            "El IMC relaciona tu peso con tu estatura, pero no indica cuánto de ese peso corresponde a "
+            "grasa o músculo. Por eso, <b>dos personas pueden tener el mismo IMC y presentar una "
+            "composición corporal totalmente diferente</b>.",
+            "BMI relates your weight to your height, but it doesn't show how much of that weight is fat "
+            "or muscle. That's why <b>two people can share the same BMI and have a completely different "
+            "body composition</b>.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== Tipos de cuerpo (somatotipos) =====
+    st.markdown(f'<p class="bodytype-sub">🧍 {T("Tipos de cuerpo", "Body Types")}</p>', unsafe_allow_html=True)
+
+    _TIPOS_CUERPO = [
+        {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
+         "nombre": T("Ectomorfo", "Ectomorph"),
+         "desc": T("Cuerpo delgado, extremidades largas y le cuesta ganar peso o masa muscular.",
+                    "Slim build, long limbs, finds it hard to gain weight or muscle."),
+         "chips": [T("Metabolismo rápido", "Fast metabolism"), T("Complexión fina", "Slight frame")]},
+        {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
+         "nombre": T("Endomorfo", "Endomorph"),
+         "desc": T("Estructura más redondeada, mayor facilidad para acumular grasa y metabolismo más lento.",
+                    "Rounder frame, tends to store fat more easily and has a slower metabolism."),
+         "chips": [T("Acumula grasa fácil", "Stores fat easily"), T("Estructura ancha", "Wider frame")]},
+        {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
+         "nombre": T("Mesomorfo", "Mesomorph"),
+         "desc": T("Complexión atlética, hombros anchos y cintura estrecha; gana músculo con facilidad.",
+                    "Athletic build, broad shoulders and narrow waist; gains muscle easily."),
+         "chips": [T("Complexión atlética", "Athletic build"), T("Gana músculo fácil", "Builds muscle easily")]},
+    ]
+    _cols_tipos = st.columns(3)
+    for _col, _tp in zip(_cols_tipos, _TIPOS_CUERPO):
+        with _col:
+            _icono_svg = _svg_silueta_cuerpo(_tp["clave"], "#FFFFFF")
+            _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
+            st.markdown(f"""
+            <div class="bodytype-card" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
+                <div class="bodytype-icon-wrap">{_icono_svg}</div>
+                <div class="bodytype-name">{_tp['nombre']}</div>
+                <div class="bodytype-desc">{_tp['desc']}</div>
+                <div>{_chips_html}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ===== 📌 Importante =====
+    st.markdown(f"""
+    <div class="imc-warn-note">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#3730A3;font-size:0.98rem;">📌 {T("Importante", "Important")}</p>
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "El IMC solo tiene en cuenta tu peso y tu estatura. No puede saber si ese peso corresponde "
+            "principalmente a músculo, grasa, huesos u otros tejidos.",
+            "BMI only takes your weight and height into account. It can't tell whether that weight comes "
+            "mainly from muscle, fat, bone, or other tissue.")}</p>
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "Por ejemplo, una persona que hace mucho ejercicio puede tener bastante masa muscular. Como el "
+            "músculo también pesa, su IMC puede indicar <b>&quot;sobrepeso&quot;</b>, aunque en realidad tenga poca "
+            "grasa corporal y una buena condición física.",
+            "For example, someone who trains a lot may carry a lot of muscle mass. Since muscle also has "
+            "weight, their BMI can show <b>&quot;overweight&quot;</b> even though they actually have low body fat "
+            "and good physical condition.")}</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "Por eso, el IMC es un <b>indicador de referencia</b>, pero no debe utilizarse por sí solo para "
+            "determinar si una persona tiene exceso de grasa.",
+            "That's why BMI is a <b>reference indicator</b>, but it shouldn't be used on its own to decide "
+            "whether someone has excess body fat.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def progreso_hacia_meta_imc(imc, categoria):
     """Sección 13: barra de progreso del IMC actual hacia la meta saludable (22), conectando
     con la hoja de Control de Peso / Proyección."""
@@ -8149,6 +8308,14 @@ elif hoja_activa == "2.-IMC Y PERCENTIL":
                   "**13.-LÍNEA DE TIEMPO** (Seguimiento del Peso durante el Embarazo).",
                   "📊 You can see your week-by-week gestational weight-gain curve in "
                   "**13.-TIMELINE** (Weight Tracking During Pregnancy)."))
+
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # --- ⚠️ El IMC no lo es todo (composición corporal / somatotipos) -----------------------
+    # Se coloca justo después del resultado de IMC/Percentil y de toda la información asociada
+    # (diagnóstico, escala, percentil, gráficos, tablas), y antes de "¿Qué puedes hacer desde
+    # hoy?", para que el usuario lea esta salvedad inmediatamente después de ver su clasificación.
+    advertencia_imc_composicion_corporal()
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
