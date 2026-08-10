@@ -5250,10 +5250,10 @@ def advertencia_imc_composicion_corporal():
     }
     .bodytype-photo-wrap {
         width: 100%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;
-        padding: 12px 12px 6px 12px;
+        padding: 6px 6px 4px 6px;
     }
     .bodytype-photo {
-        width: 100%; height: 360px; object-fit: contain; object-position: center top;
+        width: 100%; height: 560px; object-fit: cover; object-position: center top;
         display: block; border-radius: 14px;
     }
     .bodytype-info { padding: 16px 18px 20px 18px; flex-grow: 1; }
@@ -7097,7 +7097,14 @@ if _es_gestante:
 # =========================================================================================
 hoja_activa = st.session_state["hoja_activa"]
 _icono_actual, _titulo_actual = _etiquetas_nav_activas()[hoja_activa]
+_MEMBRETE_DRIVE_ID = "1jLoxcXk5iUE8WrQqrV4Vpp-tcnRv_oBj"
+_membrete_url = f"https://drive.google.com/thumbnail?id={_MEMBRETE_DRIVE_ID}&sz=w1200"
 st.markdown(f"""
+<div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+    <img src="{_membrete_url}" alt="Membrete institucional"
+         style="max-width:100%;height:auto;max-height:110px;object-fit:contain;border-radius:10px;"
+         onerror="this.style.display='none';" />
+</div>
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
     <span style="font-size:1.4rem;">{_icono_actual}</span>
     <span style="font-size:0.82rem;color:#8A94A6;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">
