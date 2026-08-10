@@ -5292,49 +5292,48 @@ def advertencia_imc_composicion_corporal():
 
     _TIPOS_CUERPO = [
         {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
-         "drive_id": "1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN",
+         "drive_id": T("1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN", "1bTETLcXCyZSLxJwxDmkYl1rN_O-v3XCK"),
          "nombre": T("Ectomorfo", "Ectomorph"),
          "desc": T("Cuerpo delgado, extremidades largas y le cuesta ganar peso o masa muscular.",
                     "Slim build, long limbs, finds it hard to gain weight or muscle."),
          "chips": [T("Metabolismo rápido", "Fast metabolism"), T("Complexión fina", "Slight frame")]},
         {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
-         "drive_id": "1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV",
+         "drive_id": T("1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV", "1vXQxIOZGSbQJdSQEVLUmpiM9MRdD7fbQ"),
          "nombre": T("Endomorfo", "Endomorph"),
          "desc": T("Estructura más redondeada, mayor facilidad para acumular grasa y metabolismo más lento.",
                     "Rounder frame, tends to store fat more easily and has a slower metabolism."),
          "chips": [T("Acumula grasa fácil", "Stores fat easily"), T("Estructura ancha", "Wider frame")]},
         {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
-         "drive_id": "1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv",
+         "drive_id": T("1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv", "17ZSWhc64JcCXOXPcReRwfJt-9DH9-liC"),
          "nombre": T("Mesomorfo", "Mesomorph"),
          "desc": T("Complexión atlética, hombros anchos y cintura estrecha; gana músculo con facilidad.",
                     "Athletic build, broad shoulders and narrow waist; gains muscle easily."),
          "chips": [T("Complexión atlética", "Athletic build"), T("Gana músculo fácil", "Builds muscle easily")]},
     ]
-    _cols_tipos = st.columns(3)
-    for _col, _tp in zip(_cols_tipos, _TIPOS_CUERPO):
-        with _col:
-            # Foto real desde Google Drive (el archivo debe estar compartido como "Cualquier
-            # persona con el enlace puede ver"). Si la imagen no carga (permisos, cuota de
-            # Drive, etc.) se usa automáticamente la silueta SVG dibujada como respaldo, para
-            # que la tarjeta nunca se vea rota. La foto ocupa toda la parte superior de la
-            # tarjeta sobre fondo blanco (object-fit: contain) para que se vea grande y completa,
-            # sin recortes; el degradado de color queda solo en el panel inferior de texto.
-            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
-            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
-            _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
-            st.markdown(f"""
-            <div class="bodytype-card">
-                <div class="bodytype-photo-wrap">
-                    <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
-                         onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
-                </div>
-                <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
-                    <div class="bodytype-name">{_tp['nombre']}</div>
-                    <div class="bodytype-desc">{_tp['desc']}</div>
-                    <div>{_chips_html}</div>
-                </div>
+    for _tp in _TIPOS_CUERPO:
+        # Foto real desde Google Drive (el archivo debe estar compartido como "Cualquier
+        # persona con el enlace puede ver"). Si la imagen no carga (permisos, cuota de
+        # Drive, etc.) se usa automáticamente la silueta SVG dibujada como respaldo, para
+        # que la tarjeta nunca se vea rota. La foto ocupa toda la parte superior de la
+        # tarjeta sobre fondo blanco (object-fit: contain) para que se vea grande y completa,
+        # sin recortes; el degradado de color queda solo en el panel inferior de texto.
+        # Las tarjetas se muestran apiladas, una debajo de la otra (no en columnas).
+        _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
+        _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
+        _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
+        st.markdown(f"""
+        <div class="bodytype-card" style="margin-bottom:18px;">
+            <div class="bodytype-photo-wrap">
+                <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
+                     onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
             </div>
-            """, unsafe_allow_html=True)
+            <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
+                <div class="bodytype-name">{_tp['nombre']}</div>
+                <div class="bodytype-desc">{_tp['desc']}</div>
+                <div>{_chips_html}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     # ===== 📌 Importante =====
     st.markdown(f"""
