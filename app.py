@@ -1999,7 +1999,7 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
     """, unsafe_allow_html=True)
 
 
-def imagen_referencia_drive(drive_id_es, drive_id_en, alt_es, alt_en=None, max_width_px=480):
+def imagen_referencia_drive(drive_id_es, drive_id_en, alt_es, alt_en=None, max_width_px=720):
     """Muestra una imagen de referencia (desde Google Drive) centrada, con tamaño moderado
     (legible pero no gigante), esquinas redondeadas y sombreado suave. Cambia automáticamente
     entre la versión en español y en inglés según el idioma activo de la app."""
@@ -3437,27 +3437,36 @@ DIETA = {
     "Desayuno": {
         "Carbohidrato": {"Avena cocida": 150, "Pan integral": 70, "Cereal integral": 110, "Manzana": 95, "Tostada de pan de centeno": 65, "Pera": 100, "Batata cocida": 90, "Mandarina": 45, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Huevo hervido": 155, "Claras de huevo": 52, "Leche descremada": 34, "Queso cottage": 98, "Queso ricotta": 174, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Palta": 160, "Almendras": 573.33, "Mantequilla de maní": 88, "Semillas de chía": 86, "Nueces": 653.57, "Crema de almendra": 64, "Mayonesa": 316.67, "Maní": 500, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Palta": 160, "Almendras": 573.33, "Mantequilla de maní": 587.5, "Semillas de chía": 86, "Nueces": 653.57, "Crema de almendra": 64, "Mayonesa": 316.67, "Maní": 500, "Tocino": 537.5, "Salmón (graso)": 116,
+                  "Mantequilla": 850, "Avellanas": 676.92, "Pecanas": 725.93, "Carne de cerdo": 270.59, "Aceitunas negras": 104.35, "Pato asado": 336.47, "Pollo asado a la parrilla o al horno": 236.47},
     },
     "Merienda 1": {
-        "Carbohidrato": {"Piña": 50, "Manzana verde": 52, "Uvas": 69, "Kiwi": 61, "Pan pita integral": 275, "Zanahoria cruda": 41, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
-        "Proteína": {"Yogur natural": 61, "Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Pistachos": 560, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Carbohidrato": {"Manzana verde": 52, "Uvas": 69, "Kiwi": 61, "Pan pita integral": 275, "Zanahoria cruda": 41,
+                          "Manzana": 52, "Plátano": 89, "Avena": 389, "Queque": 215.71, "Pan francés con mantequilla": 374.74, "Gelatina": 1, "Piña": 48, "Cereales chocolate con leche": 399},
+        "Proteína": {"Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241,
+                     "Yogur natural": 63, "Queso fresco": 145},
+        "Grasa": {"Pistachos": 560, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 884,
+                  "Almendras": 700},
     },
     "Almuerzo": {
         "Carbohidrato": {"Arroz integral": 123, "Quinoa cocida": 120, "Couscous cocido": 112, "Garbanzos cocidos": 164, "Lentejas": 116, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Pechuga de pollo": 165, "Fillete de res magra": 217, "Pescado blanco": 96, "Salmón a la plancha": 208, "Pavo al horno": 135, "Bacalao a la plancha": 105, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Aceite de oliva": 884, "Aceitunas verdes": 145, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Aceite de oliva": 884, "Aceitunas verdes": 145, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116,
+                  "Mantequilla": 850, "Mantequilla de maní": 587.5, "Avellanas": 676.92, "Pecanas": 725.93, "Carne de cerdo": 270.59, "Aceitunas negras": 104.35, "Pato asado": 336.47, "Pollo asado a la parrilla o al horno": 236.47},
     },
     "Merienda 2": {
-        "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89, "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
-        "Proteína": {"Queso ricotta": 174, "Yogurt griego": 97, "Pollo desmenuzado": 165, "Yogur descremado": 34, "Clara de huevo": 52, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89, "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266,
+                          "Manzana": 52, "Plátano": 89, "Avena": 389, "Queque": 215.71, "Pan francés con mantequilla": 374.74, "Gelatina": 1, "Piña": 48, "Cereales chocolate con leche": 399},
+        "Proteína": {"Queso ricotta": 174, "Yogurt griego": 97, "Pollo desmenuzado": 165, "Yogur descremado": 34, "Clara de huevo": 52,
+                     "Yogur natural": 63, "Queso fresco": 145},
+        "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94,
+                  "Almendras": 700},
     },
     "Cena": {
         "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Palomitas de maíz": 387, "Camote": 86, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Huevos revueltos": 148, "Sardinas": 208, "Pechuga de pavo": 135, "Pechuga de pollo": 165, "Filete de pescado blanco": 96, "Pechuga de pollo (sin piel)": 165, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Aceitunas": 145, "Queso crema": 202, "Aceite de aguacate": 884, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Aceitunas": 145, "Queso crema": 202, "Aceite de aguacate": 884, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116,
+                  "Mantequilla": 850, "Mantequilla de maní": 587.5, "Avellanas": 676.92, "Pecanas": 725.93, "Carne de cerdo": 270.59, "Aceitunas negras": 104.35, "Pato asado": 336.47, "Pollo asado a la parrilla o al horno": 236.47},
     },
 }
 
@@ -3522,6 +3531,7 @@ DIETA_NOMBRE_EN = {
     "Aceite de linaza": "Flaxseed Oil",
     "Aceite de oliva": "Olive Oil",
     "Aceitunas": "Olives",
+    "Aceitunas negras": "Black Olives",
     "Aceitunas verdes": "Green Olives",
     "Aguacate": "Avocado",
     "Almendras": "Almonds",
@@ -3542,8 +3552,10 @@ DIETA_NOMBRE_EN = {
     "Camarones / Langostinos": "Shrimp / Prawns",
     "Camote": "Sweet Potato",
     "Cancha": "Toasted Corn Nuts",
+    "Carne de cerdo": "Pork Meat",
     "Cebada cocida": "Cooked Barley",
     "Cereal integral": "Whole Grain Cereal",
+    "Cereales chocolate con leche": "Chocolate Cereal with Milk",
     "Clara de huevo": "Egg White",
     "Clara de huevo cocida": "Cooked Egg White",
     "Claras de huevo": "Egg Whites",
@@ -3555,6 +3567,7 @@ DIETA_NOMBRE_EN = {
     "Galletas integrales": "Whole Grain Crackers",
     "Garbanzos (cocidos)": "Chickpeas (Cooked)",
     "Garbanzos cocidos": "Cooked Chickpeas",
+    "Gelatina": "Gelatin",
     "Granola": "Granola",
     "Granola clásica": "Classic Granola",
     "Huevo entero": "Whole Egg",
@@ -3581,25 +3594,31 @@ DIETA_NOMBRE_EN = {
     "Palta": "Avocado",
     "Pan blanco": "White Bread",
     "Pan de maíz": "Corn Bread",
+    "Pan francés con mantequilla": "French Bread with Butter",
     "Pan integral": "Whole Wheat Bread",
     "Pan pita integral": "Whole Wheat Pita Bread",
     "Pan árabe": "Pita Bread",
     "Papa": "Potato",
     "Papa sancochada": "Boiled Potato",
+    "Pato asado": "Roast Duck",
     "Pavo al horno": "Baked Turkey",
     "Pechuga de pavo": "Turkey Breast",
     "Pechuga de pollo": "Chicken Breast",
     "Pechuga de pollo (sin piel)": "Chicken Breast (Skinless)",
+    "Pecanas": "Pecans",
     "Pera": "Pear",
     "Pescado blanco": "White Fish",
     "Pistachos": "Pistachios",
     "Piña": "Pineapple",
     "Plátano": "Plantain",
+    "Pollo asado a la parrilla o al horno": "Grilled or Roasted Chicken",
     "Pollo desmenuzado": "Shredded Chicken",
+    "Queque": "Pound Cake",
     "Queso Cottage": "Cottage Cheese",
     "Queso brie": "Brie Cheese",
     "Queso cottage": "Cottage Cheese",
     "Queso crema": "Cream Cheese",
+    "Queso fresco": "Fresh Cheese",
     "Queso gouda": "Gouda Cheese",
     "Queso parmesano": "Parmesan Cheese",
     "Queso ricotta": "Ricotta Cheese",
@@ -6464,7 +6483,7 @@ _DEFAULTS_SESION = {
     "ajuste_bajar_sel": "Equilibrado (-20%) ⭐ Recomendado",
     "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
     "spo2": 98.0, "pulso": 75, "temp_corp": 36.5, "pas": 120, "pad": 80,
-    "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
+    "hemo": None, "trigli": None, "gluco": None, "coles": None, "hierro": None,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
     "muneca_cm": 17.5, "usar_somatotipo": False,
@@ -6939,16 +6958,21 @@ def _panel_llenar_datos():
                 "With your blood values we identify risks such as anemia, high cholesterol or elevated glucose, "
                 "to give you more precise recommendations.")}</p></div>',
                 unsafe_allow_html=True)
-    hemo = st.number_input(T("Hemoglobina (g/dL):", "Hemoglobin (g/dL):"), min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
-                            key="hemo", help=T("Normal: 12-17 g/dL, varía por género.", "Normal: 12-17 g/dL, varies by gender."))
-    gluco = st.number_input(T("Glucosa (mg/dL):", "Glucose (mg/dL):"), min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
-                             key="gluco", help=T("Normal en ayunas: 70-100 mg/dL.", "Normal fasting: 70-100 mg/dL."))
-    coles = st.number_input(T("Colesterol (mg/dL):", "Cholesterol (mg/dL):"), min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
-                             key="coles", help=T("Ideal: menor a 200 mg/dL.", "Ideal: less than 200 mg/dL."))
-    trigli = st.number_input(T("Triglicéridos (mg/dL):", "Triglycerides (mg/dL):"), min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
-                              key="trigli", help=T("Ideal: menor a 150 mg/dL.", "Ideal: less than 150 mg/dL."))
-    hierro = st.number_input(T("Hierro Sérico (µg/dL):", "Serum Iron (µg/dL):"), min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
-                              key="hierro", help=T("Normal: 60-170 µg/dL.", "Normal: 60-170 µg/dL."))
+    hemo = st.number_input(T("Hemoglobina (g/dL):", "Hemoglobin (g/dL):"), min_value=0.0, max_value=HEMO_MAX, value=None, step=0.1,
+                            placeholder=T("Opcional", "Optional"),
+                            key="hemo", help=T("Normal: 12-17 g/dL, varía por género. Déjalo vacío si no tienes examen reciente.", "Normal: 12-17 g/dL, varies by gender. Leave empty if you don't have a recent test."))
+    gluco = st.number_input(T("Glucosa (mg/dL):", "Glucose (mg/dL):"), min_value=0.0, max_value=GLUCO_MAX, value=None, step=1.0,
+                             placeholder=T("Opcional", "Optional"),
+                             key="gluco", help=T("Normal en ayunas: 70-100 mg/dL. Déjalo vacío si no tienes examen reciente.", "Normal fasting: 70-100 mg/dL. Leave empty if you don't have a recent test."))
+    coles = st.number_input(T("Colesterol (mg/dL):", "Cholesterol (mg/dL):"), min_value=0.0, max_value=COLES_MAX, value=None, step=1.0,
+                             placeholder=T("Opcional", "Optional"),
+                             key="coles", help=T("Ideal: menor a 200 mg/dL. Déjalo vacío si no tienes examen reciente.", "Ideal: less than 200 mg/dL. Leave empty if you don't have a recent test."))
+    trigli = st.number_input(T("Triglicéridos (mg/dL):", "Triglycerides (mg/dL):"), min_value=0.0, max_value=TRIGLI_MAX, value=None, step=1.0,
+                              placeholder=T("Opcional", "Optional"),
+                              key="trigli", help=T("Ideal: menor a 150 mg/dL. Déjalo vacío si no tienes examen reciente.", "Ideal: less than 150 mg/dL. Leave empty if you don't have a recent test."))
+    hierro = st.number_input(T("Hierro Sérico (µg/dL):", "Serum Iron (µg/dL):"), min_value=0.0, max_value=HIERRO_MAX, value=None, step=1.0,
+                              placeholder=T("Opcional", "Optional"),
+                              key="hierro", help=T("Normal: 60-170 µg/dL. Déjalo vacío si no tienes examen reciente.", "Normal: 60-170 µg/dL. Leave empty if you don't have a recent test."))
 
 with st.sidebar.expander(T("📝 Llenar / Editar Mis Datos", "📝 Enter / Edit My Data"), expanded=True):
     _panel_llenar_datos()
@@ -6980,11 +7004,11 @@ pulso = st.session_state.get("pulso", 0)
 temp_corp = st.session_state.get("temp_corp", 0.0)
 pas = st.session_state.get("pas", 0)
 pad = st.session_state.get("pad", 0)
-hemo = st.session_state.get("hemo", 0.0)
-gluco = st.session_state.get("gluco", 0.0)
-coles = st.session_state.get("coles", 0.0)
-trigli = st.session_state.get("trigli", 0.0)
-hierro = st.session_state.get("hierro", 0.0)
+hemo = st.session_state.get("hemo") or 0.0
+gluco = st.session_state.get("gluco") or 0.0
+coles = st.session_state.get("coles") or 0.0
+trigli = st.session_state.get("trigli") or 0.0
+hierro = st.session_state.get("hierro") or 0.0
 _nombre_saludo = nombre_display(nombre_usuario, genero)
 
 # ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 15 secciones siempre visibles ----
@@ -7116,11 +7140,11 @@ pas = st.session_state["pas"]
 pad = st.session_state["pad"]
 
 # --- Perfil bioquímico (Bloque 4, persistente) ---
-hemo = st.session_state["hemo"]
-trigli = st.session_state["trigli"]
-gluco = st.session_state["gluco"]
-coles = st.session_state["coles"]
-hierro = st.session_state["hierro"]
+hemo = st.session_state.get("hemo") or 0.0
+trigli = st.session_state.get("trigli") or 0.0
+gluco = st.session_state.get("gluco") or 0.0
+coles = st.session_state.get("coles") or 0.0
+hierro = st.session_state.get("hierro") or 0.0
 
 # =========================================================================================
 # CÁLCULOS CENTRALES (siguiendo el orden y las referencias EXACTAS de las hojas del Excel)
@@ -8051,56 +8075,123 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.markdown(f"##### 🎯 {T('Impacto en la vida diaria (Signos Vitales)', 'Impact on daily life (Vital Signs)')}")
     _IMPACTO_VITAL = {
         T("🏫 Colegio", "🏫 School"): {
-            "Presión Arterial": T("Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
-                                   "It can cause headaches, drowsiness, or trouble concentrating in class."),
-            "Oxigenación (SpO₂)": T("Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
-                                     "It causes quick fatigue when climbing stairs or walking; lower stamina in PE class."),
-            "Temperatura": T("Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
-                              "Reduced academic and cognitive performance; it's best to stay home and rest."),
-            "Pulso": T("Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
-                       "A feeling of being on edge; avoid intense physical effort and stay well hydrated."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: favorece una buena concentración y previene la fatiga prematura en clase.",
+                             "Balanced blood pressure: supports good concentration and prevents early fatigue in class."),
+                "Alerta": T("Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
+                             "It can cause headaches, drowsiness, or trouble concentrating in class."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: buen rendimiento físico en educación física y actividades escolares.",
+                             "Optimal oxygenation: good physical performance in PE class and school activities."),
+                "Alerta": T("Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
+                             "It causes quick fatigue when climbing stairs or walking; lower stamina in PE class."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: mantiene la energía y el rendimiento cognitivo estables durante el día escolar.",
+                             "Adequate thermoregulation: keeps energy and cognitive performance stable during the school day."),
+                "Alerta": T("Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
+                             "Reduced academic and cognitive performance; it's best to stay home and rest."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: indica un sistema cardiovascular descansado, ideal para el día de estudio.",
+                             "Efficient heart rate: indicates a rested cardiovascular system, ideal for the school day."),
+                "Alerta": T("Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
+                             "A feeling of being on edge; avoid intense physical effort and stay well hydrated."),
+            },
         },
         T("🏠 Casa", "🏠 Home"): {
-            "Presión Arterial": T("Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
-                                   "It can cause tiredness or dizziness when doing demanding chores."),
-            "Oxigenación (SpO₂)": T("Sensación de falta de aire al subir escaleras o realizar quehaceres.",
-                                     "A feeling of shortness of breath when climbing stairs or doing chores."),
-            "Temperatura": T("Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
-                              "It's best to rest, stay well hydrated, and avoid exertion at home."),
-            "Pulso": T("Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
-                       "It may feel like palpitations; prioritize rest and avoid sudden frights or startles."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: puedes realizar tareas domésticas habituales sin molestias.",
+                             "Balanced blood pressure: you can do regular household chores without discomfort."),
+                "Alerta": T("Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
+                             "It can cause tiredness or dizziness when doing demanding chores."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: sin falta de aire al subir escaleras o hacer quehaceres del hogar.",
+                             "Optimal oxygenation: no shortness of breath when climbing stairs or doing chores."),
+                "Alerta": T("Sensación de falta de aire al subir escaleras o realizar quehaceres.",
+                             "A feeling of shortness of breath when climbing stairs or doing chores."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: tu cuerpo mantiene el metabolismo estable en casa.",
+                             "Adequate thermoregulation: your body keeps a stable metabolism at home."),
+                "Alerta": T("Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
+                             "It's best to rest, stay well hydrated, and avoid exertion at home."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: descanso y actividades del hogar sin sobresaltos.",
+                             "Efficient heart rate: rest and household activities without any concern."),
+                "Alerta": T("Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
+                             "It may feel like palpitations; prioritize rest and avoid sudden frights or startles."),
+            },
         },
         T("🏃 Actividad Física", "🏃 Physical Activity"): {
-            "Presión Arterial": T("Conviene evitar ejercicio intenso hasta que el valor se normalice.",
-                                   "It's best to avoid intense exercise until the value returns to normal."),
-            "Oxigenación (SpO₂)": T("El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
-                                     "Physical performance drops noticeably; reduce training intensity."),
-            "Temperatura": T("No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
-                              "Exercising with a fever isn't recommended; the body is already under strain."),
-            "Pulso": T("Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
-                       "An elevated resting pulse suggests it's best to postpone intense exercise."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: puedes realizar actividad física con normalidad.",
+                             "Balanced blood pressure: you can exercise normally."),
+                "Alerta": T("Conviene evitar ejercicio intenso hasta que el valor se normalice.",
+                             "It's best to avoid intense exercise until the value returns to normal."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: buen rendimiento físico durante el entrenamiento.",
+                             "Optimal oxygenation: good physical performance during training."),
+                "Alerta": T("El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
+                             "Physical performance drops noticeably; reduce training intensity."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: el cuerpo está en condiciones normales para hacer deporte.",
+                             "Adequate thermoregulation: your body is in normal condition for exercise."),
+                "Alerta": T("No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
+                             "Exercising with a fever isn't recommended; the body is already under strain."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: sistema cardiovascular descansado, apto para entrenar.",
+                             "Efficient heart rate: a rested cardiovascular system, fit for training."),
+                "Alerta": T("Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
+                             "An elevated resting pulse suggests it's best to postpone intense exercise."),
+            },
         },
         T("💼 Trabajo", "💼 Work"): {
-            "Presión Arterial": T("Puede afectar la concentración en tareas que requieren atención sostenida.",
-                                   "It can affect concentration on tasks that require sustained attention."),
-            "Oxigenación (SpO₂)": T("Mayor cansancio en jornadas largas o con esfuerzo físico.",
-                                     "Greater fatigue during long workdays or physical effort."),
-            "Temperatura": T("Es preferible descansar en casa en vez de asistir a trabajar.",
-                              "It's preferable to rest at home instead of going to work."),
-            "Pulso": T("Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
-                       "Avoid high-pressure or stressful situations until the rhythm returns to normal."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: favorece la concentración en tareas que requieren atención sostenida.",
+                             "Balanced blood pressure: supports concentration on tasks that require sustained attention."),
+                "Alerta": T("Puede afectar la concentración en tareas que requieren atención sostenida.",
+                             "It can affect concentration on tasks that require sustained attention."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: buen rendimiento en jornadas largas o con esfuerzo físico.",
+                             "Optimal oxygenation: good performance during long workdays or physical effort."),
+                "Alerta": T("Mayor cansancio en jornadas largas o con esfuerzo físico.",
+                             "Greater fatigue during long workdays or physical effort."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: mantiene la energía y el rendimiento estable durante la jornada laboral.",
+                             "Adequate thermoregulation: keeps your energy and performance stable during the workday."),
+                "Alerta": T("Es preferible descansar en casa en vez de asistir a trabajar.",
+                             "It's preferable to rest at home instead of going to work."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: puedes afrontar el día laboral con normalidad.",
+                             "Efficient heart rate: you can face the workday normally."),
+                "Alerta": T("Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
+                             "Avoid high-pressure or stressful situations until the rhythm returns to normal."),
+            },
         },
     }
     _tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo = st.tabs(list(_IMPACTO_VITAL.keys()))
     for _tab, _ambito_v in zip([_tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo], _IMPACTO_VITAL.keys()):
         with _tab:
             for _param, _colk in _todos_vitales:
+                if _colk == "gris":
+                    continue
                 _st = SEMAFORO_ESTILO[_colk]
+                _estado_txt = "Normal" if _colk == "verde" else "Alerta"
                 st.markdown(f"""
                 <div style="background:{_st['fondo']};border-left:4px solid {_st['hex']};border-radius:16px;
                 padding:10px 16px;margin-bottom:6px;">
                 <b style="color:{_st['hex']};">{_vn(_param)}</b> — <span style="color:#1C1C1E;font-size:0.88rem;">
-                {_IMPACTO_VITAL[_ambito_v][_param]}</span>
+                {_IMPACTO_VITAL[_ambito_v][_param][_estado_txt]}</span>
                 </div>
                 """, unsafe_allow_html=True)
 
