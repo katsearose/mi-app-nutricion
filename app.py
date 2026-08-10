@@ -2884,42 +2884,13 @@ def generar_pdf_reporte(datos):
     story.append(header2)
     story.append(Spacer(1, 8))
 
-    # ---------------- 6. DISTRIBUCIÓN DE PORCIONES POR TIEMPOS DEL DÍA ----------------
-    _porciones_pdf = datos.get("porciones_dia") or {}
-    if _porciones_pdf:
-        story.append(Paragraph(T("6. DISTRIBUCIÓN DE PORCIONES POR TIEMPOS DEL DÍA", "6. PORTION DISTRIBUTION BY TIME OF DAY"), estilo_seccion2))
-        _MOMENTO_ICONO = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
-        _mom_orden_pdf = ["Desayuno", "Merienda 1", "Almuerzo", "Merienda 2", "Cena"]
-        _tot_pct_pdf, _tot_kcal_pdf = 0.0, 0.0
-        _filas_dist = [[Paragraph(f"<b>{T('Momento', 'Meal')}</b>", estilo_texto_bold),
-                        Paragraph(f"<b>{T('Porcentaje', 'Percentage')}</b>", estilo_texto_bold),
-                        Paragraph(f"<b>{T('Kcal', 'Kcal')}</b>", estilo_texto_bold)]]
-        for _m in _mom_orden_pdf:
-            if _m not in _porciones_pdf:
-                continue
-            _pct = _porciones_pdf[_m]["pct"]
-            _kc = _porciones_pdf[_m]["kcal"]
-            _tot_pct_pdf += _pct
-            _tot_kcal_pdf += _kc
-            _filas_dist.append([Paragraph(f"{_MOMENTO_ICONO.get(_m, '')} {_mom_pdf(_m)}", estilo_texto),
-                                 Paragraph(f"{_pct*100:.0f}%", estilo_texto),
-                                 Paragraph(f"{_kc:.2f} kcal", estilo_texto)])
-        _filas_dist.append([Paragraph(f"<b>{T('TOTAL', 'TOTAL')}</b>", estilo_texto_bold),
-                             Paragraph(f"<b>{_tot_pct_pdf*100:.0f}%</b>", estilo_texto_bold),
-                             Paragraph(f"<b>{_tot_kcal_pdf:.2f} kcal</b>", estilo_texto_bold)])
-        _tabla_dist = Table(_filas_dist, colWidths=[70 * mm, 44 * mm, 64 * mm])
-        _tabla_dist.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(AZUL_TXT)), ("TEXTCOLOR", (0, 0), (-1, 0), rl_colors.white),
-            ("BACKGROUND", (0, -1), (-1, -1), _rl_hex(GRIS_MOD)),
-            ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ]))
-        story.append(_tabla_dist)
-        story.append(Spacer(1, 10))
+    # (Se retira la tabla resumen "Distribución de Porciones": duplicaba la información que
+    # ya se detalla, alimento por alimento, en la sección de Plan Alimentario de abajo, y su
+    # peso vertical extra era una de las causas de que el informe se desbordara a más de 2
+    # páginas.)
 
-    # ---------------- 7. PLAN ALIMENTARIO (5 bloques por momento de comida, con badges de macro) ----------------
-    story.append(Paragraph(T("7. PRESCRIPCIÓN DIETÉTICA DETALLADA POR MOMENTOS", "7. DETAILED DIETARY PRESCRIPTION BY MEAL"), estilo_seccion2))
+    # ---------------- 6. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES (5 bloques por momento de comida) ----------------
+    story.append(Paragraph(T("6. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", "6. DETAILED MEAL PLAN BY MACRONUTRIENT"), estilo_seccion2))
 
     _MOMENTO_ICONO = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
     _MACRO_BADGE = {
@@ -2979,7 +2950,8 @@ def generar_pdf_reporte(datos):
 
     if datos["tiene_dieta"]:
         for _fila_comida in datos["dieta_filas"]:
-            story.append(KeepTogether([_bloque_comida(_fila_comida), Spacer(1, 5)]))
+            story.append(_bloque_comida(_fila_comida))
+            story.append(Spacer(1, 5))
 
         _tot_c, _tot_p, _tot_g = (datos["dieta_totales"]["Carbohidrato"], datos["dieta_totales"]["Proteína"],
                                    datos["dieta_totales"]["Grasa"])
@@ -3005,7 +2977,7 @@ def generar_pdf_reporte(datos):
         story.append(Spacer(1, 6))
 
     # ---------------- 8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL ----------------
-    story.append(Paragraph(T("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", "8. CLINICAL RECOMMENDATIONS & NUTRITIONAL GUIDE"), estilo_seccion2))
+    story.append(Paragraph(T("7. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", "7. CLINICAL RECOMMENDATIONS & NUTRITIONAL GUIDE"), estilo_seccion2))
 
     estilo_subcat = ParagraphStyle("SubcatRecom", parent=estilo_seccion2, fontSize=10.5,
                                     spaceBefore=6, spaceAfter=3)
@@ -3125,53 +3097,6 @@ def generar_pdf_reporte(datos):
         ("LEFTPADDING", (3, 0), (3, 0), 0), ("RIGHTPADDING", (3, 0), (3, 0), 0),
     ]))
     story.append(_matriz_recom)
-
-    # ---------------- BLOQUE DEDICADO: LÍMITE Y RECOMENDACIONES DE CAFEÍNA ----------------
-    story.append(Spacer(1, 10))
-    story.append(Paragraph(T("9. LÍMITE Y RECOMENDACIONES DE CAFEÍNA", "9. CAFFEINE LIMIT & RECOMMENDATIONS"), estilo_seccion2))
-    if _embarazada_pdf:
-        _cafeina_banner_txt = T("☕ Recomendación de Cafeína en Gestación: Máximo 200 mg/día (ACOG / OMS).",
-                                 "☕ Caffeine Recommendation During Pregnancy: Maximum 200 mg/day (ACOG / WHO).")
-        _cafeina_puntos = [
-            T("En el embarazo, la cafeína tarda entre 10.5 y 18 horas en metabolizarse y cruza la placenta.",
-              "During pregnancy, caffeine takes between 10.5 and 18 hours to metabolize and crosses the placenta."),
-            T("Equivalencias rápidas: 1 taza de café filtrado ≈ 95 mg | 1 taza de té ≈ 47 mg | 1 barra de chocolate (50g) ≈ 25 mg.",
-              "Quick equivalents: 1 cup of filtered coffee ≈ 95 mg | 1 cup of tea ≈ 47 mg | 1 chocolate bar (50g) ≈ 25 mg."),
-            T("Prefiere infusiones libres de cafeína (manzanilla, menta) o café descafeinado.",
-              "Prefer caffeine-free infusions (chamomile, mint) or decaffeinated coffee."),
-        ]
-        _cafeina_disclaimer_txt = T(
-            "🚨 AVISO IMPORTANTE: Esta recomendación es orientativa y educativa. NO REEMPLAZA LA EVALUACIÓN, "
-            "DIAGNÓSTICO NI EL CRITERIO DEL MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA TRATANTE.",
-            "🚨 IMPORTANT NOTICE: This recommendation is informational and educational. IT DOES NOT REPLACE THE "
-            "EVALUATION, DIAGNOSIS, OR JUDGMENT OF THE ATTENDING OB-GYN OR NUTRITIONIST.")
-    else:
-        _cafeina_banner_txt = T("☕ Recomendación de Cafeína: Límite máximo general de 400 mg/día (EFSA/FDA).",
-                                 "☕ Caffeine Recommendation: General maximum limit of 400 mg/day (EFSA/FDA).")
-        _cafeina_puntos = [
-            T("Equivalencias rápidas: 1 taza de café filtrado ≈ 95 mg | 1 taza de té ≈ 47 mg | 1 barra de chocolate (50g) ≈ 25 mg.",
-              "Quick equivalents: 1 cup of filtered coffee ≈ 95 mg | 1 cup of tea ≈ 47 mg | 1 chocolate bar (50g) ≈ 25 mg."),
-            T(_limite_cafeina_txt, _limite_cafeina_txt),
-        ]
-        _cafeina_disclaimer_txt = T(
-            "⚠️ AVISO: Esta información es de carácter orientativo y NO REEMPLAZA LA EVALUACIÓN O INDICACIÓN "
-            "DE UN MÉDICO O NUTRICIONISTA PROFESIONAL.",
-            "⚠️ NOTICE: This information is for guidance only and DOES NOT REPLACE THE EVALUATION OR INDICATION "
-            "OF A PROFESSIONAL DOCTOR OR NUTRITIONIST.")
-    _cafeina_celda = [
-        Paragraph(f"<b>{_cafeina_banner_txt}</b>", estilo_texto_bold),
-        Spacer(1, 4),
-    ] + [Paragraph(f"•&nbsp;&nbsp;{p}", estilo_texto) for p in _cafeina_puntos] + [
-        Spacer(1, 6), Paragraph(_cafeina_disclaimer_txt, estilo_cafeina_disclaimer),
-    ]
-    _tabla_cafeina = Table([[_cafeina_celda]], colWidths=[CONTENT_W])
-    _tabla_cafeina.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(NARANJA_GRA_CLARO)),
-        ("LINEBEFORE", (0, 0), (0, -1), 2.6, _rl_hex(NARANJA_GRA)),
-        ("TOPPADDING", (0, 0), (-1, -1), 10), ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
-        ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-    ]))
-    story.append(_tabla_cafeina)
 
     # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
     story.append(Spacer(1, 10))
