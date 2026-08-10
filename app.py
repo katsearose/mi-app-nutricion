@@ -1999,6 +1999,22 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
     """, unsafe_allow_html=True)
 
 
+def imagen_referencia_drive(drive_id_es, drive_id_en, alt_es, alt_en=None, max_width_px=480):
+    """Muestra una imagen de referencia (desde Google Drive) centrada, con tamaño moderado
+    (legible pero no gigante), esquinas redondeadas y sombreado suave. Cambia automáticamente
+    entre la versión en español y en inglés según el idioma activo de la app."""
+    _drive_id = T(drive_id_es, drive_id_en)
+    _alt = T(alt_es, alt_en or alt_es)
+    _url = f"https://drive.google.com/thumbnail?id={_drive_id}&sz=w1200"
+    st.markdown(f"""
+    <div style="display:flex;justify-content:center;margin:16px 0;">
+        <img src="{_url}" alt="{_alt}" style="width:100%;max-width:{max_width_px}px;height:auto;
+             border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,0.16);
+             border:1px solid rgba(0,0,0,0.06);display:block;" />
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def hoja_header(idx, subtitulo=None, ilustracion=None, tip=None, titulo_override=None, badge_override=None):
     """Encabezado tipo banner: degradado pastel suave, título profesional SIN el prefijo
     'Hoja N:', subtítulo descriptivo y un badge de color al costado (p. ej. 'Módulo Clínico').
@@ -2651,7 +2667,7 @@ def generar_pdf_reporte(datos):
         return _vt("Taquicardia"), "rojo" if _p > 120 else "ambar"
 
     _pas, _pad = datos.get("pas", 0), datos.get("pad", 0)
-    _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 34.0), datos.get("pulso", 0)
+    _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 0.0), datos.get("pulso", 0)
     _cat_pa, _col_pa = _clasif_pa_pdf(_pas, _pad)
     _cat_ox, _col_ox = _clasif_spo2_pdf(_spo2)
     _cat_te, _col_te = _clasif_temp_pdf(_temp)
@@ -6447,7 +6463,7 @@ _DEFAULTS_SESION = {
     "actividad": "Ligero", "objetivo": "Bajar de peso",
     "ajuste_bajar_sel": "Equilibrado (-20%) ⭐ Recomendado",
     "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
-    "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
+    "spo2": 0.0, "pulso": 0, "temp_corp": 0.0, "pas": 0, "pad": 0,
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
@@ -6851,30 +6867,50 @@ def _panel_llenar_datos():
                 "signs early.")}</p></div>',
                 unsafe_allow_html=True)
     spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=0.0, max_value=100.0, value=0.0, step=1.0,
-                            key="spo2", help=T("Normal: 95% a 100%.", "Normal: 95% to 100%."))
+                            key="spo2", help=T("Normal: 95% a 100%. Rango biológico válido: 50% a 100%.",
+                                                "Normal: 95% to 100%. Valid biological range: 50% to 100%."))
     if spo2 > 0:
-        _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
-        _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
+        if spo2 < 50:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("Valor fuera de rango biológico (50%–100%). Verifica el valor ingresado.", "Value outside the biological range (50%–100%). Please check the entered value.")}</p>', unsafe_allow_html=True)
+        else:
+            _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
+            _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
 
     pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=0, max_value=220, value=0, step=1,
-                             key="pulso", help=T("Ideal en reposo: 60 a 100 lpm.", "Ideal at rest: 60 to 100 bpm."))
+                             key="pulso", help=T("Ideal en reposo: 60 a 100 lpm. Rango biológico válido: 30 a 220 lpm.",
+                                                  "Ideal at rest: 60 to 100 bpm. Valid biological range: 30 to 220 bpm."))
     if pulso > 0:
-        _c = "verde" if 60 <= pulso <= 100 else "ambar"
-        _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
+        if pulso < 30:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("Valor fuera de rango biológico (30–220 lpm). Verifica el valor ingresado.", "Value outside the biological range (30–220 bpm). Please check the entered value.")}</p>', unsafe_allow_html=True)
+        else:
+            _c = "verde" if 60 <= pulso <= 100 else "ambar"
+            _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
-    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=34.0, max_value=42.0, value=34.0, step=0.1,
-                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C.", "Normal: 36.5°C to 37.5°C."))
-    if temp_corp > 34.0:
-        _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
-        _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
+    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=0.0, max_value=45.0, value=0.0, step=0.1,
+                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C. Rango biológico válido: 30.0°C a 45.0°C.",
+                                                          "Normal: 36.5°C to 37.5°C. Valid biological range: 30.0°C to 45.0°C."))
+    if temp_corp > 0:
+        if temp_corp < 30.0:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("Valor fuera de rango biológico (30.0°C–45.0°C). Verifica el valor ingresado.", "Value outside the biological range (30.0°C–45.0°C). Please check the entered value.")}</p>', unsafe_allow_html=True)
+        else:
+            _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
+            _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
     st.markdown(f"**{T('Presión Arterial (mmHg):', 'Blood Pressure (mmHg):')}**")
-    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=0, max_value=250, value=0, step=1, key="pas")
-    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=0, max_value=150, value=0, step=1, key="pad")
+    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=0, max_value=250, value=0, step=1, key="pas",
+                           help=T("Rango biológico válido: 50 a 250 mmHg. Ejemplo: 120.", "Valid biological range: 50 to 250 mmHg. Example: 120."))
+    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=0, max_value=150, value=0, step=1, key="pad",
+                           help=T("Rango biológico válido: 30 a 150 mmHg. Ejemplo: 80.", "Valid biological range: 30 to 150 mmHg. Example: 80."))
     if pas > 0 and pad > 0:
-        if pas < 50 or pas > 300 or pad < 30 or pad > 200:
+        if pas < 50 or pas > 250 or pad < 30 or pad > 150:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
                          f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
+        elif (pas - pad) < 20:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("La presión sistólica debe ser mayor que la diastólica (diferencia mínima de 20 mmHg). Verifica el valor ingresado.", "Systolic pressure must be higher than diastolic (minimum 20 mmHg difference). Please check the entered value.")}</p>', unsafe_allow_html=True)
         else:
             _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
             _badge_vital(f"{pas}/{pad}", "", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
@@ -6926,7 +6962,7 @@ else:
     ajuste_txt = None
 spo2 = st.session_state.get("spo2", 0.0)
 pulso = st.session_state.get("pulso", 0)
-temp_corp = st.session_state.get("temp_corp", 34.0)
+temp_corp = st.session_state.get("temp_corp", 0.0)
 pas = st.session_state.get("pas", 0)
 pad = st.session_state.get("pad", 0)
 hemo = st.session_state.get("hemo", 0.0)
@@ -7382,7 +7418,7 @@ if hoja_activa == "0.-DATOS":
             (1, T("💓 Bloque 3 · Signos Vitales", "💓 Block 3 · Vital Signs"), [
                 (T("SpO2", "SpO2"), f"{spo2:.2f}%" if spo2 > 0 else T("Sin dato", "No data")),
                 (T("Pulso", "Pulse"), f"{pulso} lpm" if pulso > 0 else T("Sin dato", "No data")),
-                (T("Temperatura", "Temperature"), f"{temp_corp:.2f}°C" if temp_corp > 34.0 else T("Sin dato", "No data")),
+                (T("Temperatura", "Temperature"), f"{temp_corp:.2f}°C" if temp_corp > 0 else T("Sin dato", "No data")),
                 (T("Presión arterial", "Blood pressure"), f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else T("Sin dato", "No data")),
             ]),
             (1, T("🩸 Bloque 4 · Perfil Bioquímico", "🩸 Block 4 · Biochemical Profile"), [
@@ -7673,7 +7709,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     def _clasif_temp(_t):
         """Umbrales por grupo de edad, incluyendo Hipotermia (columna antes ausente)."""
-        if _t <= 34.0: return _ctf("Sin datos"), "gris"
+        if _t <= 0: return _ctf("Sin datos"), "gris"
         if edad <= 2:
             _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 36.5, 36.6, 37.9, 38.0, 39.0
         elif edad <= 10:
@@ -7739,7 +7775,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _vitales_dash = [
         ("❤️", "Presión Arterial", f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", _cat_pa, _col_pa),
         ("🫁", "Oxigenación (SpO₂)", f"{spo2:.0f} %" if spo2 > 0 else "—", _cat_ox, _col_ox),
-        ("🌡️", "Temperatura", f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", _cat_te, _col_te),
+        ("🌡️", "Temperatura", f"{temp_corp:.1f} °C" if temp_corp > 0 else "—", _cat_te, _col_te),
         ("💓", "Pulso en Reposo", f"{pulso} lpm" if pulso > 0 else "—", _cat_pu, _col_pu),
     ]
     _cols_vd = st.columns(4)
@@ -7857,7 +7893,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                          "Altitude naturally reduces SpO₂; the higher the altitude, the less oxygen the air has available."),
         },
         "Temperatura": {
-            "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", "categoria": _cat_te, "color": _col_te,
+            "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 0 else "—", "categoria": _cat_te, "color": _col_te,
             "que_mide": T("Refleja qué tan bien tu organismo regula el calor interno para mantener sus funciones vitales.",
                           "Reflects how well your body regulates internal heat to keep its vital functions running."),
             "sin_dato": T("Aún no ingresaste tu temperatura. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
@@ -7947,7 +7983,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _es_urgencia_medica = (
         (spo2 > 0 and spo2 < 85.0) or
         (pulso > 0 and (pulso < 40 or pulso > 140)) or
-        (temp_corp > 34.0 and (_cat_te in (_ctf("Hipotermia"), _ctf("Fiebre alta")))) or
+        (temp_corp > 0 and (_cat_te in (_ctf("Hipotermia"), _ctf("Fiebre alta")))) or
         (pas > 0 and pad > 0 and (pas >= 180 or pad >= 120 or pas < 80 or pad < 50)) or
         (_cat_pa == _ctf("Sospecha de Preeclampsia"))
     )
@@ -8217,7 +8253,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         return 3
 
     _idx_te_col_activa = None
-    if temp_corp > 34.0:
+    if temp_corp > 0:
         _row = _te_filas_data[_idx_te_fila]
         _idx_te_col_activa = _te_estado_col(temp_corp, _row[1], _row[2], _row[3], _row[4], _row[5])
 
@@ -8225,7 +8261,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     def _fila_temp_matriz(_i, _nombre, _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta):
         _celdas_txt = [f"&lt; {_hipo:.1f} °C", f"{_n_lo:.1f} – {_n_hi:.1f} °C", f"≥ {_fiebre:.1f} °C", f"&gt; {_fiebre_alta:.1f} °C"]
-        _es_fila_activa = (_i == _idx_te_fila) and temp_corp > 34.0
+        _es_fila_activa = (_i == _idx_te_fila) and temp_corp > 0
         _tds = f'<td style="background:#F8F9FA;font-weight:800;color:#17301F;">{_nombre}</td>'
         for _c, _txt in enumerate(_celdas_txt):
             _tono_key = _TE_COL_TONO[_c]
@@ -9696,7 +9732,11 @@ elif hoja_activa == "5.-CONTROL DE PESO":
                        "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.",
                        f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
                        "your body's vital minimum. That's why your Target DCR didn't go any lower."))
-    
+
+        imagen_referencia_drive(
+            "17w8KlSkMx_eKhK145N4hF0WAkFpV9h5b", "1HBt1WKJ0ELZFEzryjXHyXqEfFPKRTxfP",
+            "Control de Peso", "Weight Control")
+
         st.divider()
     
         # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
@@ -10653,6 +10693,10 @@ elif hoja_activa == "7.-PORCIONES":
     _respuesta_mostrada = FAQ_PORCIONES[_idx_pregunta][3] if _es_ingles else FAQ_PORCIONES[_idx_pregunta][2]
     st.info(_respuesta_mostrada)
 
+    imagen_referencia_drive(
+        "1_AL07U7KsX4YMCXyKRDFeUNdKWZbcmJU", "1v2VTUp-CYkD3KPdBgrUJTLOkVuIKTTuf",
+        "Tiempos de comida", "Meal times")
+
     caja_util(T(
         "Comer todas tus calorías de una sola vez sería imposible (¡y poco saludable!). Esta hoja te dice "
         "cuánto puedes comer en cada momento del día: desayuno, meriendas, almuerzo y cena, para que "
@@ -10708,6 +10752,11 @@ elif hoja_activa == "8.-FATSECRET":
         st.link_button(f"🔍 {_label_fs}", url_fs, use_container_width=True)
     else:
         st.link_button(T("🌐 Abrir FatSecret", "🌐 Open FatSecret"), "https://www.fatsecret.es/", use_container_width=True)
+
+    imagen_referencia_drive(
+        "1NfFbSgnfjY1Yn85PDDAgx1Pop7RXrUm3", "192bE8d1VSnAgnd-vRD2qVmw2QBHbhFZE",
+        "FatSecret", "FatSecret")
+
     st.markdown(f"""
     <div style="background:#E6F7FA;border-left:5px solid #30B0C7;border-radius:16px;padding:14px 18px;margin:14px 0;">
     <b style="color:#0B7285;">🌐 {T('¿Por qué usamos FatSecret?', 'Why do we use FatSecret?')}</b><br>
@@ -10726,6 +10775,11 @@ elif hoja_activa == "8.-FATSECRET":
 
     st.markdown("---")
     st.markdown(f"#### 🔎 {T('Buscador Nutricional · Tabla Peruana de Composición de Alimentos', 'Nutritional Search · Peruvian Food Composition Table')}")
+
+    imagen_referencia_drive(
+        "1_vAUT_dvMVE27bzO_J0FxH67nipGZorg", "1wi6BQwqcY7gYusWXozpwU1atgP0WLUP8",
+        "Tabla Peruana de Composición de Alimentos", "Peruvian Food Composition Table")
+
     consulta = st.text_input(T("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
                                 "Type the name of a food (e.g. 'Chicken', 'Rice', 'Tomato'):"),
                               "", key="bpa_buscar")
