@@ -2327,7 +2327,7 @@ def generar_pdf_reporte(datos):
     _embarazada_pdf = bool(datos.get("embarazada", False))
 
     # ---------------- helper: imagen con alto fijo (mm) y ancho proporcional ----------------
-    def _imagen_flowable(ruta, alto_mm):
+    def _imagen_flowable(ruta, alto_mm, ancho_max_pts=None):
         try:
             if not Path(ruta).exists():
                 return None
@@ -2335,6 +2335,13 @@ def generar_pdf_reporte(datos):
             ancho_px, alto_px = lector.getSize()
             alto = alto_mm * mm
             ancho = alto * (ancho_px / alto_px) if alto_px else alto
+            # Si se indica un ancho máximo disponible (p. ej. el de la columna donde va a vivir
+            # la imagen) y el ancho calculado lo excede, se reescala manteniendo la proporción
+            # para que el logo nunca se salga de su columna, sin importar cuán ancho sea el banner.
+            if ancho_max_pts and ancho > ancho_max_pts:
+                _factor = ancho_max_pts / ancho
+                ancho = ancho_max_pts
+                alto = alto * _factor
             return Image(str(ruta), width=ancho, height=alto)
         except Exception:
             return None
@@ -2356,24 +2363,28 @@ def generar_pdf_reporte(datos):
     _URL_APP_QR = "https://app-nutricion-grupo4.streamlit.app/#como-impacta-esto-en-tu-dia-a-dia"
 
     def _membrete_institucional():
-        # Membrete (logo institucional) un poco más grande que antes (17mm de alto en vez de
-        # 12mm) para que se vea con claridad, sin llegar a dominar la página. Se acompaña, a la
-        # derecha, de un QR pequeño que enlaza directamente a la app CIAM&SUNI para "escanear y
-        # ver la página" desde el celular.
-        img_membrete = _imagen_flowable(_LOGO_ANCHO, 17)
+        # Membrete (logo institucional) notablemente más grande que antes (24mm de alto, frente
+        # a los 12mm originales) para que se vea con claridad sin llegar a dominar la página. El
+        # ancho máximo disponible se limita al de su columna para que nunca se desborde, sin
+        # importar la proporción exacta del banner. Se acompaña, a la derecha, de un QR pequeño
+        # que enlaza directamente a la app CIAM&SUNI para "escanear y ver la página" desde el
+        # celular.
+        _col_qr = 26 * mm
+        _col_logo = CONTENT_W - (2 * _col_qr)
+        img_membrete = _imagen_flowable(_LOGO_ANCHO, 24, ancho_max_pts=_col_logo - 4 * mm)
         if img_membrete is None:
-            img_membrete = _imagen_flowable(_ESCUDO, 17)
+            img_membrete = _imagen_flowable(_ESCUDO, 24, ancho_max_pts=_col_logo - 4 * mm)
         _qr_membrete = [
-            _qr_flowable(_URL_APP_QR, tam_mm=15),
+            _qr_flowable(_URL_APP_QR, tam_mm=16),
             Paragraph(T("Escanea y visita<br/>la app", "Scan to visit<br/>the app"),
                       ParagraphStyle("QrCaptionTop", parent=estilo_texto, fontSize=5.4,
                                      textColor=_rl_hex(GRIS_SUAVE), alignment=TA_CENTER, leading=6.4)),
         ]
         if img_membrete is None:
-            t = Table([["", _qr_membrete]], colWidths=[CONTENT_W - 24 * mm, 24 * mm])
+            t = Table([["", _qr_membrete]], colWidths=[CONTENT_W - _col_qr, _col_qr])
         else:
             t = Table([["", img_membrete, _qr_membrete]],
-                       colWidths=[24 * mm, CONTENT_W - 48 * mm, 24 * mm])
+                       colWidths=[_col_qr, _col_logo, _col_qr])
         t.setStyle(TableStyle([
             ("ALIGN", (0, 0), (0, -1), "LEFT"), ("ALIGN", (1, 0), (1, -1), "CENTER"), ("ALIGN", (-1, 0), (-1, -1), "CENTER"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -5233,18 +5244,19 @@ def advertencia_imc_composicion_corporal():
         margin: 4px 0 14px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
     }
     .bodytype-card {
-        border-radius: 22px; padding: 18px 14px 16px 14px; text-align: center; height: 100%;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.10); transition: transform 0.15s ease;
-        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 24px; overflow: hidden; text-align: center; height: 100%;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.14); border: 1px solid rgba(0,0,0,0.05);
+        background: #FFFFFF; display: flex; flex-direction: column;
     }
-    .bodytype-icon-wrap {
-        background: rgba(255,255,255,0.55); border-radius: 18px; padding: 8px 0 2px 0; margin-bottom: 10px;
-        display: flex; align-items: center; justify-content: center; overflow: hidden;
+    .bodytype-photo-wrap {
+        width: 100%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;
+        padding: 12px 12px 6px 12px;
     }
     .bodytype-photo {
-        width: 100%; max-width: 160px; height: 150px; object-fit: contain; border-radius: 12px;
-        display: block; margin: 0 auto;
+        width: 100%; height: 360px; object-fit: contain; object-position: center top;
+        display: block; border-radius: 14px;
     }
+    .bodytype-info { padding: 16px 18px 20px 18px; flex-grow: 1; }
     .bodytype-name { font-weight: 900; font-size: 1.02rem; color: #fff; margin: 2px 0 6px 0; letter-spacing: -0.01em; }
     .bodytype-desc { font-size: 0.82rem; color: rgba(255,255,255,0.95); line-height: 1.55; margin-bottom: 10px; }
     .bodytype-chip {
@@ -5304,19 +5316,23 @@ def advertencia_imc_composicion_corporal():
             # Foto real desde Google Drive (el archivo debe estar compartido como "Cualquier
             # persona con el enlace puede ver"). Si la imagen no carga (permisos, cuota de
             # Drive, etc.) se usa automáticamente la silueta SVG dibujada como respaldo, para
-            # que la tarjeta nunca se vea rota.
-            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w600"
-            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], "#FFFFFF").replace('"', "&quot;")
+            # que la tarjeta nunca se vea rota. La foto ocupa toda la parte superior de la
+            # tarjeta sobre fondo blanco (object-fit: contain) para que se vea grande y completa,
+            # sin recortes; el degradado de color queda solo en el panel inferior de texto.
+            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
+            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
             _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
             st.markdown(f"""
-            <div class="bodytype-card" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
-                <div class="bodytype-icon-wrap">
+            <div class="bodytype-card">
+                <div class="bodytype-photo-wrap">
                     <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
                          onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
                 </div>
-                <div class="bodytype-name">{_tp['nombre']}</div>
-                <div class="bodytype-desc">{_tp['desc']}</div>
-                <div>{_chips_html}</div>
+                <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
+                    <div class="bodytype-name">{_tp['nombre']}</div>
+                    <div class="bodytype-desc">{_tp['desc']}</div>
+                    <div>{_chips_html}</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
