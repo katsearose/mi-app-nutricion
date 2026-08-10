@@ -5,5 +5,3 @@ pyarrow==17.0.0
 plotly==5.24.1
 openpyxl==3.1.5
 reportlab
-jinja2==3.1.4
-weasyprint==62.3
