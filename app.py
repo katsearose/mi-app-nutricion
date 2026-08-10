@@ -2339,15 +2339,44 @@ def generar_pdf_reporte(datos):
         except Exception:
             return None
 
+    def _qr_flowable(url, tam_mm=18):
+        # NOTA TÉCNICA: `QrCode` de reportlab ES un Flowable en sí mismo (no un Shape), así que
+        # se usa directamente — envolverlo en un `Drawing.add()` (como en una versión anterior)
+        # falla silenciosamente con esta versión de reportlab y el QR nunca llega a dibujarse.
+        try:
+            from reportlab.graphics.barcode.qr import QrCode
+            _qr = QrCode(url, barLevel="M")
+            _tam = tam_mm * mm
+            _qr.width = _tam
+            _qr.height = _tam
+            return _qr
+        except Exception:
+            return Spacer(1, 1)
+
+    _URL_APP_QR = "https://app-nutricion-grupo4.streamlit.app/#como-impacta-esto-en-tu-dia-a-dia"
+
     def _membrete_institucional():
-        img_membrete = _imagen_flowable(_LOGO_ANCHO, 12)
+        # Membrete (logo institucional) un poco más grande que antes (17mm de alto en vez de
+        # 12mm) para que se vea con claridad, sin llegar a dominar la página. Se acompaña, a la
+        # derecha, de un QR pequeño que enlaza directamente a la app CIAM&SUNI para "escanear y
+        # ver la página" desde el celular.
+        img_membrete = _imagen_flowable(_LOGO_ANCHO, 17)
         if img_membrete is None:
-            img_membrete = _imagen_flowable(_ESCUDO, 12)
+            img_membrete = _imagen_flowable(_ESCUDO, 17)
+        _qr_membrete = [
+            _qr_flowable(_URL_APP_QR, tam_mm=15),
+            Paragraph(T("Escanea y visita<br/>la app", "Scan to visit<br/>the app"),
+                      ParagraphStyle("QrCaptionTop", parent=estilo_texto, fontSize=5.4,
+                                     textColor=_rl_hex(GRIS_SUAVE), alignment=TA_CENTER, leading=6.4)),
+        ]
         if img_membrete is None:
-            return
-        t = Table([[img_membrete]], colWidths=[CONTENT_W])
+            t = Table([["", _qr_membrete]], colWidths=[CONTENT_W - 24 * mm, 24 * mm])
+        else:
+            t = Table([["", img_membrete, _qr_membrete]],
+                       colWidths=[24 * mm, CONTENT_W - 48 * mm, 24 * mm])
         t.setStyle(TableStyle([
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"), ("ALIGN", (1, 0), (1, -1), "CENTER"), ("ALIGN", (-1, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
             ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
@@ -3116,22 +3145,8 @@ def generar_pdf_reporte(datos):
           "DIAGNOSIS, OR THE PRESCRIPTIVE INDICATIONS OF A LICENSED OB-GYN OR CLINICAL NUTRITIONIST. No personal "
           "or health data is stored on external servers."), estilo_aviso)
 
-    def _qr_flowable(url, tam_mm=18):
-        try:
-            from reportlab.graphics.barcode.qr import QrCode
-            from reportlab.graphics.shapes import Drawing
-            _qr = QrCode(url, barLevel="M")
-            _tam = tam_mm * mm
-            _escala = _tam / _qr.width
-            _d = Drawing(_tam, _tam, transform=[_escala, 0, 0, _escala, 0, 0])
-            _d.add(_qr)
-            return _d
-        except Exception:
-            return Spacer(1, 1)
-
-    _url_app = "https://app-nutricion-grupo4.streamlit.app/#como-impacta-esto-en-tu-dia-a-dia"
     _qr_celda = [
-        _qr_flowable(_url_app, tam_mm=18),
+        _qr_flowable(_URL_APP_QR, tam_mm=18),
         Paragraph(T("Escanea para ver\ncómo te impacta", "Scan to see\nhow it affects you"),
                   ParagraphStyle("QrCaption", parent=estilo_aviso, fontSize=5.6, alignment=TA_CENTER, leading=7)),
     ]
@@ -5224,6 +5239,11 @@ def advertencia_imc_composicion_corporal():
     }
     .bodytype-icon-wrap {
         background: rgba(255,255,255,0.55); border-radius: 18px; padding: 8px 0 2px 0; margin-bottom: 10px;
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .bodytype-photo {
+        width: 100%; max-width: 160px; height: 150px; object-fit: contain; border-radius: 12px;
+        display: block; margin: 0 auto;
     }
     .bodytype-name { font-weight: 900; font-size: 1.02rem; color: #fff; margin: 2px 0 6px 0; letter-spacing: -0.01em; }
     .bodytype-desc { font-size: 0.82rem; color: rgba(255,255,255,0.95); line-height: 1.55; margin-bottom: 10px; }
@@ -5260,16 +5280,19 @@ def advertencia_imc_composicion_corporal():
 
     _TIPOS_CUERPO = [
         {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
+         "drive_id": "1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN",
          "nombre": T("Ectomorfo", "Ectomorph"),
          "desc": T("Cuerpo delgado, extremidades largas y le cuesta ganar peso o masa muscular.",
                     "Slim build, long limbs, finds it hard to gain weight or muscle."),
          "chips": [T("Metabolismo rápido", "Fast metabolism"), T("Complexión fina", "Slight frame")]},
         {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
+         "drive_id": "1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV",
          "nombre": T("Endomorfo", "Endomorph"),
          "desc": T("Estructura más redondeada, mayor facilidad para acumular grasa y metabolismo más lento.",
                     "Rounder frame, tends to store fat more easily and has a slower metabolism."),
          "chips": [T("Acumula grasa fácil", "Stores fat easily"), T("Estructura ancha", "Wider frame")]},
         {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
+         "drive_id": "1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv",
          "nombre": T("Mesomorfo", "Mesomorph"),
          "desc": T("Complexión atlética, hombros anchos y cintura estrecha; gana músculo con facilidad.",
                     "Athletic build, broad shoulders and narrow waist; gains muscle easily."),
@@ -5278,11 +5301,19 @@ def advertencia_imc_composicion_corporal():
     _cols_tipos = st.columns(3)
     for _col, _tp in zip(_cols_tipos, _TIPOS_CUERPO):
         with _col:
-            _icono_svg = _svg_silueta_cuerpo(_tp["clave"], "#FFFFFF")
+            # Foto real desde Google Drive (el archivo debe estar compartido como "Cualquier
+            # persona con el enlace puede ver"). Si la imagen no carga (permisos, cuota de
+            # Drive, etc.) se usa automáticamente la silueta SVG dibujada como respaldo, para
+            # que la tarjeta nunca se vea rota.
+            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w600"
+            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], "#FFFFFF").replace('"', "&quot;")
             _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
             st.markdown(f"""
             <div class="bodytype-card" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
-                <div class="bodytype-icon-wrap">{_icono_svg}</div>
+                <div class="bodytype-icon-wrap">
+                    <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
+                         onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
+                </div>
                 <div class="bodytype-name">{_tp['nombre']}</div>
                 <div class="bodytype-desc">{_tp['desc']}</div>
                 <div>{_chips_html}</div>
