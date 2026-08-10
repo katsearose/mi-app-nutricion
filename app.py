@@ -1388,7 +1388,7 @@ div[data-testid="stImageCaption"] {
 }
 .img-bonita-wrap img {
     width: 100%; display: block; border-radius: 18px;
-    max-height: 620px; min-height: 320px; object-fit: cover;
+    max-height: 860px; min-height: 420px; object-fit: cover;
 }
 .img-bonita-caption {
     text-align: center; color: var(--ios-secondary); font-size: 0.85rem;
@@ -6463,7 +6463,7 @@ _DEFAULTS_SESION = {
     "actividad": "Ligero", "objetivo": "Bajar de peso",
     "ajuste_bajar_sel": "Equilibrado (-20%) ⭐ Recomendado",
     "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
-    "spo2": 0.0, "pulso": 0, "temp_corp": 0.0, "pas": 0, "pad": 0,
+    "spo2": 98.0, "pulso": 75, "temp_corp": 36.5, "pas": 120, "pad": 80,
     "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
@@ -6866,54 +6866,69 @@ def _panel_llenar_datos():
                 "These indicators show how your body is functioning right now, and help detect warning "
                 "signs early.")}</p></div>',
                 unsafe_allow_html=True)
-    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=0.0, max_value=100.0, value=0.0, step=1.0,
+    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=50.0, max_value=100.0, value=98.0, step=1.0,
                             key="spo2", help=T("Normal: 95% a 100%. Rango biológico válido: 50% a 100%.",
                                                 "Normal: 95% to 100%. Valid biological range: 50% to 100%."))
     if spo2 > 0:
-        if spo2 < 50:
-            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                         f'⚠️ {T("Valor fuera de rango biológico (50%–100%). Verifica el valor ingresado.", "Value outside the biological range (50%–100%). Please check the entered value.")}</p>', unsafe_allow_html=True)
-        else:
-            _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
-            _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
+        _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
+        _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
 
-    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=0, max_value=220, value=0, step=1,
+    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=30, max_value=220, value=75, step=1,
                              key="pulso", help=T("Ideal en reposo: 60 a 100 lpm. Rango biológico válido: 30 a 220 lpm.",
                                                   "Ideal at rest: 60 to 100 bpm. Valid biological range: 30 to 220 bpm."))
     if pulso > 0:
-        if pulso < 30:
-            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                         f'⚠️ {T("Valor fuera de rango biológico (30–220 lpm). Verifica el valor ingresado.", "Value outside the biological range (30–220 bpm). Please check the entered value.")}</p>', unsafe_allow_html=True)
-        else:
-            _c = "verde" if 60 <= pulso <= 100 else "ambar"
-            _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
+        _c = "verde" if 60 <= pulso <= 100 else "ambar"
+        _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
-    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=0.0, max_value=45.0, value=0.0, step=0.1,
-                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C. Rango biológico válido: 30.0°C a 45.0°C.",
-                                                          "Normal: 36.5°C to 37.5°C. Valid biological range: 30.0°C to 45.0°C."))
+    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=30.0, max_value=43.0, value=36.5, step=0.1,
+                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C. Rango biológico válido: 30.0°C a 43.0°C.",
+                                                          "Normal: 36.5°C to 37.5°C. Valid biological range: 30.0°C to 43.0°C."))
     if temp_corp > 0:
-        if temp_corp < 30.0:
-            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                         f'⚠️ {T("Valor fuera de rango biológico (30.0°C–45.0°C). Verifica el valor ingresado.", "Value outside the biological range (30.0°C–45.0°C). Please check the entered value.")}</p>', unsafe_allow_html=True)
-        else:
-            _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
-            _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
+        _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
+        _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
     st.markdown(f"**{T('Presión Arterial (mmHg):', 'Blood Pressure (mmHg):')}**")
-    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=0, max_value=250, value=0, step=1, key="pas",
-                           help=T("Rango biológico válido: 50 a 250 mmHg. Ejemplo: 120.", "Valid biological range: 50 to 250 mmHg. Example: 120."))
-    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=0, max_value=150, value=0, step=1, key="pad",
-                           help=T("Rango biológico válido: 30 a 150 mmHg. Ejemplo: 80.", "Valid biological range: 30 to 150 mmHg. Example: 80."))
+    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=60, max_value=240, value=120, step=1, key="pas",
+                           help=T("Rango biológico válido: 60 a 240 mmHg. Ejemplo: 120.", "Valid biological range: 60 to 240 mmHg. Example: 120."))
+    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=40, max_value=140, value=80, step=1, key="pad",
+                           help=T("Rango biológico válido: 40 a 140 mmHg. Ejemplo: 80.", "Valid biological range: 40 to 140 mmHg. Example: 80."))
     if pas > 0 and pad > 0:
-        if pas < 50 or pas > 250 or pad < 30 or pad > 150:
+        if pas < 60 or pas > 240 or pad < 40 or pad > 140:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
                          f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
+        elif pad >= pas:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("La presión diastólica debe ser menor que la sistólica. Verifica el valor ingresado.", "Diastolic pressure must be lower than systolic. Please check the entered value.")}</p>', unsafe_allow_html=True)
         elif (pas - pad) < 20:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
                          f'⚠️ {T("La presión sistólica debe ser mayor que la diastólica (diferencia mínima de 20 mmHg). Verifica el valor ingresado.", "Systolic pressure must be higher than diastolic (minimum 20 mmHg difference). Please check the entered value.")}</p>', unsafe_allow_html=True)
         else:
             _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
             _badge_vital(f"{pas}/{pad}", "", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
+
+    # ===== Motor de Validación Fisiológica Cruzada =====
+    def _validar_coherencia_fisiologica(_sys, _dia, _spo2, _temp, _pulso):
+        _adv = []
+        if _sys > 0 and _dia > 0:
+            _pp = _sys - _dia
+            if 0 < _pp < 15:
+                _adv.append(T(f"Presión de pulso inusualmente estrecha ({_pp} mmHg, óptimo 30–50 mmHg). Verifica las cifras de presión sistólica y diastólica.",
+                               f"Unusually narrow pulse pressure ({_pp} mmHg, optimal 30–50 mmHg). Please check the systolic and diastolic figures."))
+        if _spo2 > 0 and _spo2 < 75.0:
+            _adv.append(T("La saturación ingresada (<75%) es críticamente baja. Confirma que no sea un error de tipeo.",
+                           "The entered saturation (<75%) is critically low. Confirm this is not a typing error."))
+        if _temp > 0 and _pulso > 0 and _temp < 34.0 and _pulso > 100:
+            _adv.append(T("Incoherencia detectada: la hipotermia suele reducir la frecuencia cardíaca, no elevarla a niveles de taquicardia. Verifica ambos valores.",
+                           "Inconsistency detected: hypothermia usually lowers heart rate, not raises it into tachycardia. Please check both values."))
+        return _adv
+
+    _advertencias_vitales = _validar_coherencia_fisiologica(pas, pad, spo2, temp_corp, pulso)
+    if _advertencias_vitales:
+        for _adv in _advertencias_vitales:
+            st.warning(f"⚠️ {T('Advertencia de coherencia clínica', 'Clinical coherence warning')}: {_adv}")
+        st.checkbox(T("Confirmo que los datos ingresados son correctos a pesar de las advertencias.",
+                       "I confirm the entered data is correct despite the warnings."),
+                    key="confirmar_vitales_incoherentes")
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
     st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
