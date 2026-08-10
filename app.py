@@ -2340,19 +2340,18 @@ def generar_pdf_reporte(datos):
             return None
 
     def _membrete_institucional():
-        img_membrete = _imagen_flowable(_LOGO_ANCHO, 20)
+        img_membrete = _imagen_flowable(_LOGO_ANCHO, 12)
         if img_membrete is None:
-            img_membrete = _imagen_flowable(_ESCUDO, 20)
+            img_membrete = _imagen_flowable(_ESCUDO, 12)
         if img_membrete is None:
             return
         t = Table([[img_membrete]], colWidths=[CONTENT_W])
         t.setStyle(TableStyle([
             ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
             ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
         story.append(t)
-        story.append(Spacer(1, 4))
 
     # ---------------- helpers de módulo (grilla 2 columnas, semáforos y tablas clave/valor) ----------------
     def _cab_modulo(titulo, ancho=MOD_W):
@@ -2475,9 +2474,7 @@ def generar_pdf_reporte(datos):
         ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
         ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
     ]))
-    # ---- Encabezado azul institucional limpio y minimalista, sin membrete/logo separado
-    # (evita la duplicación visual y el consumo de espacio vertical que empujaba el
-    # contenido a una 3ra página). ----
+    _membrete_institucional()
     story.append(header_tbl)
     story.append(Spacer(1, 8))
 
@@ -2631,7 +2628,7 @@ def generar_pdf_reporte(datos):
     mod2 = [_cab_modulo(T("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)", "2. VITAL SIGNS (PHYSIOLOGICAL STATE)")), Spacer(1, 2),
             _tabla_vitales([
                 (T("Presión Arterial", "Blood Pressure"), _et(_col_pa), _col_pa),
-                (T("Oxigenación (SpO₂)", "Oxygenation (SpO₂)"), _et(_col_ox), _col_ox),
+                (T("Oxigenación (SpO<sub>2</sub>)", "Oxygenation (SpO<sub>2</sub>)"), _et(_col_ox), _col_ox),
                 (T("Temperatura", "Temperature"), _et(_col_te), _col_te),
                 (T("Pulso en Reposo", "Resting Pulse"), _et(_col_pu), _col_pu),
             ])]
@@ -2646,14 +2643,14 @@ def generar_pdf_reporte(datos):
              "Out-of-range values were detected in the vital signs (see alert or critical labels in the "
              "table); an in-person medical evaluation is recommended to rule out hypertensive disorders "
              "of pregnancy.") if _hay_alerta_vital else
-           T("La monitorización periódica de la presión arterial, SpO₂, pulso y temperatura es crucial "
+           T("La monitorización periódica de la presión arterial, SpO<sub>2</sub>, pulso y temperatura es crucial "
              "para descartar trastornos hipertensivos del embarazo.",
-             "Periodic monitoring of blood pressure, SpO₂, pulse, and temperature is crucial to rule out "
+             "Periodic monitoring of blood pressure, SpO<sub>2</sub>, pulse, and temperature is crucial to rule out "
              "hypertensive disorders of pregnancy.") if _hay_algun_vital else
-           T("La ausencia de registros de signos vitales (presión arterial, SpO₂, pulso y temperatura) "
+           T("La ausencia de registros de signos vitales (presión arterial, SpO<sub>2</sub>, pulso y temperatura) "
              "requiere control prenatal presencial para descartar desórdenes hipertensivos o "
              "alteraciones hemodinámicas.",
-             "The absence of vital sign records (blood pressure, SpO₂, pulse, and temperature) requires "
+             "The absence of vital sign records (blood pressure, SpO<sub>2</sub>, pulse, and temperature) requires "
              "an in-person prenatal check-up to rule out hypertensive disorders or hemodynamic "
              "alterations."))
     ) if _embarazada_pdf else (
@@ -3104,7 +3101,8 @@ def generar_pdf_reporte(datos):
     story.append(Spacer(1, 10))
     story.append(HRFlowable(width="100%", thickness=0.6, color=_rl_hex(LINEA)))
     story.append(Spacer(1, 4))
-    story.append(Paragraph(
+
+    _aviso_parrafo = Paragraph(
         T("<b>AVISO MÉDICO-LEGAL IMPORTANTE:</b> Este documento representa un informe automatizado de "
           "distribución de porciones y energía generado por el aplicativo CIAM&amp;SUNI con fines estrictamente "
           "educativos y de investigación escolar (Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
@@ -3116,7 +3114,34 @@ def generar_pdf_reporte(datos):
           "research purposes (School Health Project, Group No. 04, 5th Grade \"C\" Secondary School, "
           "C.E.P. \"Santa María Reina\", Chiclayo). IT DOES NOT REPLACE PRENATAL CLINICAL EVALUATION, MEDICAL "
           "DIAGNOSIS, OR THE PRESCRIPTIVE INDICATIONS OF A LICENSED OB-GYN OR CLINICAL NUTRITIONIST. No personal "
-          "or health data is stored on external servers."), estilo_aviso))
+          "or health data is stored on external servers."), estilo_aviso)
+
+    def _qr_flowable(url, tam_mm=18):
+        try:
+            from reportlab.graphics.barcode.qr import QrCode
+            from reportlab.graphics.shapes import Drawing
+            _qr = QrCode(url, barLevel="M")
+            _tam = tam_mm * mm
+            _escala = _tam / _qr.width
+            _d = Drawing(_tam, _tam, transform=[_escala, 0, 0, _escala, 0, 0])
+            _d.add(_qr)
+            return _d
+        except Exception:
+            return Spacer(1, 1)
+
+    _url_app = "https://app-nutricion-grupo4.streamlit.app/#como-impacta-esto-en-tu-dia-a-dia"
+    _qr_celda = [
+        _qr_flowable(_url_app, tam_mm=18),
+        Paragraph(T("Escanea para ver\ncómo te impacta", "Scan to see\nhow it affects you"),
+                  ParagraphStyle("QrCaption", parent=estilo_aviso, fontSize=5.6, alignment=TA_CENTER, leading=7)),
+    ]
+    _tabla_aviso_qr = Table([[_aviso_parrafo, _qr_celda]], colWidths=[CONTENT_W - 24 * mm, 24 * mm])
+    _tabla_aviso_qr.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"), ("ALIGN", (1, 0), (1, 0), "CENTER"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    story.append(_tabla_aviso_qr)
 
     _institucion_footer_txt = T('C.E.P. "Santa María Reina", Chiclayo — CIAM&SUNI', 'C.E.P. "Santa María Reina", Chiclayo — CIAM&SUNI')
 
@@ -3145,8 +3170,22 @@ def generar_pdf_reporte(datos):
                 _RLCanvas.showPage(self)
             _RLCanvas.save(self)
 
+        def _dibujar_marca_agua(self):
+            self.saveState()
+            self.setFont("Helvetica-Bold", 62)
+            self.setFillColor(_rl_hex(CYAN))
+            try:
+                self.setFillAlpha(0.07)
+            except Exception:
+                pass
+            self.translate(A4[0] / 2, A4[1] / 2)
+            self.rotate(38)
+            self.drawCentredString(0, 0, "CIAM&SUNI")
+            self.restoreState()
+
         def _dibujar_pie_pagina(self, total_paginas):
             self.saveState()
+            self._dibujar_marca_agua()
             self.setStrokeColor(_rl_hex(LINEA))
             self.setLineWidth(0.5)
             self.line(16 * mm, 10 * mm, A4[0] - 16 * mm, 10 * mm)
