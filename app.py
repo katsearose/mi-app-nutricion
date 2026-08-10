@@ -5214,11 +5214,14 @@ def _svg_silueta_cuerpo(tipo, color):
 
 
 def advertencia_imc_composicion_corporal():
-    """Advertencia 'El IMC es una referencia, no toda la historia': se muestra justo después del
-    resultado de IMC/Percentil (paneles de diagnóstico, escala, percentil) y antes de la sección
-    '¿Qué puedes hacer desde hoy?'. Flujo: 1) explica el problema del IMC, 2) ejemplo visual
-    compacto con los 3 somatotipos (imágenes horizontales, ancho medio, clic para ampliar),
-    3) tabla de qué SÍ y qué NO puede distinguir el IMC, 4) ejemplo concreto, 5) conclusión."""
+    """Advertencia 'El IMC no lo dice todo': se muestra justo después del resultado de IMC/Percentil
+    (paneles de diagnóstico, escala, percentil) y antes de la sección '¿Qué puedes hacer desde hoy?'.
+    Flujo pedagógico (de cero, con ejemplo cotidiano antes de tecnicismos):
+    1) ¿qué hace el IMC? (peso + estatura) con ejemplo de dos personas con el mismo IMC,
+    2) ¿mismo cuerpo? no necesariamente → introduce músculo vs. grasa,
+    3) tarjeta explicando qué son los somatotipos (sin determinismo),
+    4) los 3 somatotipos en formato acordeón (nombre grande, clic para ver la imagen más grande),
+    5) tabla de qué SÍ / NO puede distinguir el IMC, 6) ejemplo numérico, 7) conclusión."""
     st.markdown("""
     <style>
     .imc-warn-hero {
@@ -5240,28 +5243,55 @@ def advertencia_imc_composicion_corporal():
     .imc-warn-title {
         margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 900; color: #B33A00; letter-spacing: -0.02em;
     }
-    .imc-warn-text { margin: 0; color: #5C4A1E; font-size: 0.94rem; line-height: 1.65; max-width: 720px; }
+    .imc-warn-text { margin: 0 0 14px 0; color: #5C4A1E; font-size: 0.94rem; line-height: 1.65; max-width: 720px; }
+    .imc-twin-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0 14px 0; }
+    .imc-twin-card {
+        background: rgba(255,255,255,0.75); border-radius: 16px; padding: 12px 14px; text-align: center;
+        border: 1px solid rgba(255,149,0,0.2);
+    }
+    .imc-twin-card .who { font-weight: 900; color: #B33A00; font-size: 0.9rem; margin-bottom: 4px; }
+    .imc-twin-card .data { font-size: 0.82rem; color: #5C4A1E; }
+    .imc-twin-result {
+        text-align: center; font-weight: 900; color: #B33A00; font-size: 0.92rem; margin: 4px 0 14px 0;
+    }
+    .imc-question-box {
+        background: rgba(255,255,255,0.85); border-radius: 16px; padding: 14px 18px; margin: 0 0 4px 0;
+        border-left: 5px solid #FF3B30;
+    }
+    .imc-question-box .q { font-weight: 900; color: #B33A00; font-size: 0.95rem; margin-bottom: 6px; }
+    .imc-question-box .a { font-weight: 900; color: #FF3B30; font-size: 0.88rem; margin-bottom: 6px; }
+    .imc-question-box p { margin: 0; color: #5C4A1E; font-size: 0.87rem; line-height: 1.6; }
+    .bodytype-intro-card {
+        margin: 18px 0 14px 0; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#F3F0FF 0%,#EAF4FF 100%); border-left: 6px solid #5856D6;
+    }
+    .bodytype-intro-card p { margin: 0 0 8px 0; color: #3C3C43; font-size: 0.87rem; line-height: 1.65; }
+    .bodytype-intro-card p:last-child { margin-bottom: 0; }
     .bodytype-sub {
         margin: 18px 0 4px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
     }
     .bodytype-sub-hint { margin: 0 0 14px 0; color: #6E6E73; font-size: 0.85rem; line-height: 1.5; }
-    .bodytype-card {
-        border-radius: 18px; overflow: hidden; text-align: center; height: 100%;
-        box-shadow: 0 8px 18px rgba(0,0,0,0.12); border: 1px solid rgba(0,0,0,0.05);
-        background: #FFFFFF; display: flex; flex-direction: column; margin-bottom: 10px;
+    .bodytype-accordion {
+        border-radius: 18px; overflow: hidden; border: 1px solid rgba(0,0,0,0.07);
+        margin-bottom: 12px; background: #FFFFFF; box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
-    .bodytype-photo-wrap {
-        width: 100%; background: #F5F5F7; display: flex; align-items: center; justify-content: center;
-        aspect-ratio: 16 / 9; overflow: hidden; cursor: zoom-in;
+    .bodytype-accordion summary {
+        list-style: none; cursor: pointer; padding: 16px 20px; display: flex; align-items: center;
+        justify-content: space-between; gap: 10px;
     }
-    .bodytype-photo {
-        width: 100%; height: 100%; object-fit: contain; object-position: center; display: block;
+    .bodytype-accordion summary::-webkit-details-marker { display: none; }
+    .bodytype-accordion-name { font-weight: 900; font-size: 1.08rem; color: #fff; letter-spacing: -0.01em; }
+    .bodytype-accordion-chevron {
+        color: #fff; font-size: 1rem; font-weight: 900; transition: transform 0.2s ease; flex-shrink: 0;
     }
-    .bodytype-info { padding: 10px 14px 14px 14px; flex-grow: 1; }
-    .bodytype-name { font-weight: 900; font-size: 0.92rem; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.01em; }
-    .bodytype-chip {
-        display: inline-block; background: rgba(255,255,255,0.28); color: #fff; font-size: 0.68rem;
-        font-weight: 700; padding: 2px 9px; border-radius: 999px; margin: 2px 2px 0 0;
+    .bodytype-accordion[open] .bodytype-accordion-chevron { transform: rotate(180deg); }
+    .bodytype-accordion-body { padding: 18px 20px 20px 20px; text-align: center; background: #FAFAFA; }
+    .bodytype-accordion-img {
+        width: 100%; max-width: 300px; height: auto; border-radius: 14px;
+        box-shadow: 0 10px 26px rgba(0,0,0,0.16); display: block; margin: 0 auto;
+    }
+    .bodytype-accordion-caption {
+        margin: 12px 0 0 0; font-size: 0.78rem; font-style: italic; color: #6E6E73; line-height: 1.5;
     }
     .imc-warn-note {
         margin-top: 8px; border-radius: 20px; padding: 18px 22px;
@@ -5286,98 +5316,126 @@ def advertencia_imc_composicion_corporal():
     .imc-table-row div {
         padding: 10px 16px; font-size: 0.86rem; color: #3C3C43; border-top: 1px solid rgba(0,0,0,0.05);
     }
+    .imc-does-doesnt {
+        margin: 10px 0 18px 0; border-radius: 16px; padding: 14px 18px;
+        background: #F2F2F7; text-align: center;
+    }
+    .imc-does-doesnt p { margin: 0; font-size: 0.88rem; color: #3C3C43; line-height: 1.7; }
     .imc-example-box {
         margin: 18px 0; border-radius: 20px; padding: 18px 22px;
         background: linear-gradient(120deg,#FFF7E6 0%,#FFEFEF 100%); border-left: 6px solid #FF9500;
     }
+    .imc-example-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+    .imc-example-card {
+        background: rgba(255,255,255,0.7); border-radius: 14px; padding: 10px 14px; text-align: center;
+    }
+    .imc-example-card .who { font-weight: 900; color: #B06000; font-size: 0.86rem; margin-bottom: 4px; }
+    .imc-example-card p { margin: 0; font-size: 0.82rem; color: #5C4A1E; }
     .imc-conclusion-box {
         margin: 18px 0 4px 0; border-radius: 20px; padding: 18px 22px;
         background: linear-gradient(120deg,#EAFBF1 0%,#E6F7FF 100%); border-left: 6px solid #34C759;
     }
-    .bodytype-lightbox-checkbox { display: none; }
-    .bodytype-lightbox-overlay {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center;
-        cursor: zoom-out; padding: 24px; box-sizing: border-box;
-    }
-    .bodytype-lightbox-checkbox:checked + .bodytype-lightbox-overlay { display: flex; }
-    .bodytype-lightbox-overlay img {
-        max-width: 94%; max-height: 90vh; object-fit: contain; border-radius: 14px;
-        box-shadow: 0 24px 70px rgba(0,0,0,0.55);
-    }
-    .bodytype-lightbox-hint {
-        position: absolute; top: 18px; right: 22px; color: #fff; font-size: 0.85rem;
-        font-weight: 700; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 999px;
-    }
     </style>
     """, unsafe_allow_html=True)
 
-    # ===== 1) El problema del IMC =====
+    # ===== 1) ¿Qué hace el IMC? Ejemplo: dos personas, mismo peso y estatura =====
     st.markdown(f"""
     <div class="imc-warn-hero">
         <span class="imc-warn-badge">⚠️ {T("¡OJO!", "HEADS UP!")}</span>
-        <p class="imc-warn-title">⚠️ {T("El IMC es una referencia, no toda la historia",
-                                        "BMI is a reference, not the full picture")}</p>
+        <p class="imc-warn-title">⚠️ {T("¿Por qué el IMC no lo dice todo?", "Why doesn't BMI tell the whole story?")}</p>
         <p class="imc-warn-text">{T(
-            "El IMC se calcula únicamente con tu <b>peso</b> y tu <b>estatura</b>. Por eso, dos personas "
-            "pueden tener un IMC similar aunque su cuerpo esté compuesto de manera diferente: el IMC no "
-            "distingue cuánto de ese peso corresponde a grasa, músculo, huesos u otros tejidos.",
-            "BMI is calculated using only your <b>weight</b> and <b>height</b>. That's why two people can "
-            "have a similar BMI even though their body composition is different: BMI can't tell how much "
-            "of that weight comes from fat, muscle, bone, or other tissue.")}</p>
+            "El IMC es una medida que relaciona tu <b>peso</b> con tu <b>estatura</b>. Por ejemplo, imagina "
+            "que dos personas miden lo mismo y pesan lo mismo:",
+            "BMI is a measure that relates your <b>weight</b> to your <b>height</b>. For example, imagine "
+            "two people who are the same height and weigh the same:")}</p>
+        <div class="imc-twin-row">
+            <div class="imc-twin-card">
+                <div class="who">👩 {T("Persona A", "Person A")}</div>
+                <div class="data">1.65 m — 70 kg</div>
+            </div>
+            <div class="imc-twin-card">
+                <div class="who">👩 {T("Persona B", "Person B")}</div>
+                <div class="data">1.65 m — 70 kg</div>
+            </div>
+        </div>
+        <p class="imc-twin-result">{T("👉 Las dos tendrán el mismo IMC, porque tienen el mismo peso y la misma estatura.",
+                                       "👉 Both will have the same BMI, because they have the same weight and the same height.")}</p>
+        <div class="imc-question-box">
+            <p class="q">{T("Pero... ¿significa que tienen el mismo cuerpo? 🤔", "But... does that mean they have the same body? 🤔")}</p>
+            <p class="a">{T("No necesariamente.", "Not necessarily.")}</p>
+            <p>{T(
+                "Una puede tener más <b>masa muscular</b> y la otra más <b>grasa corporal</b>. El IMC no puede "
+                "saber esa diferencia porque solo utiliza el peso y la estatura.",
+                "One may have more <b>muscle mass</b> and the other more <b>body fat</b>. BMI can't tell that "
+                "difference, because it only uses weight and height.")}</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== 2) Ejemplo visual compacto: mismo indicador, cuerpos diferentes =====
-    st.markdown(f'<p class="bodytype-sub">🧍‍♀️ {T("Un mismo indicador puede representar cuerpos diferentes", "The same indicator can represent different bodies")}</p>', unsafe_allow_html=True)
+    # ===== 2) ¿Entonces qué está pasando? — Tarjeta explicativa de los somatotipos =====
+    st.markdown(f"""
+    <div class="bodytype-intro-card">
+        <p style="font-weight:900;color:#3730A3;">🧩 {T("¿Entonces qué está pasando?", "So what's going on?")}</p>
+        <p>{T(
+            "Las personas pueden tener diferentes formas, proporciones y cantidades de músculo y grasa, "
+            "aunque su peso y estatura sean parecidos. Por eso, el número del IMC no describe exactamente "
+            "cómo está compuesto el cuerpo.",
+            "People can have different shapes, proportions, and amounts of muscle and fat, even if their "
+            "weight and height are similar. That's why the BMI number doesn't exactly describe how the "
+            "body is composed.")}</p>
+        <p style="font-weight:900;color:#3730A3;">🧍 {T("¿Qué muestran los ejemplos de abajo?", "What do the examples below show?")}</p>
+        <p>{T(
+            "Los llamados <b>somatotipos</b> —ectomorfo, endomorfo y mesomorfo— son una forma de describir "
+            "ciertas características de la estructura corporal: algunas personas presentan una estructura "
+            "más delgada, otras una estructura más ancha y otras un desarrollo muscular más marcado. Pero "
+            "esto no significa que una persona pertenezca perfectamente a un solo tipo, ni que su "
+            "somatotipo determine su IMC, su peso ideal o su estado de salud.",
+            "The so-called <b>somatotypes</b> — ectomorph, endomorph and mesomorph — are a way to describe "
+            "certain body-structure characteristics: some people show a slimmer frame, others a wider "
+            "frame, and others more muscle development. But this doesn't mean a person fits perfectly "
+            "into just one type, or that their somatotype determines their BMI, ideal weight, or health "
+            "status.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 3) Somatotipos en formato acordeón: nombre grande, clic para ver la imagen ampliada =====
+    st.markdown(f'<p class="bodytype-sub">🧍‍♀️ {T("Ejemplos de características corporales", "Examples of body characteristics")}</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="bodytype-sub-hint">{T(
-        "Estas imágenes son solo ejemplos visuales de diferentes características corporales. No determinan por sí solas tu IMC ni tu estado de salud.",
-        "These images are only visual examples of different body characteristics. They don\'t determine your BMI or health on their own.")}</p>', unsafe_allow_html=True)
+        "Toca cada tipo para ver la imagen de referencia. Son solo ejemplos visuales: no son categorías del IMC.",
+        "Tap each type to see the reference image. These are only visual examples — not BMI categories.")}</p>', unsafe_allow_html=True)
 
     _TIPOS_CUERPO = [
         {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
          "drive_id": T("1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN", "1bTETLcXCyZSLxJwxDmkYl1rN_O-v3XCK"),
-         "nombre": T("Ectomorfo", "Ectomorph"),
-         "chips": [T("Estructura fina", "Slight frame"), T("Extremidades largas", "Long limbs")]},
+         "nombre": T("Ectomorfo", "Ectomorph")},
         {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
          "drive_id": T("1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV", "1vXQxIOZGSbQJdSQEVLUmpiM9MRdD7fbQ"),
-         "nombre": T("Endomorfo", "Endomorph"),
-         "chips": [T("Estructura ancha", "Wider frame"), T("Mayor volumen", "Higher volume")]},
+         "nombre": T("Endomorfo", "Endomorph")},
         {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
          "drive_id": T("1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv", "17ZSWhc64JcCXOXPcReRwfJt-9DH9-liC"),
-         "nombre": T("Mesomorfo", "Mesomorph"),
-         "chips": [T("Complexión atlética", "Athletic build"), T("Más masa muscular", "More muscle mass")]},
+         "nombre": T("Mesomorfo", "Mesomorph")},
     ]
-    _cols_tipos = st.columns(3)
-    for _col, _tp in zip(_cols_tipos, _TIPOS_CUERPO):
-        with _col:
-            # Fotos horizontales (anchas, poca altura) desde Google Drive; object-fit: contain
-            # para que se vea la imagen completa sin recortar la información. Clic para ampliar
-            # en una capa a pantalla completa (lightbox 100% CSS, sin JavaScript).
-            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
-            _img_url_full = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w2000"
-            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
-            _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
-            _lb_id = f"bodytype-lb-{_tp['clave']}"
-            st.markdown(f"""
-            <input type="checkbox" id="{_lb_id}" class="bodytype-lightbox-checkbox">
-            <div class="bodytype-card">
-                <label for="{_lb_id}" class="bodytype-photo-wrap">
-                    <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
-                         onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
-                </label>
-                <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
-                    <div class="bodytype-name">{_tp['nombre']}</div>
-                    <div>{_chips_html}</div>
-                </div>
+    for _tp in _TIPOS_CUERPO:
+        # Formato acordeón nativo (<details>/<summary>, sin JavaScript): el nombre se ve
+        # siempre grande y en negrita; al tocarlo se despliega la imagen de referencia en un
+        # tamaño legible (no gigante) junto con una leyenda profesional.
+        _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1200"
+        st.markdown(f"""
+        <details class="bodytype-accordion">
+            <summary style="background:linear-gradient(120deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
+                <span class="bodytype-accordion-name">🧍 {_tp['nombre']}</span>
+                <span class="bodytype-accordion-chevron">▾</span>
+            </summary>
+            <div class="bodytype-accordion-body">
+                <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-accordion-img" />
+                <p class="bodytype-accordion-caption">📎 {T(
+                    "Imagen de referencia con fines ilustrativos. No determina tu IMC, tu peso ideal ni tu estado de salud.",
+                    "Reference image for illustrative purposes. It doesn't determine your BMI, ideal weight, or health status.")}</p>
             </div>
-            <label for="{_lb_id}" class="bodytype-lightbox-overlay">
-                <span class="bodytype-lightbox-hint">✕ {T("Cerrar", "Close")}</span>
-                <img src="{_img_url_full}" alt="{_tp['nombre']}" />
-            </label>
-            """, unsafe_allow_html=True)
+        </details>
+        """, unsafe_allow_html=True)
 
-    # ===== 3) ¿Qué SÍ y qué NO puede distinguir el IMC? =====
+    # ===== 4) ¿Qué SÍ y qué NO puede distinguir el IMC? =====
     st.markdown(f"""
     <div class="imc-table-wrap">
         <div class="imc-table-head">
@@ -5389,31 +5447,60 @@ def advertencia_imc_composicion_corporal():
         <div class="imc-table-row"><div></div><div>🦴 {T("Masa ósea", "Bone mass")}</div></div>
         <div class="imc-table-row"><div></div><div>🧬 {T("Distribución de la grasa", "Fat distribution")}</div></div>
     </div>
-    """, unsafe_allow_html=True)
-
-    # ===== 4) Ejemplo concreto =====
-    st.markdown(f"""
-    <div class="imc-example-box">
-        <p style="margin:0 0 8px 0;font-weight:900;color:#B06000;font-size:0.98rem;">📌 {T("Ejemplo", "Example")}</p>
-        <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "Una persona que entrena con frecuencia puede tener bastante masa muscular. Como el músculo "
-            "también pesa, su IMC puede indicar <b>&quot;sobrepeso&quot;</b>, aunque en realidad tenga poca grasa "
-            "corporal y una buena condición física.",
-            "Someone who trains often may carry a lot of muscle mass. Since muscle also has weight, their "
-            "BMI can show <b>&quot;overweight&quot;</b> even though they actually have low body fat and good "
-            "physical condition.")}</p>
+    <div class="imc-does-doesnt">
+        <p>🧠 {T("El IMC responde: <b>&quot;¿Cómo se relacionan tu peso y tu estatura?&quot;</b>",
+                  "BMI answers: <b>&quot;How do your weight and height relate?&quot;</b>")}<br>
+        ❌ {T("Pero no responde: <b>&quot;¿Cuánto de ese peso es músculo y cuánto es grasa?&quot;</b>",
+              "But it doesn't answer: <b>&quot;How much of that weight is muscle and how much is fat?&quot;</b>")}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== 5) Conclusión =====
+    # ===== 5) Ejemplo numérico: mismo peso, cuerpos distintos =====
+    st.markdown(f"""
+    <div class="imc-example-box">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#B06000;font-size:0.98rem;">💪 {T(
+            "Un ejemplo fácil de entender", "An easy example to understand")}</p>
+        <p style="margin:0 0 6px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "Imagina dos personas que pesan 70 kg:", "Imagine two people who both weigh 70 kg:")}</p>
+        <div class="imc-example-row">
+            <div class="imc-example-card">
+                <div class="who">👩 {T("Persona A", "Person A")}</div>
+                <p>{T("Tiene más masa muscular y poca grasa.", "Has more muscle mass and little fat.")}</p>
+            </div>
+            <div class="imc-example-card">
+                <div class="who">👩 {T("Persona B", "Person B")}</div>
+                <p>{T("Tiene menos masa muscular y más grasa.", "Has less muscle mass and more fat.")}</p>
+            </div>
+        </div>
+        <p style="margin:0 0 6px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">⚖️ {T(
+            "Las dos pesan 70 kg. El IMC ve: <b>70 kg + misma estatura = mismo IMC</b>. Pero el cuerpo puede "
+            "ser diferente.",
+            "Both weigh 70 kg. BMI sees: <b>70 kg + same height = same BMI</b>. But the body can be "
+            "different.")}</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">👉 {T(
+            "Por eso el IMC no debe interpretarse como si fuera una medida directa de grasa corporal.",
+            "That's why BMI shouldn't be read as if it were a direct measure of body fat.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 6) Conclusión =====
     st.markdown(f"""
     <div class="imc-conclusion-box">
-        <p style="margin:0 0 8px 0;font-weight:900;color:#1E7E4B;font-size:0.98rem;">💡 {T("Conclusión", "Conclusion")}</p>
+        <p style="margin:0 0 8px 0;font-weight:900;color:#1E7E4B;font-size:0.98rem;">💡 {T("En resumen", "In summary")}</p>
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "El IMC puede ser útil como <b>primer indicador</b> para evaluar la relación entre peso y "
+            "estatura. Pero para conocer mejor la situación de una persona, puede ser necesario considerar "
+            "también otros datos, como:",
+            "BMI can be useful as a <b>first indicator</b> to assess the relationship between weight and "
+            "height. But to better understand a person's situation, it may also be necessary to consider "
+            "other data, such as:")}</p>
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;text-align:center;">
+            ⚖️ {T("Peso", "Weight")} · 📏 {T("Estatura", "Height")} · 💪 {T("Masa muscular", "Muscle mass")} ·
+            🫧 {T("Grasa corporal", "Body fat")} · 🩺 {T("Otros indicadores de salud", "Other health indicators")}
+        </p>
         <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "El IMC es útil como <b>indicador inicial</b>, pero debe interpretarse junto con otros datos de "
-            "composición corporal y salud.",
-            "BMI is useful as an <b>initial indicator</b>, but it should be interpreted together with other "
-            "body-composition and health data.")}</p>
+            "El IMC te da una pista, pero no cuenta toda la historia de tu cuerpo.",
+            "BMI gives you a clue, but it doesn't tell the whole story of your body.")}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -7159,7 +7246,7 @@ _membrete_url = f"https://drive.google.com/thumbnail?id={_MEMBRETE_DRIVE_ID}&sz=
 st.markdown(f"""
 <div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
     <img src="{_membrete_url}" alt="Membrete institucional"
-         style="max-width:100%;height:auto;max-height:110px;object-fit:contain;border-radius:10px;"
+         style="max-width:100%;height:auto;max-height:150px;object-fit:contain;border-radius:10px;"
          onerror="this.style.display='none';" />
 </div>
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
