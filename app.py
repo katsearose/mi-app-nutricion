@@ -5269,6 +5269,26 @@ def advertencia_imc_composicion_corporal():
         box-shadow: 0 6px 16px rgba(88,86,214,0.10);
     }
     .imc-warn-note b { color: #3730A3; }
+    .bodytype-lightbox-checkbox { display: none; }
+    .bodytype-photo-trigger { cursor: zoom-in; }
+    .bodytype-caption {
+        margin: 6px 0 0 0; padding: 0 18px 14px 18px; text-align: center; font-size: 0.74rem;
+        font-style: italic; color: #8E8E93;
+    }
+    .bodytype-lightbox-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center;
+        cursor: zoom-out; padding: 24px; box-sizing: border-box;
+    }
+    .bodytype-lightbox-checkbox:checked + .bodytype-lightbox-overlay { display: flex; }
+    .bodytype-lightbox-overlay img {
+        max-width: 94%; max-height: 90vh; object-fit: contain; border-radius: 14px;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+    }
+    .bodytype-lightbox-hint {
+        position: absolute; top: 18px; right: 22px; color: #fff; font-size: 0.85rem;
+        font-weight: 700; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 999px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -5319,20 +5339,29 @@ def advertencia_imc_composicion_corporal():
         # sin recortes; el degradado de color queda solo en el panel inferior de texto.
         # Las tarjetas se muestran apiladas, una debajo de la otra (no en columnas).
         _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
+        _img_url_full = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w2000"
         _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
         _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
+        _lb_id = f"bodytype-lb-{_tp['clave']}"
         st.markdown(f"""
-        <div class="bodytype-card" style="margin-bottom:18px;">
-            <div class="bodytype-photo-wrap">
-                <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
+        <input type="checkbox" id="{_lb_id}" class="bodytype-lightbox-checkbox">
+        <div class="bodytype-card" style="margin-bottom:6px;">
+            <label for="{_lb_id}" class="bodytype-photo-wrap">
+                <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo bodytype-photo-trigger"
                      onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
-            </div>
+            </label>
             <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
                 <div class="bodytype-name">{_tp['nombre']}</div>
                 <div class="bodytype-desc">{_tp['desc']}</div>
                 <div>{_chips_html}</div>
             </div>
         </div>
+        <p class="bodytype-caption">🔍 {T("Haz clic en la imagen para ver la información completa",
+                                          "Click on the image to see the full information")}</p>
+        <label for="{_lb_id}" class="bodytype-lightbox-overlay">
+            <span class="bodytype-lightbox-hint">✕ {T("Cerrar", "Close")}</span>
+            <img src="{_img_url_full}" alt="{_tp['nombre']}" />
+        </label>
         """, unsafe_allow_html=True)
 
     # ===== 📌 Importante =====
