@@ -1168,30 +1168,7 @@ st.markdown("""
     --bmi-blue: #42A5F5; --bmi-green: #34C759; --bmi-orange: #FF9F43; --bmi-red: #FF5C7C;
     --girl-pink: #FCE4EC; --girl-pink-dark: #C2185B;
     --boy-blue: #E3F2FD; --boy-blue-dark: #1976D2;
-
-    /* ===== PALETA "ARCOÍRIS" — degradados vivos y saturados para todas las tarjetas ===== */
-    --grad-blue: linear-gradient(135deg,#1E88E5 0%,#42A5F5 45%,#64C8F7 100%);
-    --grad-purple: linear-gradient(135deg,#7B1FA2 0%,#AF52DE 45%,#CE93D8 100%);
-    --grad-green: linear-gradient(135deg,#1E5631 0%,#2E9E4A 45%,#66E39A 100%);
-    --grad-amber: linear-gradient(135deg,#F57C00 0%,#FF9F1C 45%,#FFD166 100%);
-    --grad-pink: linear-gradient(135deg,#D6006D 0%,#FF2D87 45%,#FF8FC6 100%);
-    --grad-teal: linear-gradient(135deg,#00838F 0%,#26C6DA 45%,#84FFFF 100%);
-    --grad-red: linear-gradient(135deg,#C0392B 0%,#FF5C5C 45%,#FF9E8F 100%);
-    --grad-indigo: linear-gradient(135deg,#3949AB 0%,#5C6BC0 45%,#9FA8FF 100%);
-    --shadow-blue: 0 10px 26px -4px rgba(30,136,229,0.45);
-    --shadow-purple: 0 10px 26px -4px rgba(175,82,222,0.45);
-    --shadow-green: 0 10px 26px -4px rgba(46,158,74,0.45);
-    --shadow-amber: 0 10px 26px -4px rgba(255,159,28,0.45);
-    --shadow-pink: 0 10px 26px -4px rgba(255,45,135,0.45);
-    --shadow-teal: 0 10px 26px -4px rgba(38,198,218,0.45);
-    --shadow-red: 0 10px 26px -4px rgba(255,92,92,0.45);
-    --shadow-indigo: 0 10px 26px -4px rgba(92,107,192,0.45);
 }
-
-/* Interlineado general — más aire y más legibilidad en todas las hojas */
-.stApp p, .stApp li { line-height: 1.65 !important; }
-.bento-card b, .bento-card strong, .info3-card b, .info3-card strong,
-.diag-frase b, .diag-frase strong { color: #7B1FA2; }
 
 html, body, [class*="css"], .stApp {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
@@ -1227,12 +1204,10 @@ h1, h2, h3, h4, h5 {
 div[data-testid="stMetricValue"] { color: var(--ios-label); font-weight: 800; letter-spacing: -0.02em; }
 div[data-testid="stMetricLabel"] { color: var(--ios-secondary); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.02em; }
 div[data-testid="stMetric"] {
-    background: var(--grad-blue); border-radius: var(--ios-radius-sm); padding: 16px 18px;
-    box-shadow: var(--shadow-blue);
-    border: none;
+    background: var(--ios-card); border-radius: var(--ios-radius-sm); padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04);
 }
-div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color: #FFFFFF !important; font-size: 1.55rem !important; }
-div[data-testid="stMetric"] div[data-testid="stMetricLabel"] { color: rgba(255,255,255,0.92) !important; }
 
 /* ---------- pestañas (st.tabs) como segmented control de iOS ---------- */
 div[data-baseweb="tab-list"] {
@@ -1461,25 +1436,22 @@ div[data-testid="stImageCaption"] {
 
 .feature-row { display: flex; gap: 16px; margin-bottom: 6px; }
 .feature-card {
-    flex: 1; background: var(--grad-blue); border-radius: var(--ios-radius-md); padding: 22px 20px;
-    box-shadow: var(--shadow-blue);
-    border: none; color: #FFFFFF;
+    flex: 1; background: var(--ios-card); border-radius: var(--ios-radius-md); padding: 20px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04);
     text-align: left;
 }
-.feature-row .feature-card:nth-child(2) { background: var(--grad-purple); box-shadow: var(--shadow-purple); }
-.feature-row .feature-card:nth-child(3) { background: var(--grad-green); box-shadow: var(--shadow-green); }
-.feature-row .feature-card:nth-child(4) { background: var(--grad-amber); box-shadow: var(--shadow-amber); }
-.feature-card .fc-emoji { font-size: 2.4rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
-.feature-card .fc-title { font-weight: 900 !important; color: #FFFFFF; margin: 8px 0 5px 0; font-size: 1.08rem; letter-spacing: -0.01em; }
-.feature-card .fc-text { font-size: 0.88rem; color: rgba(255,255,255,0.94); line-height: 1.55; }
+.feature-card .fc-emoji { font-size: 1.8rem; }
+.feature-card .fc-title { font-weight: 800; color: var(--ios-label); margin: 6px 0 4px 0; font-size: 0.98rem; letter-spacing: -0.01em; }
+.feature-card .fc-text { font-size: 0.83rem; color: var(--ios-secondary); line-height: 1.4; }
 
 .equipo-card {
-    background: var(--grad-pink); border-radius: var(--ios-radius-sm); padding: 16px 20px; margin-bottom: 12px;
-    box-shadow: var(--shadow-pink);
-    border: none; border-left: 6px solid #FFFFFF;
+    background: var(--ios-card); border-radius: var(--ios-radius-sm); padding: 14px 18px; margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04); border-left: 4px solid var(--ios-pink);
 }
-.equipo-card .nombre { font-weight: 900; color: #FFFFFF; font-size: 1.05rem; }
-.equipo-card .puntos { font-size: 0.88rem; color: rgba(255,255,255,0.95); margin-top: 3px; font-weight: 600; }
+.equipo-card .nombre { font-weight: 800; color: var(--ios-label); font-size: 0.98rem; }
+.equipo-card .puntos { font-size: 0.85rem; color: var(--ios-secondary); margin-top: 2px; }
 @media (max-width: 700px) {
     .feature-row { flex-direction: column; }
     .hero-emoji-decor { display: none; }
@@ -1549,18 +1521,16 @@ div[data-testid="stImageCaption"] {
    BENTO GRID — tarjetas KPI (gauge IMC, percentil, alerta de categoría) de la Hoja 2
    ========================================================================================= */
 .bento-card {
-    background: linear-gradient(150deg,#EDE7FF 0%,#F7F2FF 55%,#FFFFFF 100%);
-    border-radius: var(--bento-radius); padding: 22px 24px; height: 100%;
-    box-shadow: 0 10px 26px -6px rgba(123,31,162,0.18); border: 1px solid rgba(123,31,162,0.08);
+    background: #FFFFFF; border-radius: var(--bento-radius); padding: 20px 22px; height: 100%;
+    box-shadow: var(--bento-shadow); border: 1px solid rgba(0,0,0,0.04);
 }
 .bento-eyebrow {
-    color: #7B1FA2; font-size: 0.8rem; font-weight: 900; text-transform: uppercase;
-    letter-spacing: 0.06em; margin-bottom: 3px;
+    color: #8A94A6; font-size: 0.76rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 2px;
 }
 .bento-pill {
-    display: inline-block; border-radius: var(--bento-pill); padding: 7px 18px;
-    font-weight: 900; font-size: 0.86rem; letter-spacing: 0.01em;
-    box-shadow: 0 4px 10px -2px rgba(0,0,0,0.18);
+    display: inline-block; border-radius: var(--bento-pill); padding: 5px 14px;
+    font-weight: 800; font-size: 0.78rem; letter-spacing: 0.01em;
 }
 .gauge-needle-pivot { transform-box: fill-box; transform-origin: center; }
 
@@ -1574,15 +1544,14 @@ div[data-testid="stImageCaption"] {
     display: flex; align-items: center; gap: 16px; padding: 18px 24px 8px 24px; position: relative;
 }
 .imc-table-icon {
-    width: 58px; height: 58px; border-radius: 16px; background: var(--grad-purple); display: flex;
-    align-items: center; justify-content: center; font-size: 1.9rem; flex-shrink: 0;
-    box-shadow: var(--shadow-purple);
+    width: 48px; height: 48px; border-radius: 14px; background: #F3EAF7; display: flex;
+    align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;
 }
-.imc-table-title { font-weight: 900; font-size: 1.45rem; color: #6A1B9A; letter-spacing: -0.01em; }
-.imc-table-sub { font-size: 0.86rem; color: #8A94A6; margin-top: 3px; max-width: 520px; line-height: 1.5; }
+.imc-table-title { font-weight: 800; font-size: 1.35rem; color: #6A1B9A; letter-spacing: -0.01em; }
+.imc-table-sub { font-size: 0.82rem; color: #8A94A6; margin-top: 2px; max-width: 520px; }
 .imc-table-head {
-    background: linear-gradient(120deg,#7B1FA2,#AF52DE); color: #FFFFFF; margin-top: 14px;
-    padding: 13px 24px; display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px;
+    background: #9C6FC9; color: #FFFFFF; margin-top: 14px;
+    padding: 12px 24px; display: grid; grid-template-columns: 1.6fr 1fr 2fr; gap: 18px;
 }
 .imc-table-head span { font-weight: 800; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .imc-row {
@@ -1632,50 +1601,43 @@ div[data-testid="stImageCaption"] {
 .perc-table tr.user-row td { box-shadow: inset 0 0 0 2px #24262B33; font-weight: 800; }
 
 /* ---------- Info de 3 columnas (¿Qué significa? / Relacionado con / Recordar) ---------- */
-.info3-card { background: linear-gradient(150deg,#E8F5FF 0%,#F5FBFF 55%,#FFFFFF 100%);
-              border-radius: var(--bento-radius); padding: 20px 22px; height: 100%;
-              box-shadow: 0 10px 26px -6px rgba(30,136,229,0.16); border: 1px solid rgba(30,136,229,0.08); font-family: var(--font-round); }
-.info3-title { font-weight: 900; font-size: 0.96rem; color: #17301F; margin-bottom: 10px; }
-/* ---------- Sección "factores" en modo ARCOÍRIS: cada círculo, su propio degradado ---------- */
+.info3-card { background:#FFFFFF; border-radius: var(--bento-radius); padding: 18px 20px; height: 100%;
+              box-shadow: var(--bento-shadow); border: 1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
+.info3-title { font-weight: 800; font-size: 0.88rem; color: #24262B; margin-bottom: 8px; }
 .dominio-icono {
-    display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; flex:1; min-width:0;
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; flex:1; min-width:0;
 }
 .dominio-circulo {
-    width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:1.8rem; flex-shrink:0; color:#FFFFFF;
-    box-shadow: 0 8px 18px -4px rgba(0,0,0,0.30);
-    border: 3px solid rgba(255,255,255,0.55);
+    width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.15rem; flex-shrink:0;
 }
-.dominio-label { font-size: 0.76rem; font-weight: 800; color: #24262B; line-height: 1.3; }
+.dominio-label { font-size: 0.68rem; font-weight: 700; color: #5C6B60; line-height: 1.2; }
 .cta-pill-card {
-    display:flex; align-items:center; gap:16px; background: linear-gradient(150deg,#FFF7E8 0%,#FFFDF7 55%,#FFFFFF 100%);
-    border-radius:20px; padding:16px 20px;
-    box-shadow: 0 10px 26px -6px rgba(255,159,28,0.18); border:1px solid rgba(255,159,28,0.10); font-family: var(--font-round);
+    display:flex; align-items:center; gap:14px; background:#FFFFFF; border-radius:18px; padding:14px 18px;
+    box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round);
     flex:1; min-width:240px; text-decoration:none;
 }
-.cta-pill-icon { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; flex-shrink:0; color:#FFFFFF; box-shadow: 0 6px 14px -3px rgba(0,0,0,0.28); }
-.cta-pill-title { font-weight:900; font-size:0.92rem; color:#17301F; margin-bottom:3px; }
-.cta-pill-desc { font-size:0.8rem; color:#5C6B60; line-height:1.4; }
-.cta-pill-btn { display:inline-block; margin-top:8px; font-size:0.8rem; font-weight:900; padding:7px 18px;
-                border-radius: var(--bento-pill); box-shadow: 0 4px 10px -2px rgba(0,0,0,0.20); }
+.cta-pill-icon { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.cta-pill-title { font-weight:800; font-size:0.85rem; color:#24262B; margin-bottom:2px; }
+.cta-pill-desc { font-size:0.74rem; color:#8A94A6; line-height:1.3; }
+.cta-pill-btn { display:inline-block; margin-top:6px; font-size:0.74rem; font-weight:800; padding:5px 14px;
+                border-radius: var(--bento-pill); }
 
 /* ---------- Panel "Tu Diagnóstico Nutricional" (Hoja 2 · IMC) ---------- */
-.diag-panel { background: linear-gradient(150deg,#F3E5FF 0%,#FBF5FF 55%,#FFFFFF 100%);
-              border-radius: var(--bento-radius-lg); padding:24px 26px; margin-bottom:14px;
-              box-shadow: 0 12px 28px -6px rgba(123,31,162,0.18); border:1px solid rgba(123,31,162,0.10); font-family: var(--font-round); }
-.diag-panel-title { font-weight:900; font-size:1.2rem; color:#6A1B9A; margin-bottom:16px; }
+.diag-panel { background:#FFFFFF; border-radius: var(--bento-radius-lg); padding:22px 24px; margin-bottom:14px;
+              box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round); }
+.diag-panel-title { font-weight:800; font-size:1.1rem; color:#6A1B9A; margin-bottom:14px; }
 .diag-kpi-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
-.diag-kpi { background: linear-gradient(135deg,#7B1FA2,#CE93D8); border-radius:18px; padding:16px 10px; text-align:center; box-shadow: var(--shadow-purple); }
-.diag-kpi-icon { font-size:1.7rem; }
-.diag-kpi-label { font-size:0.74rem; font-weight:900; color:#FFFFFF; text-transform:uppercase; letter-spacing:0.04em; margin-top:5px; opacity:0.95; }
-.diag-kpi-val { font-size:1.12rem; font-weight:900; margin-top:5px; line-height:1.3; color:#FFFFFF; }
-.diag-frase { margin-top:18px; background:#FFFFFF; border-radius:16px; padding:16px 20px; display:flex;
-              gap:12px; align-items:flex-start; font-size:0.94rem; color:#2A2E35; line-height:1.6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.diag-kpi { background:#F7F4FB; border-radius:16px; padding:14px 10px; text-align:center; }
+.diag-kpi-icon { font-size:1.3rem; }
+.diag-kpi-label { font-size:0.72rem; font-weight:800; color:#8A94A6; text-transform:uppercase; letter-spacing:0.04em; margin-top:4px; }
+.diag-kpi-val { font-size:1.02rem; font-weight:800; margin-top:4px; line-height:1.2; }
+.diag-frase { margin-top:16px; background:#FAFAFC; border-radius:14px; padding:14px 18px; display:flex;
+              gap:10px; align-items:flex-start; font-size:0.9rem; color:#2A2E35; line-height:1.5; }
 
 /* ---------- Escala horizontal de IMC (reemplaza al velocímetro como foco principal) ---------- */
-.escala-imc-wrap { background: linear-gradient(150deg,#E3F6FF 0%,#F2FCFF 55%,#FFFFFF 100%);
-                    border-radius: var(--bento-radius); padding:20px 22px; height:100%;
-                    box-shadow: 0 10px 26px -6px rgba(30,136,229,0.16); border:1px solid rgba(30,136,229,0.08); font-family: var(--font-round); }
+.escala-imc-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                    box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
 .escala-imc-zonas { display:flex; width:100%; height:14px; border-radius:999px; overflow:hidden; margin:34px 0 6px 0; position:relative; }
 .escala-imc-labels { display:flex; width:100%; }
 .escala-imc-labels span { flex:1; text-align:center; font-size:0.68rem; font-weight:800; color:#8A94A6; }
@@ -1684,9 +1646,8 @@ div[data-testid="stImageCaption"] {
                           border-right:7px solid transparent; border-top:9px solid #24262B; }
 
 /* ---------- Percentil visual "de cada 100" ---------- */
-.perc-visual-wrap { background: linear-gradient(150deg,#E4FBEF 0%,#F3FEF8 55%,#FFFFFF 100%);
-                     border-radius: var(--bento-radius); padding:20px 22px; height:100%;
-                     box-shadow: 0 10px 26px -6px rgba(46,158,74,0.16); border:1px solid rgba(46,158,74,0.08); font-family: var(--font-round); }
+.perc-visual-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                     box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
 .perc-visual-grid { display:grid; grid-template-columns: repeat(10, 1fr); gap:3px; margin:12px auto; max-width:220px; }
 .perc-visual-dot { width:100%; padding-top:100%; border-radius:2px; }
 
@@ -1694,10 +1655,10 @@ div[data-testid="stImageCaption"] {
 .estado-nutri-item { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:#2A2E35; margin-top:6px; }
 
 /* ---------- ¿Qué puedes hacer desde hoy? ---------- */
-.accion-card { background: var(--ac-grad, var(--grad-blue)); border-radius:18px; padding:16px 12px; text-align:center; height:100%;
-               box-shadow: var(--ac-shadow, var(--shadow-blue)); border:none; font-family: var(--font-round); }
-.accion-card .accion-emoji { font-size:2rem; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.18)); }
-.accion-card .accion-txt { font-size:0.82rem; font-weight:800; color:#FFFFFF; margin-top:8px; line-height:1.4; }
+.accion-card { background:#FFFFFF; border-radius:16px; padding:14px 12px; text-align:center; height:100%;
+               box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); font-family: var(--font-round); }
+.accion-card .accion-emoji { font-size:1.5rem; }
+.accion-card .accion-txt { font-size:0.76rem; font-weight:700; color:#2A2E35; margin-top:6px; line-height:1.3; }
 
 /* ---------- Barra de progreso hacia meta de IMC ---------- */
 .progreso-imc-track { position:relative; width:100%; height:16px; border-radius:999px; background:#EDEDF2; margin:26px 0 8px 0; }
@@ -1706,38 +1667,38 @@ div[data-testid="stImageCaption"] {
 .progreso-imc-tu { position:absolute; top:20px; transform:translateX(-50%); font-size:0.7rem; font-weight:800; color:#1565C0; text-align:center; }
 
 /* ---------- Conexión con el resto del sistema ---------- */
-.conexion-card { display:flex; align-items:center; gap:16px; background: var(--grad-teal); border-radius:18px; padding:16px 18px;
-                  box-shadow: var(--shadow-teal); border:none; text-decoration:none;
-                  font-family: var(--font-round); margin-bottom:12px; }
-.conexion-icon { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-                  font-size:1.5rem; flex-shrink:0; background:rgba(255,255,255,0.25); }
-.conexion-title { font-weight:900; font-size:0.92rem; color:#FFFFFF; }
-.conexion-desc { font-size:0.8rem; color:rgba(255,255,255,0.92); margin-top:2px; }
-.conexion-arrow { margin-left:auto; font-weight:900; color:#FFFFFF; flex-shrink:0; font-size:1.1rem; }
+.conexion-card { display:flex; align-items:center; gap:14px; background:#FFFFFF; border-radius:16px; padding:14px 16px;
+                  box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.04); text-decoration:none;
+                  font-family: var(--font-round); margin-bottom:10px; }
+.conexion-icon { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+                  font-size:1.2rem; flex-shrink:0; }
+.conexion-title { font-weight:800; font-size:0.85rem; color:#24262B; }
+.conexion-desc { font-size:0.76rem; color:#8A94A6; margin-top:1px; }
+.conexion-arrow { margin-left:auto; font-weight:800; color:#8A94A6; flex-shrink:0; }
 
 /* ---------- Hoja 3 (TMB) — ilustración, resultado, fórmula horizontal, flujo y central energética ---------- */
-.tmb-ilustra-wrap { background: var(--grad-indigo); border-radius: var(--bento-radius-lg); padding:24px 26px;
-                     box-shadow: var(--shadow-indigo); border:none; font-family: var(--font-round);
+.tmb-ilustra-wrap { background:#FFFFFF; border-radius: var(--bento-radius-lg); padding:22px 24px;
+                     box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round);
                      text-align:center; }
-.tmb-ilustra-item { font-size:1rem; font-weight:800; color:#FFFFFF; margin:8px 0; }
-.tmb-ilustra-flecha { font-size:1.3rem; color:rgba(255,255,255,0.75); margin:2px 0; }
-.tmb-resultado-card { background: var(--grad-amber); border-radius: var(--bento-radius-lg);
-                       padding:28px 30px; text-align:center; box-shadow: var(--shadow-amber);
-                       border:none; font-family: var(--font-round); }
-.tmb-resultado-num { font-size:2.9rem; font-weight:900; color:#FFFFFF; letter-spacing:-0.02em; margin:8px 0; text-shadow:0 3px 10px rgba(0,0,0,0.18); }
-.tmb-formula-genero-wrap { background: linear-gradient(150deg,#EAF3FF 0%,#F6FAFF 55%,#FFFFFF 100%); border-radius: var(--bento-radius); padding:20px 22px; margin-bottom:14px;
-                            box-shadow: 0 10px 26px -6px rgba(30,136,229,0.16); border:1px solid rgba(30,136,229,0.08); font-family: var(--font-round); }
-.tmb-formula-genero-title { font-weight:900; font-size:1.02rem; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-.tmb-formula-flow { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
-.tmb-formula-box { border-radius:16px; padding:12px 16px; text-align:center; font-weight:900; font-size:0.92rem;
-                    min-width:82px; box-shadow: 0 6px 14px -3px rgba(0,0,0,0.20); }
-.tmb-formula-box .tmb-box-sub { display:block; font-size:0.7rem; font-weight:800; opacity:0.9; margin-top:3px; }
-.tmb-formula-arrow { font-size:1.4rem; font-weight:900; flex-shrink:0; color:#7B1FA2; }
-.tmb-quien-card { background: var(--grad-purple); border-radius: var(--bento-radius); padding:20px 22px; height:100%;
-                   box-shadow: var(--shadow-purple); border:none; font-family: var(--font-round); color:#FFFFFF; }
-.tmb-porque-card { background: var(--grad-teal); border-radius: var(--bento-radius); padding:20px 22px; height:100%;
-                    box-shadow: var(--shadow-teal); border:none; font-family: var(--font-round); }
-.tmb-porque-item { display:flex; align-items:flex-start; gap:10px; font-size:0.9rem; color:#FFFFFF; margin-top:10px; line-height:1.5; font-weight:600; }
+.tmb-ilustra-item { font-size:0.92rem; font-weight:700; color:#2A2E35; margin:6px 0; }
+.tmb-ilustra-flecha { font-size:1.2rem; color:#C2C6D0; margin:2px 0; }
+.tmb-resultado-card { background:linear-gradient(120deg,#FFF3E0 0%,#FFFFFF 75%); border-radius: var(--bento-radius-lg);
+                       padding:26px 28px; text-align:center; box-shadow: var(--bento-shadow);
+                       border:1px solid rgba(251,140,0,0.18); font-family: var(--font-round); }
+.tmb-resultado-num { font-size:2.6rem; font-weight:800; color:#E67E22; letter-spacing:-0.02em; margin:6px 0; }
+.tmb-formula-genero-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:18px 20px; margin-bottom:14px;
+                            box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round); }
+.tmb-formula-genero-title { font-weight:800; font-size:0.95rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.tmb-formula-flow { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.tmb-formula-box { border-radius:14px; padding:10px 14px; text-align:center; font-weight:800; font-size:0.86rem;
+                    min-width:78px; }
+.tmb-formula-box .tmb-box-sub { display:block; font-size:0.66rem; font-weight:700; opacity:0.85; margin-top:2px; }
+.tmb-formula-arrow { font-size:1.3rem; font-weight:800; flex-shrink:0; }
+.tmb-quien-card { background:#F5F0FF; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                   box-shadow: var(--bento-shadow); border:1px solid rgba(88,86,214,0.14); font-family: var(--font-round); }
+.tmb-porque-card { background:#EAFAF6; border-radius: var(--bento-radius); padding:18px 20px; height:100%;
+                    box-shadow: var(--bento-shadow); border:1px solid rgba(0,199,160,0.16); font-family: var(--font-round); }
+.tmb-porque-item { display:flex; align-items:flex-start; gap:8px; font-size:0.84rem; color:#1E5631; margin-top:8px; line-height:1.4; }
 .tmb-central-wrap { background:#171A2B; border-radius: var(--bento-radius-lg); padding:28px 24px; text-align:center;
                      font-family: var(--font-round); color:#FFFFFF; box-shadow: var(--bento-shadow); }
 .tmb-central-kcal { font-size:1.9rem; font-weight:800; color:#FFD54F; margin:6px 0 18px 0; }
@@ -1745,18 +1706,18 @@ div[data-testid="stImageCaption"] {
 .tmb-central-organo { display:flex; flex-direction:column; align-items:center; gap:6px; }
 .tmb-central-led { width:10px; height:10px; border-radius:50%; background:#FFD54F; box-shadow:0 0 8px 2px #FFD54F99; }
 .tmb-central-label { font-size:0.7rem; font-weight:700; color:#C7CBE0; }
-.tmb-flujo-wrap { background: linear-gradient(150deg,#FFF0E0 0%,#FFF9F0 55%,#FFFFFF 100%); border-radius: var(--bento-radius); padding:22px; text-align:center;
-                   box-shadow: 0 10px 26px -6px rgba(255,159,28,0.18); border:1px solid rgba(255,159,28,0.10); font-family: var(--font-round); }
-.tmb-flujo-row { display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; }
-.tmb-flujo-chip { background: var(--grad-amber); border-radius:16px; padding:12px 18px; font-weight:900; font-size:0.88rem; color:#FFFFFF; box-shadow: var(--shadow-amber); }
+.tmb-flujo-wrap { background:#FFFFFF; border-radius: var(--bento-radius); padding:20px; text-align:center;
+                   box-shadow: var(--bento-shadow); border:1px solid rgba(0,0,0,0.05); font-family: var(--font-round); }
+.tmb-flujo-row { display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.tmb-flujo-chip { background:#F7F4FB; border-radius:14px; padding:10px 16px; font-weight:800; font-size:0.82rem; color:#24262B; }
 
 /* ---------- Semáforo Clínico — tarjetas-gauge dinámicas (Hoja 1 y Reporte) ---------- */
 .sema-card {
-    background: var(--sc-grad, #FFFFFF); border-radius:20px; padding:18px 16px; height:100%;
-    box-shadow: var(--sc-shadow, 0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.07));
+    background:#FFFFFF; border-radius:20px; padding:16px 14px; height:100%;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.07);
     transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: help;
 }
-.sema-card:hover { transform: translateY(-6px) scale(1.015); box-shadow:0 6px 14px rgba(0,0,0,0.10), 0 20px 36px rgba(0,0,0,0.16); }
+.sema-card:hover { transform: translateY(-4px); box-shadow:0 4px 8px rgba(0,0,0,0.05), 0 16px 30px rgba(0,0,0,0.13); }
 .sema-gauge-track { position:relative; width:100%; height:14px; border-radius:999px; overflow:hidden; margin:8px 0 4px 0; background:#EEE; }
 .sema-gauge-seg { position:absolute; top:0; height:100%; }
 .sema-gauge-marker {
@@ -1766,12 +1727,12 @@ div[data-testid="stImageCaption"] {
 }
 
 /* ---------- Panel de tablas de referencia clínica (Hemoglobina / Hierro) ---------- */
-.ref-panel { background: linear-gradient(150deg,#E6F7FF 0%,#F1FFF8 100%); border-radius:18px; padding:24px 24px; box-shadow:0 10px 24px -6px rgba(0,131,143,0.16); border:1px solid rgba(0,131,143,0.10); margin-bottom:14px; }
-.ref-panel-title { display:flex; align-items:center; gap:10px; font-weight:900; font-size:1.12rem; color:#00838F; margin-bottom:16px; }
+.ref-panel { background:#F8FAFC; border-radius:16px; padding:22px 22px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 10px 24px rgba(0,0,0,0.05); border:1px solid rgba(0,0,0,0.04); margin-bottom:14px; }
+.ref-panel-title { display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; color:#1C1C1E; margin-bottom:14px; }
 .ref-row { display:grid; align-items:center; gap:10px; padding:6px 0; }
-.ref-group-label { font-weight:800; color:#17301F; font-size:0.9rem; }
-.ref-chip { border-radius:10px; padding:10px 8px; text-align:center; font-weight:800; font-size:0.86rem; box-shadow:0 3px 8px rgba(0,0,0,0.08); }
-.ref-header-chip { border-radius:10px; padding:8px 8px; text-align:center; font-weight:900; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.02em; color:#FFFFFF; background: var(--grad-teal); }
+.ref-group-label { font-weight:700; color:#3C3C43; font-size:0.86rem; }
+.ref-chip { border-radius:8px; padding:9px 8px; text-align:center; font-weight:700; font-size:0.82rem; }
+.ref-header-chip { border-radius:8px; padding:7px 8px; text-align:center; font-weight:800; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.02em; color:#5C6B60; background:#EEF1F4; }
 
 /* ---------- Hoja 6: Macronutrientes — tarjetas por color y tooltips info ---------- */
 .macro-card {
@@ -1779,20 +1740,22 @@ div[data-testid="stImageCaption"] {
     box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.07);
     border: 1px solid rgba(0,0,0,0.04);
 }
-.macro-card.prot { background: var(--grad-red); border-left: none; box-shadow: var(--shadow-red); }
-.macro-card.gras { background: var(--grad-amber); border-left: none; box-shadow: var(--shadow-amber); }
-.macro-card.carb { background: var(--grad-green); border-left: none; box-shadow: var(--shadow-green); }
-.macro-card .mc-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.macro-card .mc-icon { font-size:1.9rem; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.18)); }
-.macro-card .mc-title { font-weight:900; font-size:1.08rem; color:#FFFFFF; }
+.macro-card.prot { background: linear-gradient(150deg,#FFEDEC 0%,#FFFFFF 70%); border-left: 5px solid #FF3B30; }
+.macro-card.gras { background: linear-gradient(150deg,#FFF3E0 0%,#FFFFFF 70%); border-left: 5px solid #FF9500; }
+.macro-card.carb { background: linear-gradient(150deg,#EAFAEE 0%,#FFFFFF 70%); border-left: 5px solid #34C759; }
+.macro-card .mc-head { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.macro-card .mc-icon { font-size:1.4rem; }
+.macro-card .mc-title { font-weight:800; font-size:1rem; color:#17301F; }
 .macro-card .mc-tip {
-    margin-left:auto; cursor:help; font-size:0.9rem; color:#FFFFFF;
-    border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,0.25);
+    margin-left:auto; cursor:help; font-size:0.85rem; color:#8A94A6;
+    border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.05);
 }
-.macro-card .mc-value { font-size:1.95rem; font-weight:900; letter-spacing:-0.02em; margin:6px 0 3px 0; color:#FFFFFF; text-shadow:0 2px 6px rgba(0,0,0,0.15); }
-.macro-card.prot .mc-value, .macro-card.gras .mc-value, .macro-card.carb .mc-value { color:#FFFFFF; }
-.macro-card .mc-sub { font-size:0.84rem; color:rgba(255,255,255,0.95); line-height:1.5; font-weight:600; }
+.macro-card .mc-value { font-size:1.7rem; font-weight:800; letter-spacing:-0.02em; margin:4px 0 2px 0; }
+.macro-card.prot .mc-value { color:#C0392B; }
+.macro-card.gras .mc-value { color:#E67E22; }
+.macro-card.carb .mc-value { color:#1E5631; }
+.macro-card .mc-sub { font-size:0.78rem; color:#5C6B60; line-height:1.4; }
 .macro-niveles-table { width:100%; border-collapse:separate; border-spacing:0; font-size:0.86rem; }
 .macro-niveles-table th { background:#1E5631; color:#FFFFFF; padding:10px 12px; font-weight:800; text-align:center; }
 .macro-niveles-table th:first-child { border-top-left-radius:14px; }
@@ -1853,11 +1816,11 @@ div[data-testid="stImageCaption"] {
     background: linear-gradient(135deg,#FFB300,#FF9500); color:#FFFFFF; padding:12px 16px;
     font-weight:800; text-align:center; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.03em;
 }
-.comidas-table tbody td { padding:13px 16px; text-align:center; font-weight:700; color:#7A3E00; }
-.comidas-table tbody tr { background:#FFE9C7; }
-.comidas-table tbody tr:nth-child(even) { background:#FFDCA3; }
-.comidas-table td.comida-nombre { text-align:left; font-weight:900; color:#B15E00; }
-.comidas-table tr.fila-total-comidas td { background: var(--grad-amber); color:#FFFFFF; font-weight:900; font-size:1.05rem; }
+.comidas-table tbody td { padding:12px 16px; text-align:center; font-weight:600; color:#5A3E1B; }
+.comidas-table tbody tr { background:#FFF8EE; }
+.comidas-table tbody tr:nth-child(even) { background:#FFF1DC; }
+.comidas-table td.comida-nombre { text-align:left; font-weight:800; color:#B15E00; }
+.comidas-table tr.fila-total-comidas td { background:#FF9500; color:#FFFFFF; font-weight:800; font-size:1rem; }
 
 @keyframes validacion-fadein {
     from { opacity:0; transform: translateY(10px); }
@@ -1879,11 +1842,11 @@ div[data-testid="stImageCaption"] {
 
 /* ---------- Hoja 7: Panel de validación RCD vs. Total Distribuido ---------- */
 .val-card {
-    background: linear-gradient(150deg,#E8F5FF 0%,#F5FBFF 55%,#FFFFFF 100%); border-radius:22px; padding:24px 26px; margin-top:18px;
-    box-shadow: 0 10px 26px -6px rgba(30,136,229,0.16);
-    border:1px solid rgba(30,136,229,0.08);
+    background:#FFFFFF; border-radius:20px; padding:22px 24px; margin-top:18px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 8px 22px rgba(0,0,0,0.07);
+    border:1px solid rgba(0,0,0,0.05);
 }
-.val-card-title { font-weight:900; font-size:1.1rem; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:#1565C0; }
+.val-card-title { font-weight:800; font-size:1rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; color:#17301F; }
 .val-comparacion-table { width:100%; border-collapse:collapse; font-size:0.9rem; margin-bottom:20px; }
 .val-comparacion-table td { padding:11px 6px; border-bottom:1px solid #F0F0F0; }
 .val-comparacion-table td:first-child { font-weight:700; color:#5C6B60; }
@@ -1938,19 +1901,19 @@ div[data-testid="stImageCaption"] {
 /* ---------- Hoja 9: Dieta — panel resumen, selector de alimentos y menú tipo tablas de color ---------- */
 .resumen-nutri-wrap { display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; }
 .resumen-nutri-card {
-    flex:1; min-width:230px; background: var(--grad-blue); border-radius:24px; padding:22px 24px;
-    box-shadow: var(--shadow-blue); border:none; color:#FFFFFF;
+    flex:1; min-width:230px; background:#FFFFFF; border-radius:22px; padding:20px 22px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04);
 }
-.resumen-nutri-card .rn-title { font-weight:900; font-size:0.98rem; display:flex; align-items:center; gap:8px; margin-bottom:12px; color:#FFFFFF; }
-.resumen-nutri-card.rn-tiempos { background: var(--grad-teal); box-shadow: var(--shadow-teal); }
-.resumen-nutri-card.rn-macros { background: var(--grad-purple); box-shadow: var(--shadow-purple); }
-.resumen-nutri-card.rn-rcd { background: var(--grad-green); box-shadow: var(--shadow-green); color:#FFFFFF; text-align:center; }
-.rn-tiempos-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:0.88rem; color:#FFFFFF; font-weight:600; border-bottom:1px dashed rgba(255,255,255,0.28); }
+.resumen-nutri-card .rn-title { font-weight:800; font-size:0.92rem; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.resumen-nutri-card.rn-tiempos { background:linear-gradient(160deg,#E6F7FA 0%,#FFFFFF 65%); }
+.resumen-nutri-card.rn-macros { background:linear-gradient(160deg,#F3EAF7 0%,#FFFFFF 65%); }
+.resumen-nutri-card.rn-rcd { background:linear-gradient(150deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%); color:#FFFFFF; text-align:center; }
+.rn-tiempos-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:0.84rem; border-bottom:1px dashed rgba(0,0,0,0.08); }
 .rn-tiempos-row:last-child { border-bottom:none; }
-.rn-tiempos-row .rn-kcal { font-weight:900; color:#00838F; background:#FFFFFF; padding:3px 12px; border-radius:999px; font-size:0.82rem; }
-.rn-macro-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; font-size:0.9rem; color:#FFFFFF; font-weight:600; }
-.rn-macro-pill { font-weight:900; padding:4px 14px; border-radius:999px; font-size:0.82rem; }
-.rn-rcd-value { font-size:2.6rem; font-weight:900; letter-spacing:-0.02em; margin:8px 0; text-shadow:0 3px 8px rgba(0,0,0,0.18); }
+.rn-tiempos-row .rn-kcal { font-weight:800; color:#0E7C86; background:#E0F7FA; padding:2px 10px; border-radius:999px; font-size:0.8rem; }
+.rn-macro-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:0.86rem; }
+.rn-macro-pill { font-weight:800; padding:3px 12px; border-radius:999px; font-size:0.8rem; }
+.rn-rcd-value { font-size:2.4rem; font-weight:900; letter-spacing:-0.02em; margin:6px 0; }
 
 .selector-menu-title {
     text-align:center; font-weight:900; font-size:1.85rem; letter-spacing:-0.02em;
@@ -3291,12 +3254,12 @@ def recursos_externos(idx, recursos):
 
 # Paleta pastel exacta pedida para el panel de tablas de referencia clínica (Hemoglobina / Hierro)
 _REF_PASTEL = {
-    "normal":   ("linear-gradient(135deg,#2E9E4A,#66E39A)", "#FFFFFF"),
-    "leve":     ("linear-gradient(135deg,#F5A623,#FFD166)", "#FFFFFF"),
-    "moderada": ("linear-gradient(135deg,#F57C00,#FFA95C)", "#FFFFFF"),
-    "grave":    ("linear-gradient(135deg,#C0392B,#FF6B5C)", "#FFFFFF"),
-    "bajo":     ("linear-gradient(135deg,#1E88E5,#64C8F7)", "#FFFFFF"),
-    "alto":     ("linear-gradient(135deg,#7B1FA2,#CE93D8)", "#FFFFFF"),
+    "normal":   ("#E6F4EA", "#137333"),
+    "leve":     ("#FEF7E0", "#B06000"),
+    "moderada": ("#FFE8D6", "#C45100"),
+    "grave":    ("#FCE8E6", "#C5221F"),
+    "bajo":     ("#E8F0FE", "#1A56DB"),
+    "alto":     ("#F3E8FF", "#7C3AED"),
 }
 
 # Todos los iconos del panel de referencia llevan un tamaño FIJO (evita el bug del SVG gigante
@@ -4047,22 +4010,18 @@ def tarjeta_semaforo(parametro, valor_texto, categoria, valor_num=None, etapa=No
     tooltip = _mensaje_triaje_txt(parametro, categoria, r["colorSemaforo"]).replace('"', "'")
     parametro_txt = _parametro_txt(parametro)
     categoria_txt = _categoria_clinica_txt(categoria)
-    _grad_map = {"verde": "var(--grad-green)", "ambar": "var(--grad-amber)", "rojo": "var(--grad-red)", "gris": "linear-gradient(135deg,#8E8E93,#C7C7CC)"}
-    _shadow_map = {"verde": "var(--shadow-green)", "ambar": "var(--shadow-amber)", "rojo": "var(--shadow-red)", "gris": "0 10px 24px -6px rgba(142,142,147,0.35)"}
-    _sc_grad = _grad_map.get(r["colorSemaforo"], "#FFFFFF")
-    _sc_shadow = _shadow_map.get(r["colorSemaforo"], "0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.07)")
     st.markdown(f"""
-    <div class="sema-card" style="--sc-grad:{_sc_grad};--sc-shadow:{_sc_shadow};border-top:5px solid rgba(255,255,255,0.6);border-bottom:5px solid rgba(255,255,255,0.6);"
+    <div class="sema-card" style="border-top:5px solid {borde_pastel};border-bottom:5px solid {borde_pastel};"
          title="{tooltip}">
-        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.92);
+        <div style="width:52px;height:52px;border-radius:50%;background:{r['fondo']};
                     display:flex;align-items:center;justify-content:center;
-                    margin:0 auto 10px auto;padding:11px;box-sizing:border-box;box-shadow:0 4px 10px rgba(0,0,0,0.15);">{icono_svg}</div>
-        <div style="text-align:center;font-weight:900;color:#FFFFFF;font-size:0.98rem;letter-spacing:-0.01em;">{parametro_txt}</div>
-        <div style="text-align:center;color:rgba(255,255,255,0.92);font-size:0.8rem;margin-bottom:3px;font-weight:600;">{valor_texto}</div>
+                    margin:0 auto 8px auto;padding:10px;box-sizing:border-box;">{icono_svg}</div>
+        <div style="text-align:center;font-weight:800;color:#1C1C1E;font-size:0.92rem;letter-spacing:-0.01em;">{parametro_txt}</div>
+        <div style="text-align:center;color:#8E8E93;font-size:0.76rem;margin-bottom:2px;">{valor_texto}</div>
         {gauge_html}
-        <div style="text-align:center;margin-top:8px;">
-            <span style="background:rgba(255,255,255,0.92);color:{r['hex']};font-weight:900;font-size:0.82rem;
-                         padding:5px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(0,0,0,0.12);">{r['emoji']} {categoria_txt}</span>
+        <div style="text-align:center;margin-top:6px;">
+            <span style="background:{r['fondo']};color:{r['hex']};font-weight:800;font-size:0.78rem;
+                         padding:4px 12px;border-radius:999px;">{r['emoji']} {categoria_txt}</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -4689,12 +4648,12 @@ def fila_dominios_salud(dominios):
     (Salud general, Atención médica, Apoyo y tratamiento, Detección temprana, etc.)."""
     items = "".join(
         f"""<div class="dominio-icono">
-                <div class="dominio-circulo" style="background:linear-gradient(135deg,{color} 0%,{color}CC 100%);box-shadow:0 8px 18px -4px {color}88;">{icono}</div>
+                <div class="dominio-circulo" style="background:{color}1A;">{icono}</div>
                 <div class="dominio-label">{label}</div>
             </div>"""
         for icono, color, label in dominios
     )
-    st.markdown(f'<div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">{items}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="display:flex;gap:10px;margin-top:6px;">{items}</div>', unsafe_allow_html=True)
 
 
 def cta_pill(icono, color, titulo, desc, boton_texto, url):
@@ -4702,7 +4661,7 @@ def cta_pill(icono, color, titulo, desc, boton_texto, url):
     con flecha, para enlaces a recursos externos (ej. pruebas del CDC)."""
     st.markdown(f"""
     <a href="{url}" target="_blank" class="cta-pill-card">
-        <span class="cta-pill-icon" style="background:linear-gradient(135deg,{color} 0%,{color}CC 100%);">{icono}</span>
+        <span class="cta-pill-icon" style="background:{color}1A;">{icono}</span>
         <div>
             <div class="cta-pill-title">{titulo}</div>
             <div class="cta-pill-desc">{desc}</div>
@@ -4808,10 +4767,10 @@ def panel_diagnostico_nutricional(imc, percentil_valor, categoria, con_percentil
         (T("Riesgo", "Risk"), riesgo_txt, "🚨", riesgo_color),
     ]
     _kpis = "".join(f"""
-        <div class="diag-kpi" style="background:linear-gradient(135deg,{col} 0%,{col}CC 100%);box-shadow:0 8px 18px -4px {col}88;">
+        <div class="diag-kpi">
             <div class="diag-kpi-icon">{ic}</div>
             <div class="diag-kpi-label">{lbl}</div>
-            <div class="diag-kpi-val" style="color:#FFFFFF;">{val}</div>
+            <div class="diag-kpi-val" style="color:{col};">{val}</div>
         </div>""" for lbl, val, ic, col in tarjetas)
     frase = _frase_imc_txt(categoria)
     st.markdown(f"""
@@ -4917,10 +4876,10 @@ def panel_diagnostico_pregestacional(imc, categoria):
         (T("Estado", "Status"), _estado_gestacional_txt(categoria), "🩺", _color),
     ]
     _kpis = "".join(f"""
-        <div class="diag-kpi" style="background:linear-gradient(135deg,{col} 0%,{col}CC 100%);box-shadow:0 8px 18px -4px {col}88;">
+        <div class="diag-kpi">
             <div class="diag-kpi-icon">{ic}</div>
             <div class="diag-kpi-label">{lbl}</div>
-            <div class="diag-kpi-val" style="color:#FFFFFF;">{val}</div>
+            <div class="diag-kpi-val" style="color:{col};">{val}</div>
         </div>""" for lbl, val, ic, col in tarjetas)
     st.markdown(f"""
     <div class="diag-panel">
@@ -5222,9 +5181,9 @@ def links_uniformes_mas_info():
         with _col:
             st.markdown(f"""
             <a href="{_url}" target="_blank" style="text-decoration:none;">
-                <div class="bento-card" style="text-align:center;padding:18px 10px;background:linear-gradient(150deg,{_co}22 0%,#FFFFFF 75%);">
-                    <div style="width:46px;height:46px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:{_co};box-shadow:0 6px 14px -3px {_co}88;">{_ic}</div>
-                    <div style="font-weight:900;font-size:0.86rem;color:{_co};margin-top:8px;">{_tt}</div>
+                <div class="bento-card" style="text-align:center;padding:14px 8px;">
+                    <div style="font-size:1.3rem;">{_ic}</div>
+                    <div style="font-weight:800;font-size:0.78rem;color:{_co};margin-top:4px;">{_tt}</div>
                 </div>
             </a>
             """, unsafe_allow_html=True)
@@ -5246,17 +5205,11 @@ def acciones_desde_hoy():
     consejos largos en párrafo."""
     st.markdown(T("#### 🌱 ¿Qué puedes hacer desde hoy?", "#### 🌱 What can you do starting today?"))
     _lista = _ACCIONES_DESDE_HOY_EN if st.session_state.get("idioma", "Español") == "English" else _ACCIONES_DESDE_HOY
-    _arcoiris = [
-        ("var(--grad-blue)", "var(--shadow-blue)"), ("var(--grad-purple)", "var(--shadow-purple)"),
-        ("var(--grad-green)", "var(--shadow-green)"), ("var(--grad-amber)", "var(--shadow-amber)"),
-        ("var(--grad-pink)", "var(--shadow-pink)"), ("var(--grad-teal)", "var(--shadow-teal)"),
-    ]
     _cols = st.columns(len(_lista))
-    for _i, (_col, (_em, _txt)) in enumerate(zip(_cols, _lista)):
-        _g, _s = _arcoiris[_i % len(_arcoiris)]
+    for _col, (_em, _txt) in zip(_cols, _lista):
         with _col:
             st.markdown(f"""
-            <div class="accion-card" style="--ac-grad:{_g};--ac-shadow:{_s};">
+            <div class="accion-card">
                 <div class="accion-emoji">{_em}</div>
                 <div class="accion-txt">{_txt}</div>
             </div>
@@ -5633,8 +5586,8 @@ def conexion_resto_sistema():
     ]
     for _ic, _co, _tt, _de in _conexiones:
         st.markdown(f"""
-        <div class="conexion-card" style="background:linear-gradient(135deg,{_co} 0%,{_co}CC 100%);box-shadow:0 10px 24px -6px {_co}77;">
-            <span class="conexion-icon">{_ic}</span>
+        <div class="conexion-card">
+            <span class="conexion-icon" style="background:{_co}1A;color:{_co};">{_ic}</span>
             <div>
                 <div class="conexion-title">{_tt}</div>
                 <div class="conexion-desc">{_de}</div>
@@ -5723,7 +5676,7 @@ def formula_horizontal_tmb(peso, estatura, edad, genero_activo, tmb_valor):
     for _nombre, _nombre_disp, _icono, _color, _fondo, _pasos, _res in _filas:
         _es_activo = _nombre == genero_activo
         _boxes = "".join(
-            f'<div class="tmb-formula-box" style="background:linear-gradient(135deg,{_color} 0%,{_color}CC 100%);color:#FFFFFF;">{p}<span class="tmb-box-sub">{op}</span></div>'
+            f'<div class="tmb-formula-box" style="background:{_color}1A;color:{_color};">{p}<span class="tmb-box-sub">{op}</span></div>'
             f'<span class="tmb-formula-arrow" style="color:{_color};">→</span>'
             for p, op, val in _pasos
         )
@@ -5748,8 +5701,8 @@ def tarjeta_quien_creo_formula():
     ecuación publicada en 1990 por un equipo de investigadores."""
     st.markdown(T("""
     <div class="tmb-quien-card">
-        <div style="font-weight:900;color:#FFFFFF;margin-bottom:8px;font-size:1rem;">👨‍🔬 ¿Quién desarrolló esta fórmula?</div>
-        <div style="font-size:0.9rem;color:#FFFFFF;line-height:1.7;font-weight:500;">
+        <div style="font-weight:800;color:#5856D6;margin-bottom:6px;">👨‍🔬 ¿Quién desarrolló esta fórmula?</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
         La ecuación de <b>Mifflin–St Jeor</b> fue publicada en 1990 por los investigadores
         <b>Mark D. Mifflin</b>, <b>Sachiko T. St Jeor</b> y su equipo. Actualmente es una de las
         fórmulas más utilizadas por nutricionistas y hospitales para estimar la Tasa Metabólica
@@ -5758,8 +5711,8 @@ def tarjeta_quien_creo_formula():
     </div>
     """, """
     <div class="tmb-quien-card">
-        <div style="font-weight:900;color:#FFFFFF;margin-bottom:8px;font-size:1rem;">👨‍🔬 Who developed this formula?</div>
-        <div style="font-size:0.9rem;color:#FFFFFF;line-height:1.7;font-weight:500;">
+        <div style="font-weight:800;color:#5856D6;margin-bottom:6px;">👨‍🔬 Who developed this formula?</div>
+        <div style="font-size:0.85rem;color:#3A3A3C;line-height:1.7;">
         The <b>Mifflin–St Jeor</b> equation was published in 1990 by researchers
         <b>Mark D. Mifflin</b>, <b>Sachiko T. St Jeor</b> and their team. It is currently one of the
         formulas most widely used by nutritionists and hospitals to estimate Basal Metabolic
@@ -5779,7 +5732,7 @@ def tarjeta_por_que_mifflin():
     _lis = "".join(f'<div class="tmb-porque-item"><span>✔</span><span>{it}</span></div>' for it in _items)
     st.markdown(f"""
     <div class="tmb-porque-card">
-        <div style="font-weight:900;color:#FFFFFF;margin-bottom:4px;font-size:1rem;">📚 {T("¿Por qué usamos Mifflin-St Jeor?", "Why do we use Mifflin-St Jeor?")}</div>
+        <div style="font-weight:800;color:#0E6B4F;margin-bottom:2px;">📚 {T("¿Por qué usamos Mifflin-St Jeor?", "Why do we use Mifflin-St Jeor?")}</div>
         {_lis}
     </div>
     """, unsafe_allow_html=True)
@@ -6220,14 +6173,14 @@ def _build_panel_control_definitivo(rcd_v, tmb_v, rcd_final_v, ajuste_aplicado_v
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
     _color_plazo = "#FF3B30" if objetivo_v == "Bajar de peso" else ("#0A84FF" if objetivo_v == "Subir de peso" else "#34C759")
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,{_color_plazo} 0%,{_color_plazo}CC 100%);border-radius:18px;padding:18px 22px;
-                box-shadow:0 10px 24px -6px {_color_plazo}77;
-                border:none;">
-        <div style="font-weight:900;color:#FFFFFF;font-size:1rem;margin-bottom:10px;">⏱️ Tu plazo recomendado</div>
-        <div class="cp5-progressbar-track" style="background:rgba(255,255,255,0.35);">
-            <div class="cp5-progressbar-fill" style="width:100%;background:#FFFFFF;"></div>
+    <div style="background:#FFFFFF;border-radius:18px;padding:16px 20px;
+                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);
+                border:1px solid rgba(0,0,0,0.04);">
+        <div style="font-weight:800;color:{_color_plazo};font-size:0.95rem;margin-bottom:8px;">⏱️ Tu plazo recomendado</div>
+        <div class="cp5-progressbar-track">
+            <div class="cp5-progressbar-fill" style="width:100%;background:linear-gradient(90deg,{_color_plazo}55,{_color_plazo});"></div>
         </div>
-        <div style="margin-top:10px;color:#FFFFFF;font-size:0.92rem;font-weight:600;">{plazo_v} ¡Haz una parada de mantenimiento después de esto!</div>
+        <div style="margin-top:8px;color:#17301F;font-size:0.9rem;">{plazo_v} ¡Haz una parada de mantenimiento después de esto!</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -7416,17 +7369,15 @@ if hoja_activa == "0.-DATOS":
          "que sepas exactamente cómo usarla paso a paso.",
          "Each sheet comes with its own notes and instructions, so you know exactly how to use it step by step.")),
     ]
-    _grads_razones = ["var(--grad-blue)", "var(--grad-purple)", "var(--grad-green)", "var(--grad-amber)"]
-    _shadows_razones = ["var(--shadow-blue)", "var(--shadow-purple)", "var(--shadow-green)", "var(--shadow-amber)"]
-    for _i, (col, (emoji_r, titulo_r, texto_r)) in enumerate(zip([ra1, ra2, ra3, ra4], _razones_excel)):
+    for col, (emoji_r, titulo_r, texto_r) in zip([ra1, ra2, ra3, ra4], _razones_excel):
         with col:
             st.markdown(f"""
-            <div style="background:{_grads_razones[_i % 4]};border-radius:20px;padding:18px 16px;height:100%;
-                        box-shadow:{_shadows_razones[_i % 4]};
-                        border:none;">
-                <div style="font-size:2rem;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.18));">{emoji_r}</div>
-                <div style="font-weight:900;color:#FFFFFF;font-size:0.96rem;margin:8px 0 5px 0;">{titulo_r}</div>
-                <div style="font-size:0.82rem;color:rgba(255,255,255,0.95);line-height:1.5;font-weight:600;">{texto_r}</div>
+            <div style="background:#FFFFFF;border-radius:20px;padding:16px 16px;height:100%;
+                        box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.06);
+                        border:1px solid rgba(0,0,0,0.04);">
+                <div style="font-size:1.6rem;">{emoji_r}</div>
+                <div style="font-weight:800;color:#1E5631;font-size:0.92rem;margin:6px 0 4px 0;">{titulo_r}</div>
+                <div style="font-size:0.8rem;color:#5C6B60;line-height:1.4;">{texto_r}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -8004,13 +7955,13 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     for _param, _info in _INFO_VITAL.items():
         _st = SEMAFORO_ESTILO[_info["color"]]
         st.markdown(f"""
-        <div style="background:linear-gradient(150deg,{_st['fondo']} 0%,#FFFFFF 45%);border-radius:22px;padding:16px 18px 20px 18px;margin-bottom:14px;
-        border:none;border-top:6px solid {_st['hex']};box-shadow:0 10px 24px -6px {_st['hex']}55;">
+        <div style="background:#FFFFFF;border-radius:22px;padding:16px 18px 20px 18px;margin-bottom:14px;
+        border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 14px rgba(0,0,0,0.05);">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-        <span style="font-size:1.6rem;">{_info['icono']}</span>
-        <b style="font-size:1.08rem;color:#17301F;">{_vn(_param)}</b>
-        <span style="margin-left:auto;background:{_st['hex']};color:#FFFFFF;padding:5px 14px;
-        border-radius:999px;font-size:0.8rem;font-weight:900;box-shadow:0 3px 8px {_st['hex']}66;">{_st['emoji']} {_info['valor']} · {_info['categoria']}</span>
+        <span style="font-size:1.3rem;">{_info['icono']}</span>
+        <b style="font-size:1.02rem;color:#17301F;">{_vn(_param)}</b>
+        <span style="margin-left:auto;background:{_st['fondo']};color:{_st['hex']};padding:4px 12px;
+        border-radius:999px;font-size:0.76rem;font-weight:800;">{_st['emoji']} {_info['valor']} · {_info['categoria']}</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -8253,10 +8204,10 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     _TABLE_CSS = """
     <style>
-    .tabla-ref-wrap{background:linear-gradient(150deg,#EEF0FF 0%,#F8F9FF 55%,#FFFFFF 100%);border-radius:18px;padding:20px 22px 16px 22px;margin-bottom:18px;
-    border:1px solid rgba(57,73,171,0.10);box-shadow:0 10px 24px -6px rgba(57,73,171,0.16);}
+    .tabla-ref-wrap{background:#FFFFFF;border-radius:16px;padding:18px 20px 14px 20px;margin-bottom:18px;
+    border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 14px rgba(0,0,0,0.05);}
     .tabla-ref-head{display:flex;align-items:baseline;gap:10px;margin-bottom:2px;flex-wrap:wrap;}
-    .tabla-ref-titulo{font-weight:900;font-size:1.08rem;color:#3949AB;}
+    .tabla-ref-titulo{font-weight:800;font-size:1rem;color:#17301F;}
     .tabla-ref-fuente{font-size:0.8rem;color:gray;}
     table.tabla-ref{width:100%;border-collapse:separate;border-spacing:0 6px;margin-top:8px;font-size:0.85rem;}
     table.tabla-ref th{text-align:left;font-size:0.74rem;color:#8E8E93;font-weight:800;
@@ -8774,17 +8725,17 @@ elif hoja_activa == "3.-TMB":
         "Fórmula de Katch-McArdle (basada en tu Masa Libre de Grasa / músculo)",
         "Katch-McArdle Formula (based on your Fat-Free Mass / muscle)")}</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;">
-            <div style="background:linear-gradient(135deg,#D6336C,#FF6FA5);border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 6px 14px -3px rgba(214,51,108,0.45);">
-            <p style="margin:0;font-size:0.7rem;color:rgba(255,255,255,0.9);">{T('Constante','Constant')}</p>
-            <p style="margin:0;font-weight:900;color:#FFFFFF;">370 kcal</p></div>
+            <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Constante','Constant')}</p>
+            <p style="margin:0;font-weight:900;color:#17301F;">370 kcal</p></div>
             <span style="font-size:1.2rem;color:#D6336C;">+</span>
-            <div style="background:linear-gradient(135deg,#7B1FA2,#CE93D8);border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 6px 14px -3px rgba(123,31,162,0.45);">
-            <p style="margin:0;font-size:0.7rem;color:rgba(255,255,255,0.9);">{T('Masa Magra','Lean Mass')}</p>
-            <p style="margin:0;font-weight:900;color:#FFFFFF;">{masa_magra_kg:.2f} kg</p></div>
+            <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Masa Magra','Lean Mass')}</p>
+            <p style="margin:0;font-weight:900;color:#17301F;">{masa_magra_kg:.2f} kg</p></div>
             <span style="font-size:1.2rem;color:#D6336C;">×</span>
-            <div style="background:linear-gradient(135deg,#1E88E5,#64C8F7);border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 6px 14px -3px rgba(30,136,229,0.45);">
-            <p style="margin:0;font-size:0.7rem;color:rgba(255,255,255,0.9);">{T('Multiplicador','Multiplier')}</p>
-            <p style="margin:0;font-weight:900;color:#FFFFFF;">21.6</p></div>
+            <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Multiplicador','Multiplier')}</p>
+            <p style="margin:0;font-weight:900;color:#17301F;">21.6</p></div>
             <span style="font-size:1.2rem;color:#D6336C;">=</span>
             <div style="background:#D6336C;border-radius:12px;padding:10px 18px;text-align:center;box-shadow:0 4px 12px rgba(214,51,108,0.3);">
             <p style="margin:0;font-size:0.7rem;color:#FFECF1;">TMB</p>
@@ -11205,11 +11156,11 @@ elif hoja_activa == "9.-DIETA":
         <div class="resumen-nutri-card rn-macros">
             <div class="rn-title">🍽️ {T('Distribución de Macronutrientes', 'Macronutrient Distribution')}</div>
             <div class="rn-macro-row">🥩 {T('Proteínas', 'Protein')}
-                <span class="rn-macro-pill" style="background:#FFFFFF;color:#C0392B;">{gr_prot:.2f} g</span></div>
+                <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.2f} g</span></div>
             <div class="rn-macro-row">🌾 {T('Carbohidratos', 'Carbohydrates')}
-                <span class="rn-macro-pill" style="background:#FFFFFF;color:#E67E22;">{gr_carb:.2f} g</span></div>
+                <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.2f} g</span></div>
             <div class="rn-macro-row">🥑 {T('Grasas', 'Fats')}
-                <span class="rn-macro-pill" style="background:#FFFFFF;color:#1E5631;">{gr_gras:.2f} g</span></div>
+                <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.2f} g</span></div>
         </div>
         <div class="resumen-nutri-card rn-rcd">
             <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 {T('Requerimiento Calórico Diario', 'Daily Caloric Requirement')}</div>
@@ -11734,18 +11685,18 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO" and genero == "Mujer" and embarazada:
         .mc-hero{background:linear-gradient(135deg,#7209B7 0%,#B5179E 50%,#FF85A1 100%);padding:28px 30px;border-radius:22px;color:#FFFFFF;box-shadow:0px 10px 25px rgba(114,9,183,0.18);margin-bottom:18px;}
         .mc-hero h1{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;margin:0;color:#FFFFFF;}
         .mc-hero p{font-family:'Poppins',sans-serif;font-size:15px;opacity:0.92;margin:8px 0 0 0;max-width:640px;line-height:1.5;}
-        .mc-kpi{background:linear-gradient(150deg,#F3E8FF 0%,#FFFFFF 70%);border-radius:18px;padding:18px 20px;height:118px;box-shadow:0 10px 22px -6px rgba(114,9,183,0.20);border:none;display:flex;flex-direction:column;justify-content:center;font-family:'Poppins',sans-serif;}
+        .mc-kpi{background:#FFFFFF;border-radius:18px;padding:18px 20px;height:118px;box-shadow:0 8px 20px rgba(0,0,0,0.05);border:1px solid #F0F0F0;display:flex;flex-direction:column;justify-content:center;font-family:'Poppins',sans-serif;}
         .mc-kpi-purple{border-top:5px solid #7209B7;}
-        .mc-kpi-pink{border-top:5px solid #FF85A1;background:linear-gradient(150deg,#FFE5EF 0%,#FFFFFF 70%);}
-        .mc-kpi-green{border-top:5px solid #2EC4B6;background:linear-gradient(150deg,#E6FFFA 0%,#FFFFFF 70%);}
-        .mc-kpi-coral{border-top:5px solid #FF9F1C;background:linear-gradient(150deg,#FFF3E0 0%,#FFFFFF 70%);}
-        .mc-kpi-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#718096;}
-        .mc-kpi-value{font-size:32px;font-weight:900;color:#1A202C;margin:3px 0;line-height:1.1;}
+        .mc-kpi-pink{border-top:5px solid #FF85A1;}
+        .mc-kpi-green{border-top:5px solid #2EC4B6;background:#E6FFFA;}
+        .mc-kpi-coral{border-top:5px solid #FF9F1C;background:#FFF3E0;}
+        .mc-kpi-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#718096;}
+        .mc-kpi-value{font-size:32px;font-weight:700;color:#1A202C;margin:3px 0;line-height:1.1;}
         .mc-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
         .mc-badge-purple{background:#F3E8FF;color:#7209B7;}
         .mc-badge-green{background:#DCFCE7;color:#15803D;}
         .mc-badge-coral{background:#FFE8CC;color:#B45F06;}
-        .mc-gauge-card{background:linear-gradient(150deg,#F3E8FF 0%,#FFF5F9 55%,#FFFFFF 100%);border-radius:16px;padding:22px 20px 14px 20px;margin:8px 0 4px 0;box-shadow:0 10px 22px -6px rgba(114,9,183,0.16);border:none;font-family:'Poppins',sans-serif;}
+        .mc-gauge-card{background:#FFFFFF;border-radius:16px;padding:22px 20px 14px 20px;margin:8px 0 4px 0;box-shadow:0 8px 20px rgba(0,0,0,0.04);border:1px solid #F0F0F0;font-family:'Poppins',sans-serif;}
         .mc-gauge-track{position:relative;height:18px;border-radius:10px;margin:30px 4px 10px 4px;background:linear-gradient(90deg,#FFE5D9 0%,#D4EFDF 25%,#D4EFDF 75%,#FFE5D9 100%);}
         .mc-gauge-pin{position:absolute;top:-4px;width:26px;height:26px;border-radius:50%;background:#7209B7;border:3px solid #FFFFFF;transform:translateX(-50%);box-shadow:0 0 12px rgba(114,9,183,0.5);}
         .mc-gauge-tip{position:absolute;top:-32px;transform:translateX(-50%);background:#7209B7;color:#FFFFFF;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;}
@@ -12878,38 +12829,37 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     <style>
     .team-card {
         position: relative; border-radius: 24px; padding: 24px 20px 20px 20px; text-align: center;
-        background: linear-gradient(150deg, var(--tc-color) 0%, var(--tc-color2) 100%); border: none;
-        box-shadow: 0 12px 28px -6px var(--tc-shadow);
+        background: var(--tc-bg); border: 1.5px solid var(--tc-color);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         overflow: hidden; height: 100%;
     }
-    .team-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 18px 36px -6px var(--tc-shadow); }
+    .team-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.14); }
     .team-card::after {
-        content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px;
-        background: #FFFFFF; transform: scaleX(0); transform-origin: left;
+        content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+        background: var(--tc-color); transform: scaleX(0); transform-origin: left;
         transition: transform 0.3s ease;
     }
     .team-card:hover::after { transform: scaleX(1); }
     .team-avatar {
-        width: 78px; height: 78px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 2.3rem; margin: 0 auto 12px auto; background: #FFFFFF; border: 3px solid rgba(255,255,255,0.7);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 2.1rem; margin: 0 auto 12px auto; background: #FFFFFF; border: 2px solid var(--tc-color);
         transition: transform 0.35s ease;
     }
     .team-card:hover .team-avatar { transform: rotate(-8deg) scale(1.08); }
-    .team-name { font-weight: 900; letter-spacing: 0.01em; color: #FFFFFF; font-size: 1.05rem; margin-bottom: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-    .team-icon-role { font-size: 0.74rem; color: rgba(255,255,255,0.88); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+    .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
+    .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
     .team-badge {
         display: inline-flex; align-items: center; gap: 6px; background: #FFFFFF; color: var(--tc-color);
-        font-weight: 900; font-size: 0.8rem; padding: 8px 18px; border-radius: 999px; margin-bottom: 12px;
-        border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        font-weight: 800; font-size: 0.78rem; padding: 7px 16px; border-radius: 999px; margin-bottom: 12px;
+        border: 1px solid var(--tc-color);
     }
-    .team-chips-label { font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.85); text-transform: uppercase;
+    .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     .team-chip {
-        background: rgba(255,255,255,0.92); color: var(--tc-color); font-weight: 800; font-size: 0.76rem;
-        padding: 6px 12px; border-radius: 999px; border: none;
+        background: #FFFFFF; color: var(--tc-color); font-weight: 700; font-size: 0.74rem;
+        padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06);
     }
     .about-hero-card {
         border-radius: 24px; padding: 22px 24px; text-align: center; background: #FFFFFF;
@@ -13001,7 +12951,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         with c:
             _chips_html = "".join(f'<span class="team-chip">{ch}</span>' for ch in miembro["chips"])
             st.markdown(f"""
-            <div class="team-card" style="--tc-color:{miembro['color']};--tc-color2:{miembro['color']}CC;--tc-shadow:{miembro['color']}80;">
+            <div class="team-card" style="--tc-color:{miembro['color']};--tc-bg:{miembro['fondo']};">
                 <div class="team-avatar">{miembro['avatar']}</div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
                 <div class="team-icon-role">{T("Integrante CIAM&amp;SUNI", "CIAM&amp;SUNI Member")}</div>
