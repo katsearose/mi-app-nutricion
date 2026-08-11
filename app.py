@@ -12007,7 +12007,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     _peso_30 = round(peso - (deficit_diario * 30) / 7700, 1)
     _reduccion_total = round(abs(peso - _peso_final), 1)
 
-    # --- Paleta semántica funcional (fija, no depende del tema) ---
+    # --- Paleta semántica funcional, bien saturada (fija, no depende del tema) ---
     _AZUL = "#2563EB"      # Información / peso actual
     _VERDE = "#10B981"     # Resultado / progreso / meta final
     _AMBAR = "#F59E0B"     # Checkpoint intermedio (30 días)
@@ -12015,6 +12015,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     _CORAL = "#EF4444"     # Advertencias / riesgo
     _ROSA = "#EC4899"      # Consejos / información educativa
     _AMARILLO = "#FBBF24"  # Importante / recordar
+    _CIAN = "#06B6D4"      # Acento extra
 
     _color_tema = _VERDE if _es_mantener else (_AZUL if _es_bajar else _AMBAR)
     _obj_label = T("Mantener peso", "Maintain Weight") if _es_mantener else (T("Bajar de peso", "Lose Weight") if _es_bajar else T("Subir de peso", "Gain Weight"))
@@ -12026,46 +12027,46 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
                     else T("Sin cambio esperado", "No change expected")))
 
     # ================================================================================
-    # 1. HERO — ¿De dónde parto? ¿Qué podría pasar?
+    # 1. HERO — ¿De dónde parto? ¿Qué podría pasar? — degradado vivo, muy visual
     # ================================================================================
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#EFF6FF 0%,#FFFFFF 55%);border-radius:24px;padding:26px 28px;
-    margin-bottom:18px;border:1px solid rgba(37,99,235,0.14);box-shadow:0 8px 24px rgba(37,99,235,0.08);">
-    <p style="margin:0 0 6px 0;font-weight:900;color:#1E293B;font-size:1.3rem;">🎯 {T('¿Cómo podría cambiar tu peso con el tiempo?', 'How could your weight change over time?')}</p>
-    <p style="margin:0 0 20px 0;color:#5C6B79;font-size:0.92rem;line-height:1.55;max-width:640px;">
+    <div style="background:linear-gradient(135deg,#DBEAFE 0%,#EDE9FE 45%,#FCE7F3 100%);border-radius:26px;padding:28px 28px;
+    margin-bottom:20px;border:2px solid rgba(139,92,246,0.25);box-shadow:0 10px 30px rgba(139,92,246,0.15);">
+    <p style="margin:0 0 6px 0;font-weight:900;color:#312E81;font-size:1.4rem;">🎯 {T('¿Cómo podría cambiar tu peso con el tiempo?', 'How could your weight change over time?')}</p>
+    <p style="margin:0 0 22px 0;color:#4C4467;font-size:0.93rem;line-height:1.55;max-width:640px;font-weight:600;">
     {T('Esta es una estimación de lo que podría ocurrir si mantienes aproximadamente las mismas condiciones utilizadas en el cálculo: tu nivel de actividad y el plan de alimentación calculado.',
        'This is an estimate of what could happen if you maintain roughly the same conditions used in the calculation: your activity level and the calculated eating plan.')}</p>
 
-    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
-      <div style="flex:1;min-width:120px;text-align:center;background:#FFFFFF;border-radius:18px;padding:14px 10px;border:2px solid {_AZUL};">
-        <p style="margin:0;color:{_AZUL};font-size:0.72rem;font-weight:800;text-transform:uppercase;">🔵 {T('Hoy', 'Today')}</p>
-        <p style="margin:4px 0 0 0;color:#1E293B;font-size:1.6rem;font-weight:900;">{peso:.1f} kg</p>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#3B82F6,#2563EB);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(37,99,235,0.35);">
+        <p style="margin:0;color:#DBEAFE;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🔵 {T('Hoy', 'Today')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{peso:.1f} kg</p>
       </div>
-      <div style="flex:0 0 auto;color:#B8C2CC;font-size:1.4rem;padding:0 2px;">➜</div>
-      <div style="flex:1;min-width:120px;text-align:center;background:#FFFFFF;border-radius:18px;padding:14px 10px;border:2px solid {_AMBAR};">
-        <p style="margin:0;color:{_AMBAR};font-size:0.72rem;font-weight:800;text-transform:uppercase;">🟠 {T('En 30 días', 'In 30 days')}</p>
-        <p style="margin:4px 0 0 0;color:#1E293B;font-size:1.6rem;font-weight:900;">{_peso_30:.1f} kg</p>
+      <div style="flex:0 0 auto;color:#8B5CF6;font-size:1.8rem;font-weight:900;padding:0 4px;">➜</div>
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#FBBF24,#F59E0B);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(245,158,11,0.35);">
+        <p style="margin:0;color:#FEF3C7;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🟠 {T('En 30 días', 'In 30 days')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{_peso_30:.1f} kg</p>
       </div>
-      <div style="flex:0 0 auto;color:#B8C2CC;font-size:1.4rem;padding:0 2px;">➜</div>
-      <div style="flex:1;min-width:120px;text-align:center;background:#FFFFFF;border-radius:18px;padding:14px 10px;border:2px solid {_VERDE};">
-        <p style="margin:0;color:{_VERDE};font-size:0.72rem;font-weight:800;text-transform:uppercase;">🟢 {T(f'En {_DIAS_PROY} días', f'In {_DIAS_PROY} days')}</p>
-        <p style="margin:4px 0 0 0;color:#1E293B;font-size:1.6rem;font-weight:900;">{_peso_final:.1f} kg</p>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
-      <div style="background:#F8FAFC;border-radius:12px;padding:8px 14px;">
-      <p style="margin:0;color:#64748B;font-size:0.7rem;font-weight:800;text-transform:uppercase;">🎯 {T('Objetivo', 'Goal')}</p>
-      <p style="margin:0;color:#1E293B;font-size:0.86rem;font-weight:700;">{_obj_label} · {_obj_detalle}</p>
-      </div>
-      <div style="background:#F8FAFC;border-radius:12px;padding:8px 14px;">
-      <p style="margin:0;color:#64748B;font-size:0.7rem;font-weight:800;text-transform:uppercase;">⏱️ {T('Duración', 'Duration')}</p>
-      <p style="margin:0;color:#1E293B;font-size:0.86rem;font-weight:700;">{_DIAS_PROY} {T('días · 8 semanas de constancia', 'days · 8 weeks of consistency')}</p>
+      <div style="flex:0 0 auto;color:#8B5CF6;font-size:1.8rem;font-weight:900;padding:0 4px;">➜</div>
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#34D399,#10B981);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(16,185,129,0.35);">
+        <p style="margin:0;color:#D1FAE5;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🟢 {T(f'En {_DIAS_PROY} días', f'In {_DIAS_PROY} days')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{_peso_final:.1f} kg</p>
       </div>
     </div>
 
-    <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:14px;padding:12px 16px;margin-top:16px;">
-    <p style="margin:0;color:#92400E;font-size:0.82rem;line-height:1.5;"><b>💡 {T('Importante', 'Important')}:</b>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;">
+      <div style="background:#FFFFFFCC;border-radius:14px;padding:9px 16px;border:1.5px solid #C4B5FD;">
+      <p style="margin:0;color:#7C3AED;font-size:0.7rem;font-weight:900;text-transform:uppercase;">🎯 {T('Objetivo', 'Goal')}</p>
+      <p style="margin:0;color:#312E81;font-size:0.86rem;font-weight:800;">{_obj_label} · {_obj_detalle}</p>
+      </div>
+      <div style="background:#FFFFFFCC;border-radius:14px;padding:9px 16px;border:1.5px solid #F9A8D4;">
+      <p style="margin:0;color:#DB2777;font-size:0.7rem;font-weight:900;text-transform:uppercase;">⏱️ {T('Duración', 'Duration')}</p>
+      <p style="margin:0;color:#312E81;font-size:0.86rem;font-weight:800;">{_DIAS_PROY} {T('días · 8 semanas de constancia', 'days · 8 weeks of consistency')}</p>
+      </div>
+    </div>
+
+    <div style="background:#FEF3C7;border:2px solid #FBBF24;border-radius:16px;padding:14px 18px;margin-top:18px;">
+    <p style="margin:0;color:#78350F;font-size:0.84rem;line-height:1.5;font-weight:600;"><b>💡 {T('Importante', 'Important')}:</b>
     {T('esto es una estimación, no una predicción exacta. Tu peso real puede subir o bajar de forma diferente por cambios en alimentación, actividad, líquidos, digestión y otros factores.',
        "this is an estimate, not an exact prediction. Your actual weight may go up or down differently due to changes in food, activity, fluids, digestion, and other factors.")}</p>
     </div>
@@ -12073,65 +12074,65 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 2. TU RECORRIDO — ¿Cómo se ve el camino? (timeline horizontal con hitos)
+    # 2. TU RECORRIDO — timeline horizontal, muy colorida
     # ================================================================================
     _delta1 = round(_peso_30 - peso, 2)
     _delta2 = round(_peso_final - _peso_30, 2)
     _signo1 = "−" if _delta1 < 0 else ("+" if _delta1 > 0 else "±")
     _signo2 = "−" if _delta2 < 0 else ("+" if _delta2 > 0 else "±")
 
-    st.markdown(f"""<div style="background:#FFFFFF;border-radius:22px;padding:22px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">🧭 {T('Tu recorrido', 'Your journey')}</p>
-    <p style="margin:0 0 18px 0;color:#94A3B8;font-size:0.82rem;">{T('Así se vería tu avance estimado, paso a paso.', "This is what your estimated progress would look like, step by step.")}</p>
+    st.markdown(f"""<div style="background:linear-gradient(100deg,#EFF6FF 0%,#F0FDF4 100%);border-radius:24px;padding:24px 26px;margin-bottom:20px;
+    border:2px solid #BFDBFE;box-shadow:0 8px 22px rgba(37,99,235,0.1);">
+    <p style="margin:0 0 4px 0;font-weight:900;color:#1E3A8A;font-size:1.15rem;">🧭 {T('Tu recorrido', 'Your journey')}</p>
+    <p style="margin:0 0 18px 0;color:#64748B;font-size:0.83rem;font-weight:600;">{T('Así se vería tu avance estimado, paso a paso.', "This is what your estimated progress would look like, step by step.")}</p>
     """, unsafe_allow_html=True)
 
     _hitos = [
-        (T("HOY", "TODAY"), peso, 0, _AZUL, T("Punto de partida", "Starting point")),
-        (T("DÍA 30", "DAY 30"), _peso_30, 50, _AMBAR, T("Progreso estimado", "Estimated progress")),
-        (T("DÍA 60", "DAY 60"), _peso_final, 100, _VERDE, T("Meta estimada", "Estimated goal")),
+        (T("HOY", "TODAY"), peso, 0, _AZUL, "#DBEAFE", T("Punto de partida", "Starting point")),
+        (T("DÍA 30", "DAY 30"), _peso_30, 50, _AMBAR, "#FEF3C7", T("Progreso estimado", "Estimated progress")),
+        (T("DÍA 60", "DAY 60"), _peso_final, 100, _VERDE, "#D1FAE5", T("Meta estimada", "Estimated goal")),
     ]
     _cols_hito = st.columns(3)
-    for _col_h, (_lbl, _val, _pct, _col_c, _st_lbl) in zip(_cols_hito, _hitos):
+    for _col_h, (_lbl, _val, _pct, _col_c, _bg_c, _st_lbl) in zip(_cols_hito, _hitos):
         with _col_h:
             st.markdown(f"""
-            <div style="text-align:center;padding:6px 10px;">
-            <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">{_lbl}</p>
-            <p style="margin:4px 0 2px 0;color:{_col_c};font-size:1.6rem;font-weight:900;">{_val:.1f} kg</p>
-            <p style="margin:0 0 8px 0;color:#64748B;font-size:0.78rem;font-weight:700;">{_st_lbl}</p>
-            <div style="background:#EEF2F6;border-radius:999px;height:8px;overflow:hidden;">
+            <div style="text-align:center;padding:14px 10px;background:{_bg_c};border-radius:18px;border:2px solid {_col_c}55;">
+            <p style="margin:0;color:{_col_c};font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;">{_lbl}</p>
+            <p style="margin:4px 0 2px 0;color:{_col_c};font-size:1.7rem;font-weight:900;">{_val:.1f} kg</p>
+            <p style="margin:0 0 8px 0;color:#475569;font-size:0.78rem;font-weight:700;">{_st_lbl}</p>
+            <div style="background:#FFFFFF;border-radius:999px;height:9px;overflow:hidden;">
             <div style="background:{_col_c};width:{_pct}%;height:100%;border-radius:999px;"></div>
             </div>
-            <p style="margin:4px 0 0 0;color:#94A3B8;font-size:0.68rem;font-weight:700;">{_pct}%</p>
+            <p style="margin:4px 0 0 0;color:#94A3B8;font-size:0.68rem;font-weight:800;">{_pct}%</p>
             </div>
             """, unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div style="display:flex;justify-content:space-around;margin-top:2px;">
+    <div style="display:flex;justify-content:space-around;margin-top:12px;">
       <div style="flex:1;text-align:center;">
-        <span style="background:{_AMBAR}1A;color:#B0530A;font-weight:800;font-size:0.74rem;padding:4px 10px;border-radius:999px;">{_signo1}{abs(_delta1):.1f} kg {T('estimados', 'estimated')}</span>
+        <span style="background:{_AMBAR};color:#FFFFFF;font-weight:800;font-size:0.76rem;padding:6px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(245,158,11,0.35);">{_signo1}{abs(_delta1):.1f} kg {T('estimados', 'estimated')}</span>
       </div>
       <div style="flex:1;text-align:center;">
-        <span style="background:{_VERDE}1A;color:#065F46;font-weight:800;font-size:0.74rem;padding:4px 10px;border-radius:999px;">{_signo2}{abs(_delta2):.1f} kg {T('estimados', 'estimated')}</span>
+        <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.76rem;padding:6px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(16,185,129,0.35);">{_signo2}{abs(_delta2):.1f} kg {T('estimados', 'estimated')}</span>
       </div>
     </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 3. GRÁFICO — con leyenda y explicación arriba
+    # 3. GRÁFICO — con leyenda y explicación arriba, marco colorido
     # ================================================================================
-    st.markdown(f"""<div style="background:#FFFFFF;border-radius:22px;padding:22px 26px 6px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">📉 {T('Evolución estimada del peso', 'Estimated Weight Evolution')}</p>
-    <p style="margin:0 0 12px 0;color:#5C6B79;font-size:0.86rem;line-height:1.5;"><b>{T('¿Qué muestra este gráfico?', 'What does this chart show?')}</b><br>
+    st.markdown(f"""<div style="background:#FFFFFF;border-radius:24px;padding:24px 26px 6px 26px;margin-bottom:20px;
+    border:2px solid #C4B5FD;box-shadow:0 8px 22px rgba(139,92,246,0.12);">
+    <p style="margin:0 0 4px 0;font-weight:900;color:#5B21B6;font-size:1.15rem;">📉 {T('Evolución estimada del peso', 'Estimated Weight Evolution')}</p>
+    <p style="margin:0 0 12px 0;color:#4C4467;font-size:0.86rem;line-height:1.5;"><b>{T('¿Qué muestra este gráfico?', 'What does this chart show?')}</b><br>
     {T('La línea azul representa una posible trayectoria estimada. Tu peso real no necesariamente seguirá exactamente esta línea cada día.',
        "The blue line represents one possible estimated path. Your actual weight won't necessarily follow this exact line every day.")}</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
-      <span style="background:#EFF6FF;border:1px solid #BFDBFE;color:{_AZUL};font-weight:700;font-size:0.72rem;padding:5px 10px;border-radius:999px;">🔵 {T('Línea azul: trayectoria estimada', 'Blue line: estimated path')}</span>
-      <span style="background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;font-weight:700;font-size:0.72rem;padding:5px 10px;border-radius:999px;">🟢 {T('Zona verde: rango orientativo de variación', 'Green zone: guideline variation range')}</span>
-      <span style="background:#FFFBEB;border:1px solid #FDE68A;color:#B0530A;font-weight:700;font-size:0.72rem;padding:5px 10px;border-radius:999px;">🟠 {T('Punto naranja: estimación intermedia', 'Orange dot: mid-point estimate')}</span>
-      <span style="background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;font-weight:700;font-size:0.72rem;padding:5px 10px;border-radius:999px;">🟢 {T('Punto verde: objetivo estimado', 'Green dot: estimated goal')}</span>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <span style="background:{_AZUL};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🔵 {T('Línea azul: trayectoria estimada', 'Blue line: estimated path')}</span>
+      <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟢 {T('Zona verde: rango orientativo', 'Green zone: guideline range')}</span>
+      <span style="background:{_AMBAR};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟠 {T('Punto naranja: estimación intermedia', 'Orange dot: mid-point estimate')}</span>
+      <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟢 {T('Punto verde: objetivo estimado', 'Green dot: estimated goal')}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -12144,12 +12145,12 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=_banda_sup, mode="lines", line=dict(width=0),
                                      showlegend=False, hoverinfo="skip"))
     fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=_banda_inf, mode="lines", line=dict(width=0), fill="tonexty",
-                                     fillcolor=_hex_a_rgba(_VERDE, 0.14),
+                                     fillcolor=_hex_a_rgba(_VERDE, 0.18),
                                      name=T("Rango orientativo de variación", "Guideline variation range"),
                                      hoverinfo="skip"))
     fig_tiempo.add_trace(go.Scatter(
         x=dias_eje, y=pesos_dia_completo, mode="lines", name=T("Proyección estimada", "Estimated Projection"),
-        line=dict(color=_AZUL, width=4, shape="spline"),
+        line=dict(color=_AZUL, width=5, shape="spline"),
     ))
 
     hitos_x = [0, 30, _DIAS_PROY]
@@ -12157,7 +12158,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     hitos_txt = [T("Hoy", "Today"), T("En 1 mes", "In 1 Month"), T("Meta estimada", "Estimated goal")]
     fig_tiempo.add_trace(go.Scatter(
         x=hitos_x, y=hitos_y, mode="markers+text", name=T("Hitos", "Milestones"),
-        marker=dict(size=14, color=[_AZUL, _AMBAR, _VERDE], line=dict(color="#FFFFFF", width=3)),
+        marker=dict(size=16, color=[_AZUL, _AMBAR, _VERDE], line=dict(color="#FFFFFF", width=3)),
         text=[f"{t}<br><b>{v:.1f} kg</b>" for t, v in zip(hitos_txt, hitos_y)],
         textposition="top center", textfont=dict(size=13, color="#17301F", family="-apple-system"),
         showlegend=False,
@@ -12183,13 +12184,13 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     # 3b. ¿QUÉ SIGNIFICA ESTA PROYECCIÓN? — sube justo después del gráfico
     # ================================================================================
     st.markdown(f"""
-    <div style="background:#E7F1FE;border-radius:18px;padding:18px 22px;margin-bottom:18px;border:1px solid #B3D2F7;">
-    <p style="margin:0 0 8px 0;color:#0D47A1;font-weight:800;font-size:0.98rem;">💡 {T('Entonces… ¿qué significa realmente esta proyección?', 'So… what does this projection actually mean?')}</p>
-    <p style="margin:0;color:#0D47A1;font-size:0.88rem;line-height:1.6;">
+    <div style="background:linear-gradient(120deg,#DBEAFE 0%,#EFF6FF 100%);border-radius:20px;padding:20px 24px;margin-bottom:20px;border:2px solid #93C5FD;">
+    <p style="margin:0 0 8px 0;color:#1E3A8A;font-weight:900;font-size:1.02rem;">💡 {T('Entonces… ¿qué significa realmente esta proyección?', 'So… what does this projection actually mean?')}</p>
+    <p style="margin:0;color:#1E3A8A;font-size:0.89rem;line-height:1.6;font-weight:600;">
     {T('No significa que tu peso vaya a seguir exactamente la línea azul. Significa: "si mantuvieras aproximadamente las mismas condiciones utilizadas en el cálculo, el modelo estima que podrías acercarte a este resultado."',
        'It doesn\'t mean your weight will follow the blue line exactly. It means: "if you kept roughly the same conditions used in the calculation, the model estimates you could get close to this result."')}</p>
-    <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;margin-top:12px;display:inline-block;">
-    <p style="margin:0;color:#1E293B;font-size:0.82rem;font-weight:700;">📌 {T('La proyección es una guía, no una promesa.', 'The projection is a guide, not a promise.')}</p>
+    <div style="background:#1E40AF;border-radius:14px;padding:10px 18px;margin-top:14px;display:inline-block;box-shadow:0 4px 10px rgba(30,64,175,0.3);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.84rem;font-weight:800;">📌 {T('La proyección es una guía, no una promesa.', 'The projection is a guide, not a promise.')}</p>
     </div>
     </div>
     """, unsafe_allow_html=True)
@@ -12198,43 +12199,46 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     # 4. ¿POR QUÉ PODRÍA CAMBIAR MI PESO? — explicación conceptual, antes de las matemáticas
     # ================================================================================
     st.markdown(f"""
-    <div style="background:#F2F7F3;border-radius:22px;padding:22px 26px;margin-bottom:18px;border:1px solid #D8E6DA;">
-    <p style="margin:0 0 6px 0;font-weight:800;color:#1E5631;font-size:1.1rem;">🧠 {T('¿Por qué podría cambiar mi peso?', 'Why might my weight change?')}</p>
-    <p style="margin:0 0 16px 0;color:#3C4A3F;font-size:0.88rem;line-height:1.6;">
+    <div style="background:linear-gradient(135deg,#ECFDF5 0%,#F0FDFA 100%);border-radius:24px;padding:24px 26px;margin-bottom:20px;border:2px solid #6EE7B7;">
+    <p style="margin:0 0 6px 0;font-weight:900;color:#065F46;font-size:1.15rem;">🧠 {T('¿Por qué podría cambiar mi peso?', 'Why might my weight change?')}</p>
+    <p style="margin:0 0 16px 0;color:#065F46;font-size:0.89rem;line-height:1.6;font-weight:600;">
     {T('Piensa en tus calorías como una balanza energética: la energía que consumes frente a la energía que tu cuerpo utiliza.',
        'Think of your calories as an energy balance: the energy you consume versus the energy your body uses.')}</p>
-    <div style="text-align:center;color:#3C4A3F;font-size:0.86rem;font-weight:700;margin-bottom:16px;">
+    <div style="text-align:center;color:#065F46;font-size:0.92rem;font-weight:900;margin-bottom:18px;background:#FFFFFF;
+    border-radius:14px;padding:10px;">
     🍽️ {T('Energía que consumes', 'Energy you consume')} &nbsp;⚖️&nbsp; {T('Energía que tu cuerpo utiliza', 'Energy your body uses')} 🔥
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:14px;">
-      <div style="flex:1;min-width:170px;background:#EAFAEE;border:1px solid #9BD8AE;border-radius:16px;padding:14px 16px;">
-        <p style="margin:0;font-size:1.3rem;">🟢</p>
-        <p style="margin:6px 0 2px 0;font-weight:800;color:#1E5631;font-size:0.88rem;">{T('Equilibrio', 'Balance')}</p>
-        <p style="margin:0;color:#3C4A3F;font-size:0.78rem;line-height:1.4;">{T('Consumo ≈ gasto. Tu peso tiende a mantenerse.', 'Intake ≈ expenditure. Your weight tends to stay the same.')}</p>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#34D399,#10B981);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(16,185,129,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🟢</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Equilibrio', 'Balance')}</p>
+        <p style="margin:0;color:#ECFDF5;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo ≈ gasto. Tu peso tiende a mantenerse.', 'Intake ≈ expenditure. Your weight tends to stay the same.')}</p>
       </div>
-      <div style="flex:1;min-width:170px;background:#E7F1FE;border:1px solid #B3D2F7;border-radius:16px;padding:14px 16px;">
-        <p style="margin:0;font-size:1.3rem;">🔵</p>
-        <p style="margin:6px 0 2px 0;font-weight:800;color:#0D47A1;font-size:0.88rem;">{T('Déficit', 'Deficit')}</p>
-        <p style="margin:0;color:#3C4A3F;font-size:0.78rem;line-height:1.4;">{T('Consumo < gasto. Existe un déficit energético.', 'Intake < expenditure. There is an energy deficit.')}</p>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#60A5FA,#2563EB);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(37,99,235,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🔵</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Déficit', 'Deficit')}</p>
+        <p style="margin:0;color:#DBEAFE;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo < gasto. Existe un déficit energético.', 'Intake < expenditure. There is an energy deficit.')}</p>
       </div>
-      <div style="flex:1;min-width:170px;background:#FDEBD9;border:1px solid #F5C48E;border-radius:16px;padding:14px 16px;">
-        <p style="margin:0;font-size:1.3rem;">🟠</p>
-        <p style="margin:6px 0 2px 0;font-weight:800;color:#B0530A;font-size:0.88rem;">{T('Superávit', 'Surplus')}</p>
-        <p style="margin:0;color:#3C4A3F;font-size:0.78rem;line-height:1.4;">{T('Consumo > gasto. Existe un superávit energético.', 'Intake > expenditure. There is an energy surplus.')}</p>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#FBBF24,#F59E0B);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(245,158,11,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🟠</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Superávit', 'Surplus')}</p>
+        <p style="margin:0;color:#FEF3C7;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo > gasto. Existe un superávit energético.', 'Intake > expenditure. There is an energy surplus.')}</p>
       </div>
     </div>
-    <p style="margin:16px 0 0 0;color:#3C4A3F;font-size:0.84rem;line-height:1.5;">
+    <p style="margin:16px 0 0 0;color:#065F46;font-size:0.85rem;line-height:1.5;font-weight:600;">
     {T('La proyección utiliza este principio para estimar cómo podría cambiar tu peso a lo largo del tiempo.',
        'The projection uses this principle to estimate how your weight could change over time.')}</p>
     </div>
     """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 5. ¿CÓMO OBTUVIMOS ESTA ESTIMACIÓN? — cálculo paso a paso, explicado
+    # 5. ¿CÓMO OBTUVIMOS ESTA ESTIMACIÓN? — cálculo paso a paso, explicado, muy visual
     # ================================================================================
     st.markdown(f"""
-    <p style="margin:0 0 2px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">🧮 {T('¿Cómo obtuvimos esta estimación?', 'How did we get this estimate?')}</p>
-    <p style="margin:0 0 14px 0;color:#94A3B8;font-size:0.84rem;">{T('No necesitas hacer las cuentas: te mostramos qué significa cada paso.', "You don't need to do the math yourself — here's what each step means.")}</p>
+    <div style="background:linear-gradient(120deg,#EDE9FE,#F5F3FF);border-radius:18px;padding:16px 22px;margin-bottom:14px;border:2px solid #C4B5FD;">
+    <p style="margin:0 0 2px 0;font-weight:900;color:#5B21B6;font-size:1.15rem;">🧮 {T('¿Cómo obtuvimos esta estimación?', 'How did we get this estimate?')}</p>
+    <p style="margin:0;color:#5B21B6;font-size:0.85rem;font-weight:700;">{T('No necesitas hacer las cuentas: te mostramos qué significa cada paso.', "You don't need to do the math yourself — here's what each step means.")}</p>
+    </div>
     """, unsafe_allow_html=True)
 
     _signo_ajuste = "-" if _es_bajar else ("+" if not _es_mantener else "±")
@@ -12244,43 +12248,43 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         ("1", "🔥", T("Primero calculamos tu gasto diario", "First we calculate your daily expenditure"),
          T("Esta es una estimación de la energía que tu cuerpo utiliza cada día según tus datos y tu nivel de actividad.",
            "This is an estimate of the energy your body uses each day, based on your data and activity level."),
-         f"RCD = {rcd:.0f} kcal/{T('día', 'day')}"),
+         f"RCD = {rcd:.0f} kcal/{T('día', 'day')}", "#FEE2E2", "#FCA5A5", "#B91C1C"),
         ("2", "🎯", T("Aplicamos el ajuste elegido", "We apply the chosen adjustment"),
          T("Se aplica un ajuste calórico saludable y gradual: consumir un poco menos o un poco más de energía que el gasto estimado, según tu objetivo.",
            "A healthy, gradual caloric adjustment is applied: consuming a bit less or a bit more energy than the estimated expenditure, depending on your goal."),
-         f"{rcd:.0f} → {rcd_final:.0f} kcal/{T('día', 'day')} ({_rcd_obj_label})"),
+         f"{rcd:.0f} → {rcd_final:.0f} kcal/{T('día', 'day')} ({_rcd_obj_label})", "#FEF3C7", "#FCD34D", "#B45309"),
         ("3", "⚡", T("Calculamos la diferencia diaria", "We calculate the daily difference"),
          T("Es la diferencia energética estimada entre lo que tu cuerpo usa y lo que consumes cada día.",
            "This is the estimated energy difference between what your body uses and what you consume each day."),
-         f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/{T('día', 'day')}"),
+         f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/{T('día', 'day')}", "#DBEAFE", "#93C5FD", "#1D4ED8"),
         ("4", "📅", T(f"Lo proyectamos durante {_DIAS_PROY} días", f"We project it over {_DIAS_PROY} days"),
          T("Es la diferencia energética acumulada que utiliza este modelo matemático a lo largo del período.",
            "This is the cumulative energy difference this mathematical model uses over the period."),
-         f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal {T('totales', 'total')}"),
+         f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal {T('totales', 'total')}", "#D1FAE5", "#6EE7B7", "#047857"),
         ("5", "⚖️", T("Convertimos esa energía en una estimación de peso", "We convert that energy into a weight estimate"),
          T("El modelo utiliza aproximadamente 7,700 kcal por kilogramo como equivalente energético de referencia.",
            "The model uses approximately 7,700 kcal per kilogram as a reference energy equivalent."),
-         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 ≈ {peso_cambio_60:.2f} kg"),
+         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 ≈ {peso_cambio_60:.2f} kg", "#EDE9FE", "#C4B5FD", "#6D28D9"),
     ]
-    for _num, _ic_p, _titulo, _desc, _formula in _pasos:
+    for _num, _ic_p, _titulo, _desc, _formula, _bg_p, _bd_p, _hx_p in _pasos:
         st.markdown(f"""
-        <div style="display:flex;align-items:flex-start;gap:14px;background:#FFFFFF;border-radius:16px;
-        padding:14px 18px;margin-bottom:8px;border:1px solid rgba(139,92,246,0.18);box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-        <div style="min-width:32px;height:32px;border-radius:50%;background:{_VIOLETA};color:#FFFFFF;
-        font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">{_num}</div>
+        <div style="display:flex;align-items:flex-start;gap:14px;background:{_bg_p};border-radius:18px;
+        padding:16px 20px;margin-bottom:10px;border:2px solid {_bd_p};box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+        <div style="min-width:34px;height:34px;border-radius:50%;background:{_hx_p};color:#FFFFFF;
+        font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;box-shadow:0 3px 6px rgba(0,0,0,0.2);">{_num}</div>
         <div style="flex:1;">
-        <p style="margin:0;color:#1E293B;font-size:0.9rem;font-weight:800;">{_ic_p} {_titulo}</p>
-        <p style="margin:4px 0 6px 0;color:#5C6B79;font-size:0.82rem;line-height:1.5;">{_desc}</p>
-        <p style="margin:0;color:{_VIOLETA};font-weight:800;font-size:0.9rem;font-family:monospace;">{_formula}</p>
+        <p style="margin:0;color:{_hx_p};font-size:0.92rem;font-weight:900;">{_ic_p} {_titulo}</p>
+        <p style="margin:4px 0 6px 0;color:#3C3C3C;font-size:0.83rem;line-height:1.5;font-weight:600;">{_desc}</p>
+        <p style="margin:0;color:{_hx_p};font-weight:900;font-size:0.94rem;font-family:monospace;">{_formula}</p>
         </div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div style="background:{_VIOLETA}14;border:1.5px solid {_VIOLETA}55;border-radius:16px;
-    padding:14px 18px;margin:8px 0 14px 0;">
-    <p style="margin:0;color:#17301F;font-size:0.9rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
-    {abs(peso_cambio_60):.2f} = <b style="color:{_VIOLETA};">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
+    <div style="background:linear-gradient(120deg,#8B5CF6,#6D28D9);border-radius:18px;
+    padding:16px 20px;margin:8px 0 14px 0;box-shadow:0 6px 16px rgba(139,92,246,0.35);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.92rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
+    {abs(peso_cambio_60):.2f} = <b style="font-size:1.1rem;">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -12314,75 +12318,75 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
                            "- **Final weight** = Initial weight (no deficit or surplus applied)"))
 
     st.markdown(f"""
-    <div style="background:#FDF2F8;border:1px solid #FBCFE8;border-radius:16px;padding:14px 20px;margin:4px 0 18px 0;">
-    <p style="margin:0;color:#9D174D;font-size:0.85rem;line-height:1.6;"><b>🩷 {T('Equivalente energético utilizado por el modelo', 'Energy equivalent used by the model')}:</b><br>
+    <div style="background:linear-gradient(120deg,#FCE7F3,#FDF2F8);border:2px solid #F9A8D4;border-radius:18px;padding:16px 22px;margin:4px 0 20px 0;">
+    <p style="margin:0;color:#9D174D;font-size:0.86rem;line-height:1.6;font-weight:600;"><b>🩷 {T('Equivalente energético utilizado por el modelo', 'Energy equivalent used by the model')}:</b><br>
     {T('El cuerpo humano no funciona como una calculadora exacta. Esto no significa que cada 7,700 kcal de déficit produzcan exactamente 1 kg de grasa perdida: el peso también cambia por líquidos, glucógeno, masa muscular, digestión, adaptación metabólica y otros factores.',
        "The human body doesn't work like an exact calculator. This doesn't mean every 7,700 kcal of deficit produces exactly 1 kg of fat lost: weight also changes due to fluids, glycogen, muscle mass, digestion, metabolic adaptation, and other factors.")}</p>
     </div>
     """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 6. ¿POR QUÉ EL RESULTADO REAL PODRÍA SER DIFERENTE? — factores, sin culpabilizar
+    # 6. ¿POR QUÉ EL RESULTADO REAL PODRÍA SER DIFERENTE? — factores, arcoíris, sin culpabilizar
     # ================================================================================
-    st.markdown(f"##### 🔄 {T('¿Por qué el resultado real podría ser diferente?', 'Why might your actual result be different?')}")
+    st.markdown(f"""<div style="background:linear-gradient(120deg,#F5F3FF,#FFFFFF);border-radius:18px;padding:14px 20px;margin-bottom:14px;border:2px solid #DDD6FE;">
+    <p style="margin:0;font-weight:900;color:#5B21B6;font-size:1.1rem;">🔄 {T('¿Por qué el resultado real podría ser diferente?', 'Why might your actual result be different?')}</p>
+    </div>""", unsafe_allow_html=True)
     _factores = [
-        ("🥗", T("Cambios en la alimentación", "Changes in eating"), T("Cambiar las cantidades o los alimentos modifica la energía que consumes.", "Changing amounts or foods changes the energy you consume."), "#FDEBD9", "#F5C48E", "#B0530A"),
-        ("🏃", T("Cambios en la actividad", "Changes in activity"), T("Si tu actividad aumenta o disminuye, también cambia tu gasto energético.", "If your activity increases or decreases, your energy expenditure changes too."), "#EAFAEE", "#9BD8AE", "#1E5631"),
-        ("💧", T("Agua y digestión", "Water and digestion"), T("El peso puede subir o bajar temporalmente sin representar un cambio equivalente en grasa.", "Weight can go up or down temporarily without representing an equivalent change in fat."), "#E7F1FE", "#B3D2F7", "#0D47A1"),
-        ("😴", T("Sueño y rutina", "Sleep and routine"), T("Dormir poco puede afectar el apetito, la energía y la adherencia al plan.", "Poor sleep can affect appetite, energy, and how well you stick to the plan."), "#F3EEFB", "#C6AEE8", "#6A3FA0"),
-        ("📅", T("Constancia", "Consistency"), T("Saltarse o cambiar frecuentemente el plan hace que la realidad se aleje de la simulación.", "Frequently skipping or changing the plan makes reality diverge from the simulation."), "#FDF2F8", "#FBCFE8", "#9D174D"),
+        ("🥗", T("Cambios en la alimentación", "Changes in eating"), T("Cambiar las cantidades o los alimentos modifica la energía que consumes.", "Changing amounts or foods changes the energy you consume."), "linear-gradient(160deg,#FDBA74,#F97316)"),
+        ("🏃", T("Cambios en la actividad", "Changes in activity"), T("Si tu actividad aumenta o disminuye, también cambia tu gasto energético.", "If your activity increases or decreases, your energy expenditure changes too."), "linear-gradient(160deg,#6EE7B7,#10B981)"),
+        ("💧", T("Agua y digestión", "Water and digestion"), T("El peso puede subir o bajar temporalmente sin representar un cambio equivalente en grasa.", "Weight can go up or down temporarily without representing an equivalent change in fat."), "linear-gradient(160deg,#7DD3FC,#0EA5E9)"),
+        ("😴", T("Sueño y rutina", "Sleep and routine"), T("Dormir poco puede afectar el apetito, la energía y la adherencia al plan.", "Poor sleep can affect appetite, energy, and how well you stick to the plan."), "linear-gradient(160deg,#C4B5FD,#8B5CF6)"),
+        ("📅", T("Constancia", "Consistency"), T("Saltarse o cambiar frecuentemente el plan hace que la realidad se aleje de la simulación.", "Frequently skipping or changing the plan makes reality diverge from the simulation."), "linear-gradient(160deg,#F9A8D4,#EC4899)"),
     ]
     _cols_fact = st.columns(5)
-    for _col_f, (_ic, _tt, _txt, _fondo, _borde, _hex) in zip(_cols_fact, _factores):
+    for _col_f, (_ic, _tt, _txt, _grad) in zip(_cols_fact, _factores):
         with _col_f:
             st.markdown(f"""
-            <div style="background:{_fondo};border:1px solid {_borde};border-radius:18px;padding:16px 14px;
-            height:168px;">
-            <div style="font-size:1.5rem;">{_ic}</div>
-            <p style="margin:8px 0 4px 0;font-weight:800;color:{_hex};font-size:0.84rem;">{_tt}</p>
-            <p style="margin:0;color:#5C6B60;font-size:0.75rem;line-height:1.4;">{_txt}</p>
+            <div style="background:{_grad};border-radius:20px;padding:18px 14px;
+            height:172px;box-shadow:0 6px 14px rgba(0,0,0,0.15);">
+            <div style="font-size:1.7rem;">{_ic}</div>
+            <p style="margin:8px 0 4px 0;font-weight:900;color:#FFFFFF;font-size:0.85rem;">{_tt}</p>
+            <p style="margin:0;color:#FFFFFFE6;font-size:0.75rem;line-height:1.4;font-weight:600;">{_txt}</p>
             </div>
             """, unsafe_allow_html=True)
 
     st.write("")
 
     # ================================================================================
-    # 7. LO MÁS IMPORTANTE — mensaje final, qué debe recordar la persona
+    # 7. LO MÁS IMPORTANTE — mensaje final, vivo y celebratorio
     # ================================================================================
     st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#FFFBEB 0%,#FFFFFF 75%);border-radius:22px;padding:22px 26px;
-    margin-bottom:16px;border:1px solid rgba(251,191,36,0.35);box-shadow:0 4px 14px rgba(251,191,36,0.1);">
-    <p style="margin:0 0 16px 0;font-weight:900;color:#92400E;font-size:1.1rem;">🌟 {T('Lo más importante', 'The most important thing')}</p>
-    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:14px;">
-      <div style="flex:1;min-width:200px;display:flex;gap:10px;">
-        <div style="min-width:26px;height:26px;border-radius:50%;background:{_AMARILLO};color:#7C2D12;font-weight:900;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;">1</div>
-        <div><p style="margin:0;font-weight:800;color:#1E293B;font-size:0.86rem;">📊 {T('La proyección es una estimación', 'The projection is an estimate')}</p>
-        <p style="margin:2px 0 0 0;color:#5C6B79;font-size:0.78rem;line-height:1.4;">{T('No predice exactamente cuánto pesarás en una fecha determinada.', "It doesn't predict exactly how much you'll weigh on a given date.")}</p></div>
+    <div style="background:linear-gradient(120deg,#FEF3C7 0%,#FDE68A 40%,#FBCFE8 100%);border-radius:26px;padding:24px 28px;
+    margin-bottom:18px;border:2px solid #FBBF24;box-shadow:0 10px 26px rgba(251,191,36,0.25);">
+    <p style="margin:0 0 16px 0;font-weight:900;color:#78350F;font-size:1.2rem;">🌟 {T('Lo más importante', 'The most important thing')}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#F59E0B;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">1</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">📊 {T('La proyección es una estimación', 'The projection is an estimate')}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('No predice exactamente cuánto pesarás en una fecha determinada.', "It doesn't predict exactly how much you'll weigh on a given date.")}</p></div>
       </div>
-      <div style="flex:1;min-width:200px;display:flex;gap:10px;">
-        <div style="min-width:26px;height:26px;border-radius:50%;background:{_AMARILLO};color:#7C2D12;font-weight:900;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;">2</div>
-        <div><p style="margin:0;font-weight:800;color:#1E293B;font-size:0.86rem;">⚖️ {T('Tu peso no cambia de forma perfectamente lineal', "Your weight doesn't change perfectly linearly")}</p>
-        <p style="margin:2px 0 0 0;color:#5C6B79;font-size:0.78rem;line-height:1.4;">{T('Puede subir o bajar temporalmente por agua, digestión y otros factores.', 'It can go up or down temporarily due to water, digestion, and other factors.')}</p></div>
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#EC4899;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">2</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">⚖️ {T('Tu peso no cambia de forma perfectamente lineal', "Your weight doesn't change perfectly linearly")}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Puede subir o bajar temporalmente por agua, digestión y otros factores.', 'It can go up or down temporarily due to water, digestion, and other factors.')}</p></div>
       </div>
-      <div style="flex:1;min-width:200px;display:flex;gap:10px;">
-        <div style="min-width:26px;height:26px;border-radius:50%;background:{_AMARILLO};color:#7C2D12;font-weight:900;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;">3</div>
-        <div><p style="margin:0;font-weight:800;color:#1E293B;font-size:0.86rem;">🌱 {T('Lo importante es observar la tendencia', 'What matters is watching the trend')}</p>
-        <p style="margin:2px 0 0 0;color:#5C6B79;font-size:0.78rem;line-height:1.4;">{T('Un solo día no define tu progreso.', "A single day doesn't define your progress.")}</p></div>
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#10B981;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">3</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">🌱 {T('Lo importante es observar la tendencia', 'What matters is watching the trend')}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Un solo día no define tu progreso.', "A single day doesn't define your progress.")}</p></div>
       </div>
     </div>
-    <div style="border-top:1px solid rgba(251,191,36,0.35);padding-top:12px;">
-    <p style="margin:0;color:#065F46;font-size:0.86rem;line-height:1.6;">
+    <div style="background:linear-gradient(120deg,#10B981,#059669);border-radius:14px;padding:14px 18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.87rem;line-height:1.6;font-weight:700;">
     {T(f'La constancia semana a semana es la clave del éxito real. ¡Tú puedes lograrlo, {_nombre_saludo}! 🌟',
        f"Week-by-week consistency is the real key to success. You can do it, {_nombre_saludo}! 🌟")}</p>
     </div>
     </div>
     """, unsafe_allow_html=True)
 
-
-# ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
     hoja_header(14, T("Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.",
                        "A complete medical report, with your data, results, and recommendations — ready to print."))
