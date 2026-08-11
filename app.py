@@ -9839,6 +9839,8 @@ elif hoja_activa == "5.-CONTROL DE PESO":
                        f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
                        "your body's vital minimum. That's why your Target DCR didn't go any lower."))
 
+        st.divider()
+
         imagen_referencia_drive(
             "17w8KlSkMx_eKhK145N4hF0WAkFpV9h5b", "1HBt1WKJ0ELZFEzryjXHyXqEfFPKRTxfP",
             "Control de Peso", "Weight Control")
