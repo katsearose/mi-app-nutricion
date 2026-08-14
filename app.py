@@ -6,6 +6,7 @@ import io
 import math
 import uuid
 import textwrap
+import random
 import plotly.graph_objects as go
 import altair as alt
 from datetime import datetime, timedelta
@@ -11174,11 +11175,13 @@ elif hoja_activa == "9.-DIETA":
     st.markdown(_html_sin_lineas_vacias(_html_resumen_nutri), unsafe_allow_html=True)
 
     # =====================================================================================
-    # SECCIÓN 2 — Interfaz de Selección de Alimentos
+    # SECCIÓN 2 y 3 — Vista en Paralelo: Panel de Control (izquierda) + Menú Dinámico (derecha)
+    # Diseño a 2 columnas: al cambiar un alimento en el panel izquierdo, la tabla de la
+    # derecha se actualiza al instante, sin necesidad de hacer scroll hacia abajo.
     # =====================================================================================
     st.markdown(f'<div class="selector-menu-title">🍱 {T("¡Personaliza tu Menú! Selecciona tus Alimentos", "Customize Your Menu! Choose Your Foods")}</div>',
                 unsafe_allow_html=True)
-    st.markdown(f'<p class="selector-menu-sub">{T("Elige una fuente de carbohidrato, proteína y grasa para cada momento del día.", "Choose a source of carbohydrate, protein, and fat for each time of day.")}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="selector-menu-sub">{T("Elige una fuente de carbohidrato, proteína y grasa para cada momento del día, o usa el generador automático. El menú a la derecha se actualiza al instante.", "Choose a source of carbohydrate, protein, and fat for each time of day, or use the auto-generator. The menu on the right updates instantly.")}</p>', unsafe_allow_html=True)
 
     if genero == "Mujer" and embarazada:
         st.warning("🤰 " + T(
@@ -11192,34 +11195,67 @@ elif hoja_activa == "9.-DIETA":
             "(FDA — Food Safety for Moms-to-Be)."
         ))
 
+    # ---- A. Botón de Generación Automática Inteligente ("Auto-Fill") ----
+    def _auto_fill_dieta(modo):
+        """Rellena st.session_state con una selección automática de alimentos por comida/macro,
+        según el modo elegido: 'economico' (menor kcal/100g), 'proteina' (proteínas más densas
+        en calorías, resto aleatorio) o 'sorpresa' (100% aleatorio)."""
+        for _comida in DIETA:
+            for _macro, _pref in [("Carbohidrato", "c"), ("Proteína", "p"), ("Grasa", "g")]:
+                _opts = list(dieta_filtrada_para(_comida, _macro, embarazada).keys())
+                if not _opts:
+                    continue
+                if modo == "economico":
+                    _elegido = min(_opts, key=lambda a: DIETA[_comida][_macro][a])
+                elif modo == "proteina" and _macro == "Proteína":
+                    _elegido = max(_opts, key=lambda a: DIETA[_comida][_macro][a])
+                else:
+                    _elegido = random.choice(_opts)
+                st.session_state[f"{_pref}_{_comida}"] = _elegido
+
+    st.markdown(f"###### 🤖 {T('Generación Automática', 'Auto-Generate')}")
+    af1, af2, af3 = st.columns(3)
+    with af1:
+        if st.button("💰 " + T("Menú Económico", "Budget Menu"), use_container_width=True, key="btn_auto_economico"):
+            _auto_fill_dieta("economico")
+            st.rerun()
+    with af2:
+        if st.button("💪 " + T("Alto en Proteínas", "High Protein"), use_container_width=True, key="btn_auto_proteina"):
+            _auto_fill_dieta("proteina")
+            st.rerun()
+    with af3:
+        if st.button("🎲 " + T("Sorpréndeme", "Surprise Me"), use_container_width=True, key="btn_auto_sorpresa"):
+            _auto_fill_dieta("sorpresa")
+            st.rerun()
+
+    col_izq, col_der = st.columns([2, 3])
+
     seleccion = {}
-    for comida in DIETA:
-        st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
-                    unsafe_allow_html=True)
-        _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
-        _opciones_prot = dieta_filtrada_para(comida, "Proteína", embarazada)
-        _opciones_gras = dieta_filtrada_para(comida, "Grasa", embarazada)
-        c1, c2, c3 = st.columns(3)
-        with c1:
+    with col_izq:
+        st.markdown(f"##### 🎛️ {T('Panel de Control', 'Control Panel')}")
+        for comida in DIETA:
+            st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
+                        unsafe_allow_html=True)
+            _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
+            _opciones_prot = dieta_filtrada_para(comida, "Proteína", embarazada)
+            _opciones_gras = dieta_filtrada_para(comida, "Grasa", embarazada)
             st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
             carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
                                      format_func=_dieta_nombre,
                                      key=f"c_{comida}", label_visibility="collapsed")
-        with c2:
             st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
             prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
                                      format_func=_dieta_nombre,
                                      key=f"p_{comida}", label_visibility="collapsed")
-        with c3:
             st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
             gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
                                      format_func=_dieta_nombre,
                                      key=f"g_{comida}", label_visibility="collapsed")
-        seleccion[comida] = {
-            "Carbohidrato": carb_sel,
-            "Proteína": prot_sel,
-            "Grasa": gras_sel,
-        }
+            seleccion[comida] = {
+                "Carbohidrato": carb_sel,
+                "Proteína": prot_sel,
+                "Grasa": gras_sel,
+            }
 
     # Guardado explícito y estable del plan elegido: no dependemos de que las claves individuales
     # c_/p_/g_ de cada selectbox sigan existiendo o coincidiendo con las opciones filtradas (p.ej.
@@ -11257,8 +11293,11 @@ elif hoja_activa == "9.-DIETA":
 
     # =====================================================================================
     # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
+    # Se renderiza en la columna derecha, en paralelo con el Panel de Control: cada cambio
+    # de alimento en la izquierda se refleja aquí al instante, sin scroll.
     # =====================================================================================
-    st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
+    col_der_ctx = col_der.container()
+    col_der_ctx.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
 
     def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
         """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
@@ -11293,7 +11332,7 @@ elif hoja_activa == "9.-DIETA":
         </table>
         </div>
         """
-        st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
+        col_der_ctx.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
 
     _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
     _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
@@ -11313,7 +11352,7 @@ elif hoja_activa == "9.-DIETA":
         <div class="dt-check">{_check_txt}</div>
     </div>
     """
-    st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
+    col_der_ctx.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
 
     st.divider()
     st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
