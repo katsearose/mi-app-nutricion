@@ -5441,13 +5441,13 @@ def advertencia_imc_composicion_corporal():
 
     _TIPOS_CUERPO = [
         {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
-         "drive_id": T("1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN", "1bTETLcXCyZSLxJwxDmkYl1rN_O-v3XCK"),
+         "drive_id": T("1Cn3XaCGYw_1BPgoVSWqQ7YdJR1CHVcrg", "1TTq37gyCNCKL_8JDNHZlaRumLWms8Uou"),
          "nombre": T("Ectomorfo", "Ectomorph")},
         {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
-         "drive_id": T("1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV", "1vXQxIOZGSbQJdSQEVLUmpiM9MRdD7fbQ"),
+         "drive_id": T("1xUq7J7DLS-S2Qg-wusWpE-oBKMhM-2Js", "1iqy73BlClMMB3BJVrtjnsoa3XfRhHjFz"),
          "nombre": T("Endomorfo", "Endomorph")},
         {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
-         "drive_id": T("1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv", "17ZSWhc64JcCXOXPcReRwfJt-9DH9-liC"),
+         "drive_id": T("1l_LUt5iFbNS2ssPIybWJ3rsyqE3OuGDp", "1PIjb7gzMGh-S1BIcMyefl8FmrLm7fB-z"),
          "nombre": T("Mesomorfo", "Mesomorph")},
     ]
     for _tp in _TIPOS_CUERPO:
@@ -7592,7 +7592,7 @@ elif hoja_activa == "1.-ANÁLISIS SANGUÍNEO":
     st.divider()
 
     # ===== 2. Interpretación Clínica Inteligente (reemplaza el panel de flujo anterior) =====
-    st.markdown(f"#### 🧠 {T('Interpretación Clínica Inteligente', 'Smart Clinical Interpretation')}")
+    st.markdown(f"#### 🧠 {T('Interpretación Clínica', 'Clinical Interpretation')}")
     _todos = [("Hemoglobina", _cat_hemo), ("Triglicéridos", _cat_trigli), ("Glucosa", _cat_gluco),
               ("Colesterol", _cat_coles), ("Hierro", _cat_hierro)]
     _con_dato = [(p, c) for p, c in _todos if c != "Introducir datos"]
@@ -8010,7 +8010,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.write("")
 
     # --- 3.4 Interpretación Fisiológica Inteligente ---------------------------------------
-    st.markdown(f"##### 🧠 {T('Interpretación Fisiológica Inteligente', 'Smart Physiological Interpretation')}")
+    st.markdown(f"##### 🧠 {T('Interpretación Fisiológica', 'Physiological Interpretation')}")
     _todos_vitales = [("Presión Arterial", _col_pa), ("Oxigenación (SpO₂)", _col_ox),
                        ("Temperatura", _col_te), ("Pulso", _col_pu)]
     _con_dato_v = [(p, c) for p, c in _todos_vitales if c != "gris"]
@@ -9839,10 +9839,6 @@ elif hoja_activa == "5.-CONTROL DE PESO":
                        f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
                        "your body's vital minimum. That's why your Target DCR didn't go any lower."))
 
-        imagen_referencia_drive(
-            "17w8KlSkMx_eKhK145N4hF0WAkFpV9h5b", "1HBt1WKJ0ELZFEzryjXHyXqEfFPKRTxfP",
-            "Control de Peso", "Weight Control")
-
         st.divider()
     
         # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
@@ -10800,7 +10796,7 @@ elif hoja_activa == "7.-PORCIONES":
     st.info(_respuesta_mostrada)
 
     imagen_referencia_drive(
-        "1_AL07U7KsX4YMCXyKRDFeUNdKWZbcmJU", "1v2VTUp-CYkD3KPdBgrUJTLOkVuIKTTuf",
+        "1uTsB1B_l-O4T_btj3HlWGQveWm3DNEOM", "1BoNmP27i_Q3cCxn_wQ_wPQEh_LZn_LF5",
         "Tiempos de comida", "Meal times")
 
     caja_util(T(
@@ -10860,7 +10856,7 @@ elif hoja_activa == "8.-FATSECRET":
         st.link_button(T("🌐 Abrir FatSecret", "🌐 Open FatSecret"), "https://www.fatsecret.es/", use_container_width=True)
 
     imagen_referencia_drive(
-        "1NfFbSgnfjY1Yn85PDDAgx1Pop7RXrUm3", "192bE8d1VSnAgnd-vRD2qVmw2QBHbhFZE",
+        "1y_7WnS-TNq3ehxrncEsD98ZYNts_ODPT", "1PPi5rqccyf-n9tE07WPeMGM65MA18A6p",
         "FatSecret", "FatSecret")
 
     st.markdown(f"""
@@ -10883,7 +10879,7 @@ elif hoja_activa == "8.-FATSECRET":
     st.markdown(f"#### 🔎 {T('Buscador Nutricional · Tabla Peruana de Composición de Alimentos', 'Nutritional Search · Peruvian Food Composition Table')}")
 
     imagen_referencia_drive(
-        "1_vAUT_dvMVE27bzO_J0FxH67nipGZorg", "1wi6BQwqcY7gYusWXozpwU1atgP0WLUP8",
+        "1zS4Pa7GWuaCDRf2bOWl7yX_0-oRpeAdn", "1JOFNfmD-b0fF4pYQzYGM95Rc-khJBtlO",
         "Tabla Peruana de Composición de Alimentos", "Peruvian Food Composition Table")
 
     consulta = st.text_input(T("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
@@ -11176,7 +11172,7 @@ elif hoja_activa == "9.-DIETA":
     # =====================================================================================
     st.markdown(f'<div class="selector-menu-title">🍱 {T("¡Personaliza tu Menú! Selecciona tus Alimentos", "Customize Your Menu! Choose Your Foods")}</div>',
                 unsafe_allow_html=True)
-    st.markdown(f'<p class="selector-menu-sub">{T("Elige una fuente de carbohidrato, proteína y grasa para cada momento del día — un paso a la vez.", "Choose a source of carbohydrate, protein, and fat for each time of day — one step at a time.")}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="selector-menu-sub">{T("Elige una fuente de carbohidrato, proteína y grasa para cada momento del día.", "Choose a source of carbohydrate, protein, and fat for each time of day.")}</p>', unsafe_allow_html=True)
 
     if genero == "Mujer" and embarazada:
         st.warning("🤰 " + T(
@@ -11190,95 +11186,33 @@ elif hoja_activa == "9.-DIETA":
             "(FDA — Food Safety for Moms-to-Be)."
         ))
 
-    # =====================================================================================
-    # WIZARD PASO A PASO — una comida a la vez, con indicador de progreso tipo feria/app
-    # =====================================================================================
-    _comidas_orden = list(DIETA.keys())
-    _total_pasos_wiz = len(_comidas_orden)
-    if "dieta_wizard_step" not in st.session_state:
-        st.session_state["dieta_wizard_step"] = 0
-    _paso_actual = min(st.session_state["dieta_wizard_step"], _total_pasos_wiz)
-
-    # Precalcula opciones filtradas por comida y asegura que TODAS las comidas tengan una
-    # selección por defecto guardada en session_state, aunque el usuario aún no haya visitado
-    # ese paso — así las tablas de abajo siempre muestran un menú completo que se va afinando.
-    _opciones_por_comida_wiz = {}
-    for _c in _comidas_orden:
-        _oc = dieta_filtrada_para(_c, "Carbohidrato", embarazada)
-        _op = dieta_filtrada_para(_c, "Proteína", embarazada)
-        _og = dieta_filtrada_para(_c, "Grasa", embarazada)
-        _opciones_por_comida_wiz[_c] = (_oc, _op, _og)
-        for _pref, _opts in (("c_", _oc), ("p_", _op), ("g_", _og)):
-            _k = f"{_pref}{_c}"
-            if _k not in st.session_state or st.session_state[_k] not in _opts:
-                st.session_state[_k] = list(_opts.keys())[0]
-
-    # --- Indicador de progreso: [1. Desayuno] ➔ [2. Merienda 1] ➔ ... ➔ [🏆 Ver Menú Final] ---
-    _iconos_paso_wiz = [_ICONOS_COMIDA_D9[c] for c in _comidas_orden] + ["🏆"]
-    _labels_paso_wiz = [_mom(c) for c in _comidas_orden] + [T("Ver Menú Final", "View Final Menu")]
-    _chips_html = ""
-    for _i, (_ic, _lb) in enumerate(zip(_iconos_paso_wiz, _labels_paso_wiz)):
-        _activo = (_i == _paso_actual)
-        _hecho = (_i < _paso_actual)
-        _bg = "#FF7043" if _activo else ("#DFF5E1" if _hecho else "#F1F1F3")
-        _fg = "#FFFFFF" if _activo else ("#1E5631" if _hecho else "#8E8E93")
-        _brd = "0 4px 12px rgba(255,112,67,0.35)" if _activo else "none"
-        _chips_html += (f'<span style="background:{_bg};color:{_fg};padding:7px 14px;border-radius:999px;'
-                         f'font-weight:800;font-size:0.78rem;white-space:nowrap;box-shadow:{_brd};">'
-                         f'{_ic} {_i+1}. {_lb}</span>')
-        if _i < len(_iconos_paso_wiz) - 1:
-            _chips_html += '<span style="color:#C7C7CC;font-weight:900;">➔</span>'
-    st.markdown(f'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center;'
-                f'margin:4px 0 22px 0;">{_chips_html}</div>', unsafe_allow_html=True)
-
-    if _paso_actual < _total_pasos_wiz:
-        _comida_wiz = _comidas_orden[_paso_actual]
-        _oc, _op, _og = _opciones_por_comida_wiz[_comida_wiz]
-        st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[_comida_wiz]} {_mom(_comida_wiz).upper()}</div>',
+    seleccion = {}
+    for comida in DIETA:
+        st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
                     unsafe_allow_html=True)
+        _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
+        _opciones_prot = dieta_filtrada_para(comida, "Proteína", embarazada)
+        _opciones_gras = dieta_filtrada_para(comida, "Grasa", embarazada)
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
-            st.selectbox(f"{_mac('Carbohidrato')} — {_mom(_comida_wiz)}", list(_oc.keys()),
-                         format_func=_dieta_nombre, key=f"c_{_comida_wiz}", label_visibility="collapsed")
+            carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
+                                     format_func=_dieta_nombre,
+                                     key=f"c_{comida}", label_visibility="collapsed")
         with c2:
             st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
-            st.selectbox(f"{_mac('Proteína')} — {_mom(_comida_wiz)}", list(_op.keys()),
-                         format_func=_dieta_nombre, key=f"p_{_comida_wiz}", label_visibility="collapsed")
+            prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
+                                     format_func=_dieta_nombre,
+                                     key=f"p_{comida}", label_visibility="collapsed")
         with c3:
             st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
-            st.selectbox(f"{_mac('Grasa')} — {_mom(_comida_wiz)}", list(_og.keys()),
-                         format_func=_dieta_nombre, key=f"g_{_comida_wiz}", label_visibility="collapsed")
-
-        _bn_izq, _bn_der = st.columns(2)
-        with _bn_izq:
-            if _paso_actual > 0:
-                if st.button("⬅️ " + T("Comida Anterior", "Previous Meal"), key="btn_wiz_prev", use_container_width=True):
-                    st.session_state["dieta_wizard_step"] = _paso_actual - 1
-                    st.rerun()
-        with _bn_der:
-            _label_sig = (T("Generar Menú Completo 🏆", "Generate Full Menu 🏆") if _paso_actual == _total_pasos_wiz - 1
-                          else T("Siguiente Comida ➔", "Next Meal ➔"))
-            if st.button(_label_sig, key="btn_wiz_next", type="primary", use_container_width=True):
-                st.session_state["dieta_wizard_step"] = _paso_actual + 1
-                st.rerun()
-    else:
-        st.success("🏆 " + T("¡Aquí está tu menú completo! Puedes editar cualquier comida cuando quieras.",
-                              "Here's your complete menu! You can edit any meal whenever you want."))
-        if st.button("✏️ " + T("Editar mi menú desde el inicio", "Edit my menu from the start"), key="btn_wiz_restart"):
-            st.session_state["dieta_wizard_step"] = 0
-            st.rerun()
-
-    _menu_completado_wiz = (_paso_actual >= _total_pasos_wiz)
-
-    # Construye la selección final leyendo SIEMPRE los valores guardados de las 5 comidas
-    # (visitadas o no), para que el menú y las tablas de abajo estén siempre completos.
-    seleccion = {}
-    for _c in _comidas_orden:
-        seleccion[_c] = {
-            "Carbohidrato": st.session_state[f"c_{_c}"],
-            "Proteína": st.session_state[f"p_{_c}"],
-            "Grasa": st.session_state[f"g_{_c}"],
+            gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
+                                     format_func=_dieta_nombre,
+                                     key=f"g_{comida}", label_visibility="collapsed")
+        seleccion[comida] = {
+            "Carbohidrato": carb_sel,
+            "Proteína": prot_sel,
+            "Grasa": gras_sel,
         }
 
     # Guardado explícito y estable del plan elegido: no dependemos de que las claves individuales
@@ -11286,8 +11220,6 @@ elif hoja_activa == "9.-DIETA":
     # si el modo Embarazo se activa/desactiva y cambia la lista de alimentos disponibles). Este
     # diccionario es la única fuente de verdad que usan luego "Mi Reporte" y el PDF.
     st.session_state["dieta_guardada"] = seleccion
-
-    st.divider()
 
     # % de cada macronutriente dentro del total de calorías de CADA momento (igual que N/S/X del Excel: 50/20/30%)
     PCT_MACRO_MOMENTO = {"Carbohidrato": 0.50, "Proteína": 0.20, "Grasa": 0.30}
@@ -11316,37 +11248,6 @@ elif hoja_activa == "9.-DIETA":
         suma_gramos_gras += fila["Gramos (Gras)"]
 
     total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
-
-    # =====================================================================================
-    # SECCIÓN 2.5 — Menú final tipo tabla (solo al completar el wizard): una columna por
-    # momento del día, con los alimentos elegidos listados — igual que una tabla nutricional
-    # clásica (sin gráficos, solo el menú ordenado).
-    # =====================================================================================
-    if _menu_completado_wiz:
-        st.markdown(f'<div class="menu-titulo-grande">📊 {T("RESULTADO FINAL DE TU MENÚ", "YOUR FINAL MENU RESULT")}</div>', unsafe_allow_html=True)
-        _cols_menu_tabla_html = ""
-        for _c in _comidas_orden:
-            _alim_c = seleccion[_c]
-            _cols_menu_tabla_html += f"""
-            <th style="background:#F5A15A;color:#FFFFFF;padding:12px 14px;text-align:left;font-weight:800;
-            font-size:0.92rem;border-right:1px solid rgba(255,255,255,0.35);">{_ICONOS_COMIDA_D9[_c]} {_mom(_c)}</th>"""
-        _filas_menu_tabla_html = "<tr>" + "".join(
-            f"""<td style="background:#FDEEDD;vertical-align:top;padding:12px 14px;border-right:1px solid #F6D9BC;
-            font-size:0.86rem;color:#5C4326;line-height:1.9;">
-            - {_dieta_nombre(seleccion[_c]['Carbohidrato'])}.<br>
-            - {_dieta_nombre(seleccion[_c]['Proteína'])}.<br>
-            - {_dieta_nombre(seleccion[_c]['Grasa'])}.</td>"""
-            for _c in _comidas_orden
-        ) + "</tr>"
-        _html_menu_final_tabla = f"""
-        <div style="overflow-x:auto;border-radius:16px;border:1px solid #F6D9BC;box-shadow:0 4px 14px rgba(0,0,0,0.06);margin-bottom:20px;">
-        <table style="width:100%;border-collapse:collapse;">
-        <thead><tr>{_cols_menu_tabla_html}</tr></thead>
-        <tbody>{_filas_menu_tabla_html}</tbody>
-        </table>
-        </div>
-        """
-        st.markdown(_html_sin_lineas_vacias(_html_menu_final_tabla), unsafe_allow_html=True)
 
     # =====================================================================================
     # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
@@ -12102,12 +12003,15 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     _peso_30 = round(peso - (deficit_diario * 30) / 7700, 1)
     _reduccion_total = round(abs(peso - _peso_final), 1)
 
-    # --- Paleta semántica funcional (fija, no depende del tema) ---
-    _AZUL = "#2563EB"      # Peso actual
-    _VERDE = "#10B981"     # Meta final / logros
+    # --- Paleta semántica funcional, bien saturada (fija, no depende del tema) ---
+    _AZUL = "#2563EB"      # Información / peso actual
+    _VERDE = "#10B981"     # Resultado / progreso / meta final
     _AMBAR = "#F59E0B"     # Checkpoint intermedio (30 días)
-    _VIOLETA = "#8B5CF6"   # Fórmulas y cálculos
+    _VIOLETA = "#8B5CF6"   # Cálculos y fórmulas
     _CORAL = "#EF4444"     # Advertencias / riesgo
+    _ROSA = "#EC4899"      # Consejos / información educativa
+    _AMARILLO = "#FBBF24"  # Importante / recordar
+    _CIAN = "#06B6D4"      # Acento extra
 
     _color_tema = _VERDE if _es_mantener else (_AZUL if _es_bajar else _AMBAR)
     _obj_label = T("Mantener peso", "Maintain Weight") if _es_mantener else (T("Bajar de peso", "Lose Weight") if _es_bajar else T("Subir de peso", "Gain Weight"))
@@ -12119,72 +12023,113 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
                     else T("Sin cambio esperado", "No change expected")))
 
     # ================================================================================
-    # 1. RESUMEN EJECUTIVO DE LA META — Panel de Control Unificado
+    # 1. HERO — ¿De dónde parto? ¿Qué podría pasar? — degradado vivo, muy visual
     # ================================================================================
     st.markdown(f"""
-    <div style="background:#FFFFFF;border-radius:22px;padding:22px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 16px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">🎯 {T('Resumen de tu meta', 'Goal summary')}</p>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;">
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">📌 {T('Peso actual', 'Current Weight')}</p>
-        <p style="margin:2px 0 0 0;color:{_AZUL};font-size:1.75rem;font-weight:900;">{peso:.1f} kg</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{T('Punto de partida', 'Starting point')}</p>
+    <div style="background:linear-gradient(135deg,#DBEAFE 0%,#EDE9FE 45%,#FCE7F3 100%);border-radius:26px;padding:28px 28px;
+    margin-bottom:20px;border:2px solid rgba(139,92,246,0.25);box-shadow:0 10px 30px rgba(139,92,246,0.15);">
+    <p style="margin:0 0 6px 0;font-weight:900;color:#312E81;font-size:1.4rem;">🎯 {T('¿Cómo podría cambiar tu peso con el tiempo?', 'How could your weight change over time?')}</p>
+    <p style="margin:0 0 22px 0;color:#4C4467;font-size:0.93rem;line-height:1.55;max-width:640px;font-weight:600;">
+    {T('Esta es una estimación de lo que podría ocurrir si mantienes aproximadamente las mismas condiciones utilizadas en el cálculo: tu nivel de actividad y el plan de alimentación calculado.',
+       'This is an estimate of what could happen if you maintain roughly the same conditions used in the calculation: your activity level and the calculated eating plan.')}</p>
+
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#3B82F6,#2563EB);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(37,99,235,0.35);">
+        <p style="margin:0;color:#DBEAFE;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🔵 {T('Hoy', 'Today')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{peso:.1f} kg</p>
       </div>
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">🎯 {T('Objetivo de salud', 'Health Goal')}</p>
-        <p style="margin:2px 0 0 0;color:#1E293B;font-size:1.2rem;font-weight:800;">{_obj_label}</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{_obj_detalle}</p>
+      <div style="flex:0 0 auto;color:#8B5CF6;font-size:1.8rem;font-weight:900;padding:0 4px;">➜</div>
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#FBBF24,#F59E0B);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(245,158,11,0.35);">
+        <p style="margin:0;color:#FEF3C7;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🟠 {T('En 30 días', 'In 30 days')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{_peso_30:.1f} kg</p>
       </div>
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">⏱️ {T('Duración estimada', 'Estimated Duration')}</p>
-        <p style="margin:2px 0 0 0;color:#1E293B;font-size:1.75rem;font-weight:900;">{_DIAS_PROY} {T('días', 'days')}</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{T('8 semanas de constancia', '8 weeks of consistency')}</p>
+      <div style="flex:0 0 auto;color:#8B5CF6;font-size:1.8rem;font-weight:900;padding:0 4px;">➜</div>
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#34D399,#10B981);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(16,185,129,0.35);">
+        <p style="margin:0;color:#D1FAE5;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🟢 {T(f'En {_DIAS_PROY} días', f'In {_DIAS_PROY} days')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{_peso_final:.1f} kg</p>
       </div>
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">🏁 {T('Peso final estimado', 'Estimated Final Weight')}</p>
-        <p style="margin:2px 0 0 0;color:{_VERDE};font-size:1.75rem;font-weight:900;">{_peso_final:.1f} kg</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{_cambio_txt}</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;">
+      <div style="background:#FFFFFFCC;border-radius:14px;padding:9px 16px;border:1.5px solid #C4B5FD;">
+      <p style="margin:0;color:#7C3AED;font-size:0.7rem;font-weight:900;text-transform:uppercase;">🎯 {T('Objetivo', 'Goal')}</p>
+      <p style="margin:0;color:#312E81;font-size:0.86rem;font-weight:800;">{_obj_label} · {_obj_detalle}</p>
       </div>
+      <div style="background:#FFFFFFCC;border-radius:14px;padding:9px 16px;border:1.5px solid #F9A8D4;">
+      <p style="margin:0;color:#DB2777;font-size:0.7rem;font-weight:900;text-transform:uppercase;">⏱️ {T('Duración', 'Duration')}</p>
+      <p style="margin:0;color:#312E81;font-size:0.86rem;font-weight:800;">{_DIAS_PROY} {T('días · 8 semanas de constancia', 'days · 8 weeks of consistency')}</p>
+      </div>
+    </div>
+
+    <div style="background:#FEF3C7;border:2px solid #FBBF24;border-radius:16px;padding:14px 18px;margin-top:18px;">
+    <p style="margin:0;color:#78350F;font-size:0.84rem;line-height:1.5;font-weight:600;"><b>💡 {T('Importante', 'Important')}:</b>
+    {T('esto es una estimación, no una predicción exacta. Tu peso real puede subir o bajar de forma diferente por cambios en alimentación, actividad, líquidos, digestión y otros factores.',
+       "this is an estimate, not an exact prediction. Your actual weight may go up or down differently due to changes in food, activity, fluids, digestion, and other factors.")}</p>
     </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 2. LÍNEA DE TIEMPO E HITOS DE PROGRESIÓN — checkpoints con barra de progreso
+    # 2. TU RECORRIDO — timeline horizontal, muy colorida
     # ================================================================================
-    st.markdown(f"""<div style="background:#FFFFFF;border-radius:22px;padding:22px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 16px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">📅 {T('Línea de tiempo e hitos', 'Timeline and milestones')}</p>
+    _delta1 = round(_peso_30 - peso, 2)
+    _delta2 = round(_peso_final - _peso_30, 2)
+    _signo1 = "−" if _delta1 < 0 else ("+" if _delta1 > 0 else "±")
+    _signo2 = "−" if _delta2 < 0 else ("+" if _delta2 > 0 else "±")
+
+    st.markdown(f"""<div style="background:linear-gradient(100deg,#EFF6FF 0%,#F0FDF4 100%);border-radius:24px;padding:24px 26px;margin-bottom:20px;
+    border:2px solid #BFDBFE;box-shadow:0 8px 22px rgba(37,99,235,0.1);">
+    <p style="margin:0 0 4px 0;font-weight:900;color:#1E3A8A;font-size:1.15rem;">🧭 {T('Tu recorrido', 'Your journey')}</p>
+    <p style="margin:0 0 18px 0;color:#64748B;font-size:0.83rem;font-weight:600;">{T('Así se vería tu avance estimado, paso a paso.', "This is what your estimated progress would look like, step by step.")}</p>
     """, unsafe_allow_html=True)
 
     _hitos = [
-        (T("HOY", "TODAY"), peso, 0, _AZUL, T("Inicio", "Start")),
-        (T("MES 1 · DÍA 30", "MONTH 1 · DAY 30"), _peso_30, 50, _AMBAR, T("En progreso", "In progress")),
-        (T("MES 2 · DÍA 60", "MONTH 2 · DAY 60"), _peso_final, 100, _VERDE, T("Meta lograda", "Goal reached")),
+        (T("HOY", "TODAY"), peso, 0, _AZUL, "#DBEAFE", T("Punto de partida", "Starting point")),
+        (T("DÍA 30", "DAY 30"), _peso_30, 50, _AMBAR, "#FEF3C7", T("Progreso estimado", "Estimated progress")),
+        (T("DÍA 60", "DAY 60"), _peso_final, 100, _VERDE, "#D1FAE5", T("Meta estimada", "Estimated goal")),
     ]
     _cols_hito = st.columns(3)
-    for _col_h, (_lbl, _val, _pct, _col_c, _st_lbl) in zip(_cols_hito, _hitos):
+    for _col_h, (_lbl, _val, _pct, _col_c, _bg_c, _st_lbl) in zip(_cols_hito, _hitos):
         with _col_h:
             st.markdown(f"""
-            <div style="text-align:center;padding:6px 10px;">
-            <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">{_lbl}</p>
-            <p style="margin:4px 0 2px 0;color:{_col_c};font-size:1.6rem;font-weight:900;">{_val:.1f} kg</p>
-            <p style="margin:0 0 8px 0;color:#64748B;font-size:0.78rem;font-weight:700;">{_st_lbl}</p>
-            <div style="background:#EEF2F6;border-radius:999px;height:8px;overflow:hidden;">
+            <div style="text-align:center;padding:14px 10px;background:{_bg_c};border-radius:18px;border:2px solid {_col_c}55;">
+            <p style="margin:0;color:{_col_c};font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;">{_lbl}</p>
+            <p style="margin:4px 0 2px 0;color:{_col_c};font-size:1.7rem;font-weight:900;">{_val:.1f} kg</p>
+            <p style="margin:0 0 8px 0;color:#475569;font-size:0.78rem;font-weight:700;">{_st_lbl}</p>
+            <div style="background:#FFFFFF;border-radius:999px;height:9px;overflow:hidden;">
             <div style="background:{_col_c};width:{_pct}%;height:100%;border-radius:999px;"></div>
             </div>
-            <p style="margin:4px 0 0 0;color:#94A3B8;font-size:0.68rem;font-weight:700;">{_pct}%</p>
+            <p style="margin:4px 0 0 0;color:#94A3B8;font-size:0.68rem;font-weight:800;">{_pct}%</p>
             </div>
             """, unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="display:flex;justify-content:space-around;margin-top:12px;">
+      <div style="flex:1;text-align:center;">
+        <span style="background:{_AMBAR};color:#FFFFFF;font-weight:800;font-size:0.76rem;padding:6px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(245,158,11,0.35);">{_signo1}{abs(_delta1):.1f} kg {T('estimados', 'estimated')}</span>
+      </div>
+      <div style="flex:1;text-align:center;">
+        <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.76rem;padding:6px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(16,185,129,0.35);">{_signo2}{abs(_delta2):.1f} kg {T('estimados', 'estimated')}</span>
+      </div>
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 3. GRÁFICO INTERACTIVO DE TENDENCIA — con banda de tolerancia saludable (±1 kg)
+    # 3. GRÁFICO — con leyenda y explicación arriba, marco colorido
     # ================================================================================
-    st.markdown(f"""<div style="background:#FFFFFF;border-radius:22px;padding:22px 26px 6px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">📈 {T('Evolución estimada del peso', 'Estimated Weight Evolution')}</p>
+    st.markdown(f"""<div style="background:#FFFFFF;border-radius:24px;padding:24px 26px 6px 26px;margin-bottom:20px;
+    border:2px solid #C4B5FD;box-shadow:0 8px 22px rgba(139,92,246,0.12);">
+    <p style="margin:0 0 4px 0;font-weight:900;color:#5B21B6;font-size:1.15rem;">📉 {T('Evolución estimada del peso', 'Estimated Weight Evolution')}</p>
+    <p style="margin:0 0 12px 0;color:#4C4467;font-size:0.86rem;line-height:1.5;"><b>{T('¿Qué muestra este gráfico?', 'What does this chart show?')}</b><br>
+    {T('La línea azul representa una posible trayectoria estimada. Tu peso real no necesariamente seguirá exactamente esta línea cada día.',
+       "The blue line represents one possible estimated path. Your actual weight won't necessarily follow this exact line every day.")}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <span style="background:{_AZUL};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🔵 {T('Línea azul: trayectoria estimada', 'Blue line: estimated path')}</span>
+      <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟢 {T('Zona verde: rango orientativo', 'Green zone: guideline range')}</span>
+      <span style="background:{_AMBAR};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟠 {T('Punto naranja: estimación intermedia', 'Orange dot: mid-point estimate')}</span>
+      <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟢 {T('Punto verde: objetivo estimado', 'Green dot: estimated goal')}</span>
+    </div>
     """, unsafe_allow_html=True)
 
     dias_eje = list(range(0, _DIAS_PROY + 1))
@@ -12196,20 +12141,20 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=_banda_sup, mode="lines", line=dict(width=0),
                                      showlegend=False, hoverinfo="skip"))
     fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=_banda_inf, mode="lines", line=dict(width=0), fill="tonexty",
-                                     fillcolor=_hex_a_rgba(_VERDE, 0.14),
-                                     name=T("Rango de variación normal (±1 kg)", "Normal variation range (±1 kg)"),
+                                     fillcolor=_hex_a_rgba(_VERDE, 0.18),
+                                     name=T("Rango orientativo de variación", "Guideline variation range"),
                                      hoverinfo="skip"))
     fig_tiempo.add_trace(go.Scatter(
         x=dias_eje, y=pesos_dia_completo, mode="lines", name=T("Proyección estimada", "Estimated Projection"),
-        line=dict(color=_AZUL, width=4, shape="spline"),
+        line=dict(color=_AZUL, width=5, shape="spline"),
     ))
 
     hitos_x = [0, 30, _DIAS_PROY]
     hitos_y = [pesos_dia_completo[0], pesos_dia_completo[30], pesos_dia_completo[_DIAS_PROY]]
-    hitos_txt = [T("Hoy", "Today"), T("En 1 mes", "In 1 Month"), T("Meta cumplida", "Goal reached")]
+    hitos_txt = [T("Hoy", "Today"), T("En 1 mes", "In 1 Month"), T("Meta estimada", "Estimated goal")]
     fig_tiempo.add_trace(go.Scatter(
         x=hitos_x, y=hitos_y, mode="markers+text", name=T("Hitos", "Milestones"),
-        marker=dict(size=14, color=[_AZUL, _AMBAR, _VERDE], line=dict(color="#FFFFFF", width=3)),
+        marker=dict(size=16, color=[_AZUL, _AMBAR, _VERDE], line=dict(color="#FFFFFF", width=3)),
         text=[f"{t}<br><b>{v:.1f} kg</b>" for t, v in zip(hitos_txt, hitos_y)],
         textposition="top center", textfont=dict(size=13, color="#17301F", family="-apple-system"),
         showlegend=False,
@@ -12225,66 +12170,121 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
     st.plotly_chart(fig_tiempo, use_container_width=True)
-    st.caption(T("🔵 Línea azul: proyección estimada del peso ideal · 🟢 Punto verde: meta cumplida a los 60 días · "
-                 "░ Área verde clarita: rango de variación biológica normal (±1 kg) por retención de agua o digestión.",
-                 "🔵 Blue line: estimated projection of ideal weight · 🟢 Green dot: goal reached at day 60 · "
-                 "░ Light green area: normal biological variation range (±1 kg) from water retention or digestion."))
+    st.caption(T("El peso puede moverse temporalmente por agua, digestión, comidas, sodio y otros factores. Por eso, "
+                 "una subida puntual dentro de la zona verde no significa necesariamente que hayas ganado grasa.",
+                 "Weight can shift temporarily due to water, digestion, meals, sodium, and other factors. So a "
+                 "one-off increase within the green zone doesn't necessarily mean you've gained fat."))
     st.markdown("</div>", unsafe_allow_html=True)
 
     # ================================================================================
-    # 4. DESGLOSE EDUCATIVO — cálculos paso a paso + factores influyentes (acordeón)
+    # 3b. ¿QUÉ SIGNIFICA ESTA PROYECCIÓN? — sube justo después del gráfico
     # ================================================================================
-    with st.expander(f"🧮 {T('Ver el desglose de cálculos y factores influyentes', 'View the calculation breakdown and influencing factors')}"):
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#DBEAFE 0%,#EFF6FF 100%);border-radius:20px;padding:20px 24px;margin-bottom:20px;border:2px solid #93C5FD;">
+    <p style="margin:0 0 8px 0;color:#1E3A8A;font-weight:900;font-size:1.02rem;">💡 {T('Entonces… ¿qué significa realmente esta proyección?', 'So… what does this projection actually mean?')}</p>
+    <p style="margin:0;color:#1E3A8A;font-size:0.89rem;line-height:1.6;font-weight:600;">
+    {T('No significa que tu peso vaya a seguir exactamente la línea azul. Significa: "si mantuvieras aproximadamente las mismas condiciones utilizadas en el cálculo, el modelo estima que podrías acercarte a este resultado."',
+       'It doesn\'t mean your weight will follow the blue line exactly. It means: "if you kept roughly the same conditions used in the calculation, the model estimates you could get close to this result."')}</p>
+    <div style="background:#1E40AF;border-radius:14px;padding:10px 18px;margin-top:14px;display:inline-block;box-shadow:0 4px 10px rgba(30,64,175,0.3);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.84rem;font-weight:800;">📌 {T('La proyección es una guía, no una promesa.', 'The projection is a guide, not a promise.')}</p>
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ================================================================================
+    # 4. ¿POR QUÉ PODRÍA CAMBIAR MI PESO? — explicación conceptual, antes de las matemáticas
+    # ================================================================================
+    st.markdown(f"""
+    <div style="background:linear-gradient(135deg,#ECFDF5 0%,#F0FDFA 100%);border-radius:24px;padding:24px 26px;margin-bottom:20px;border:2px solid #6EE7B7;">
+    <p style="margin:0 0 6px 0;font-weight:900;color:#065F46;font-size:1.15rem;">🧠 {T('¿Por qué podría cambiar mi peso?', 'Why might my weight change?')}</p>
+    <p style="margin:0 0 16px 0;color:#065F46;font-size:0.89rem;line-height:1.6;font-weight:600;">
+    {T('Piensa en tus calorías como una balanza energética: la energía que consumes frente a la energía que tu cuerpo utiliza.',
+       'Think of your calories as an energy balance: the energy you consume versus the energy your body uses.')}</p>
+    <div style="text-align:center;color:#065F46;font-size:0.92rem;font-weight:900;margin-bottom:18px;background:#FFFFFF;
+    border-radius:14px;padding:10px;">
+    🍽️ {T('Energía que consumes', 'Energy you consume')} &nbsp;⚖️&nbsp; {T('Energía que tu cuerpo utiliza', 'Energy your body uses')} 🔥
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#34D399,#10B981);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(16,185,129,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🟢</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Equilibrio', 'Balance')}</p>
+        <p style="margin:0;color:#ECFDF5;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo ≈ gasto. Tu peso tiende a mantenerse.', 'Intake ≈ expenditure. Your weight tends to stay the same.')}</p>
+      </div>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#60A5FA,#2563EB);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(37,99,235,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🔵</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Déficit', 'Deficit')}</p>
+        <p style="margin:0;color:#DBEAFE;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo < gasto. Existe un déficit energético.', 'Intake < expenditure. There is an energy deficit.')}</p>
+      </div>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#FBBF24,#F59E0B);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(245,158,11,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🟠</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Superávit', 'Surplus')}</p>
+        <p style="margin:0;color:#FEF3C7;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo > gasto. Existe un superávit energético.', 'Intake > expenditure. There is an energy surplus.')}</p>
+      </div>
+    </div>
+    <p style="margin:16px 0 0 0;color:#065F46;font-size:0.85rem;line-height:1.5;font-weight:600;">
+    {T('La proyección utiliza este principio para estimar cómo podría cambiar tu peso a lo largo del tiempo.',
+       'The projection uses this principle to estimate how your weight could change over time.')}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ================================================================================
+    # 5. ¿CÓMO OBTUVIMOS ESTA ESTIMACIÓN? — cálculo paso a paso, explicado, muy visual
+    # ================================================================================
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#EDE9FE,#F5F3FF);border-radius:18px;padding:16px 22px;margin-bottom:14px;border:2px solid #C4B5FD;">
+    <p style="margin:0 0 2px 0;font-weight:900;color:#5B21B6;font-size:1.15rem;">🧮 {T('¿Cómo obtuvimos esta estimación?', 'How did we get this estimate?')}</p>
+    <p style="margin:0;color:#5B21B6;font-size:0.85rem;font-weight:700;">{T('No necesitas hacer las cuentas: te mostramos qué significa cada paso.', "You don't need to do the math yourself — here's what each step means.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    _signo_ajuste = "-" if _es_bajar else ("+" if not _es_mantener else "±")
+    _rcd_obj_label = T("Nuevo RCD", "New TDEE") if not _es_mantener else T("RCD objetivo", "Target TDEE")
+
+    _pasos = [
+        ("1", "🔥", T("Primero calculamos tu gasto diario", "First we calculate your daily expenditure"),
+         T("Esta es una estimación de la energía que tu cuerpo utiliza cada día según tus datos y tu nivel de actividad.",
+           "This is an estimate of the energy your body uses each day, based on your data and activity level."),
+         f"RCD = {rcd:.0f} kcal/{T('día', 'day')}", "#FEE2E2", "#FCA5A5", "#B91C1C"),
+        ("2", "🎯", T("Aplicamos el ajuste elegido", "We apply the chosen adjustment"),
+         T("Se aplica un ajuste calórico saludable y gradual: consumir un poco menos o un poco más de energía que el gasto estimado, según tu objetivo.",
+           "A healthy, gradual caloric adjustment is applied: consuming a bit less or a bit more energy than the estimated expenditure, depending on your goal."),
+         f"{rcd:.0f} → {rcd_final:.0f} kcal/{T('día', 'day')} ({_rcd_obj_label})", "#FEF3C7", "#FCD34D", "#B45309"),
+        ("3", "⚡", T("Calculamos la diferencia diaria", "We calculate the daily difference"),
+         T("Es la diferencia energética estimada entre lo que tu cuerpo usa y lo que consumes cada día.",
+           "This is the estimated energy difference between what your body uses and what you consume each day."),
+         f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/{T('día', 'day')}", "#DBEAFE", "#93C5FD", "#1D4ED8"),
+        ("4", "📅", T(f"Lo proyectamos durante {_DIAS_PROY} días", f"We project it over {_DIAS_PROY} days"),
+         T("Es la diferencia energética acumulada que utiliza este modelo matemático a lo largo del período.",
+           "This is the cumulative energy difference this mathematical model uses over the period."),
+         f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal {T('totales', 'total')}", "#D1FAE5", "#6EE7B7", "#047857"),
+        ("5", "⚖️", T("Convertimos esa energía en una estimación de peso", "We convert that energy into a weight estimate"),
+         T("El modelo utiliza aproximadamente 7,700 kcal por kilogramo como equivalente energético de referencia.",
+           "The model uses approximately 7,700 kcal per kilogram as a reference energy equivalent."),
+         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 ≈ {peso_cambio_60:.2f} kg", "#EDE9FE", "#C4B5FD", "#6D28D9"),
+    ]
+    for _num, _ic_p, _titulo, _desc, _formula, _bg_p, _bd_p, _hx_p in _pasos:
         st.markdown(f"""
-        <div style="background:#F2F7F3;border-radius:18px;padding:16px 20px;margin-bottom:16px;border:1px solid #D8E6DA;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#1E5631;font-size:0.94rem;">🤔 {T('¿Por qué cambia mi peso?', 'Why does my weight change?')}</p>
-        <p style="margin:0;color:#3C4A3F;font-size:0.85rem;line-height:1.6;">{T('''Tu cuerpo necesita una cierta cantidad
-        de calorías para mantener su peso (RCD). Cuando consumes menos calorías de las que gastas, utiliza parte de
-        sus reservas de energía y tu peso disminuye. Si consumes más de las necesarias, ocurre lo contrario y el
-        peso aumenta.''', '''Your body needs a certain amount of calories to maintain its weight (TDEE). When you consume
-        fewer calories than you burn, it uses part of its energy reserves and your weight decreases. If you consume more
-        than needed, the opposite happens and your weight increases.''')}</p>
+        <div style="display:flex;align-items:flex-start;gap:14px;background:{_bg_p};border-radius:18px;
+        padding:16px 20px;margin-bottom:10px;border:2px solid {_bd_p};box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+        <div style="min-width:34px;height:34px;border-radius:50%;background:{_hx_p};color:#FFFFFF;
+        font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;box-shadow:0 3px 6px rgba(0,0,0,0.2);">{_num}</div>
+        <div style="flex:1;">
+        <p style="margin:0;color:{_hx_p};font-size:0.92rem;font-weight:900;">{_ic_p} {_titulo}</p>
+        <p style="margin:4px 0 6px 0;color:#3C3C3C;font-size:0.83rem;line-height:1.5;font-weight:600;">{_desc}</p>
+        <p style="margin:0;color:{_hx_p};font-weight:900;font-size:0.94rem;font-family:monospace;">{_formula}</p>
+        </div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown(f"##### 🧮 {T('¿Cómo se calculó esta proyección?', 'How was this projection calculated?')}")
-        _signo_ajuste = "-" if _es_bajar else ("+" if not _es_mantener else "±")
-        _rcd_obj_label = T("Nuevo RCD", "New TDEE") if not _es_mantener else T("RCD objetivo", "Target TDEE")
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#8B5CF6,#6D28D9);border-radius:18px;
+    padding:16px 20px;margin:8px 0 14px 0;box-shadow:0 6px 16px rgba(139,92,246,0.35);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.92rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
+    {abs(peso_cambio_60):.2f} = <b style="font-size:1.1rem;">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-        _pasos = [
-            ("1", "⚡", T("Tasa energética base: se calcula tu RCD (gasto calórico diario).",
-                          "Base energy rate: your TDEE (daily calorie expenditure) is calculated."),
-             f"RCD = {rcd:.0f} kcal/{T('día', 'day')}"),
-            ("2", "📉", T(f"Se aplica tu déficit/superávit saludable ({_obj_label}, {_signo_ajuste}{ajuste_aplicado*100:.0f}%).",
-                    f"Your healthy deficit/surplus is applied ({_obj_label}, {_signo_ajuste}{ajuste_aplicado*100:.0f}%)."),
-             f"{rcd:.0f} {_signo_ajuste} {ajuste_aplicado*100:.0f}% = {rcd_final:.0f} kcal/{T('día', 'day')} ({_rcd_obj_label})"),
-            ("3", "💡", T("Ahorro/exceso energético diario.", "Daily energy savings/excess."),
-             f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/{T('día', 'day')}"),
-            ("4", "🗓️", T(f"Acumulación durante {_DIAS_PROY} días.", f"Accumulation over {_DIAS_PROY} days."),
-             f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal {T('totales', 'total')}"),
-            ("5", "⚖️", T("Conversión a grasa corporal real (1 kg de grasa ≈ 7,700 kcal).",
-                          "Conversion to real body fat (1 kg of fat ≈ 7,700 kcal)."),
-             f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 = {peso_cambio_60:.2f} kg"),
-        ]
-        for _num, _ic_p, _desc, _formula in _pasos:
-            st.markdown(f"""
-            <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:16px;
-            padding:12px 18px;margin-bottom:8px;border:1px solid rgba(139,92,246,0.18);box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="min-width:32px;height:32px;border-radius:50%;background:{_VIOLETA};color:#FFFFFF;
-            font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{_num}</div>
-            <div style="flex:1;"><p style="margin:0;color:#3C4A3F;font-size:0.85rem;">{_ic_p} {_desc}</p>
-            <p style="margin:2px 0 0 0;color:{_VIOLETA};font-weight:800;font-size:0.9rem;font-family:monospace;">{_formula}</p></div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div style="background:{_VIOLETA}14;border:1.5px solid {_VIOLETA}55;border-radius:16px;
-        padding:14px 18px;margin:8px 0 18px 0;">
-        <p style="margin:0;color:#17301F;font-size:0.9rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
-        {abs(peso_cambio_60):.2f} = <b style="color:{_VIOLETA};">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
+    with st.expander(f"➗ {T('Ver las fórmulas utilizadas', 'View the formulas used')}"):
         if _es_bajar:
             st.markdown(T("""
 - **Déficit diario** = RCD − RCD objetivo
@@ -12312,60 +12312,77 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         else:
             st.markdown(T("- **Peso final** = Peso inicial (sin déficit ni superávit aplicado)",
                            "- **Final weight** = Initial weight (no deficit or surplus applied)"))
-        st.caption(T("Se utiliza el equivalente energético aproximado de 7,700 kcal por kilogramo de grasa corporal, "
-                   "ampliamente empleado para estimar cambios de peso. En la práctica, el cuerpo humano es más "
-                   "complejo y el ritmo real puede variar entre personas.",
-                   "The approximate energy equivalent of 7,700 kcal per kilogram of body fat is used, "
-                   "widely applied to estimate weight changes. In practice, the human body is more "
-                   "complex and the actual rate can vary between people."))
 
-        st.markdown(f"""
-        <div style="background:#E7F1FE;border-radius:16px;padding:16px 20px;margin:16px 0 14px 0;border:1px solid #B3D2F7;">
-        <p style="margin:0;color:#0D47A1;font-size:0.86rem;line-height:1.6;"><b>🟦 {T('¿Qué significa esta proyección?', 'What does this projection mean?')}</b><br>
-        {T('''Esta proyección supone que mantendrás aproximadamente el mismo nivel de actividad física y el mismo consumo
-        de calorías durante todo el período. Si alguno de estos factores cambia, el resultado también cambiará.''',
-        '''This projection assumes you will maintain roughly the same level of physical activity and the same calorie
-        intake throughout the period. If any of these factors change, the result will also change.''')}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#FCE7F3,#FDF2F8);border:2px solid #F9A8D4;border-radius:18px;padding:16px 22px;margin:4px 0 20px 0;">
+    <p style="margin:0;color:#9D174D;font-size:0.86rem;line-height:1.6;font-weight:600;"><b>🩷 {T('Equivalente energético utilizado por el modelo', 'Energy equivalent used by the model')}:</b><br>
+    {T('El cuerpo humano no funciona como una calculadora exacta. Esto no significa que cada 7,700 kcal de déficit produzcan exactamente 1 kg de grasa perdida: el peso también cambia por líquidos, glucógeno, masa muscular, digestión, adaptación metabólica y otros factores.',
+       "The human body doesn't work like an exact calculator. This doesn't mean every 7,700 kcal of deficit produces exactly 1 kg of fat lost: weight also changes due to fluids, glycogen, muscle mass, digestion, metabolic adaptation, and other factors.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-        st.markdown(f"##### 🎯 {T('¿Qué puede hacer que esta proyección cambie?', 'What could make this projection change?')}")
-        _factores = [
-            ("🏃", T("Más actividad física", "More Physical Activity"), T("Acelera la pérdida de peso de forma saludable.", "Speeds up healthy weight loss."), "#EAFAEE", "#9BD8AE", "#1E5631"),
-            ("🍕", T("Exceso calórico", "Caloric Excess"), T("Alarga el tiempo necesario para cumplir la meta.", "Extends the time needed to reach the goal."), "#FDEBD9", "#F5C48E", "#B0530A"),
-            ("😴", T("Falta de sueño", "Poor Sleep"), T("Altera hormonas como el cortisol y la ghrelina, aumentando el apetito.", "Alters hormones like cortisol and ghrelin, increasing appetite."), "#F3EEFB", "#C6AEE8", "#6A3FA0"),
-            ("💧", T("Retención de agua", "Water Retention"), T("Causa fluctuaciones temporales en la balanza que no son grasa.", "Causes temporary scale fluctuations that aren't fat."), "#E7F1FE", "#B3D2F7", "#0D47A1"),
-        ]
-        _cols_fact = st.columns(4)
-        for _col_f, (_ic, _tt, _txt, _fondo, _borde, _hex) in zip(_cols_fact, _factores):
-            with _col_f:
-                st.markdown(f"""
-                <div style="background:{_fondo};border:1px solid {_borde};border-radius:18px;padding:16px 14px;
-                height:150px;">
-                <div style="font-size:1.5rem;">{_ic}</div>
-                <p style="margin:8px 0 4px 0;font-weight:800;color:{_hex};font-size:0.88rem;">{_tt}</p>
-                <p style="margin:0;color:#5C6B60;font-size:0.78rem;line-height:1.4;">{_txt}</p>
-                </div>
-                """, unsafe_allow_html=True)
+    # ================================================================================
+    # 6. ¿POR QUÉ EL RESULTADO REAL PODRÍA SER DIFERENTE? — factores, arcoíris, sin culpabilizar
+    # ================================================================================
+    st.markdown(f"""<div style="background:linear-gradient(120deg,#F5F3FF,#FFFFFF);border-radius:18px;padding:14px 20px;margin-bottom:14px;border:2px solid #DDD6FE;">
+    <p style="margin:0;font-weight:900;color:#5B21B6;font-size:1.1rem;">🔄 {T('¿Por qué el resultado real podría ser diferente?', 'Why might your actual result be different?')}</p>
+    </div>""", unsafe_allow_html=True)
+    _factores = [
+        ("🥗", T("Cambios en la alimentación", "Changes in eating"), T("Cambiar las cantidades o los alimentos modifica la energía que consumes.", "Changing amounts or foods changes the energy you consume."), "linear-gradient(160deg,#FDBA74,#F97316)"),
+        ("🏃", T("Cambios en la actividad", "Changes in activity"), T("Si tu actividad aumenta o disminuye, también cambia tu gasto energético.", "If your activity increases or decreases, your energy expenditure changes too."), "linear-gradient(160deg,#6EE7B7,#10B981)"),
+        ("💧", T("Agua y digestión", "Water and digestion"), T("El peso puede subir o bajar temporalmente sin representar un cambio equivalente en grasa.", "Weight can go up or down temporarily without representing an equivalent change in fat."), "linear-gradient(160deg,#7DD3FC,#0EA5E9)"),
+        ("😴", T("Sueño y rutina", "Sleep and routine"), T("Dormir poco puede afectar el apetito, la energía y la adherencia al plan.", "Poor sleep can affect appetite, energy, and how well you stick to the plan."), "linear-gradient(160deg,#C4B5FD,#8B5CF6)"),
+        ("📅", T("Constancia", "Consistency"), T("Saltarse o cambiar frecuentemente el plan hace que la realidad se aleje de la simulación.", "Frequently skipping or changing the plan makes reality diverge from the simulation."), "linear-gradient(160deg,#F9A8D4,#EC4899)"),
+    ]
+    _cols_fact = st.columns(5)
+    for _col_f, (_ic, _tt, _txt, _grad) in zip(_cols_fact, _factores):
+        with _col_f:
+            st.markdown(f"""
+            <div style="background:{_grad};border-radius:20px;padding:18px 14px;
+            height:172px;box-shadow:0 6px 14px rgba(0,0,0,0.15);">
+            <div style="font-size:1.7rem;">{_ic}</div>
+            <p style="margin:8px 0 4px 0;font-weight:900;color:#FFFFFF;font-size:0.85rem;">{_tt}</p>
+            <p style="margin:0;color:#FFFFFFE6;font-size:0.75rem;line-height:1.4;font-weight:600;">{_txt}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
     st.write("")
 
     # ================================================================================
-    # 5. BANNER DE CONFIANZA — reemplaza la caja amarilla de advertencia
+    # 7. LO MÁS IMPORTANTE — mensaje final, vivo y celebratorio
     # ================================================================================
     st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#EAFAEE 0%,#FFFFFF 75%);border-radius:20px;padding:18px 22px;
-    margin-bottom:16px;border:1px solid rgba(16,185,129,0.25);box-shadow:0 4px 14px rgba(16,185,129,0.08);">
-    <p style="margin:0;color:#065F46;font-size:0.9rem;line-height:1.6;"><b>💡 {T('Nota importante', 'Important Note')}:</b>
-    {T(f'El cuerpo humano no es una calculadora exacta. Esta proyección es una guía matemática respaldada por la ciencia. '
-       f'La constancia semana a semana es la clave del éxito real. ¡Tú puedes lograrlo, {_nombre_saludo}! 🌟',
-      f"The human body isn't an exact calculator. This projection is a math-based guide backed by science. "
-      f"Week-by-week consistency is the real key to success. You can do it, {_nombre_saludo}! 🌟")}</p>
+    <div style="background:linear-gradient(120deg,#FEF3C7 0%,#FDE68A 40%,#FBCFE8 100%);border-radius:26px;padding:24px 28px;
+    margin-bottom:18px;border:2px solid #FBBF24;box-shadow:0 10px 26px rgba(251,191,36,0.25);">
+    <p style="margin:0 0 16px 0;font-weight:900;color:#78350F;font-size:1.2rem;">🌟 {T('Lo más importante', 'The most important thing')}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#F59E0B;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">1</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">📊 {T('La proyección es una estimación', 'The projection is an estimate')}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('No predice exactamente cuánto pesarás en una fecha determinada.', "It doesn't predict exactly how much you'll weigh on a given date.")}</p></div>
+      </div>
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#EC4899;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">2</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">⚖️ {T('Tu peso no cambia de forma perfectamente lineal', "Your weight doesn't change perfectly linearly")}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Puede subir o bajar temporalmente por agua, digestión y otros factores.', 'It can go up or down temporarily due to water, digestion, and other factors.')}</p></div>
+      </div>
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#10B981;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">3</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">🌱 {T('Lo importante es observar la tendencia', 'What matters is watching the trend')}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Un solo día no define tu progreso.', "A single day doesn't define your progress.")}</p></div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(120deg,#10B981,#059669);border-radius:14px;padding:14px 18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.87rem;line-height:1.6;font-weight:700;">
+    {T(f'La constancia semana a semana es la clave del éxito real. ¡Tú puedes lograrlo, {_nombre_saludo}! 🌟',
+       f"Week-by-week consistency is the real key to success. You can do it, {_nombre_saludo}! 🌟")}</p>
+    </div>
     </div>
     """, unsafe_allow_html=True)
 
-
-# ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
     hoja_header(14, T("Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.",
                        "A complete medical report, with your data, results, and recommendations — ready to print."))
