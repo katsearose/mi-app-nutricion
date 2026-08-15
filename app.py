@@ -1388,7 +1388,7 @@ div[data-testid="stImageCaption"] {
 }
 .img-bonita-wrap img {
     width: 100%; display: block; border-radius: 18px;
-    max-height: 620px; min-height: 320px; object-fit: cover;
+    max-height: 860px; min-height: 420px; object-fit: cover;
 }
 .img-bonita-caption {
     text-align: center; color: var(--ios-secondary); font-size: 0.85rem;
@@ -1995,6 +1995,22 @@ def caja_util(texto, emoji="💡", color="#FFF3CD", borde="#FFC107"):
                 box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
     <b style="color:{borde};">{emoji} {T("¿Para qué te sirve esto?", "What is this useful for?")}</b><br>
     <span style="color:#1C1C1E;">{texto}</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def imagen_referencia_drive(drive_id_es, drive_id_en, alt_es, alt_en=None, max_width_px=720):
+    """Muestra una imagen de referencia (desde Google Drive) centrada, con tamaño moderado
+    (legible pero no gigante), esquinas redondeadas y sombreado suave. Cambia automáticamente
+    entre la versión en español y en inglés según el idioma activo de la app."""
+    _drive_id = T(drive_id_es, drive_id_en)
+    _alt = T(alt_es, alt_en or alt_es)
+    _url = f"https://drive.google.com/thumbnail?id={_drive_id}&sz=w1200"
+    st.markdown(f"""
+    <div style="display:flex;justify-content:center;margin:16px 0;">
+        <img src="{_url}" alt="{_alt}" style="width:100%;max-width:{max_width_px}px;height:auto;
+             border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,0.16);
+             border:1px solid rgba(0,0,0,0.06);display:block;" />
     </div>
     """, unsafe_allow_html=True)
 
@@ -2651,7 +2667,7 @@ def generar_pdf_reporte(datos):
         return _vt("Taquicardia"), "rojo" if _p > 120 else "ambar"
 
     _pas, _pad = datos.get("pas", 0), datos.get("pad", 0)
-    _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 34.0), datos.get("pulso", 0)
+    _spo2, _temp, _pulso = datos.get("spo2", 0.0), datos.get("temp_corp", 0.0), datos.get("pulso", 0)
     _cat_pa, _col_pa = _clasif_pa_pdf(_pas, _pad)
     _cat_ox, _col_ox = _clasif_spo2_pdf(_spo2)
     _cat_te, _col_te = _clasif_temp_pdf(_temp)
@@ -3421,27 +3437,36 @@ DIETA = {
     "Desayuno": {
         "Carbohidrato": {"Avena cocida": 150, "Pan integral": 70, "Cereal integral": 110, "Manzana": 95, "Tostada de pan de centeno": 65, "Pera": 100, "Batata cocida": 90, "Mandarina": 45, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Huevo hervido": 155, "Claras de huevo": 52, "Leche descremada": 34, "Queso cottage": 98, "Queso ricotta": 174, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Palta": 160, "Almendras": 573.33, "Mantequilla de maní": 88, "Semillas de chía": 86, "Nueces": 653.57, "Crema de almendra": 64, "Mayonesa": 316.67, "Maní": 500, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Palta": 160, "Almendras": 573.33, "Mantequilla de maní": 587.5, "Semillas de chía": 86, "Nueces": 653.57, "Crema de almendra": 64, "Mayonesa": 316.67, "Maní": 500, "Tocino": 537.5, "Salmón (graso)": 116,
+                  "Mantequilla": 850, "Avellanas": 676.92, "Pecanas": 725.93, "Carne de cerdo": 270.59, "Aceitunas negras": 104.35, "Pato asado": 336.47, "Pollo asado a la parrilla o al horno": 236.47},
     },
     "Merienda 1": {
-        "Carbohidrato": {"Piña": 50, "Manzana verde": 52, "Uvas": 69, "Kiwi": 61, "Pan pita integral": 275, "Zanahoria cruda": 41, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
-        "Proteína": {"Yogur natural": 61, "Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Pistachos": 560, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Carbohidrato": {"Manzana verde": 52, "Uvas": 69, "Kiwi": 61, "Pan pita integral": 275, "Zanahoria cruda": 41,
+                          "Manzana": 52, "Plátano": 89, "Avena": 389, "Queque": 215.71, "Pan francés con mantequilla": 374.74, "Gelatina": 1, "Piña": 48, "Cereales chocolate con leche": 399},
+        "Proteína": {"Atún": 132, "Clara de huevo cocida": 52, "Jamón serrano": 241,
+                     "Yogur natural": 63, "Queso fresco": 145},
+        "Grasa": {"Pistachos": 560, "Avellanas": 68, "Semillas de calabaza": 75, "Aceite de oliva": 884,
+                  "Almendras": 700},
     },
     "Almuerzo": {
         "Carbohidrato": {"Arroz integral": 123, "Quinoa cocida": 120, "Couscous cocido": 112, "Garbanzos cocidos": 164, "Lentejas": 116, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Pechuga de pollo": 165, "Fillete de res magra": 217, "Pescado blanco": 96, "Salmón a la plancha": 208, "Pavo al horno": 135, "Bacalao a la plancha": 105, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Aceite de oliva": 884, "Aceitunas verdes": 145, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Aceite de oliva": 884, "Aceitunas verdes": 145, "Queso parmesano": 91, "Queso gouda": 66, "Aguacate": 160, "Aceite de linaza": 884, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116,
+                  "Mantequilla": 850, "Mantequilla de maní": 587.5, "Avellanas": 676.92, "Pecanas": 725.93, "Carne de cerdo": 270.59, "Aceitunas negras": 104.35, "Pato asado": 336.47, "Pollo asado a la parrilla o al horno": 236.47},
     },
     "Merienda 2": {
-        "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89, "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Camote": 86, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
-        "Proteína": {"Queso ricotta": 174, "Yogurt griego": 97, "Pollo desmenuzado": 165, "Yogur descremado": 34, "Clara de huevo": 52, "Pechuga de pollo (sin piel)": 165, "Pechuga de pavo": 135, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Carbohidrato": {"Pan integral": 70, "Galletas integrales": 120, "Banana": 89, "Pan árabe": 275, "Barra de granola": 180, "Pan de maíz": 266,
+                          "Manzana": 52, "Plátano": 89, "Avena": 389, "Queque": 215.71, "Pan francés con mantequilla": 374.74, "Gelatina": 1, "Piña": 48, "Cereales chocolate con leche": 399},
+        "Proteína": {"Queso ricotta": 174, "Yogurt griego": 97, "Pollo desmenuzado": 165, "Yogur descremado": 34, "Clara de huevo": 52,
+                     "Yogur natural": 63, "Queso fresco": 145},
+        "Grasa": {"Anacardos": 53, "Queso brie": 64, "Almendras fileteadas": 109, "Mantequilla": 94,
+                  "Almendras": 700},
     },
     "Cena": {
         "Carbohidrato": {"Papa sancochada": 87, "Batata": 86, "Palomitas de maíz": 387, "Camote": 86, "Avena": 375, "Arroz blanco": 416.33, "Yuca": 173, "Granola": 419.35, "Quinoa": 363.64, "Spaghetti": 423.08, "Papa": 104, "Pan blanco": 266, "Cebada cocida": 396, "Cuscús": 409.09, "Plátano": 362.07, "Mango": 364.86, "Granola clásica": 419.35, "Cancha": 535.71},
         "Proteína": {"Huevos revueltos": 148, "Sardinas": 208, "Pechuga de pavo": 135, "Pechuga de pollo": 165, "Filete de pescado blanco": 96, "Pechuga de pollo (sin piel)": 165, "Lomo de res / ternera": 217, "Atún en agua": 116, "Salmón": 206, "Lomo de cerdo": 143, "Camarones / Langostinos": 99, "Queso Cottage": 98, "Yogur griego natural": 59, "Huevo entero": 155, "Tofu firme": 76, "Lentejas (cocidas)": 116, "Garbanzos (cocidos)": 164, "Seitán": 118, "Maní / Cacahuate": 567},
-        "Grasa": {"Aceitunas": 145, "Queso crema": 202, "Aceite de aguacate": 884, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116},
+        "Grasa": {"Aceitunas": 145, "Queso crema": 202, "Aceite de aguacate": 884, "Semillas de girasol": 54, "Mayonesa": 316.67, "Palta": 160, "Maní": 500, "Almendras": 573.33, "Nueces": 653.57, "Tocino": 537.5, "Salmón (graso)": 116,
+                  "Mantequilla": 850, "Mantequilla de maní": 587.5, "Avellanas": 676.92, "Pecanas": 725.93, "Carne de cerdo": 270.59, "Aceitunas negras": 104.35, "Pato asado": 336.47, "Pollo asado a la parrilla o al horno": 236.47},
     },
 }
 
@@ -3506,6 +3531,7 @@ DIETA_NOMBRE_EN = {
     "Aceite de linaza": "Flaxseed Oil",
     "Aceite de oliva": "Olive Oil",
     "Aceitunas": "Olives",
+    "Aceitunas negras": "Black Olives",
     "Aceitunas verdes": "Green Olives",
     "Aguacate": "Avocado",
     "Almendras": "Almonds",
@@ -3526,8 +3552,10 @@ DIETA_NOMBRE_EN = {
     "Camarones / Langostinos": "Shrimp / Prawns",
     "Camote": "Sweet Potato",
     "Cancha": "Toasted Corn Nuts",
+    "Carne de cerdo": "Pork Meat",
     "Cebada cocida": "Cooked Barley",
     "Cereal integral": "Whole Grain Cereal",
+    "Cereales chocolate con leche": "Chocolate Cereal with Milk",
     "Clara de huevo": "Egg White",
     "Clara de huevo cocida": "Cooked Egg White",
     "Claras de huevo": "Egg Whites",
@@ -3539,6 +3567,7 @@ DIETA_NOMBRE_EN = {
     "Galletas integrales": "Whole Grain Crackers",
     "Garbanzos (cocidos)": "Chickpeas (Cooked)",
     "Garbanzos cocidos": "Cooked Chickpeas",
+    "Gelatina": "Gelatin",
     "Granola": "Granola",
     "Granola clásica": "Classic Granola",
     "Huevo entero": "Whole Egg",
@@ -3565,25 +3594,31 @@ DIETA_NOMBRE_EN = {
     "Palta": "Avocado",
     "Pan blanco": "White Bread",
     "Pan de maíz": "Corn Bread",
+    "Pan francés con mantequilla": "French Bread with Butter",
     "Pan integral": "Whole Wheat Bread",
     "Pan pita integral": "Whole Wheat Pita Bread",
     "Pan árabe": "Pita Bread",
     "Papa": "Potato",
     "Papa sancochada": "Boiled Potato",
+    "Pato asado": "Roast Duck",
     "Pavo al horno": "Baked Turkey",
     "Pechuga de pavo": "Turkey Breast",
     "Pechuga de pollo": "Chicken Breast",
     "Pechuga de pollo (sin piel)": "Chicken Breast (Skinless)",
+    "Pecanas": "Pecans",
     "Pera": "Pear",
     "Pescado blanco": "White Fish",
     "Pistachos": "Pistachios",
     "Piña": "Pineapple",
     "Plátano": "Plantain",
+    "Pollo asado a la parrilla o al horno": "Grilled or Roasted Chicken",
     "Pollo desmenuzado": "Shredded Chicken",
+    "Queque": "Pound Cake",
     "Queso Cottage": "Cottage Cheese",
     "Queso brie": "Brie Cheese",
     "Queso cottage": "Cottage Cheese",
     "Queso crema": "Cream Cheese",
+    "Queso fresco": "Fresh Cheese",
     "Queso gouda": "Gouda Cheese",
     "Queso parmesano": "Parmesan Cheese",
     "Queso ricotta": "Ricotta Cheese",
@@ -5214,10 +5249,14 @@ def _svg_silueta_cuerpo(tipo, color):
 
 
 def advertencia_imc_composicion_corporal():
-    """Advertencia 'El IMC no lo es todo': se muestra justo después del resultado de IMC/Percentil
-    (paneles de diagnóstico, escala, percentil) y antes de la sección '¿Qué puedes hacer desde hoy?',
-    para que el usuario lea esta salvedad inmediatamente después de ver su clasificación. Incluye
-    las 3 tarjetas de somatotipo (ecto/endo/mesomorfo) con siluetas SVG propias y una nota ampliada."""
+    """Advertencia 'El IMC no lo dice todo': se muestra justo después del resultado de IMC/Percentil
+    (paneles de diagnóstico, escala, percentil) y antes de la sección '¿Qué puedes hacer desde hoy?'.
+    Flujo pedagógico (de cero, con ejemplo cotidiano antes de tecnicismos):
+    1) ¿qué hace el IMC? (peso + estatura) con ejemplo de dos personas con el mismo IMC,
+    2) ¿mismo cuerpo? no necesariamente → introduce músculo vs. grasa,
+    3) tarjeta explicando qué son los somatotipos (sin determinismo),
+    4) los 3 somatotipos en formato acordeón (nombre grande, clic para ver la imagen más grande),
+    5) tabla de qué SÍ / NO puede distinguir el IMC, 6) ejemplo numérico, 7) conclusión."""
     st.markdown("""
     <style>
     .imc-warn-hero {
@@ -5239,124 +5278,264 @@ def advertencia_imc_composicion_corporal():
     .imc-warn-title {
         margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 900; color: #B33A00; letter-spacing: -0.02em;
     }
-    .imc-warn-text { margin: 0; color: #5C4A1E; font-size: 0.94rem; line-height: 1.65; max-width: 720px; }
+    .imc-warn-text { margin: 0 0 14px 0; color: #5C4A1E; font-size: 0.94rem; line-height: 1.65; max-width: 720px; }
+    .imc-twin-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0 14px 0; }
+    .imc-twin-card {
+        background: rgba(255,255,255,0.75); border-radius: 16px; padding: 12px 14px; text-align: center;
+        border: 1px solid rgba(255,149,0,0.2);
+    }
+    .imc-twin-card .who { font-weight: 900; color: #B33A00; font-size: 0.9rem; margin-bottom: 4px; }
+    .imc-twin-card .data { font-size: 0.82rem; color: #5C4A1E; }
+    .imc-twin-result {
+        text-align: center; font-weight: 900; color: #B33A00; font-size: 0.92rem; margin: 4px 0 14px 0;
+    }
+    .imc-question-box {
+        background: rgba(255,255,255,0.85); border-radius: 16px; padding: 14px 18px; margin: 0 0 4px 0;
+        border-left: 5px solid #FF3B30;
+    }
+    .imc-question-box .q { font-weight: 900; color: #B33A00; font-size: 0.95rem; margin-bottom: 6px; }
+    .imc-question-box .a { font-weight: 900; color: #FF3B30; font-size: 0.88rem; margin-bottom: 6px; }
+    .imc-question-box p { margin: 0; color: #5C4A1E; font-size: 0.87rem; line-height: 1.6; }
+    .bodytype-intro-card {
+        margin: 18px 0 14px 0; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#F3F0FF 0%,#EAF4FF 100%); border-left: 6px solid #5856D6;
+    }
+    .bodytype-intro-card p { margin: 0 0 8px 0; color: #3C3C43; font-size: 0.87rem; line-height: 1.65; }
+    .bodytype-intro-card p:last-child { margin-bottom: 0; }
     .bodytype-sub {
-        margin: 4px 0 14px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
+        margin: 18px 0 4px 0; font-weight: 900; color: #3C3C43; font-size: 1.05rem;
     }
-    .bodytype-card {
-        border-radius: 24px; overflow: hidden; text-align: center; height: 100%;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.14); border: 1px solid rgba(0,0,0,0.05);
-        background: #FFFFFF; display: flex; flex-direction: column;
+    .bodytype-sub-hint { margin: 0 0 14px 0; color: #6E6E73; font-size: 0.85rem; line-height: 1.5; }
+    .bodytype-accordion {
+        border-radius: 18px; overflow: hidden; border: 1px solid rgba(0,0,0,0.07);
+        margin-bottom: 12px; background: #FFFFFF; box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
-    .bodytype-photo-wrap {
-        width: 100%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;
-        padding: 12px 12px 6px 12px;
+    .bodytype-accordion summary {
+        list-style: none; cursor: pointer; padding: 16px 20px; display: flex; align-items: center;
+        justify-content: space-between; gap: 10px;
     }
-    .bodytype-photo {
-        width: 100%; height: 360px; object-fit: contain; object-position: center top;
-        display: block; border-radius: 14px;
+    .bodytype-accordion summary::-webkit-details-marker { display: none; }
+    .bodytype-accordion-name { font-weight: 900; font-size: 1.08rem; color: #fff; letter-spacing: -0.01em; }
+    .bodytype-accordion-chevron {
+        color: #fff; font-size: 1rem; font-weight: 900; transition: transform 0.2s ease; flex-shrink: 0;
     }
-    .bodytype-info { padding: 16px 18px 20px 18px; flex-grow: 1; }
-    .bodytype-name { font-weight: 900; font-size: 1.02rem; color: #fff; margin: 2px 0 6px 0; letter-spacing: -0.01em; }
-    .bodytype-desc { font-size: 0.82rem; color: rgba(255,255,255,0.95); line-height: 1.55; margin-bottom: 10px; }
-    .bodytype-chip {
-        display: inline-block; background: rgba(255,255,255,0.28); color: #fff; font-size: 0.72rem;
-        font-weight: 700; padding: 3px 10px; border-radius: 999px; margin: 2px 3px;
+    .bodytype-accordion[open] .bodytype-accordion-chevron { transform: rotate(180deg); }
+    .bodytype-accordion-body { padding: 18px 20px 20px 20px; text-align: center; background: #FAFAFA; }
+    .bodytype-accordion-img {
+        width: 100%; max-width: 300px; height: auto; border-radius: 14px;
+        box-shadow: 0 10px 26px rgba(0,0,0,0.16); display: block; margin: 0 auto;
+    }
+    .bodytype-accordion-caption {
+        margin: 12px 0 0 0; font-size: 0.78rem; font-style: italic; color: #6E6E73; line-height: 1.5;
     }
     .imc-warn-note {
-        margin-top: 18px; border-radius: 20px; padding: 18px 22px;
+        margin-top: 8px; border-radius: 20px; padding: 18px 22px;
         background: linear-gradient(120deg,#EAF4FF 0%,#F3EAFF 100%); border-left: 6px solid #5856D6;
         box-shadow: 0 6px 16px rgba(88,86,214,0.10);
     }
     .imc-warn-note b { color: #3730A3; }
+    .imc-table-wrap {
+        margin: 18px 0; border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    }
+    .imc-table-head {
+        display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .imc-table-head div {
+        padding: 12px 16px; font-weight: 900; font-size: 0.85rem; color: #fff;
+    }
+    .imc-table-head .si { background: #34C759; }
+    .imc-table-head .no { background: #FF3B30; }
+    .imc-table-row { display: grid; grid-template-columns: 1fr 1fr; background: #fff; }
+    .imc-table-row:nth-child(even) { background: #FAFAFC; }
+    .imc-table-row div {
+        padding: 10px 16px; font-size: 0.86rem; color: #3C3C43; border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .imc-does-doesnt {
+        margin: 10px 0 18px 0; border-radius: 16px; padding: 14px 18px;
+        background: #F2F2F7; text-align: center;
+    }
+    .imc-does-doesnt p { margin: 0; font-size: 0.88rem; color: #3C3C43; line-height: 1.7; }
+    .imc-example-box {
+        margin: 18px 0; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#FFF7E6 0%,#FFEFEF 100%); border-left: 6px solid #FF9500;
+    }
+    .imc-example-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+    .imc-example-card {
+        background: rgba(255,255,255,0.7); border-radius: 14px; padding: 10px 14px; text-align: center;
+    }
+    .imc-example-card .who { font-weight: 900; color: #B06000; font-size: 0.86rem; margin-bottom: 4px; }
+    .imc-example-card p { margin: 0; font-size: 0.82rem; color: #5C4A1E; }
+    .imc-conclusion-box {
+        margin: 18px 0 4px 0; border-radius: 20px; padding: 18px 22px;
+        background: linear-gradient(120deg,#EAFBF1 0%,#E6F7FF 100%); border-left: 6px solid #34C759;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-    # ===== Encabezado: "¡OJO! El IMC no lo es todo" =====
+    # ===== 1) ¿Qué hace el IMC? Ejemplo: dos personas, mismo peso y estatura =====
     st.markdown(f"""
     <div class="imc-warn-hero">
         <span class="imc-warn-badge">⚠️ {T("¡OJO!", "HEADS UP!")}</span>
-        <p class="imc-warn-title">⚠️ {T("¡OJO! El IMC no lo es todo", "Watch out! BMI isn't everything")}</p>
+        <p class="imc-warn-title">⚠️ {T("¿Por qué el IMC no lo dice todo?", "Why doesn't BMI tell the whole story?")}</p>
         <p class="imc-warn-text">{T(
-            "El IMC relaciona tu peso con tu estatura, pero no indica cuánto de ese peso corresponde a "
-            "grasa o músculo. Por eso, <b>dos personas pueden tener el mismo IMC y presentar una "
-            "composición corporal totalmente diferente</b>.",
-            "BMI relates your weight to your height, but it doesn't show how much of that weight is fat "
-            "or muscle. That's why <b>two people can share the same BMI and have a completely different "
-            "body composition</b>.")}</p>
+            "El IMC es una medida que relaciona tu <b>peso</b> con tu <b>estatura</b>. Por ejemplo, imagina "
+            "que dos personas miden lo mismo y pesan lo mismo:",
+            "BMI is a measure that relates your <b>weight</b> to your <b>height</b>. For example, imagine "
+            "two people who are the same height and weigh the same:")}</p>
+        <div class="imc-twin-row">
+            <div class="imc-twin-card">
+                <div class="who">👩 {T("Persona A", "Person A")}</div>
+                <div class="data">1.65 m — 70 kg</div>
+            </div>
+            <div class="imc-twin-card">
+                <div class="who">👩 {T("Persona B", "Person B")}</div>
+                <div class="data">1.65 m — 70 kg</div>
+            </div>
+        </div>
+        <p class="imc-twin-result">{T("👉 Las dos tendrán el mismo IMC, porque tienen el mismo peso y la misma estatura.",
+                                       "👉 Both will have the same BMI, because they have the same weight and the same height.")}</p>
+        <div class="imc-question-box">
+            <p class="q">{T("Pero... ¿significa que tienen el mismo cuerpo? 🤔", "But... does that mean they have the same body? 🤔")}</p>
+            <p class="a">{T("No necesariamente.", "Not necessarily.")}</p>
+            <p>{T(
+                "Una puede tener más <b>masa muscular</b> y la otra más <b>grasa corporal</b>. El IMC no puede "
+                "saber esa diferencia porque solo utiliza el peso y la estatura.",
+                "One may have more <b>muscle mass</b> and the other more <b>body fat</b>. BMI can't tell that "
+                "difference, because it only uses weight and height.")}</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== Tipos de cuerpo (somatotipos) =====
-    st.markdown(f'<p class="bodytype-sub">🧍 {T("Tipos de cuerpo", "Body Types")}</p>', unsafe_allow_html=True)
+    # ===== 2) ¿Entonces qué está pasando? — Tarjeta explicativa de los somatotipos =====
+    st.markdown(f"""
+    <div class="bodytype-intro-card">
+        <p style="font-weight:900;color:#3730A3;">🧩 {T("¿Entonces qué está pasando?", "So what's going on?")}</p>
+        <p>{T(
+            "Las personas pueden tener diferentes formas, proporciones y cantidades de músculo y grasa, "
+            "aunque su peso y estatura sean parecidos. Por eso, el número del IMC no describe exactamente "
+            "cómo está compuesto el cuerpo.",
+            "People can have different shapes, proportions, and amounts of muscle and fat, even if their "
+            "weight and height are similar. That's why the BMI number doesn't exactly describe how the "
+            "body is composed.")}</p>
+        <p style="font-weight:900;color:#3730A3;">🧍 {T("¿Qué muestran los ejemplos de abajo?", "What do the examples below show?")}</p>
+        <p>{T(
+            "Los llamados <b>somatotipos</b> —ectomorfo, endomorfo y mesomorfo— son una forma de describir "
+            "ciertas características de la estructura corporal: algunas personas presentan una estructura "
+            "más delgada, otras una estructura más ancha y otras un desarrollo muscular más marcado. Pero "
+            "esto no significa que una persona pertenezca perfectamente a un solo tipo, ni que su "
+            "somatotipo determine su IMC, su peso ideal o su estado de salud.",
+            "The so-called <b>somatotypes</b> — ectomorph, endomorph and mesomorph — are a way to describe "
+            "certain body-structure characteristics: some people show a slimmer frame, others a wider "
+            "frame, and others more muscle development. But this doesn't mean a person fits perfectly "
+            "into just one type, or that their somatotype determines their BMI, ideal weight, or health "
+            "status.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 3) Somatotipos en formato acordeón: nombre grande, clic para ver la imagen ampliada =====
+    st.markdown(f'<p class="bodytype-sub">🧍‍♀️ {T("Ejemplos de características corporales", "Examples of body characteristics")}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="bodytype-sub-hint">{T(
+        "Toca cada tipo para ver la imagen de referencia. Son solo ejemplos visuales: no son categorías del IMC.",
+        "Tap each type to see the reference image. These are only visual examples — not BMI categories.")}</p>', unsafe_allow_html=True)
 
     _TIPOS_CUERPO = [
         {"clave": "ecto", "color1": "#4FACFE", "color2": "#2F80ED",
-         "drive_id": "1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN",
-         "nombre": T("Ectomorfo", "Ectomorph"),
-         "desc": T("Cuerpo delgado, extremidades largas y le cuesta ganar peso o masa muscular.",
-                    "Slim build, long limbs, finds it hard to gain weight or muscle."),
-         "chips": [T("Metabolismo rápido", "Fast metabolism"), T("Complexión fina", "Slight frame")]},
+         "drive_id": T("1phLbopiMII6EmkRk_kv6SnB0ZFkqsYgN", "1bTETLcXCyZSLxJwxDmkYl1rN_O-v3XCK"),
+         "nombre": T("Ectomorfo", "Ectomorph")},
         {"clave": "endo", "color1": "#F857A6", "color2": "#FF5858",
-         "drive_id": "1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV",
-         "nombre": T("Endomorfo", "Endomorph"),
-         "desc": T("Estructura más redondeada, mayor facilidad para acumular grasa y metabolismo más lento.",
-                    "Rounder frame, tends to store fat more easily and has a slower metabolism."),
-         "chips": [T("Acumula grasa fácil", "Stores fat easily"), T("Estructura ancha", "Wider frame")]},
+         "drive_id": T("1Vafb0ydr6QUBMZhQZC4nlfXdCXJ4rXmV", "1vXQxIOZGSbQJdSQEVLUmpiM9MRdD7fbQ"),
+         "nombre": T("Endomorfo", "Endomorph")},
         {"clave": "meso", "color1": "#F2994A", "color2": "#F2C94C",
-         "drive_id": "1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv",
-         "nombre": T("Mesomorfo", "Mesomorph"),
-         "desc": T("Complexión atlética, hombros anchos y cintura estrecha; gana músculo con facilidad.",
-                    "Athletic build, broad shoulders and narrow waist; gains muscle easily."),
-         "chips": [T("Complexión atlética", "Athletic build"), T("Gana músculo fácil", "Builds muscle easily")]},
+         "drive_id": T("1Vc8k32mEIiSBDX9OeVLupkEQ5Cz11zWv", "17ZSWhc64JcCXOXPcReRwfJt-9DH9-liC"),
+         "nombre": T("Mesomorfo", "Mesomorph")},
     ]
-    _cols_tipos = st.columns(3)
-    for _col, _tp in zip(_cols_tipos, _TIPOS_CUERPO):
-        with _col:
-            # Foto real desde Google Drive (el archivo debe estar compartido como "Cualquier
-            # persona con el enlace puede ver"). Si la imagen no carga (permisos, cuota de
-            # Drive, etc.) se usa automáticamente la silueta SVG dibujada como respaldo, para
-            # que la tarjeta nunca se vea rota. La foto ocupa toda la parte superior de la
-            # tarjeta sobre fondo blanco (object-fit: contain) para que se vea grande y completa,
-            # sin recortes; el degradado de color queda solo en el panel inferior de texto.
-            _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1000"
-            _icono_svg_fallback = _svg_silueta_cuerpo(_tp["clave"], _tp["color2"]).replace('"', "&quot;")
-            _chips_html = "".join(f'<span class="bodytype-chip">{c}</span>' for c in _tp["chips"])
-            st.markdown(f"""
-            <div class="bodytype-card">
-                <div class="bodytype-photo-wrap">
-                    <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-photo"
-                         onerror="this.onerror=null;this.outerHTML=&quot;{_icono_svg_fallback}&quot;;" />
-                </div>
-                <div class="bodytype-info" style="background:linear-gradient(150deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
-                    <div class="bodytype-name">{_tp['nombre']}</div>
-                    <div class="bodytype-desc">{_tp['desc']}</div>
-                    <div>{_chips_html}</div>
-                </div>
+    for _tp in _TIPOS_CUERPO:
+        # Formato acordeón nativo (<details>/<summary>, sin JavaScript): el nombre se ve
+        # siempre grande y en negrita; al tocarlo se despliega la imagen de referencia en un
+        # tamaño legible (no gigante) junto con una leyenda profesional.
+        _img_url = f"https://drive.google.com/thumbnail?id={_tp['drive_id']}&sz=w1200"
+        st.markdown(f"""
+        <details class="bodytype-accordion">
+            <summary style="background:linear-gradient(120deg,{_tp['color1']} 0%,{_tp['color2']} 100%);">
+                <span class="bodytype-accordion-name">🧍 {_tp['nombre']}</span>
+                <span class="bodytype-accordion-chevron">▾</span>
+            </summary>
+            <div class="bodytype-accordion-body">
+                <img src="{_img_url}" alt="{_tp['nombre']}" class="bodytype-accordion-img" />
+                <p class="bodytype-accordion-caption">📎 {T(
+                    "Imagen de referencia con fines ilustrativos. No determina tu IMC, tu peso ideal ni tu estado de salud.",
+                    "Reference image for illustrative purposes. It doesn't determine your BMI, ideal weight, or health status.")}</p>
             </div>
-            """, unsafe_allow_html=True)
+        </details>
+        """, unsafe_allow_html=True)
 
-    # ===== 📌 Importante =====
+    # ===== 4) ¿Qué SÍ y qué NO puede distinguir el IMC? =====
     st.markdown(f"""
-    <div class="imc-warn-note">
-        <p style="margin:0 0 8px 0;font-weight:900;color:#3730A3;font-size:0.98rem;">📌 {T("Importante", "Important")}</p>
+    <div class="imc-table-wrap">
+        <div class="imc-table-head">
+            <div class="si">✅ {T("El IMC sí utiliza", "BMI does use")}</div>
+            <div class="no">🚫 {T("El IMC no puede distinguir", "BMI can't distinguish")}</div>
+        </div>
+        <div class="imc-table-row"><div>⚖️ {T("Peso", "Weight")}</div><div>💪 {T("Masa muscular", "Muscle mass")}</div></div>
+        <div class="imc-table-row"><div>📏 {T("Estatura", "Height")}</div><div>🫧 {T("Cantidad de grasa", "Fat amount")}</div></div>
+        <div class="imc-table-row"><div></div><div>🦴 {T("Masa ósea", "Bone mass")}</div></div>
+        <div class="imc-table-row"><div></div><div>🧬 {T("Distribución de la grasa", "Fat distribution")}</div></div>
+    </div>
+    <div class="imc-does-doesnt">
+        <p>🧠 {T("El IMC responde: <b>&quot;¿Cómo se relacionan tu peso y tu estatura?&quot;</b>",
+                  "BMI answers: <b>&quot;How do your weight and height relate?&quot;</b>")}<br>
+        ❌ {T("Pero no responde: <b>&quot;¿Cuánto de ese peso es músculo y cuánto es grasa?&quot;</b>",
+              "But it doesn't answer: <b>&quot;How much of that weight is muscle and how much is fat?&quot;</b>")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 5) Ejemplo numérico: mismo peso, cuerpos distintos =====
+    st.markdown(f"""
+    <div class="imc-example-box">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#B06000;font-size:0.98rem;">💪 {T(
+            "Un ejemplo fácil de entender", "An easy example to understand")}</p>
+        <p style="margin:0 0 6px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
+            "Imagina dos personas que pesan 70 kg:", "Imagine two people who both weigh 70 kg:")}</p>
+        <div class="imc-example-row">
+            <div class="imc-example-card">
+                <div class="who">👩 {T("Persona A", "Person A")}</div>
+                <p>{T("Tiene más masa muscular y poca grasa.", "Has more muscle mass and little fat.")}</p>
+            </div>
+            <div class="imc-example-card">
+                <div class="who">👩 {T("Persona B", "Person B")}</div>
+                <p>{T("Tiene menos masa muscular y más grasa.", "Has less muscle mass and more fat.")}</p>
+            </div>
+        </div>
+        <p style="margin:0 0 6px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">⚖️ {T(
+            "Las dos pesan 70 kg. El IMC ve: <b>70 kg + misma estatura = mismo IMC</b>. Pero el cuerpo puede "
+            "ser diferente.",
+            "Both weigh 70 kg. BMI sees: <b>70 kg + same height = same BMI</b>. But the body can be "
+            "different.")}</p>
+        <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">👉 {T(
+            "Por eso el IMC no debe interpretarse como si fuera una medida directa de grasa corporal.",
+            "That's why BMI shouldn't be read as if it were a direct measure of body fat.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 6) Conclusión =====
+    st.markdown(f"""
+    <div class="imc-conclusion-box">
+        <p style="margin:0 0 8px 0;font-weight:900;color:#1E7E4B;font-size:0.98rem;">💡 {T("En resumen", "In summary")}</p>
         <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "El IMC solo tiene en cuenta tu peso y tu estatura. No puede saber si ese peso corresponde "
-            "principalmente a músculo, grasa, huesos u otros tejidos.",
-            "BMI only takes your weight and height into account. It can't tell whether that weight comes "
-            "mainly from muscle, fat, bone, or other tissue.")}</p>
-        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "Por ejemplo, una persona que hace mucho ejercicio puede tener bastante masa muscular. Como el "
-            "músculo también pesa, su IMC puede indicar <b>&quot;sobrepeso&quot;</b>, aunque en realidad tenga poca "
-            "grasa corporal y una buena condición física.",
-            "For example, someone who trains a lot may carry a lot of muscle mass. Since muscle also has "
-            "weight, their BMI can show <b>&quot;overweight&quot;</b> even though they actually have low body fat "
-            "and good physical condition.")}</p>
+            "El IMC puede ser útil como <b>primer indicador</b> para evaluar la relación entre peso y "
+            "estatura. Pero para conocer mejor la situación de una persona, puede ser necesario considerar "
+            "también otros datos, como:",
+            "BMI can be useful as a <b>first indicator</b> to assess the relationship between weight and "
+            "height. But to better understand a person's situation, it may also be necessary to consider "
+            "other data, such as:")}</p>
+        <p style="margin:0 0 10px 0;color:#3C3C43;font-size:0.87rem;line-height:1.65;text-align:center;">
+            ⚖️ {T("Peso", "Weight")} · 📏 {T("Estatura", "Height")} · 💪 {T("Masa muscular", "Muscle mass")} ·
+            🫧 {T("Grasa corporal", "Body fat")} · 🩺 {T("Otros indicadores de salud", "Other health indicators")}
+        </p>
         <p style="margin:0;color:#3C3C43;font-size:0.87rem;line-height:1.65;">{T(
-            "Por eso, el IMC es un <b>indicador de referencia</b>, pero no debe utilizarse por sí solo para "
-            "determinar si una persona tiene exceso de grasa.",
-            "That's why BMI is a <b>reference indicator</b>, but it shouldn't be used on its own to decide "
-            "whether someone has excess body fat.")}</p>
+            "El IMC te da una pista, pero no cuenta toda la historia de tu cuerpo.",
+            "BMI gives you a clue, but it doesn't tell the whole story of your body.")}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -6061,25 +6240,6 @@ def _img_b64(path):
 
 _logo_b64 = _img_b64(_LOGO_ANCHO)
 
-
-def imagen_explicativa_drive(drive_id_es, drive_id_en, alt_es, alt_en, ancho_max_px=520):
-    """Muestra una imagen explicativa alojada en Google Drive (bilingüe: cambia según el idioma
-    activo), con tarjeta blanca redondeada y sombreado suave. Tamaño moderado (no ocupa todo el
-    ancho) para que se vea clara sin dominar la página. Si la imagen no carga (permisos, cuota de
-    Drive, etc.) la tarjeta se oculta sola en vez de mostrar un ícono roto."""
-    _en = st.session_state.get("idioma", "Español") == "English"
-    _drive_id = drive_id_en if _en else drive_id_es
-    _alt = alt_en if _en else alt_es
-    _img_url = f"https://drive.google.com/thumbnail?id={_drive_id}&sz=w1000"
-    st.markdown(f"""
-    <div style="text-align:center;margin:14px 0;">
-        <img src="{_img_url}" alt="{_alt}"
-             style="max-width:{ancho_max_px}px;width:100%;border-radius:18px;
-                    box-shadow:0 8px 22px rgba(0,0,0,0.14);border:1px solid rgba(0,0,0,0.06);"
-             onerror="this.parentElement.style.display='none';" />
-    </div>
-    """, unsafe_allow_html=True)
-
 # =========================================================================================
 # ENCABEZADO "LANDING" (membrete, hero, tarjetas, onboarding) — SOLO en la página de inicio
 # ("0.-DATOS"). Antes se renderizaba en TODAS las hojas, lo que hacía la app notablemente más
@@ -6322,8 +6482,8 @@ _DEFAULTS_SESION = {
     "actividad": "Ligero", "objetivo": "Bajar de peso",
     "ajuste_bajar_sel": "Equilibrado (-20%) ⭐ Recomendado",
     "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
-    "spo2": 0.0, "pulso": 0, "temp_corp": 34.0, "pas": 0, "pad": 0,
-    "hemo": 0.0, "trigli": 0.0, "gluco": 0.0, "coles": 0.0, "hierro": 0.0,
+    "spo2": 98.0, "pulso": 75, "temp_corp": 36.5, "pas": 120, "pad": 80,
+    "hemo": None, "trigli": None, "gluco": None, "coles": None, "hierro": None,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
     "semana_gestacion": 12, "peso_actual": 75.0,
     "muneca_cm": 17.5, "usar_somatotipo": False,
@@ -6725,34 +6885,69 @@ def _panel_llenar_datos():
                 "These indicators show how your body is functioning right now, and help detect warning "
                 "signs early.")}</p></div>',
                 unsafe_allow_html=True)
-    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=0.0, max_value=100.0, value=0.0, step=1.0,
-                            key="spo2", help=T("Normal: 95% a 100%.", "Normal: 95% to 100%."))
+    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=50.0, max_value=100.0, value=98.0, step=1.0,
+                            key="spo2", help=T("Normal: 95% a 100%. Rango biológico válido: 50% a 100%.",
+                                                "Normal: 95% to 100%. Valid biological range: 50% to 100%."))
     if spo2 > 0:
         _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
         _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
 
-    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=0, max_value=220, value=0, step=1,
-                             key="pulso", help=T("Ideal en reposo: 60 a 100 lpm.", "Ideal at rest: 60 to 100 bpm."))
+    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=30, max_value=220, value=75, step=1,
+                             key="pulso", help=T("Ideal en reposo: 60 a 100 lpm. Rango biológico válido: 30 a 220 lpm.",
+                                                  "Ideal at rest: 60 to 100 bpm. Valid biological range: 30 to 220 bpm."))
     if pulso > 0:
         _c = "verde" if 60 <= pulso <= 100 else "ambar"
         _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
-    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=34.0, max_value=42.0, value=34.0, step=0.1,
-                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C.", "Normal: 36.5°C to 37.5°C."))
-    if temp_corp > 34.0:
+    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=30.0, max_value=43.0, value=36.5, step=0.1,
+                                 key="temp_corp", help=T("Normal: 36.5°C a 37.5°C. Rango biológico válido: 30.0°C a 43.0°C.",
+                                                          "Normal: 36.5°C to 37.5°C. Valid biological range: 30.0°C to 43.0°C."))
+    if temp_corp > 0:
         _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
         _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
     st.markdown(f"**{T('Presión Arterial (mmHg):', 'Blood Pressure (mmHg):')}**")
-    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=0, max_value=250, value=0, step=1, key="pas")
-    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=0, max_value=150, value=0, step=1, key="pad")
+    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=60, max_value=240, value=120, step=1, key="pas",
+                           help=T("Rango biológico válido: 60 a 240 mmHg. Ejemplo: 120.", "Valid biological range: 60 to 240 mmHg. Example: 120."))
+    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=40, max_value=140, value=80, step=1, key="pad",
+                           help=T("Rango biológico válido: 40 a 140 mmHg. Ejemplo: 80.", "Valid biological range: 40 to 140 mmHg. Example: 80."))
     if pas > 0 and pad > 0:
-        if pas < 50 or pas > 300 or pad < 30 or pad > 200:
+        if pas < 60 or pas > 240 or pad < 40 or pad > 140:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
                          f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
+        elif pad >= pas:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("La presión diastólica debe ser menor que la sistólica. Verifica el valor ingresado.", "Diastolic pressure must be lower than systolic. Please check the entered value.")}</p>', unsafe_allow_html=True)
+        elif (pas - pad) < 20:
+            st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
+                         f'⚠️ {T("La presión sistólica debe ser mayor que la diastólica (diferencia mínima de 20 mmHg). Verifica el valor ingresado.", "Systolic pressure must be higher than diastolic (minimum 20 mmHg difference). Please check the entered value.")}</p>', unsafe_allow_html=True)
         else:
             _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
             _badge_vital(f"{pas}/{pad}", "", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
+
+    # ===== Motor de Validación Fisiológica Cruzada =====
+    def _validar_coherencia_fisiologica(_sys, _dia, _spo2, _temp, _pulso):
+        _adv = []
+        if _sys > 0 and _dia > 0:
+            _pp = _sys - _dia
+            if 0 < _pp < 15:
+                _adv.append(T(f"Presión de pulso inusualmente estrecha ({_pp} mmHg, óptimo 30–50 mmHg). Verifica las cifras de presión sistólica y diastólica.",
+                               f"Unusually narrow pulse pressure ({_pp} mmHg, optimal 30–50 mmHg). Please check the systolic and diastolic figures."))
+        if _spo2 > 0 and _spo2 < 75.0:
+            _adv.append(T("La saturación ingresada (<75%) es críticamente baja. Confirma que no sea un error de tipeo.",
+                           "The entered saturation (<75%) is critically low. Confirm this is not a typing error."))
+        if _temp > 0 and _pulso > 0 and _temp < 34.0 and _pulso > 100:
+            _adv.append(T("Incoherencia detectada: la hipotermia suele reducir la frecuencia cardíaca, no elevarla a niveles de taquicardia. Verifica ambos valores.",
+                           "Inconsistency detected: hypothermia usually lowers heart rate, not raises it into tachycardia. Please check both values."))
+        return _adv
+
+    _advertencias_vitales = _validar_coherencia_fisiologica(pas, pad, spo2, temp_corp, pulso)
+    if _advertencias_vitales:
+        for _adv in _advertencias_vitales:
+            st.warning(f"⚠️ {T('Advertencia de coherencia clínica', 'Clinical coherence warning')}: {_adv}")
+        st.checkbox(T("Confirmo que los datos ingresados son correctos a pesar de las advertencias.",
+                       "I confirm the entered data is correct despite the warnings."),
+                    key="confirmar_vitales_incoherentes")
 
     # ===== BLOQUE 4: Perfil Bioquímico (Análisis Sanguíneo) =====
     st.markdown('<div style="background:linear-gradient(120deg,#F3E5F5 0%,#E6CCEB 100%);border-radius:20px;'
@@ -6763,16 +6958,21 @@ def _panel_llenar_datos():
                 "With your blood values we identify risks such as anemia, high cholesterol or elevated glucose, "
                 "to give you more precise recommendations.")}</p></div>',
                 unsafe_allow_html=True)
-    hemo = st.number_input(T("Hemoglobina (g/dL):", "Hemoglobin (g/dL):"), min_value=0.0, max_value=HEMO_MAX, value=0.0, step=0.1,
-                            key="hemo", help=T("Normal: 12-17 g/dL, varía por género.", "Normal: 12-17 g/dL, varies by gender."))
-    gluco = st.number_input(T("Glucosa (mg/dL):", "Glucose (mg/dL):"), min_value=0.0, max_value=GLUCO_MAX, value=0.0, step=1.0,
-                             key="gluco", help=T("Normal en ayunas: 70-100 mg/dL.", "Normal fasting: 70-100 mg/dL."))
-    coles = st.number_input(T("Colesterol (mg/dL):", "Cholesterol (mg/dL):"), min_value=0.0, max_value=COLES_MAX, value=0.0, step=1.0,
-                             key="coles", help=T("Ideal: menor a 200 mg/dL.", "Ideal: less than 200 mg/dL."))
-    trigli = st.number_input(T("Triglicéridos (mg/dL):", "Triglycerides (mg/dL):"), min_value=0.0, max_value=TRIGLI_MAX, value=0.0, step=1.0,
-                              key="trigli", help=T("Ideal: menor a 150 mg/dL.", "Ideal: less than 150 mg/dL."))
-    hierro = st.number_input(T("Hierro Sérico (µg/dL):", "Serum Iron (µg/dL):"), min_value=0.0, max_value=HIERRO_MAX, value=0.0, step=1.0,
-                              key="hierro", help=T("Normal: 60-170 µg/dL.", "Normal: 60-170 µg/dL."))
+    hemo = st.number_input(T("Hemoglobina (g/dL):", "Hemoglobin (g/dL):"), min_value=0.0, max_value=HEMO_MAX, value=None, step=0.1,
+                            placeholder=T("Opcional", "Optional"),
+                            key="hemo", help=T("Normal: 12-17 g/dL, varía por género. Déjalo vacío si no tienes examen reciente.", "Normal: 12-17 g/dL, varies by gender. Leave empty if you don't have a recent test."))
+    gluco = st.number_input(T("Glucosa (mg/dL):", "Glucose (mg/dL):"), min_value=0.0, max_value=GLUCO_MAX, value=None, step=1.0,
+                             placeholder=T("Opcional", "Optional"),
+                             key="gluco", help=T("Normal en ayunas: 70-100 mg/dL. Déjalo vacío si no tienes examen reciente.", "Normal fasting: 70-100 mg/dL. Leave empty if you don't have a recent test."))
+    coles = st.number_input(T("Colesterol (mg/dL):", "Cholesterol (mg/dL):"), min_value=0.0, max_value=COLES_MAX, value=None, step=1.0,
+                             placeholder=T("Opcional", "Optional"),
+                             key="coles", help=T("Ideal: menor a 200 mg/dL. Déjalo vacío si no tienes examen reciente.", "Ideal: less than 200 mg/dL. Leave empty if you don't have a recent test."))
+    trigli = st.number_input(T("Triglicéridos (mg/dL):", "Triglycerides (mg/dL):"), min_value=0.0, max_value=TRIGLI_MAX, value=None, step=1.0,
+                              placeholder=T("Opcional", "Optional"),
+                              key="trigli", help=T("Ideal: menor a 150 mg/dL. Déjalo vacío si no tienes examen reciente.", "Ideal: less than 150 mg/dL. Leave empty if you don't have a recent test."))
+    hierro = st.number_input(T("Hierro Sérico (µg/dL):", "Serum Iron (µg/dL):"), min_value=0.0, max_value=HIERRO_MAX, value=None, step=1.0,
+                              placeholder=T("Opcional", "Optional"),
+                              key="hierro", help=T("Normal: 60-170 µg/dL. Déjalo vacío si no tienes examen reciente.", "Normal: 60-170 µg/dL. Leave empty if you don't have a recent test."))
 
 with st.sidebar.expander(T("📝 Llenar / Editar Mis Datos", "📝 Enter / Edit My Data"), expanded=True):
     _panel_llenar_datos()
@@ -6801,14 +7001,14 @@ else:
     ajuste_txt = None
 spo2 = st.session_state.get("spo2", 0.0)
 pulso = st.session_state.get("pulso", 0)
-temp_corp = st.session_state.get("temp_corp", 34.0)
+temp_corp = st.session_state.get("temp_corp", 0.0)
 pas = st.session_state.get("pas", 0)
 pad = st.session_state.get("pad", 0)
-hemo = st.session_state.get("hemo", 0.0)
-gluco = st.session_state.get("gluco", 0.0)
-coles = st.session_state.get("coles", 0.0)
-trigli = st.session_state.get("trigli", 0.0)
-hierro = st.session_state.get("hierro", 0.0)
+hemo = st.session_state.get("hemo") or 0.0
+gluco = st.session_state.get("gluco") or 0.0
+coles = st.session_state.get("coles") or 0.0
+trigli = st.session_state.get("trigli") or 0.0
+hierro = st.session_state.get("hierro") or 0.0
 _nombre_saludo = nombre_display(nombre_usuario, genero)
 
 # ---- Sidebar: navegación tipo píldoras verticales coloridas, con las 15 secciones siempre visibles ----
@@ -6940,11 +7140,11 @@ pas = st.session_state["pas"]
 pad = st.session_state["pad"]
 
 # --- Perfil bioquímico (Bloque 4, persistente) ---
-hemo = st.session_state["hemo"]
-trigli = st.session_state["trigli"]
-gluco = st.session_state["gluco"]
-coles = st.session_state["coles"]
-hierro = st.session_state["hierro"]
+hemo = st.session_state.get("hemo") or 0.0
+trigli = st.session_state.get("trigli") or 0.0
+gluco = st.session_state.get("gluco") or 0.0
+coles = st.session_state.get("coles") or 0.0
+hierro = st.session_state.get("hierro") or 0.0
 
 # =========================================================================================
 # CÁLCULOS CENTRALES (siguiendo el orden y las referencias EXACTAS de las hojas del Excel)
@@ -7116,7 +7316,14 @@ if _es_gestante:
 # =========================================================================================
 hoja_activa = st.session_state["hoja_activa"]
 _icono_actual, _titulo_actual = _etiquetas_nav_activas()[hoja_activa]
+_MEMBRETE_DRIVE_ID = "1jLoxcXk5iUE8WrQqrV4Vpp-tcnRv_oBj"
+_membrete_url = f"https://drive.google.com/thumbnail?id={_MEMBRETE_DRIVE_ID}&sz=w1200"
 st.markdown(f"""
+<div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+    <img src="{_membrete_url}" alt="Membrete institucional"
+         style="max-width:100%;height:auto;max-height:150px;object-fit:contain;border-radius:10px;"
+         onerror="this.style.display='none';" />
+</div>
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
     <span style="font-size:1.4rem;">{_icono_actual}</span>
     <span style="font-size:0.82rem;color:#8A94A6;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">
@@ -7250,7 +7457,7 @@ if hoja_activa == "0.-DATOS":
             (1, T("💓 Bloque 3 · Signos Vitales", "💓 Block 3 · Vital Signs"), [
                 (T("SpO2", "SpO2"), f"{spo2:.2f}%" if spo2 > 0 else T("Sin dato", "No data")),
                 (T("Pulso", "Pulse"), f"{pulso} lpm" if pulso > 0 else T("Sin dato", "No data")),
-                (T("Temperatura", "Temperature"), f"{temp_corp:.2f}°C" if temp_corp > 34.0 else T("Sin dato", "No data")),
+                (T("Temperatura", "Temperature"), f"{temp_corp:.2f}°C" if temp_corp > 0 else T("Sin dato", "No data")),
                 (T("Presión arterial", "Blood pressure"), f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else T("Sin dato", "No data")),
             ]),
             (1, T("🩸 Bloque 4 · Perfil Bioquímico", "🩸 Block 4 · Biochemical Profile"), [
@@ -7541,7 +7748,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     def _clasif_temp(_t):
         """Umbrales por grupo de edad, incluyendo Hipotermia (columna antes ausente)."""
-        if _t <= 34.0: return _ctf("Sin datos"), "gris"
+        if _t <= 0: return _ctf("Sin datos"), "gris"
         if edad <= 2:
             _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta = 36.5, 36.6, 37.9, 38.0, 39.0
         elif edad <= 10:
@@ -7607,7 +7814,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _vitales_dash = [
         ("❤️", "Presión Arterial", f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else "—", _cat_pa, _col_pa),
         ("🫁", "Oxigenación (SpO₂)", f"{spo2:.0f} %" if spo2 > 0 else "—", _cat_ox, _col_ox),
-        ("🌡️", "Temperatura", f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", _cat_te, _col_te),
+        ("🌡️", "Temperatura", f"{temp_corp:.1f} °C" if temp_corp > 0 else "—", _cat_te, _col_te),
         ("💓", "Pulso en Reposo", f"{pulso} lpm" if pulso > 0 else "—", _cat_pu, _col_pu),
     ]
     _cols_vd = st.columns(4)
@@ -7725,7 +7932,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
                          "Altitude naturally reduces SpO₂; the higher the altitude, the less oxygen the air has available."),
         },
         "Temperatura": {
-            "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 34.0 else "—", "categoria": _cat_te, "color": _col_te,
+            "icono": "🌡️", "valor": f"{temp_corp:.1f} °C" if temp_corp > 0 else "—", "categoria": _cat_te, "color": _col_te,
             "que_mide": T("Refleja qué tan bien tu organismo regula el calor interno para mantener sus funciones vitales.",
                           "Reflects how well your body regulates internal heat to keep its vital functions running."),
             "sin_dato": T("Aún no ingresaste tu temperatura. Ve a 'Mis Datos' → Bloque 3 para registrarla.",
@@ -7815,7 +8022,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     _es_urgencia_medica = (
         (spo2 > 0 and spo2 < 85.0) or
         (pulso > 0 and (pulso < 40 or pulso > 140)) or
-        (temp_corp > 34.0 and (_cat_te in (_ctf("Hipotermia"), _ctf("Fiebre alta")))) or
+        (temp_corp > 0 and (_cat_te in (_ctf("Hipotermia"), _ctf("Fiebre alta")))) or
         (pas > 0 and pad > 0 and (pas >= 180 or pad >= 120 or pas < 80 or pad < 50)) or
         (_cat_pa == _ctf("Sospecha de Preeclampsia"))
     )
@@ -7868,56 +8075,123 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
     st.markdown(f"##### 🎯 {T('Impacto en la vida diaria (Signos Vitales)', 'Impact on daily life (Vital Signs)')}")
     _IMPACTO_VITAL = {
         T("🏫 Colegio", "🏫 School"): {
-            "Presión Arterial": T("Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
-                                   "It can cause headaches, drowsiness, or trouble concentrating in class."),
-            "Oxigenación (SpO₂)": T("Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
-                                     "It causes quick fatigue when climbing stairs or walking; lower stamina in PE class."),
-            "Temperatura": T("Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
-                              "Reduced academic and cognitive performance; it's best to stay home and rest."),
-            "Pulso": T("Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
-                       "A feeling of being on edge; avoid intense physical effort and stay well hydrated."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: favorece una buena concentración y previene la fatiga prematura en clase.",
+                             "Balanced blood pressure: supports good concentration and prevents early fatigue in class."),
+                "Alerta": T("Puede causar dolor de cabeza, somnolencia o falta de concentración en clase.",
+                             "It can cause headaches, drowsiness, or trouble concentrating in class."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: buen rendimiento físico en educación física y actividades escolares.",
+                             "Optimal oxygenation: good physical performance in PE class and school activities."),
+                "Alerta": T("Causa fatiga rápida al subir escaleras o caminar; menor resistencia en educación física.",
+                             "It causes quick fatigue when climbing stairs or walking; lower stamina in PE class."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: mantiene la energía y el rendimiento cognitivo estables durante el día escolar.",
+                             "Adequate thermoregulation: keeps energy and cognitive performance stable during the school day."),
+                "Alerta": T("Rendimiento académico y cognitivo reducido; es recomendable no asistir y descansar.",
+                             "Reduced academic and cognitive performance; it's best to stay home and rest."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: indica un sistema cardiovascular descansado, ideal para el día de estudio.",
+                             "Efficient heart rate: indicates a rested cardiovascular system, ideal for the school day."),
+                "Alerta": T("Sensación de agitación; evita esfuerzos físicos intensos y mantén una buena hidratación.",
+                             "A feeling of being on edge; avoid intense physical effort and stay well hydrated."),
+            },
         },
         T("🏠 Casa", "🏠 Home"): {
-            "Presión Arterial": T("Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
-                                   "It can cause tiredness or dizziness when doing demanding chores."),
-            "Oxigenación (SpO₂)": T("Sensación de falta de aire al subir escaleras o realizar quehaceres.",
-                                     "A feeling of shortness of breath when climbing stairs or doing chores."),
-            "Temperatura": T("Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
-                              "It's best to rest, stay well hydrated, and avoid exertion at home."),
-            "Pulso": T("Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
-                       "It may feel like palpitations; prioritize rest and avoid sudden frights or startles."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: puedes realizar tareas domésticas habituales sin molestias.",
+                             "Balanced blood pressure: you can do regular household chores without discomfort."),
+                "Alerta": T("Puede generar cansancio o mareos al hacer tareas domésticas exigentes.",
+                             "It can cause tiredness or dizziness when doing demanding chores."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: sin falta de aire al subir escaleras o hacer quehaceres del hogar.",
+                             "Optimal oxygenation: no shortness of breath when climbing stairs or doing chores."),
+                "Alerta": T("Sensación de falta de aire al subir escaleras o realizar quehaceres.",
+                             "A feeling of shortness of breath when climbing stairs or doing chores."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: tu cuerpo mantiene el metabolismo estable en casa.",
+                             "Adequate thermoregulation: your body keeps a stable metabolism at home."),
+                "Alerta": T("Conviene guardar reposo, hidratarte bien y evitar esfuerzos en casa.",
+                             "It's best to rest, stay well hydrated, and avoid exertion at home."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: descanso y actividades del hogar sin sobresaltos.",
+                             "Efficient heart rate: rest and household activities without any concern."),
+                "Alerta": T("Puede sentirse como palpitaciones; prioriza el descanso y evita sustos o sobresaltos.",
+                             "It may feel like palpitations; prioritize rest and avoid sudden frights or startles."),
+            },
         },
         T("🏃 Actividad Física", "🏃 Physical Activity"): {
-            "Presión Arterial": T("Conviene evitar ejercicio intenso hasta que el valor se normalice.",
-                                   "It's best to avoid intense exercise until the value returns to normal."),
-            "Oxigenación (SpO₂)": T("El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
-                                     "Physical performance drops noticeably; reduce training intensity."),
-            "Temperatura": T("No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
-                              "Exercising with a fever isn't recommended; the body is already under strain."),
-            "Pulso": T("Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
-                       "An elevated resting pulse suggests it's best to postpone intense exercise."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: puedes realizar actividad física con normalidad.",
+                             "Balanced blood pressure: you can exercise normally."),
+                "Alerta": T("Conviene evitar ejercicio intenso hasta que el valor se normalice.",
+                             "It's best to avoid intense exercise until the value returns to normal."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: buen rendimiento físico durante el entrenamiento.",
+                             "Optimal oxygenation: good physical performance during training."),
+                "Alerta": T("El rendimiento físico baja notablemente; reduce la intensidad del entrenamiento.",
+                             "Physical performance drops noticeably; reduce training intensity."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: el cuerpo está en condiciones normales para hacer deporte.",
+                             "Adequate thermoregulation: your body is in normal condition for exercise."),
+                "Alerta": T("No se recomienda hacer deporte con fiebre; el cuerpo ya está en sobreesfuerzo.",
+                             "Exercising with a fever isn't recommended; the body is already under strain."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: sistema cardiovascular descansado, apto para entrenar.",
+                             "Efficient heart rate: a rested cardiovascular system, fit for training."),
+                "Alerta": T("Un pulso elevado en reposo indica que conviene posponer el ejercicio intenso.",
+                             "An elevated resting pulse suggests it's best to postpone intense exercise."),
+            },
         },
         T("💼 Trabajo", "💼 Work"): {
-            "Presión Arterial": T("Puede afectar la concentración en tareas que requieren atención sostenida.",
-                                   "It can affect concentration on tasks that require sustained attention."),
-            "Oxigenación (SpO₂)": T("Mayor cansancio en jornadas largas o con esfuerzo físico.",
-                                     "Greater fatigue during long workdays or physical effort."),
-            "Temperatura": T("Es preferible descansar en casa en vez de asistir a trabajar.",
-                              "It's preferable to rest at home instead of going to work."),
-            "Pulso": T("Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
-                       "Avoid high-pressure or stressful situations until the rhythm returns to normal."),
+            "Presión Arterial": {
+                "Normal": T("Presión arterial equilibrada: favorece la concentración en tareas que requieren atención sostenida.",
+                             "Balanced blood pressure: supports concentration on tasks that require sustained attention."),
+                "Alerta": T("Puede afectar la concentración en tareas que requieren atención sostenida.",
+                             "It can affect concentration on tasks that require sustained attention."),
+            },
+            "Oxigenación (SpO₂)": {
+                "Normal": T("Oxigenación óptima: buen rendimiento en jornadas largas o con esfuerzo físico.",
+                             "Optimal oxygenation: good performance during long workdays or physical effort."),
+                "Alerta": T("Mayor cansancio en jornadas largas o con esfuerzo físico.",
+                             "Greater fatigue during long workdays or physical effort."),
+            },
+            "Temperatura": {
+                "Normal": T("Termorregulación adecuada: mantiene la energía y el rendimiento estable durante la jornada laboral.",
+                             "Adequate thermoregulation: keeps your energy and performance stable during the workday."),
+                "Alerta": T("Es preferible descansar en casa en vez de asistir a trabajar.",
+                             "It's preferable to rest at home instead of going to work."),
+            },
+            "Pulso": {
+                "Normal": T("Ritmo cardíaco eficiente: puedes afrontar el día laboral con normalidad.",
+                             "Efficient heart rate: you can face the workday normally."),
+                "Alerta": T("Evita situaciones de alta presión o estrés hasta que el ritmo se normalice.",
+                             "Avoid high-pressure or stressful situations until the rhythm returns to normal."),
+            },
         },
     }
     _tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo = st.tabs(list(_IMPACTO_VITAL.keys()))
     for _tab, _ambito_v in zip([_tab_colegio, _tab_casa, _tab_actividad, _tab_trabajo], _IMPACTO_VITAL.keys()):
         with _tab:
             for _param, _colk in _todos_vitales:
+                if _colk == "gris":
+                    continue
                 _st = SEMAFORO_ESTILO[_colk]
+                _estado_txt = "Normal" if _colk == "verde" else "Alerta"
                 st.markdown(f"""
                 <div style="background:{_st['fondo']};border-left:4px solid {_st['hex']};border-radius:16px;
                 padding:10px 16px;margin-bottom:6px;">
                 <b style="color:{_st['hex']};">{_vn(_param)}</b> — <span style="color:#1C1C1E;font-size:0.88rem;">
-                {_IMPACTO_VITAL[_ambito_v][_param]}</span>
+                {_IMPACTO_VITAL[_ambito_v][_param][_estado_txt]}</span>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -8085,7 +8359,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         return 3
 
     _idx_te_col_activa = None
-    if temp_corp > 34.0:
+    if temp_corp > 0:
         _row = _te_filas_data[_idx_te_fila]
         _idx_te_col_activa = _te_estado_col(temp_corp, _row[1], _row[2], _row[3], _row[4], _row[5])
 
@@ -8093,7 +8367,7 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     def _fila_temp_matriz(_i, _nombre, _hipo, _n_lo, _n_hi, _fiebre, _fiebre_alta):
         _celdas_txt = [f"&lt; {_hipo:.1f} °C", f"{_n_lo:.1f} – {_n_hi:.1f} °C", f"≥ {_fiebre:.1f} °C", f"&gt; {_fiebre_alta:.1f} °C"]
-        _es_fila_activa = (_i == _idx_te_fila) and temp_corp > 34.0
+        _es_fila_activa = (_i == _idx_te_fila) and temp_corp > 0
         _tds = f'<td style="background:#F8F9FA;font-weight:800;color:#17301F;">{_nombre}</td>'
         for _c, _txt in enumerate(_celdas_txt):
             _tono_key = _TE_COL_TONO[_c]
@@ -9564,7 +9838,13 @@ elif hoja_activa == "5.-CONTROL DE PESO":
                        "el mínimo vital de tu cuerpo. Por eso tu RCD Objetivo no bajó más de ahí.",
                        f"⚠️ Your adjustment was automatically capped so it never drops below your BMR ({tmb:.0f} kcal/day), "
                        "your body's vital minimum. That's why your Target DCR didn't go any lower."))
-    
+
+        st.divider()
+
+        imagen_referencia_drive(
+            "17w8KlSkMx_eKhK145N4hF0WAkFpV9h5b", "1HBt1WKJ0ELZFEzryjXHyXqEfFPKRTxfP",
+            "Control de Peso", "Weight Control")
+
         st.divider()
     
         # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
@@ -10521,10 +10801,9 @@ elif hoja_activa == "7.-PORCIONES":
     _respuesta_mostrada = FAQ_PORCIONES[_idx_pregunta][3] if _es_ingles else FAQ_PORCIONES[_idx_pregunta][2]
     st.info(_respuesta_mostrada)
 
-    imagen_explicativa_drive(
-        "1uTsB1B_l-O4T_btj3HlWGQveWm3DNEOM", "1BoNmP27i_Q3cCxn_wQ_wPQEh_LZn_LF5",
-        "Tiempos de comida y distribución calórica", "Meal times and calorie distribution",
-    )
+    imagen_referencia_drive(
+        "1_AL07U7KsX4YMCXyKRDFeUNdKWZbcmJU", "1v2VTUp-CYkD3KPdBgrUJTLOkVuIKTTuf",
+        "Tiempos de comida", "Meal times")
 
     caja_util(T(
         "Comer todas tus calorías de una sola vez sería imposible (¡y poco saludable!). Esta hoja te dice "
@@ -10582,10 +10861,9 @@ elif hoja_activa == "8.-FATSECRET":
     else:
         st.link_button(T("🌐 Abrir FatSecret", "🌐 Open FatSecret"), "https://www.fatsecret.es/", use_container_width=True)
 
-    imagen_explicativa_drive(
-        "1y_7WnS-TNq3ehxrncEsD98ZYNts_ODPT", "1PPi5rqccyf-n9tE07WPeMGM65MA18A6p",
-        "Buscador FatSecret", "FatSecret Search",
-    )
+    imagen_referencia_drive(
+        "1NfFbSgnfjY1Yn85PDDAgx1Pop7RXrUm3", "192bE8d1VSnAgnd-vRD2qVmw2QBHbhFZE",
+        "FatSecret", "FatSecret")
 
     st.markdown(f"""
     <div style="background:#E6F7FA;border-left:5px solid #30B0C7;border-radius:16px;padding:14px 18px;margin:14px 0;">
@@ -10606,10 +10884,9 @@ elif hoja_activa == "8.-FATSECRET":
     st.markdown("---")
     st.markdown(f"#### 🔎 {T('Buscador Nutricional · Tabla Peruana de Composición de Alimentos', 'Nutritional Search · Peruvian Food Composition Table')}")
 
-    imagen_explicativa_drive(
-        "1zS4Pa7GWuaCDRf2bOWl7yX_0-oRpeAdn", "1JOFNfmD-b0fF4pYQzYGM95Rc-khJBtlO",
-        "Tabla Peruana de Composición de Alimentos", "Peruvian Food Composition Table",
-    )
+    imagen_referencia_drive(
+        "1_vAUT_dvMVE27bzO_J0FxH67nipGZorg", "1wi6BQwqcY7gYusWXozpwU1atgP0WLUP8",
+        "Tabla Peruana de Composición de Alimentos", "Peruvian Food Composition Table")
 
     consulta = st.text_input(T("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
                                 "Type the name of a food (e.g. 'Chicken', 'Rice', 'Tomato'):"),
@@ -10915,8 +11192,45 @@ elif hoja_activa == "9.-DIETA":
             "(FDA — Food Safety for Moms-to-Be)."
         ))
 
-    seleccion = {}
-    for comida in DIETA:
+    _momentos_orden = list(DIETA.keys())
+    _n_pasos = len(_momentos_orden) + 1  # +1 = paso final "Ver Menú Completo"
+    st.session_state.setdefault("d9_paso", 0)
+    _paso = min(st.session_state["d9_paso"], _n_pasos - 1)
+
+    # Pre-poblamos en session_state la selección por defecto (1ª opción) de CADA comida, aunque
+    # el usuario aún no haya visitado ese paso del wizard, para que "seleccion" quede siempre
+    # completa y el menú final se pueda calcular sin depender de haber renderizado cada selectbox.
+    for _c in _momentos_orden:
+        for _pref, _macro in (("c", "Carbohidrato"), ("p", "Proteína"), ("g", "Grasa")):
+            _op0 = dieta_filtrada_para(_c, _macro, embarazada)
+            if _op0:
+                st.session_state.setdefault(f"{_pref}_{_c}", list(_op0.keys())[0])
+
+    # ---- Indicador de progreso tipo wizard (pills numeradas, la actual resaltada) ----
+    _pills_html = []
+    for _i, _c in enumerate(_momentos_orden):
+        _activo = _i == _paso
+        _hecho = _i < _paso
+        _bg = "var(--brand-green)" if _activo else ("#DCEFDD" if _hecho else "#EAEFEA")
+        _fg = "#FFFFFF" if _activo else ("#1E5631" if _hecho else "#5C6B60")
+        _pills_html.append(
+            f'<div style="flex:1;min-width:70px;text-align:center;background:{_bg};color:{_fg};'
+            f'border-radius:999px;padding:8px 6px;font-weight:800;font-size:0.74rem;">'
+            f'{_ICONOS_COMIDA_D9[_c]} {_i+1}. {_mom(_c)}</div>'
+        )
+    _activo_final = _paso == len(_momentos_orden)
+    _pills_html.append(
+        f'<div style="flex:1;min-width:70px;text-align:center;'
+        f'background:{"var(--brand-green)" if _activo_final else "#EAEFEA"};'
+        f'color:{"#FFFFFF" if _activo_final else "#5C6B60"};'
+        f'border-radius:999px;padding:8px 6px;font-weight:800;font-size:0.74rem;">'
+        f'🏆 {T("Ver Menú Final", "View Final Menu")}</div>'
+    )
+    st.markdown(f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">{"".join(_pills_html)}</div>',
+                unsafe_allow_html=True)
+
+    if _paso < len(_momentos_orden):
+        comida = _momentos_orden[_paso]
         st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
                     unsafe_allow_html=True)
         _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
@@ -10925,23 +11239,42 @@ elif hoja_activa == "9.-DIETA":
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
-            carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
-                                     format_func=_dieta_nombre,
-                                     key=f"c_{comida}", label_visibility="collapsed")
+            st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
+                         format_func=_dieta_nombre, key=f"c_{comida}", label_visibility="collapsed")
         with c2:
             st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
-            prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
-                                     format_func=_dieta_nombre,
-                                     key=f"p_{comida}", label_visibility="collapsed")
+            st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
+                         format_func=_dieta_nombre, key=f"p_{comida}", label_visibility="collapsed")
         with c3:
             st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
-            gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
-                                     format_func=_dieta_nombre,
-                                     key=f"g_{comida}", label_visibility="collapsed")
+            st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
+                         format_func=_dieta_nombre, key=f"g_{comida}", label_visibility="collapsed")
+
+        # ---- Navegación: Atrás / Siguiente Comida ó Generar Menú Completo ----
+        nb1, nb2 = st.columns(2)
+        with nb1:
+            if st.button(f"⬅ {T('Atrás', 'Back')}", use_container_width=True,
+                         disabled=(_paso == 0), key="d9_btn_atras"):
+                st.session_state["d9_paso"] = max(0, _paso - 1)
+                st.rerun()
+        with nb2:
+            _es_ultima_comida = _paso == len(_momentos_orden) - 1
+            _label_siguiente = (f"🏁 {T('Generar Menú Completo', 'Generate Full Menu')}" if _es_ultima_comida
+                                 else f"{T('Siguiente Comida', 'Next Meal')} ➔")
+            if st.button(_label_siguiente, use_container_width=True, type="primary", key="d9_btn_siguiente"):
+                st.session_state["d9_paso"] = _paso + 1
+                st.rerun()
+    else:
+        if st.button(f"⬅ {T('Volver a editar comidas', 'Back to edit meals')}", key="d9_btn_volver"):
+            st.session_state["d9_paso"] = len(_momentos_orden) - 1
+            st.rerun()
+
+    seleccion = {}
+    for comida in _momentos_orden:
         seleccion[comida] = {
-            "Carbohidrato": carb_sel,
-            "Proteína": prot_sel,
-            "Grasa": gras_sel,
+            "Carbohidrato": st.session_state.get(f"c_{comida}"),
+            "Proteína": st.session_state.get(f"p_{comida}"),
+            "Grasa": st.session_state.get(f"g_{comida}"),
         }
 
     # Guardado explícito y estable del plan elegido: no dependemos de que las claves individuales
@@ -10981,136 +11314,142 @@ elif hoja_activa == "9.-DIETA":
     # =====================================================================================
     # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
     # =====================================================================================
-    st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
+    if _paso == len(_momentos_orden):
+        st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
 
-    def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
-        """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
-        _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
-        filas_html = ""
-        for f in filas:
+        def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
+            """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
+            _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
+            filas_html = ""
+            for f in filas:
+                filas_html += f"""
+                <tr>
+                    <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
+                    <td>{_dieta_nombre(f[macro_key])}</td>
+                    <td>{f[f'kcal ({_prefijo})']} kcal</td>
+                    <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
+                    <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
+                </tr>"""
             filas_html += f"""
-            <tr>
-                <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
-                <td>{_dieta_nombre(f[macro_key])}</td>
-                <td>{f[f'kcal ({_prefijo})']} kcal</td>
-                <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
-                <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
-            </tr>"""
-        filas_html += f"""
-            <tr class="dm-total">
-                <td class="dm-momento" colspan="2">{T('TOTAL', 'TOTAL')}</td>
-                <td>—</td>
-                <td>{suma_porcion:.1f} kcal</td>
-                <td>{suma_gramos:.1f} g</td>
-            </tr>"""
-        html = f"""
-        <div class="dieta-menu-wrap {clase_css}">
-        <table class="dieta-menu-table">
-            <thead>
-            <tr><th style="text-align:left;">{T('Momento', 'Meal')}</th><th>{icono} {T('Alimento', 'Food')} ({_mac(titulo)})</th>
-                <th>{T('Kcal/100g', 'Kcal/100g')}</th><th>{T('Porción Corregida', 'Adjusted Portion')}</th><th>{T('Gramos Finales', 'Final Grams')}</th></tr>
-            </thead>
-            <tbody>
-            {filas_html}
-            </tbody>
-        </table>
+                <tr class="dm-total">
+                    <td class="dm-momento" colspan="2">{T('TOTAL', 'TOTAL')}</td>
+                    <td>—</td>
+                    <td>{suma_porcion:.1f} kcal</td>
+                    <td>{suma_gramos:.1f} g</td>
+                </tr>"""
+            html = f"""
+            <div class="dieta-menu-wrap {clase_css}">
+            <table class="dieta-menu-table">
+                <thead>
+                <tr><th style="text-align:left;">{T('Momento', 'Meal')}</th><th>{icono} {T('Alimento', 'Food')} ({_mac(titulo)})</th>
+                    <th>{T('Kcal/100g', 'Kcal/100g')}</th><th>{T('Porción Corregida', 'Adjusted Portion')}</th><th>{T('Gramos Finales', 'Final Grams')}</th></tr>
+                </thead>
+                <tbody>
+                {filas_html}
+                </tbody>
+            </table>
+            </div>
+            """
+            st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
+
+        _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
+        _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
+        _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras, suma_gramos_gras)
+
+        # ---- Barra final destacada: suma total = RCD ----
+        _diferencia_total = abs(total_general - rcd_final)
+        _check_txt = (T("✅ ¡Coincide exactamente con tu RCD!", "✅ Exactly matches your DCR!") if _diferencia_total < 1
+                      else T(f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD",
+                             f"⚠️ Difference of {_diferencia_total:.1f} kcal from your DCR"))
+        _html_barra_total = f"""
+        <div class="dieta-total-bar">
+            <div class="dt-label">🌾 {T('Carbohidratos', 'Carbohydrates')} + 🥩 {T('Proteínas', 'Protein')} + 🥑 {T('Grasas', 'Fats')}</div>
+            <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
+            <div class="dt-value">= {total_general:.1f} kcal</div>
+            <div style="font-size:0.9rem;opacity:0.92;">{T('Este total equivale a tu', 'This total equals your')} <b>{T('TOTAL DE CALORÍAS DIARIAS (RCD)', 'TOTAL DAILY CALORIC REQUIREMENT (DCR)')}</b></div>
+            <div class="dt-check">{_check_txt}</div>
         </div>
         """
-        st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
+        st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
 
-    _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
-    _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
-    _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras, suma_gramos_gras)
+        st.divider()
+        st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
+        FAQ_DIETA_ES = {
+            "¿Qué significa la columna 'kcal'?": (
+                "Es la cantidad de calorías que aporta ese alimento, tomando como referencia cada 100 gramos "
+                "de ese alimento (así viene definido en la base de datos nutricional del proyecto)."
+            ),
+            "¿Qué significa 'Porción corregida'?": (
+                "Es cuántas calorías del momento del día (Desayuno, Almuerzo, etc.) le corresponden a ese "
+                "macronutriente en particular. Por ejemplo, si el Almuerzo tiene 1000 kcal en total, la Porción "
+                "corregida de Carbohidrato será el 50% de esas 1000 kcal, la de Proteína el 20% y la de Grasa el 30%."
+            ),
+            "¿Qué significa 'Gramos finales a consumir'?": (
+                "Es la cantidad exacta, en gramos, que debes comer de ESE alimento específico para llegar a la "
+                "Porción corregida en calorías. Se calcula dividiendo la Porción corregida entre el kcal del "
+                "alimento y multiplicando por 100."
+            ),
+            "Entonces, ¿cuánto tengo que comer en cada comida?": (
+                "Debes preparar los tres alimentos que elegiste para ese momento del día (Carbohidrato, Proteína "
+                "y Grasa), cada uno en la cantidad de 'Gramos finales a consumir' que te muestra la tabla. Juntos, "
+                "esos tres alimentos completan las calorías que te corresponden en esa comida."
+            ),
+            "¿Por qué el total coincide con mis calorías meta?": (
+                "Porque el sistema reparte tu meta calórica diaria (Hoja 5) primero entre los 5 momentos del día "
+                "(Hoja 7) y luego, dentro de cada momento, entre los 3 macronutrientes. Al sumar todo de nuevo, "
+                "el resultado debe coincidir con tu meta calórica original."
+            ),
+        }
+        FAQ_DIETA_EN = {
+            "What does the 'kcal' column mean?": (
+                "It's the amount of calories that food provides, taken as a reference per 100 grams "
+                "of that food (as defined in the project's nutritional database)."
+            ),
+            "What does 'Adjusted Portion' mean?": (
+                "It's how many calories from that time of day (Breakfast, Lunch, etc.) correspond to that "
+                "specific macronutrient. For example, if Lunch has 1000 kcal in total, the Adjusted Portion "
+                "of Carbohydrate will be 50% of those 1000 kcal, Protein 20%, and Fat 30%."
+            ),
+            "What does 'Final grams to consume' mean?": (
+                "It's the exact amount, in grams, you should eat of THAT specific food to reach the Adjusted "
+                "Portion in calories. It's calculated by dividing the Adjusted Portion by the food's kcal and "
+                "multiplying by 100."
+            ),
+            "So, how much do I have to eat at each meal?": (
+                "You should prepare the three foods you chose for that time of day (Carbohydrate, Protein, and "
+                "Fat), each in the amount of 'Final grams to consume' shown in the table. Together, those three "
+                "foods complete the calories that correspond to that meal."
+            ),
+            "Why does the total match my target calories?": (
+                "Because the system distributes your daily caloric target (Sheet 5) first across the 5 times of "
+                "day (Sheet 7), and then, within each time, across the 3 macronutrients. Adding everything back "
+                "up, the result should match your original caloric target."
+            ),
+        }
+        FAQ_DIETA = FAQ_DIETA_EN if st.session_state.get("idioma", "Español") == "English" else FAQ_DIETA_ES
+        pregunta_dieta = st.selectbox(T("Elige una pregunta sobre tu tabla de dieta:", "Choose a question about your diet table:"),
+                                       list(FAQ_DIETA.keys()), key="faq_dieta")
+        st.info(FAQ_DIETA[pregunta_dieta])
 
-    # ---- Barra final destacada: suma total = RCD ----
-    _diferencia_total = abs(total_general - rcd_final)
-    _check_txt = (T("✅ ¡Coincide exactamente con tu RCD!", "✅ Exactly matches your DCR!") if _diferencia_total < 1
-                  else T(f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD",
-                         f"⚠️ Difference of {_diferencia_total:.1f} kcal from your DCR"))
-    _html_barra_total = f"""
-    <div class="dieta-total-bar">
-        <div class="dt-label">🌾 {T('Carbohidratos', 'Carbohydrates')} + 🥩 {T('Proteínas', 'Protein')} + 🥑 {T('Grasas', 'Fats')}</div>
-        <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
-        <div class="dt-value">= {total_general:.1f} kcal</div>
-        <div style="font-size:0.9rem;opacity:0.92;">{T('Este total equivale a tu', 'This total equals your')} <b>{T('TOTAL DE CALORÍAS DIARIAS (RCD)', 'TOTAL DAILY CALORIC REQUIREMENT (DCR)')}</b></div>
-        <div class="dt-check">{_check_txt}</div>
-    </div>
-    """
-    st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
+        recursos_externos(9, [
+            (T("🌐 Buscar alimentos en FatSecret", "🌐 Search foods on FatSecret"), "https://www.fatsecret.es/"),
+        ])
+        caja_util(T(
+            "Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
+            "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
+            "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
+            "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
+            "Here you build your real menu for the day by choosing foods you like, and the app does all the "
+            "math for you: each time of day splits its calories into 50% carbohydrates, 20% protein, and "
+            "30% fat, then converts those calories to grams based on the specific food you chose — exactly "
+            "like in the original spreadsheet. Eating healthy can taste great too! 😋"
+        ), emoji="🍱", color="#FBE9E7", borde="#FF7043")
 
-    st.divider()
-    st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
-    FAQ_DIETA_ES = {
-        "¿Qué significa la columna 'kcal'?": (
-            "Es la cantidad de calorías que aporta ese alimento, tomando como referencia cada 100 gramos "
-            "de ese alimento (así viene definido en la base de datos nutricional del proyecto)."
-        ),
-        "¿Qué significa 'Porción corregida'?": (
-            "Es cuántas calorías del momento del día (Desayuno, Almuerzo, etc.) le corresponden a ese "
-            "macronutriente en particular. Por ejemplo, si el Almuerzo tiene 1000 kcal en total, la Porción "
-            "corregida de Carbohidrato será el 50% de esas 1000 kcal, la de Proteína el 20% y la de Grasa el 30%."
-        ),
-        "¿Qué significa 'Gramos finales a consumir'?": (
-            "Es la cantidad exacta, en gramos, que debes comer de ESE alimento específico para llegar a la "
-            "Porción corregida en calorías. Se calcula dividiendo la Porción corregida entre el kcal del "
-            "alimento y multiplicando por 100."
-        ),
-        "Entonces, ¿cuánto tengo que comer en cada comida?": (
-            "Debes preparar los tres alimentos que elegiste para ese momento del día (Carbohidrato, Proteína "
-            "y Grasa), cada uno en la cantidad de 'Gramos finales a consumir' que te muestra la tabla. Juntos, "
-            "esos tres alimentos completan las calorías que te corresponden en esa comida."
-        ),
-        "¿Por qué el total coincide con mis calorías meta?": (
-            "Porque el sistema reparte tu meta calórica diaria (Hoja 5) primero entre los 5 momentos del día "
-            "(Hoja 7) y luego, dentro de cada momento, entre los 3 macronutrientes. Al sumar todo de nuevo, "
-            "el resultado debe coincidir con tu meta calórica original."
-        ),
-    }
-    FAQ_DIETA_EN = {
-        "What does the 'kcal' column mean?": (
-            "It's the amount of calories that food provides, taken as a reference per 100 grams "
-            "of that food (as defined in the project's nutritional database)."
-        ),
-        "What does 'Adjusted Portion' mean?": (
-            "It's how many calories from that time of day (Breakfast, Lunch, etc.) correspond to that "
-            "specific macronutrient. For example, if Lunch has 1000 kcal in total, the Adjusted Portion "
-            "of Carbohydrate will be 50% of those 1000 kcal, Protein 20%, and Fat 30%."
-        ),
-        "What does 'Final grams to consume' mean?": (
-            "It's the exact amount, in grams, you should eat of THAT specific food to reach the Adjusted "
-            "Portion in calories. It's calculated by dividing the Adjusted Portion by the food's kcal and "
-            "multiplying by 100."
-        ),
-        "So, how much do I have to eat at each meal?": (
-            "You should prepare the three foods you chose for that time of day (Carbohydrate, Protein, and "
-            "Fat), each in the amount of 'Final grams to consume' shown in the table. Together, those three "
-            "foods complete the calories that correspond to that meal."
-        ),
-        "Why does the total match my target calories?": (
-            "Because the system distributes your daily caloric target (Sheet 5) first across the 5 times of "
-            "day (Sheet 7), and then, within each time, across the 3 macronutrients. Adding everything back "
-            "up, the result should match your original caloric target."
-        ),
-    }
-    FAQ_DIETA = FAQ_DIETA_EN if st.session_state.get("idioma", "Español") == "English" else FAQ_DIETA_ES
-    pregunta_dieta = st.selectbox(T("Elige una pregunta sobre tu tabla de dieta:", "Choose a question about your diet table:"),
-                                   list(FAQ_DIETA.keys()), key="faq_dieta")
-    st.info(FAQ_DIETA[pregunta_dieta])
-
-    recursos_externos(9, [
-        (T("🌐 Buscar alimentos en FatSecret", "🌐 Search foods on FatSecret"), "https://www.fatsecret.es/"),
-    ])
-    caja_util(T(
-        "Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
-        "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
-        "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
-        "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
-        "Here you build your real menu for the day by choosing foods you like, and the app does all the "
-        "math for you: each time of day splits its calories into 50% carbohydrates, 20% protein, and "
-        "30% fat, then converts those calories to grams based on the specific food you chose — exactly "
-        "like in the original spreadsheet. Eating healthy can taste great too! 😋"
-    ), emoji="🍱", color="#FBE9E7", borde="#FF7043")
-
+    else:
+        st.info("🍱 " + T(
+            "Completa las 5 comidas del día y pulsa \"Generar Menú Completo\" para ver tu menú final.",
+            "Complete all 5 meals of the day and tap \"Generate Full Menu\" to see your final menu."
+        ))
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA" and genero == "Mujer" and embarazada:
     # =================================================================================
     # MÓDULO EXCLUSIVO: Consumo Seguro de Cafeína en Gestación (ACOG / OMS·EFSA)
@@ -11732,12 +12071,15 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     _peso_30 = round(peso - (deficit_diario * 30) / 7700, 1)
     _reduccion_total = round(abs(peso - _peso_final), 1)
 
-    # --- Paleta semántica funcional (fija, no depende del tema) ---
-    _AZUL = "#2563EB"      # Peso actual
-    _VERDE = "#10B981"     # Meta final / logros
+    # --- Paleta semántica funcional, bien saturada (fija, no depende del tema) ---
+    _AZUL = "#2563EB"      # Información / peso actual
+    _VERDE = "#10B981"     # Resultado / progreso / meta final
     _AMBAR = "#F59E0B"     # Checkpoint intermedio (30 días)
-    _VIOLETA = "#8B5CF6"   # Fórmulas y cálculos
+    _VIOLETA = "#8B5CF6"   # Cálculos y fórmulas
     _CORAL = "#EF4444"     # Advertencias / riesgo
+    _ROSA = "#EC4899"      # Consejos / información educativa
+    _AMARILLO = "#FBBF24"  # Importante / recordar
+    _CIAN = "#06B6D4"      # Acento extra
 
     _color_tema = _VERDE if _es_mantener else (_AZUL if _es_bajar else _AMBAR)
     _obj_label = T("Mantener peso", "Maintain Weight") if _es_mantener else (T("Bajar de peso", "Lose Weight") if _es_bajar else T("Subir de peso", "Gain Weight"))
@@ -11749,72 +12091,113 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
                     else T("Sin cambio esperado", "No change expected")))
 
     # ================================================================================
-    # 1. RESUMEN EJECUTIVO DE LA META — Panel de Control Unificado
+    # 1. HERO — ¿De dónde parto? ¿Qué podría pasar? — degradado vivo, muy visual
     # ================================================================================
     st.markdown(f"""
-    <div style="background:#FFFFFF;border-radius:22px;padding:22px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 16px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">🎯 {T('Resumen de tu meta', 'Goal summary')}</p>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;">
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">📌 {T('Peso actual', 'Current Weight')}</p>
-        <p style="margin:2px 0 0 0;color:{_AZUL};font-size:1.75rem;font-weight:900;">{peso:.1f} kg</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{T('Punto de partida', 'Starting point')}</p>
+    <div style="background:linear-gradient(135deg,#DBEAFE 0%,#EDE9FE 45%,#FCE7F3 100%);border-radius:26px;padding:28px 28px;
+    margin-bottom:20px;border:2px solid rgba(139,92,246,0.25);box-shadow:0 10px 30px rgba(139,92,246,0.15);">
+    <p style="margin:0 0 6px 0;font-weight:900;color:#312E81;font-size:1.4rem;">🎯 {T('¿Cómo podría cambiar tu peso con el tiempo?', 'How could your weight change over time?')}</p>
+    <p style="margin:0 0 22px 0;color:#4C4467;font-size:0.93rem;line-height:1.55;max-width:640px;font-weight:600;">
+    {T('Esta es una estimación de lo que podría ocurrir si mantienes aproximadamente las mismas condiciones utilizadas en el cálculo: tu nivel de actividad y el plan de alimentación calculado.',
+       'This is an estimate of what could happen if you maintain roughly the same conditions used in the calculation: your activity level and the calculated eating plan.')}</p>
+
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#3B82F6,#2563EB);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(37,99,235,0.35);">
+        <p style="margin:0;color:#DBEAFE;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🔵 {T('Hoy', 'Today')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{peso:.1f} kg</p>
       </div>
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">🎯 {T('Objetivo de salud', 'Health Goal')}</p>
-        <p style="margin:2px 0 0 0;color:#1E293B;font-size:1.2rem;font-weight:800;">{_obj_label}</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{_obj_detalle}</p>
+      <div style="flex:0 0 auto;color:#8B5CF6;font-size:1.8rem;font-weight:900;padding:0 4px;">➜</div>
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#FBBF24,#F59E0B);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(245,158,11,0.35);">
+        <p style="margin:0;color:#FEF3C7;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🟠 {T('En 30 días', 'In 30 days')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{_peso_30:.1f} kg</p>
       </div>
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">⏱️ {T('Duración estimada', 'Estimated Duration')}</p>
-        <p style="margin:2px 0 0 0;color:#1E293B;font-size:1.75rem;font-weight:900;">{_DIAS_PROY} {T('días', 'days')}</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{T('8 semanas de constancia', '8 weeks of consistency')}</p>
+      <div style="flex:0 0 auto;color:#8B5CF6;font-size:1.8rem;font-weight:900;padding:0 4px;">➜</div>
+      <div style="flex:1;min-width:130px;text-align:center;background:linear-gradient(160deg,#34D399,#10B981);border-radius:20px;padding:16px 10px;box-shadow:0 8px 18px rgba(16,185,129,0.35);">
+        <p style="margin:0;color:#D1FAE5;font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;">🟢 {T(f'En {_DIAS_PROY} días', f'In {_DIAS_PROY} days')}</p>
+        <p style="margin:4px 0 0 0;color:#FFFFFF;font-size:1.7rem;font-weight:900;">{_peso_final:.1f} kg</p>
       </div>
-      <div style="flex:1;min-width:150px;">
-        <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">🏁 {T('Peso final estimado', 'Estimated Final Weight')}</p>
-        <p style="margin:2px 0 0 0;color:{_VERDE};font-size:1.75rem;font-weight:900;">{_peso_final:.1f} kg</p>
-        <p style="margin:0;color:#94A3B8;font-size:0.74rem;">{_cambio_txt}</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;">
+      <div style="background:#FFFFFFCC;border-radius:14px;padding:9px 16px;border:1.5px solid #C4B5FD;">
+      <p style="margin:0;color:#7C3AED;font-size:0.7rem;font-weight:900;text-transform:uppercase;">🎯 {T('Objetivo', 'Goal')}</p>
+      <p style="margin:0;color:#312E81;font-size:0.86rem;font-weight:800;">{_obj_label} · {_obj_detalle}</p>
       </div>
+      <div style="background:#FFFFFFCC;border-radius:14px;padding:9px 16px;border:1.5px solid #F9A8D4;">
+      <p style="margin:0;color:#DB2777;font-size:0.7rem;font-weight:900;text-transform:uppercase;">⏱️ {T('Duración', 'Duration')}</p>
+      <p style="margin:0;color:#312E81;font-size:0.86rem;font-weight:800;">{_DIAS_PROY} {T('días · 8 semanas de constancia', 'days · 8 weeks of consistency')}</p>
+      </div>
+    </div>
+
+    <div style="background:#FEF3C7;border:2px solid #FBBF24;border-radius:16px;padding:14px 18px;margin-top:18px;">
+    <p style="margin:0;color:#78350F;font-size:0.84rem;line-height:1.5;font-weight:600;"><b>💡 {T('Importante', 'Important')}:</b>
+    {T('esto es una estimación, no una predicción exacta. Tu peso real puede subir o bajar de forma diferente por cambios en alimentación, actividad, líquidos, digestión y otros factores.',
+       "this is an estimate, not an exact prediction. Your actual weight may go up or down differently due to changes in food, activity, fluids, digestion, and other factors.")}</p>
     </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 2. LÍNEA DE TIEMPO E HITOS DE PROGRESIÓN — checkpoints con barra de progreso
+    # 2. TU RECORRIDO — timeline horizontal, muy colorida
     # ================================================================================
-    st.markdown(f"""<div style="background:#FFFFFF;border-radius:22px;padding:22px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 16px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">📅 {T('Línea de tiempo e hitos', 'Timeline and milestones')}</p>
+    _delta1 = round(_peso_30 - peso, 2)
+    _delta2 = round(_peso_final - _peso_30, 2)
+    _signo1 = "−" if _delta1 < 0 else ("+" if _delta1 > 0 else "±")
+    _signo2 = "−" if _delta2 < 0 else ("+" if _delta2 > 0 else "±")
+
+    st.markdown(f"""<div style="background:linear-gradient(100deg,#EFF6FF 0%,#F0FDF4 100%);border-radius:24px;padding:24px 26px;margin-bottom:20px;
+    border:2px solid #BFDBFE;box-shadow:0 8px 22px rgba(37,99,235,0.1);">
+    <p style="margin:0 0 4px 0;font-weight:900;color:#1E3A8A;font-size:1.15rem;">🧭 {T('Tu recorrido', 'Your journey')}</p>
+    <p style="margin:0 0 18px 0;color:#64748B;font-size:0.83rem;font-weight:600;">{T('Así se vería tu avance estimado, paso a paso.', "This is what your estimated progress would look like, step by step.")}</p>
     """, unsafe_allow_html=True)
 
     _hitos = [
-        (T("HOY", "TODAY"), peso, 0, _AZUL, T("Inicio", "Start")),
-        (T("MES 1 · DÍA 30", "MONTH 1 · DAY 30"), _peso_30, 50, _AMBAR, T("En progreso", "In progress")),
-        (T("MES 2 · DÍA 60", "MONTH 2 · DAY 60"), _peso_final, 100, _VERDE, T("Meta lograda", "Goal reached")),
+        (T("HOY", "TODAY"), peso, 0, _AZUL, "#DBEAFE", T("Punto de partida", "Starting point")),
+        (T("DÍA 30", "DAY 30"), _peso_30, 50, _AMBAR, "#FEF3C7", T("Progreso estimado", "Estimated progress")),
+        (T("DÍA 60", "DAY 60"), _peso_final, 100, _VERDE, "#D1FAE5", T("Meta estimada", "Estimated goal")),
     ]
     _cols_hito = st.columns(3)
-    for _col_h, (_lbl, _val, _pct, _col_c, _st_lbl) in zip(_cols_hito, _hitos):
+    for _col_h, (_lbl, _val, _pct, _col_c, _bg_c, _st_lbl) in zip(_cols_hito, _hitos):
         with _col_h:
             st.markdown(f"""
-            <div style="text-align:center;padding:6px 10px;">
-            <p style="margin:0;color:#64748B;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">{_lbl}</p>
-            <p style="margin:4px 0 2px 0;color:{_col_c};font-size:1.6rem;font-weight:900;">{_val:.1f} kg</p>
-            <p style="margin:0 0 8px 0;color:#64748B;font-size:0.78rem;font-weight:700;">{_st_lbl}</p>
-            <div style="background:#EEF2F6;border-radius:999px;height:8px;overflow:hidden;">
+            <div style="text-align:center;padding:14px 10px;background:{_bg_c};border-radius:18px;border:2px solid {_col_c}55;">
+            <p style="margin:0;color:{_col_c};font-size:0.74rem;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;">{_lbl}</p>
+            <p style="margin:4px 0 2px 0;color:{_col_c};font-size:1.7rem;font-weight:900;">{_val:.1f} kg</p>
+            <p style="margin:0 0 8px 0;color:#475569;font-size:0.78rem;font-weight:700;">{_st_lbl}</p>
+            <div style="background:#FFFFFF;border-radius:999px;height:9px;overflow:hidden;">
             <div style="background:{_col_c};width:{_pct}%;height:100%;border-radius:999px;"></div>
             </div>
-            <p style="margin:4px 0 0 0;color:#94A3B8;font-size:0.68rem;font-weight:700;">{_pct}%</p>
+            <p style="margin:4px 0 0 0;color:#94A3B8;font-size:0.68rem;font-weight:800;">{_pct}%</p>
             </div>
             """, unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="display:flex;justify-content:space-around;margin-top:12px;">
+      <div style="flex:1;text-align:center;">
+        <span style="background:{_AMBAR};color:#FFFFFF;font-weight:800;font-size:0.76rem;padding:6px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(245,158,11,0.35);">{_signo1}{abs(_delta1):.1f} kg {T('estimados', 'estimated')}</span>
+      </div>
+      <div style="flex:1;text-align:center;">
+        <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.76rem;padding:6px 14px;border-radius:999px;box-shadow:0 3px 8px rgba(16,185,129,0.35);">{_signo2}{abs(_delta2):.1f} kg {T('estimados', 'estimated')}</span>
+      </div>
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ================================================================================
-    # 3. GRÁFICO INTERACTIVO DE TENDENCIA — con banda de tolerancia saludable (±1 kg)
+    # 3. GRÁFICO — con leyenda y explicación arriba, marco colorido
     # ================================================================================
-    st.markdown(f"""<div style="background:#FFFFFF;border-radius:22px;padding:22px 26px 6px 26px;margin-bottom:18px;
-    border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 20px rgba(0,0,0,0.06);">
-    <p style="margin:0 0 4px 0;font-weight:800;color:#1E293B;font-size:1.1rem;">📈 {T('Evolución estimada del peso', 'Estimated Weight Evolution')}</p>
+    st.markdown(f"""<div style="background:#FFFFFF;border-radius:24px;padding:24px 26px 6px 26px;margin-bottom:20px;
+    border:2px solid #C4B5FD;box-shadow:0 8px 22px rgba(139,92,246,0.12);">
+    <p style="margin:0 0 4px 0;font-weight:900;color:#5B21B6;font-size:1.15rem;">📉 {T('Evolución estimada del peso', 'Estimated Weight Evolution')}</p>
+    <p style="margin:0 0 12px 0;color:#4C4467;font-size:0.86rem;line-height:1.5;"><b>{T('¿Qué muestra este gráfico?', 'What does this chart show?')}</b><br>
+    {T('La línea azul representa una posible trayectoria estimada. Tu peso real no necesariamente seguirá exactamente esta línea cada día.',
+       "The blue line represents one possible estimated path. Your actual weight won't necessarily follow this exact line every day.")}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <span style="background:{_AZUL};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🔵 {T('Línea azul: trayectoria estimada', 'Blue line: estimated path')}</span>
+      <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟢 {T('Zona verde: rango orientativo', 'Green zone: guideline range')}</span>
+      <span style="background:{_AMBAR};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟠 {T('Punto naranja: estimación intermedia', 'Orange dot: mid-point estimate')}</span>
+      <span style="background:{_VERDE};color:#FFFFFF;font-weight:800;font-size:0.72rem;padding:6px 12px;border-radius:999px;">🟢 {T('Punto verde: objetivo estimado', 'Green dot: estimated goal')}</span>
+    </div>
     """, unsafe_allow_html=True)
 
     dias_eje = list(range(0, _DIAS_PROY + 1))
@@ -11826,20 +12209,20 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=_banda_sup, mode="lines", line=dict(width=0),
                                      showlegend=False, hoverinfo="skip"))
     fig_tiempo.add_trace(go.Scatter(x=dias_eje, y=_banda_inf, mode="lines", line=dict(width=0), fill="tonexty",
-                                     fillcolor=_hex_a_rgba(_VERDE, 0.14),
-                                     name=T("Rango de variación normal (±1 kg)", "Normal variation range (±1 kg)"),
+                                     fillcolor=_hex_a_rgba(_VERDE, 0.18),
+                                     name=T("Rango orientativo de variación", "Guideline variation range"),
                                      hoverinfo="skip"))
     fig_tiempo.add_trace(go.Scatter(
         x=dias_eje, y=pesos_dia_completo, mode="lines", name=T("Proyección estimada", "Estimated Projection"),
-        line=dict(color=_AZUL, width=4, shape="spline"),
+        line=dict(color=_AZUL, width=5, shape="spline"),
     ))
 
     hitos_x = [0, 30, _DIAS_PROY]
     hitos_y = [pesos_dia_completo[0], pesos_dia_completo[30], pesos_dia_completo[_DIAS_PROY]]
-    hitos_txt = [T("Hoy", "Today"), T("En 1 mes", "In 1 Month"), T("Meta cumplida", "Goal reached")]
+    hitos_txt = [T("Hoy", "Today"), T("En 1 mes", "In 1 Month"), T("Meta estimada", "Estimated goal")]
     fig_tiempo.add_trace(go.Scatter(
         x=hitos_x, y=hitos_y, mode="markers+text", name=T("Hitos", "Milestones"),
-        marker=dict(size=14, color=[_AZUL, _AMBAR, _VERDE], line=dict(color="#FFFFFF", width=3)),
+        marker=dict(size=16, color=[_AZUL, _AMBAR, _VERDE], line=dict(color="#FFFFFF", width=3)),
         text=[f"{t}<br><b>{v:.1f} kg</b>" for t, v in zip(hitos_txt, hitos_y)],
         textposition="top center", textfont=dict(size=13, color="#17301F", family="-apple-system"),
         showlegend=False,
@@ -11855,66 +12238,121 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
     st.plotly_chart(fig_tiempo, use_container_width=True)
-    st.caption(T("🔵 Línea azul: proyección estimada del peso ideal · 🟢 Punto verde: meta cumplida a los 60 días · "
-                 "░ Área verde clarita: rango de variación biológica normal (±1 kg) por retención de agua o digestión.",
-                 "🔵 Blue line: estimated projection of ideal weight · 🟢 Green dot: goal reached at day 60 · "
-                 "░ Light green area: normal biological variation range (±1 kg) from water retention or digestion."))
+    st.caption(T("El peso puede moverse temporalmente por agua, digestión, comidas, sodio y otros factores. Por eso, "
+                 "una subida puntual dentro de la zona verde no significa necesariamente que hayas ganado grasa.",
+                 "Weight can shift temporarily due to water, digestion, meals, sodium, and other factors. So a "
+                 "one-off increase within the green zone doesn't necessarily mean you've gained fat."))
     st.markdown("</div>", unsafe_allow_html=True)
 
     # ================================================================================
-    # 4. DESGLOSE EDUCATIVO — cálculos paso a paso + factores influyentes (acordeón)
+    # 3b. ¿QUÉ SIGNIFICA ESTA PROYECCIÓN? — sube justo después del gráfico
     # ================================================================================
-    with st.expander(f"🧮 {T('Ver el desglose de cálculos y factores influyentes', 'View the calculation breakdown and influencing factors')}"):
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#DBEAFE 0%,#EFF6FF 100%);border-radius:20px;padding:20px 24px;margin-bottom:20px;border:2px solid #93C5FD;">
+    <p style="margin:0 0 8px 0;color:#1E3A8A;font-weight:900;font-size:1.02rem;">💡 {T('Entonces… ¿qué significa realmente esta proyección?', 'So… what does this projection actually mean?')}</p>
+    <p style="margin:0;color:#1E3A8A;font-size:0.89rem;line-height:1.6;font-weight:600;">
+    {T('No significa que tu peso vaya a seguir exactamente la línea azul. Significa: "si mantuvieras aproximadamente las mismas condiciones utilizadas en el cálculo, el modelo estima que podrías acercarte a este resultado."',
+       'It doesn\'t mean your weight will follow the blue line exactly. It means: "if you kept roughly the same conditions used in the calculation, the model estimates you could get close to this result."')}</p>
+    <div style="background:#1E40AF;border-radius:14px;padding:10px 18px;margin-top:14px;display:inline-block;box-shadow:0 4px 10px rgba(30,64,175,0.3);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.84rem;font-weight:800;">📌 {T('La proyección es una guía, no una promesa.', 'The projection is a guide, not a promise.')}</p>
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ================================================================================
+    # 4. ¿POR QUÉ PODRÍA CAMBIAR MI PESO? — explicación conceptual, antes de las matemáticas
+    # ================================================================================
+    st.markdown(f"""
+    <div style="background:linear-gradient(135deg,#ECFDF5 0%,#F0FDFA 100%);border-radius:24px;padding:24px 26px;margin-bottom:20px;border:2px solid #6EE7B7;">
+    <p style="margin:0 0 6px 0;font-weight:900;color:#065F46;font-size:1.15rem;">🧠 {T('¿Por qué podría cambiar mi peso?', 'Why might my weight change?')}</p>
+    <p style="margin:0 0 16px 0;color:#065F46;font-size:0.89rem;line-height:1.6;font-weight:600;">
+    {T('Piensa en tus calorías como una balanza energética: la energía que consumes frente a la energía que tu cuerpo utiliza.',
+       'Think of your calories as an energy balance: the energy you consume versus the energy your body uses.')}</p>
+    <div style="text-align:center;color:#065F46;font-size:0.92rem;font-weight:900;margin-bottom:18px;background:#FFFFFF;
+    border-radius:14px;padding:10px;">
+    🍽️ {T('Energía que consumes', 'Energy you consume')} &nbsp;⚖️&nbsp; {T('Energía que tu cuerpo utiliza', 'Energy your body uses')} 🔥
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#34D399,#10B981);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(16,185,129,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🟢</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Equilibrio', 'Balance')}</p>
+        <p style="margin:0;color:#ECFDF5;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo ≈ gasto. Tu peso tiende a mantenerse.', 'Intake ≈ expenditure. Your weight tends to stay the same.')}</p>
+      </div>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#60A5FA,#2563EB);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(37,99,235,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🔵</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Déficit', 'Deficit')}</p>
+        <p style="margin:0;color:#DBEAFE;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo < gasto. Existe un déficit energético.', 'Intake < expenditure. There is an energy deficit.')}</p>
+      </div>
+      <div style="flex:1;min-width:170px;background:linear-gradient(160deg,#FBBF24,#F59E0B);border-radius:18px;padding:16px 18px;box-shadow:0 6px 14px rgba(245,158,11,0.3);">
+        <p style="margin:0;font-size:1.4rem;">🟠</p>
+        <p style="margin:6px 0 2px 0;font-weight:900;color:#FFFFFF;font-size:0.9rem;">{T('Superávit', 'Surplus')}</p>
+        <p style="margin:0;color:#FEF3C7;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Consumo > gasto. Existe un superávit energético.', 'Intake > expenditure. There is an energy surplus.')}</p>
+      </div>
+    </div>
+    <p style="margin:16px 0 0 0;color:#065F46;font-size:0.85rem;line-height:1.5;font-weight:600;">
+    {T('La proyección utiliza este principio para estimar cómo podría cambiar tu peso a lo largo del tiempo.',
+       'The projection uses this principle to estimate how your weight could change over time.')}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ================================================================================
+    # 5. ¿CÓMO OBTUVIMOS ESTA ESTIMACIÓN? — cálculo paso a paso, explicado, muy visual
+    # ================================================================================
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#EDE9FE,#F5F3FF);border-radius:18px;padding:16px 22px;margin-bottom:14px;border:2px solid #C4B5FD;">
+    <p style="margin:0 0 2px 0;font-weight:900;color:#5B21B6;font-size:1.15rem;">🧮 {T('¿Cómo obtuvimos esta estimación?', 'How did we get this estimate?')}</p>
+    <p style="margin:0;color:#5B21B6;font-size:0.85rem;font-weight:700;">{T('No necesitas hacer las cuentas: te mostramos qué significa cada paso.', "You don't need to do the math yourself — here's what each step means.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    _signo_ajuste = "-" if _es_bajar else ("+" if not _es_mantener else "±")
+    _rcd_obj_label = T("Nuevo RCD", "New TDEE") if not _es_mantener else T("RCD objetivo", "Target TDEE")
+
+    _pasos = [
+        ("1", "🔥", T("Primero calculamos tu gasto diario", "First we calculate your daily expenditure"),
+         T("Esta es una estimación de la energía que tu cuerpo utiliza cada día según tus datos y tu nivel de actividad.",
+           "This is an estimate of the energy your body uses each day, based on your data and activity level."),
+         f"RCD = {rcd:.0f} kcal/{T('día', 'day')}", "#FEE2E2", "#FCA5A5", "#B91C1C"),
+        ("2", "🎯", T("Aplicamos el ajuste elegido", "We apply the chosen adjustment"),
+         T("Se aplica un ajuste calórico saludable y gradual: consumir un poco menos o un poco más de energía que el gasto estimado, según tu objetivo.",
+           "A healthy, gradual caloric adjustment is applied: consuming a bit less or a bit more energy than the estimated expenditure, depending on your goal."),
+         f"{rcd:.0f} → {rcd_final:.0f} kcal/{T('día', 'day')} ({_rcd_obj_label})", "#FEF3C7", "#FCD34D", "#B45309"),
+        ("3", "⚡", T("Calculamos la diferencia diaria", "We calculate the daily difference"),
+         T("Es la diferencia energética estimada entre lo que tu cuerpo usa y lo que consumes cada día.",
+           "This is the estimated energy difference between what your body uses and what you consume each day."),
+         f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/{T('día', 'day')}", "#DBEAFE", "#93C5FD", "#1D4ED8"),
+        ("4", "📅", T(f"Lo proyectamos durante {_DIAS_PROY} días", f"We project it over {_DIAS_PROY} days"),
+         T("Es la diferencia energética acumulada que utiliza este modelo matemático a lo largo del período.",
+           "This is the cumulative energy difference this mathematical model uses over the period."),
+         f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal {T('totales', 'total')}", "#D1FAE5", "#6EE7B7", "#047857"),
+        ("5", "⚖️", T("Convertimos esa energía en una estimación de peso", "We convert that energy into a weight estimate"),
+         T("El modelo utiliza aproximadamente 7,700 kcal por kilogramo como equivalente energético de referencia.",
+           "The model uses approximately 7,700 kcal per kilogram as a reference energy equivalent."),
+         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 ≈ {peso_cambio_60:.2f} kg", "#EDE9FE", "#C4B5FD", "#6D28D9"),
+    ]
+    for _num, _ic_p, _titulo, _desc, _formula, _bg_p, _bd_p, _hx_p in _pasos:
         st.markdown(f"""
-        <div style="background:#F2F7F3;border-radius:18px;padding:16px 20px;margin-bottom:16px;border:1px solid #D8E6DA;">
-        <p style="margin:0 0 6px 0;font-weight:800;color:#1E5631;font-size:0.94rem;">🤔 {T('¿Por qué cambia mi peso?', 'Why does my weight change?')}</p>
-        <p style="margin:0;color:#3C4A3F;font-size:0.85rem;line-height:1.6;">{T('''Tu cuerpo necesita una cierta cantidad
-        de calorías para mantener su peso (RCD). Cuando consumes menos calorías de las que gastas, utiliza parte de
-        sus reservas de energía y tu peso disminuye. Si consumes más de las necesarias, ocurre lo contrario y el
-        peso aumenta.''', '''Your body needs a certain amount of calories to maintain its weight (TDEE). When you consume
-        fewer calories than you burn, it uses part of its energy reserves and your weight decreases. If you consume more
-        than needed, the opposite happens and your weight increases.''')}</p>
+        <div style="display:flex;align-items:flex-start;gap:14px;background:{_bg_p};border-radius:18px;
+        padding:16px 20px;margin-bottom:10px;border:2px solid {_bd_p};box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+        <div style="min-width:34px;height:34px;border-radius:50%;background:{_hx_p};color:#FFFFFF;
+        font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;box-shadow:0 3px 6px rgba(0,0,0,0.2);">{_num}</div>
+        <div style="flex:1;">
+        <p style="margin:0;color:{_hx_p};font-size:0.92rem;font-weight:900;">{_ic_p} {_titulo}</p>
+        <p style="margin:4px 0 6px 0;color:#3C3C3C;font-size:0.83rem;line-height:1.5;font-weight:600;">{_desc}</p>
+        <p style="margin:0;color:{_hx_p};font-weight:900;font-size:0.94rem;font-family:monospace;">{_formula}</p>
+        </div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown(f"##### 🧮 {T('¿Cómo se calculó esta proyección?', 'How was this projection calculated?')}")
-        _signo_ajuste = "-" if _es_bajar else ("+" if not _es_mantener else "±")
-        _rcd_obj_label = T("Nuevo RCD", "New TDEE") if not _es_mantener else T("RCD objetivo", "Target TDEE")
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#8B5CF6,#6D28D9);border-radius:18px;
+    padding:16px 20px;margin:8px 0 14px 0;box-shadow:0 6px 16px rgba(139,92,246,0.35);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.92rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
+    {abs(peso_cambio_60):.2f} = <b style="font-size:1.1rem;">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-        _pasos = [
-            ("1", "⚡", T("Tasa energética base: se calcula tu RCD (gasto calórico diario).",
-                          "Base energy rate: your TDEE (daily calorie expenditure) is calculated."),
-             f"RCD = {rcd:.0f} kcal/{T('día', 'day')}"),
-            ("2", "📉", T(f"Se aplica tu déficit/superávit saludable ({_obj_label}, {_signo_ajuste}{ajuste_aplicado*100:.0f}%).",
-                    f"Your healthy deficit/surplus is applied ({_obj_label}, {_signo_ajuste}{ajuste_aplicado*100:.0f}%)."),
-             f"{rcd:.0f} {_signo_ajuste} {ajuste_aplicado*100:.0f}% = {rcd_final:.0f} kcal/{T('día', 'day')} ({_rcd_obj_label})"),
-            ("3", "💡", T("Ahorro/exceso energético diario.", "Daily energy savings/excess."),
-             f"{rcd:.0f} − {rcd_final:.0f} = {deficit_diario:.0f} kcal/{T('día', 'day')}"),
-            ("4", "🗓️", T(f"Acumulación durante {_DIAS_PROY} días.", f"Accumulation over {_DIAS_PROY} days."),
-             f"{deficit_diario:.0f} × {_DIAS_PROY} = {deficit_diario*_DIAS_PROY:.0f} kcal {T('totales', 'total')}"),
-            ("5", "⚖️", T("Conversión a grasa corporal real (1 kg de grasa ≈ 7,700 kcal).",
-                          "Conversion to real body fat (1 kg of fat ≈ 7,700 kcal)."),
-             f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 = {peso_cambio_60:.2f} kg"),
-        ]
-        for _num, _ic_p, _desc, _formula in _pasos:
-            st.markdown(f"""
-            <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:16px;
-            padding:12px 18px;margin-bottom:8px;border:1px solid rgba(139,92,246,0.18);box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="min-width:32px;height:32px;border-radius:50%;background:{_VIOLETA};color:#FFFFFF;
-            font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{_num}</div>
-            <div style="flex:1;"><p style="margin:0;color:#3C4A3F;font-size:0.85rem;">{_ic_p} {_desc}</p>
-            <p style="margin:2px 0 0 0;color:{_VIOLETA};font-weight:800;font-size:0.9rem;font-family:monospace;">{_formula}</p></div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div style="background:{_VIOLETA}14;border:1.5px solid {_VIOLETA}55;border-radius:16px;
-        padding:14px 18px;margin:8px 0 18px 0;">
-        <p style="margin:0;color:#17301F;font-size:0.9rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
-        {abs(peso_cambio_60):.2f} = <b style="color:{_VIOLETA};">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
+    with st.expander(f"➗ {T('Ver las fórmulas utilizadas', 'View the formulas used')}"):
         if _es_bajar:
             st.markdown(T("""
 - **Déficit diario** = RCD − RCD objetivo
@@ -11942,60 +12380,77 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         else:
             st.markdown(T("- **Peso final** = Peso inicial (sin déficit ni superávit aplicado)",
                            "- **Final weight** = Initial weight (no deficit or surplus applied)"))
-        st.caption(T("Se utiliza el equivalente energético aproximado de 7,700 kcal por kilogramo de grasa corporal, "
-                   "ampliamente empleado para estimar cambios de peso. En la práctica, el cuerpo humano es más "
-                   "complejo y el ritmo real puede variar entre personas.",
-                   "The approximate energy equivalent of 7,700 kcal per kilogram of body fat is used, "
-                   "widely applied to estimate weight changes. In practice, the human body is more "
-                   "complex and the actual rate can vary between people."))
 
-        st.markdown(f"""
-        <div style="background:#E7F1FE;border-radius:16px;padding:16px 20px;margin:16px 0 14px 0;border:1px solid #B3D2F7;">
-        <p style="margin:0;color:#0D47A1;font-size:0.86rem;line-height:1.6;"><b>🟦 {T('¿Qué significa esta proyección?', 'What does this projection mean?')}</b><br>
-        {T('''Esta proyección supone que mantendrás aproximadamente el mismo nivel de actividad física y el mismo consumo
-        de calorías durante todo el período. Si alguno de estos factores cambia, el resultado también cambiará.''',
-        '''This projection assumes you will maintain roughly the same level of physical activity and the same calorie
-        intake throughout the period. If any of these factors change, the result will also change.''')}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background:linear-gradient(120deg,#FCE7F3,#FDF2F8);border:2px solid #F9A8D4;border-radius:18px;padding:16px 22px;margin:4px 0 20px 0;">
+    <p style="margin:0;color:#9D174D;font-size:0.86rem;line-height:1.6;font-weight:600;"><b>🩷 {T('Equivalente energético utilizado por el modelo', 'Energy equivalent used by the model')}:</b><br>
+    {T('El cuerpo humano no funciona como una calculadora exacta. Esto no significa que cada 7,700 kcal de déficit produzcan exactamente 1 kg de grasa perdida: el peso también cambia por líquidos, glucógeno, masa muscular, digestión, adaptación metabólica y otros factores.',
+       "The human body doesn't work like an exact calculator. This doesn't mean every 7,700 kcal of deficit produces exactly 1 kg of fat lost: weight also changes due to fluids, glycogen, muscle mass, digestion, metabolic adaptation, and other factors.")}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-        st.markdown(f"##### 🎯 {T('¿Qué puede hacer que esta proyección cambie?', 'What could make this projection change?')}")
-        _factores = [
-            ("🏃", T("Más actividad física", "More Physical Activity"), T("Acelera la pérdida de peso de forma saludable.", "Speeds up healthy weight loss."), "#EAFAEE", "#9BD8AE", "#1E5631"),
-            ("🍕", T("Exceso calórico", "Caloric Excess"), T("Alarga el tiempo necesario para cumplir la meta.", "Extends the time needed to reach the goal."), "#FDEBD9", "#F5C48E", "#B0530A"),
-            ("😴", T("Falta de sueño", "Poor Sleep"), T("Altera hormonas como el cortisol y la ghrelina, aumentando el apetito.", "Alters hormones like cortisol and ghrelin, increasing appetite."), "#F3EEFB", "#C6AEE8", "#6A3FA0"),
-            ("💧", T("Retención de agua", "Water Retention"), T("Causa fluctuaciones temporales en la balanza que no son grasa.", "Causes temporary scale fluctuations that aren't fat."), "#E7F1FE", "#B3D2F7", "#0D47A1"),
-        ]
-        _cols_fact = st.columns(4)
-        for _col_f, (_ic, _tt, _txt, _fondo, _borde, _hex) in zip(_cols_fact, _factores):
-            with _col_f:
-                st.markdown(f"""
-                <div style="background:{_fondo};border:1px solid {_borde};border-radius:18px;padding:16px 14px;
-                height:150px;">
-                <div style="font-size:1.5rem;">{_ic}</div>
-                <p style="margin:8px 0 4px 0;font-weight:800;color:{_hex};font-size:0.88rem;">{_tt}</p>
-                <p style="margin:0;color:#5C6B60;font-size:0.78rem;line-height:1.4;">{_txt}</p>
-                </div>
-                """, unsafe_allow_html=True)
+    # ================================================================================
+    # 6. ¿POR QUÉ EL RESULTADO REAL PODRÍA SER DIFERENTE? — factores, arcoíris, sin culpabilizar
+    # ================================================================================
+    st.markdown(f"""<div style="background:linear-gradient(120deg,#F5F3FF,#FFFFFF);border-radius:18px;padding:14px 20px;margin-bottom:14px;border:2px solid #DDD6FE;">
+    <p style="margin:0;font-weight:900;color:#5B21B6;font-size:1.1rem;">🔄 {T('¿Por qué el resultado real podría ser diferente?', 'Why might your actual result be different?')}</p>
+    </div>""", unsafe_allow_html=True)
+    _factores = [
+        ("🥗", T("Cambios en la alimentación", "Changes in eating"), T("Cambiar las cantidades o los alimentos modifica la energía que consumes.", "Changing amounts or foods changes the energy you consume."), "linear-gradient(160deg,#FDBA74,#F97316)"),
+        ("🏃", T("Cambios en la actividad", "Changes in activity"), T("Si tu actividad aumenta o disminuye, también cambia tu gasto energético.", "If your activity increases or decreases, your energy expenditure changes too."), "linear-gradient(160deg,#6EE7B7,#10B981)"),
+        ("💧", T("Agua y digestión", "Water and digestion"), T("El peso puede subir o bajar temporalmente sin representar un cambio equivalente en grasa.", "Weight can go up or down temporarily without representing an equivalent change in fat."), "linear-gradient(160deg,#7DD3FC,#0EA5E9)"),
+        ("😴", T("Sueño y rutina", "Sleep and routine"), T("Dormir poco puede afectar el apetito, la energía y la adherencia al plan.", "Poor sleep can affect appetite, energy, and how well you stick to the plan."), "linear-gradient(160deg,#C4B5FD,#8B5CF6)"),
+        ("📅", T("Constancia", "Consistency"), T("Saltarse o cambiar frecuentemente el plan hace que la realidad se aleje de la simulación.", "Frequently skipping or changing the plan makes reality diverge from the simulation."), "linear-gradient(160deg,#F9A8D4,#EC4899)"),
+    ]
+    _cols_fact = st.columns(5)
+    for _col_f, (_ic, _tt, _txt, _grad) in zip(_cols_fact, _factores):
+        with _col_f:
+            st.markdown(f"""
+            <div style="background:{_grad};border-radius:20px;padding:18px 14px;
+            height:172px;box-shadow:0 6px 14px rgba(0,0,0,0.15);">
+            <div style="font-size:1.7rem;">{_ic}</div>
+            <p style="margin:8px 0 4px 0;font-weight:900;color:#FFFFFF;font-size:0.85rem;">{_tt}</p>
+            <p style="margin:0;color:#FFFFFFE6;font-size:0.75rem;line-height:1.4;font-weight:600;">{_txt}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
     st.write("")
 
     # ================================================================================
-    # 5. BANNER DE CONFIANZA — reemplaza la caja amarilla de advertencia
+    # 7. LO MÁS IMPORTANTE — mensaje final, vivo y celebratorio
     # ================================================================================
     st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#EAFAEE 0%,#FFFFFF 75%);border-radius:20px;padding:18px 22px;
-    margin-bottom:16px;border:1px solid rgba(16,185,129,0.25);box-shadow:0 4px 14px rgba(16,185,129,0.08);">
-    <p style="margin:0;color:#065F46;font-size:0.9rem;line-height:1.6;"><b>💡 {T('Nota importante', 'Important Note')}:</b>
-    {T(f'El cuerpo humano no es una calculadora exacta. Esta proyección es una guía matemática respaldada por la ciencia. '
-       f'La constancia semana a semana es la clave del éxito real. ¡Tú puedes lograrlo, {_nombre_saludo}! 🌟',
-      f"The human body isn't an exact calculator. This projection is a math-based guide backed by science. "
-      f"Week-by-week consistency is the real key to success. You can do it, {_nombre_saludo}! 🌟")}</p>
+    <div style="background:linear-gradient(120deg,#FEF3C7 0%,#FDE68A 40%,#FBCFE8 100%);border-radius:26px;padding:24px 28px;
+    margin-bottom:18px;border:2px solid #FBBF24;box-shadow:0 10px 26px rgba(251,191,36,0.25);">
+    <p style="margin:0 0 16px 0;font-weight:900;color:#78350F;font-size:1.2rem;">🌟 {T('Lo más importante', 'The most important thing')}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#F59E0B;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">1</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">📊 {T('La proyección es una estimación', 'The projection is an estimate')}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('No predice exactamente cuánto pesarás en una fecha determinada.', "It doesn't predict exactly how much you'll weigh on a given date.")}</p></div>
+      </div>
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#EC4899;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">2</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">⚖️ {T('Tu peso no cambia de forma perfectamente lineal', "Your weight doesn't change perfectly linearly")}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Puede subir o bajar temporalmente por agua, digestión y otros factores.', 'It can go up or down temporarily due to water, digestion, and other factors.')}</p></div>
+      </div>
+      <div style="flex:1;min-width:200px;background:#FFFFFFCC;border-radius:16px;padding:14px 16px;display:flex;gap:10px;">
+        <div style="min-width:28px;height:28px;border-radius:50%;background:#10B981;color:#FFFFFF;font-weight:900;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.82rem;">3</div>
+        <div><p style="margin:0;font-weight:900;color:#78350F;font-size:0.87rem;">🌱 {T('Lo importante es observar la tendencia', 'What matters is watching the trend')}</p>
+        <p style="margin:2px 0 0 0;color:#92400E;font-size:0.79rem;line-height:1.4;font-weight:600;">{T('Un solo día no define tu progreso.', "A single day doesn't define your progress.")}</p></div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(120deg,#10B981,#059669);border-radius:14px;padding:14px 18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+    <p style="margin:0;color:#FFFFFF;font-size:0.87rem;line-height:1.6;font-weight:700;">
+    {T(f'La constancia semana a semana es la clave del éxito real. ¡Tú puedes lograrlo, {_nombre_saludo}! 🌟',
+       f"Week-by-week consistency is the real key to success. You can do it, {_nombre_saludo}! 🌟")}</p>
+    </div>
     </div>
     """, unsafe_allow_html=True)
 
-
-# ---------------------------------------------------------------------------------------
 elif hoja_activa == "📄 MI REPORTE":
     hoja_header(14, T("Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.",
                        "A complete medical report, with your data, results, and recommendations — ready to print."))
