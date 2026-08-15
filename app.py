@@ -9840,12 +9840,6 @@ elif hoja_activa == "5.-CONTROL DE PESO":
                        "your body's vital minimum. That's why your Target DCR didn't go any lower."))
 
         st.divider()
-
-        imagen_referencia_drive(
-            "17w8KlSkMx_eKhK145N4hF0WAkFpV9h5b", "1HBt1WKJ0ELZFEzryjXHyXqEfFPKRTxfP",
-            "Control de Peso", "Weight Control")
-
-        st.divider()
     
         # ===== 3. ¿QUÉ CAMBIÓ? — comparación Antes / Ahora / Diferencia con barras =====
         st.markdown(f"#### 📊 {T('Comparación de tu plan', 'Your Plan Comparison')}")
@@ -10802,7 +10796,7 @@ elif hoja_activa == "7.-PORCIONES":
     st.info(_respuesta_mostrada)
 
     imagen_referencia_drive(
-        "1_AL07U7KsX4YMCXyKRDFeUNdKWZbcmJU", "1v2VTUp-CYkD3KPdBgrUJTLOkVuIKTTuf",
+        "1uTsB1B_l-O4T_btj3HlWGQveWm3DNEOM", "1BoNmP27i_Q3cCxn_wQ_wPQEh_LZn_LF5",
         "Tiempos de comida", "Meal times")
 
     caja_util(T(
@@ -10862,7 +10856,7 @@ elif hoja_activa == "8.-FATSECRET":
         st.link_button(T("🌐 Abrir FatSecret", "🌐 Open FatSecret"), "https://www.fatsecret.es/", use_container_width=True)
 
     imagen_referencia_drive(
-        "1NfFbSgnfjY1Yn85PDDAgx1Pop7RXrUm3", "192bE8d1VSnAgnd-vRD2qVmw2QBHbhFZE",
+        "1y_7WnS-TNq3ehxrncEsD98ZYNts_ODPT", "1PPi5rqccyf-n9tE07WPeMGM65MA18A6p",
         "FatSecret", "FatSecret")
 
     st.markdown(f"""
@@ -10885,7 +10879,7 @@ elif hoja_activa == "8.-FATSECRET":
     st.markdown(f"#### 🔎 {T('Buscador Nutricional · Tabla Peruana de Composición de Alimentos', 'Nutritional Search · Peruvian Food Composition Table')}")
 
     imagen_referencia_drive(
-        "1_vAUT_dvMVE27bzO_J0FxH67nipGZorg", "1wi6BQwqcY7gYusWXozpwU1atgP0WLUP8",
+        "1zS4Pa7GWuaCDRf2bOWl7yX_0-oRpeAdn", "1JOFNfmD-b0fF4pYQzYGM95Rc-khJBtlO",
         "Tabla Peruana de Composición de Alimentos", "Peruvian Food Composition Table")
 
     consulta = st.text_input(T("Escribe el nombre de un alimento (p. ej. 'palta', 'pollo', 'arroz'):",
@@ -11192,45 +11186,8 @@ elif hoja_activa == "9.-DIETA":
             "(FDA — Food Safety for Moms-to-Be)."
         ))
 
-    _momentos_orden = list(DIETA.keys())
-    _n_pasos = len(_momentos_orden) + 1  # +1 = paso final "Ver Menú Completo"
-    st.session_state.setdefault("d9_paso", 0)
-    _paso = min(st.session_state["d9_paso"], _n_pasos - 1)
-
-    # Pre-poblamos en session_state la selección por defecto (1ª opción) de CADA comida, aunque
-    # el usuario aún no haya visitado ese paso del wizard, para que "seleccion" quede siempre
-    # completa y el menú final se pueda calcular sin depender de haber renderizado cada selectbox.
-    for _c in _momentos_orden:
-        for _pref, _macro in (("c", "Carbohidrato"), ("p", "Proteína"), ("g", "Grasa")):
-            _op0 = dieta_filtrada_para(_c, _macro, embarazada)
-            if _op0:
-                st.session_state.setdefault(f"{_pref}_{_c}", list(_op0.keys())[0])
-
-    # ---- Indicador de progreso tipo wizard (pills numeradas, la actual resaltada) ----
-    _pills_html = []
-    for _i, _c in enumerate(_momentos_orden):
-        _activo = _i == _paso
-        _hecho = _i < _paso
-        _bg = "var(--brand-green)" if _activo else ("#DCEFDD" if _hecho else "#EAEFEA")
-        _fg = "#FFFFFF" if _activo else ("#1E5631" if _hecho else "#5C6B60")
-        _pills_html.append(
-            f'<div style="flex:1;min-width:70px;text-align:center;background:{_bg};color:{_fg};'
-            f'border-radius:999px;padding:8px 6px;font-weight:800;font-size:0.74rem;">'
-            f'{_ICONOS_COMIDA_D9[_c]} {_i+1}. {_mom(_c)}</div>'
-        )
-    _activo_final = _paso == len(_momentos_orden)
-    _pills_html.append(
-        f'<div style="flex:1;min-width:70px;text-align:center;'
-        f'background:{"var(--brand-green)" if _activo_final else "#EAEFEA"};'
-        f'color:{"#FFFFFF" if _activo_final else "#5C6B60"};'
-        f'border-radius:999px;padding:8px 6px;font-weight:800;font-size:0.74rem;">'
-        f'🏆 {T("Ver Menú Final", "View Final Menu")}</div>'
-    )
-    st.markdown(f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">{"".join(_pills_html)}</div>',
-                unsafe_allow_html=True)
-
-    if _paso < len(_momentos_orden):
-        comida = _momentos_orden[_paso]
+    seleccion = {}
+    for comida in DIETA:
         st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
                     unsafe_allow_html=True)
         _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
@@ -11239,42 +11196,23 @@ elif hoja_activa == "9.-DIETA":
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
-            st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
-                         format_func=_dieta_nombre, key=f"c_{comida}", label_visibility="collapsed")
+            carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
+                                     format_func=_dieta_nombre,
+                                     key=f"c_{comida}", label_visibility="collapsed")
         with c2:
             st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
-            st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
-                         format_func=_dieta_nombre, key=f"p_{comida}", label_visibility="collapsed")
+            prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
+                                     format_func=_dieta_nombre,
+                                     key=f"p_{comida}", label_visibility="collapsed")
         with c3:
             st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
-            st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
-                         format_func=_dieta_nombre, key=f"g_{comida}", label_visibility="collapsed")
-
-        # ---- Navegación: Atrás / Siguiente Comida ó Generar Menú Completo ----
-        nb1, nb2 = st.columns(2)
-        with nb1:
-            if st.button(f"⬅ {T('Atrás', 'Back')}", use_container_width=True,
-                         disabled=(_paso == 0), key="d9_btn_atras"):
-                st.session_state["d9_paso"] = max(0, _paso - 1)
-                st.rerun()
-        with nb2:
-            _es_ultima_comida = _paso == len(_momentos_orden) - 1
-            _label_siguiente = (f"🏁 {T('Generar Menú Completo', 'Generate Full Menu')}" if _es_ultima_comida
-                                 else f"{T('Siguiente Comida', 'Next Meal')} ➔")
-            if st.button(_label_siguiente, use_container_width=True, type="primary", key="d9_btn_siguiente"):
-                st.session_state["d9_paso"] = _paso + 1
-                st.rerun()
-    else:
-        if st.button(f"⬅ {T('Volver a editar comidas', 'Back to edit meals')}", key="d9_btn_volver"):
-            st.session_state["d9_paso"] = len(_momentos_orden) - 1
-            st.rerun()
-
-    seleccion = {}
-    for comida in _momentos_orden:
+            gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
+                                     format_func=_dieta_nombre,
+                                     key=f"g_{comida}", label_visibility="collapsed")
         seleccion[comida] = {
-            "Carbohidrato": st.session_state.get(f"c_{comida}"),
-            "Proteína": st.session_state.get(f"p_{comida}"),
-            "Grasa": st.session_state.get(f"g_{comida}"),
+            "Carbohidrato": carb_sel,
+            "Proteína": prot_sel,
+            "Grasa": gras_sel,
         }
 
     # Guardado explícito y estable del plan elegido: no dependemos de que las claves individuales
@@ -11314,142 +11252,136 @@ elif hoja_activa == "9.-DIETA":
     # =====================================================================================
     # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
     # =====================================================================================
-    if _paso == len(_momentos_orden):
-        st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
 
-        def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
-            """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
-            _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
-            filas_html = ""
-            for f in filas:
-                filas_html += f"""
-                <tr>
-                    <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
-                    <td>{_dieta_nombre(f[macro_key])}</td>
-                    <td>{f[f'kcal ({_prefijo})']} kcal</td>
-                    <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
-                    <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
-                </tr>"""
+    def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
+        """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
+        _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
+        filas_html = ""
+        for f in filas:
             filas_html += f"""
-                <tr class="dm-total">
-                    <td class="dm-momento" colspan="2">{T('TOTAL', 'TOTAL')}</td>
-                    <td>—</td>
-                    <td>{suma_porcion:.1f} kcal</td>
-                    <td>{suma_gramos:.1f} g</td>
-                </tr>"""
-            html = f"""
-            <div class="dieta-menu-wrap {clase_css}">
-            <table class="dieta-menu-table">
-                <thead>
-                <tr><th style="text-align:left;">{T('Momento', 'Meal')}</th><th>{icono} {T('Alimento', 'Food')} ({_mac(titulo)})</th>
-                    <th>{T('Kcal/100g', 'Kcal/100g')}</th><th>{T('Porción Corregida', 'Adjusted Portion')}</th><th>{T('Gramos Finales', 'Final Grams')}</th></tr>
-                </thead>
-                <tbody>
-                {filas_html}
-                </tbody>
-            </table>
-            </div>
-            """
-            st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
-
-        _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
-        _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
-        _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras, suma_gramos_gras)
-
-        # ---- Barra final destacada: suma total = RCD ----
-        _diferencia_total = abs(total_general - rcd_final)
-        _check_txt = (T("✅ ¡Coincide exactamente con tu RCD!", "✅ Exactly matches your DCR!") if _diferencia_total < 1
-                      else T(f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD",
-                             f"⚠️ Difference of {_diferencia_total:.1f} kcal from your DCR"))
-        _html_barra_total = f"""
-        <div class="dieta-total-bar">
-            <div class="dt-label">🌾 {T('Carbohidratos', 'Carbohydrates')} + 🥩 {T('Proteínas', 'Protein')} + 🥑 {T('Grasas', 'Fats')}</div>
-            <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
-            <div class="dt-value">= {total_general:.1f} kcal</div>
-            <div style="font-size:0.9rem;opacity:0.92;">{T('Este total equivale a tu', 'This total equals your')} <b>{T('TOTAL DE CALORÍAS DIARIAS (RCD)', 'TOTAL DAILY CALORIC REQUIREMENT (DCR)')}</b></div>
-            <div class="dt-check">{_check_txt}</div>
+            <tr>
+                <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
+                <td>{_dieta_nombre(f[macro_key])}</td>
+                <td>{f[f'kcal ({_prefijo})']} kcal</td>
+                <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
+                <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
+            </tr>"""
+        filas_html += f"""
+            <tr class="dm-total">
+                <td class="dm-momento" colspan="2">{T('TOTAL', 'TOTAL')}</td>
+                <td>—</td>
+                <td>{suma_porcion:.1f} kcal</td>
+                <td>{suma_gramos:.1f} g</td>
+            </tr>"""
+        html = f"""
+        <div class="dieta-menu-wrap {clase_css}">
+        <table class="dieta-menu-table">
+            <thead>
+            <tr><th style="text-align:left;">{T('Momento', 'Meal')}</th><th>{icono} {T('Alimento', 'Food')} ({_mac(titulo)})</th>
+                <th>{T('Kcal/100g', 'Kcal/100g')}</th><th>{T('Porción Corregida', 'Adjusted Portion')}</th><th>{T('Gramos Finales', 'Final Grams')}</th></tr>
+            </thead>
+            <tbody>
+            {filas_html}
+            </tbody>
+        </table>
         </div>
         """
-        st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
+        st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
 
-        st.divider()
-        st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
-        FAQ_DIETA_ES = {
-            "¿Qué significa la columna 'kcal'?": (
-                "Es la cantidad de calorías que aporta ese alimento, tomando como referencia cada 100 gramos "
-                "de ese alimento (así viene definido en la base de datos nutricional del proyecto)."
-            ),
-            "¿Qué significa 'Porción corregida'?": (
-                "Es cuántas calorías del momento del día (Desayuno, Almuerzo, etc.) le corresponden a ese "
-                "macronutriente en particular. Por ejemplo, si el Almuerzo tiene 1000 kcal en total, la Porción "
-                "corregida de Carbohidrato será el 50% de esas 1000 kcal, la de Proteína el 20% y la de Grasa el 30%."
-            ),
-            "¿Qué significa 'Gramos finales a consumir'?": (
-                "Es la cantidad exacta, en gramos, que debes comer de ESE alimento específico para llegar a la "
-                "Porción corregida en calorías. Se calcula dividiendo la Porción corregida entre el kcal del "
-                "alimento y multiplicando por 100."
-            ),
-            "Entonces, ¿cuánto tengo que comer en cada comida?": (
-                "Debes preparar los tres alimentos que elegiste para ese momento del día (Carbohidrato, Proteína "
-                "y Grasa), cada uno en la cantidad de 'Gramos finales a consumir' que te muestra la tabla. Juntos, "
-                "esos tres alimentos completan las calorías que te corresponden en esa comida."
-            ),
-            "¿Por qué el total coincide con mis calorías meta?": (
-                "Porque el sistema reparte tu meta calórica diaria (Hoja 5) primero entre los 5 momentos del día "
-                "(Hoja 7) y luego, dentro de cada momento, entre los 3 macronutrientes. Al sumar todo de nuevo, "
-                "el resultado debe coincidir con tu meta calórica original."
-            ),
-        }
-        FAQ_DIETA_EN = {
-            "What does the 'kcal' column mean?": (
-                "It's the amount of calories that food provides, taken as a reference per 100 grams "
-                "of that food (as defined in the project's nutritional database)."
-            ),
-            "What does 'Adjusted Portion' mean?": (
-                "It's how many calories from that time of day (Breakfast, Lunch, etc.) correspond to that "
-                "specific macronutrient. For example, if Lunch has 1000 kcal in total, the Adjusted Portion "
-                "of Carbohydrate will be 50% of those 1000 kcal, Protein 20%, and Fat 30%."
-            ),
-            "What does 'Final grams to consume' mean?": (
-                "It's the exact amount, in grams, you should eat of THAT specific food to reach the Adjusted "
-                "Portion in calories. It's calculated by dividing the Adjusted Portion by the food's kcal and "
-                "multiplying by 100."
-            ),
-            "So, how much do I have to eat at each meal?": (
-                "You should prepare the three foods you chose for that time of day (Carbohydrate, Protein, and "
-                "Fat), each in the amount of 'Final grams to consume' shown in the table. Together, those three "
-                "foods complete the calories that correspond to that meal."
-            ),
-            "Why does the total match my target calories?": (
-                "Because the system distributes your daily caloric target (Sheet 5) first across the 5 times of "
-                "day (Sheet 7), and then, within each time, across the 3 macronutrients. Adding everything back "
-                "up, the result should match your original caloric target."
-            ),
-        }
-        FAQ_DIETA = FAQ_DIETA_EN if st.session_state.get("idioma", "Español") == "English" else FAQ_DIETA_ES
-        pregunta_dieta = st.selectbox(T("Elige una pregunta sobre tu tabla de dieta:", "Choose a question about your diet table:"),
-                                       list(FAQ_DIETA.keys()), key="faq_dieta")
-        st.info(FAQ_DIETA[pregunta_dieta])
+    _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
+    _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
+    _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras, suma_gramos_gras)
 
-        recursos_externos(9, [
-            (T("🌐 Buscar alimentos en FatSecret", "🌐 Search foods on FatSecret"), "https://www.fatsecret.es/"),
-        ])
-        caja_util(T(
-            "Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
-            "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
-            "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
-            "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
-            "Here you build your real menu for the day by choosing foods you like, and the app does all the "
-            "math for you: each time of day splits its calories into 50% carbohydrates, 20% protein, and "
-            "30% fat, then converts those calories to grams based on the specific food you chose — exactly "
-            "like in the original spreadsheet. Eating healthy can taste great too! 😋"
-        ), emoji="🍱", color="#FBE9E7", borde="#FF7043")
+    # ---- Barra final destacada: suma total = RCD ----
+    _diferencia_total = abs(total_general - rcd_final)
+    _check_txt = (T("✅ ¡Coincide exactamente con tu RCD!", "✅ Exactly matches your DCR!") if _diferencia_total < 1
+                  else T(f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD",
+                         f"⚠️ Difference of {_diferencia_total:.1f} kcal from your DCR"))
+    _html_barra_total = f"""
+    <div class="dieta-total-bar">
+        <div class="dt-label">🌾 {T('Carbohidratos', 'Carbohydrates')} + 🥩 {T('Proteínas', 'Protein')} + 🥑 {T('Grasas', 'Fats')}</div>
+        <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
+        <div class="dt-value">= {total_general:.1f} kcal</div>
+        <div style="font-size:0.9rem;opacity:0.92;">{T('Este total equivale a tu', 'This total equals your')} <b>{T('TOTAL DE CALORÍAS DIARIAS (RCD)', 'TOTAL DAILY CALORIC REQUIREMENT (DCR)')}</b></div>
+        <div class="dt-check">{_check_txt}</div>
+    </div>
+    """
+    st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
 
-    else:
-        st.info("🍱 " + T(
-            "Completa las 5 comidas del día y pulsa \"Generar Menú Completo\" para ver tu menú final.",
-            "Complete all 5 meals of the day and tap \"Generate Full Menu\" to see your final menu."
-        ))
+    st.divider()
+    st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
+    FAQ_DIETA_ES = {
+        "¿Qué significa la columna 'kcal'?": (
+            "Es la cantidad de calorías que aporta ese alimento, tomando como referencia cada 100 gramos "
+            "de ese alimento (así viene definido en la base de datos nutricional del proyecto)."
+        ),
+        "¿Qué significa 'Porción corregida'?": (
+            "Es cuántas calorías del momento del día (Desayuno, Almuerzo, etc.) le corresponden a ese "
+            "macronutriente en particular. Por ejemplo, si el Almuerzo tiene 1000 kcal en total, la Porción "
+            "corregida de Carbohidrato será el 50% de esas 1000 kcal, la de Proteína el 20% y la de Grasa el 30%."
+        ),
+        "¿Qué significa 'Gramos finales a consumir'?": (
+            "Es la cantidad exacta, en gramos, que debes comer de ESE alimento específico para llegar a la "
+            "Porción corregida en calorías. Se calcula dividiendo la Porción corregida entre el kcal del "
+            "alimento y multiplicando por 100."
+        ),
+        "Entonces, ¿cuánto tengo que comer en cada comida?": (
+            "Debes preparar los tres alimentos que elegiste para ese momento del día (Carbohidrato, Proteína "
+            "y Grasa), cada uno en la cantidad de 'Gramos finales a consumir' que te muestra la tabla. Juntos, "
+            "esos tres alimentos completan las calorías que te corresponden en esa comida."
+        ),
+        "¿Por qué el total coincide con mis calorías meta?": (
+            "Porque el sistema reparte tu meta calórica diaria (Hoja 5) primero entre los 5 momentos del día "
+            "(Hoja 7) y luego, dentro de cada momento, entre los 3 macronutrientes. Al sumar todo de nuevo, "
+            "el resultado debe coincidir con tu meta calórica original."
+        ),
+    }
+    FAQ_DIETA_EN = {
+        "What does the 'kcal' column mean?": (
+            "It's the amount of calories that food provides, taken as a reference per 100 grams "
+            "of that food (as defined in the project's nutritional database)."
+        ),
+        "What does 'Adjusted Portion' mean?": (
+            "It's how many calories from that time of day (Breakfast, Lunch, etc.) correspond to that "
+            "specific macronutrient. For example, if Lunch has 1000 kcal in total, the Adjusted Portion "
+            "of Carbohydrate will be 50% of those 1000 kcal, Protein 20%, and Fat 30%."
+        ),
+        "What does 'Final grams to consume' mean?": (
+            "It's the exact amount, in grams, you should eat of THAT specific food to reach the Adjusted "
+            "Portion in calories. It's calculated by dividing the Adjusted Portion by the food's kcal and "
+            "multiplying by 100."
+        ),
+        "So, how much do I have to eat at each meal?": (
+            "You should prepare the three foods you chose for that time of day (Carbohydrate, Protein, and "
+            "Fat), each in the amount of 'Final grams to consume' shown in the table. Together, those three "
+            "foods complete the calories that correspond to that meal."
+        ),
+        "Why does the total match my target calories?": (
+            "Because the system distributes your daily caloric target (Sheet 5) first across the 5 times of "
+            "day (Sheet 7), and then, within each time, across the 3 macronutrients. Adding everything back "
+            "up, the result should match your original caloric target."
+        ),
+    }
+    FAQ_DIETA = FAQ_DIETA_EN if st.session_state.get("idioma", "Español") == "English" else FAQ_DIETA_ES
+    pregunta_dieta = st.selectbox(T("Elige una pregunta sobre tu tabla de dieta:", "Choose a question about your diet table:"),
+                                   list(FAQ_DIETA.keys()), key="faq_dieta")
+    st.info(FAQ_DIETA[pregunta_dieta])
+
+    recursos_externos(9, [
+        (T("🌐 Buscar alimentos en FatSecret", "🌐 Search foods on FatSecret"), "https://www.fatsecret.es/"),
+    ])
+    caja_util(T(
+        "Aquí armas tu menú real del día eligiendo alimentos que te gusten, y la app hace toda la "
+        "matemática por ti: cada momento del día reparte sus calorías en 50% carbohidratos, 20% proteínas "
+        "y 30% grasas, y luego convierte esas calorías a gramos según el alimento específico que elegiste "
+        "— exactamente igual que en la hoja de cálculo original. ¡Comer sano también puede ser rico! 😋",
+        "Here you build your real menu for the day by choosing foods you like, and the app does all the "
+        "math for you: each time of day splits its calories into 50% carbohydrates, 20% protein, and "
+        "30% fat, then converts those calories to grams based on the specific food you chose — exactly "
+        "like in the original spreadsheet. Eating healthy can taste great too! 😋"
+    ), emoji="🍱", color="#FBE9E7", borde="#FF7043")
+
 elif hoja_activa == "12.-APORTE 2: CAFEÍNA" and genero == "Mujer" and embarazada:
     # =================================================================================
     # MÓDULO EXCLUSIVO: Consumo Seguro de Cafeína en Gestación (ACOG / OMS·EFSA)
