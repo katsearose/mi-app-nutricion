@@ -11318,39 +11318,35 @@ elif hoja_activa == "9.-DIETA":
     total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
 
     # =====================================================================================
-    # SECCIÓN 2.5 — Gráficos del menú final (solo al completar el wizard: "la pantalla cambia
-    # para mostrar el resultado final con gráficos y tabla unificada")
+    # SECCIÓN 2.5 — Menú final tipo tabla (solo al completar el wizard): una columna por
+    # momento del día, con los alimentos elegidos listados — igual que una tabla nutricional
+    # clásica (sin gráficos, solo el menú ordenado).
     # =====================================================================================
     if _menu_completado_wiz:
         st.markdown(f'<div class="menu-titulo-grande">📊 {T("RESULTADO FINAL DE TU MENÚ", "YOUR FINAL MENU RESULT")}</div>', unsafe_allow_html=True)
-        _gcol1, _gcol2 = st.columns(2)
-        with _gcol1:
-            fig_dona_macros = go.Figure(data=[go.Pie(
-                labels=[f"🌾 {T('Carbohidratos', 'Carbs')}", f"🥩 {T('Proteínas', 'Protein')}", f"🥑 {T('Grasas', 'Fats')}"],
-                values=[suma_porcion_carb, suma_porcion_prot, suma_porcion_gras],
-                hole=0.55, marker=dict(colors=["#E67E22", "#C0392B", "#1E5631"]),
-                textinfo="percent", hovertemplate="%{label}<br>%{value:.0f} kcal<extra></extra>",
-            )])
-            fig_dona_macros.update_layout(
-                title=dict(text=T("Distribución de calorías por macronutriente", "Calorie distribution by macronutrient"), font=dict(size=13)),
-                height=300, margin=dict(t=40, l=10, r=10, b=10),
-                legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
-                paper_bgcolor="rgba(0,0,0,0)",
-            )
-            st.plotly_chart(fig_dona_macros, use_container_width=True)
-        with _gcol2:
-            fig_barras_comidas = go.Figure(data=[go.Bar(
-                x=[f"{_ICONOS_COMIDA_D9[c]} {_mom(c)}" for c in _comidas_orden],
-                y=[porciones[c]["kcal"] for c in _comidas_orden],
-                marker=dict(color=["#FF7043", "#F4B183", "#5AC8FA", "#F4B183", "#7C6BAD"]),
-                text=[f"{porciones[c]['kcal']:.0f}" for c in _comidas_orden], textposition="outside",
-            )])
-            fig_barras_comidas.update_layout(
-                title=dict(text=T("Calorías por momento del día", "Calories by time of day"), font=dict(size=13)),
-                height=300, margin=dict(t=40, l=10, r=10, b=10),
-                yaxis_title="kcal", plot_bgcolor="#FFFFFF", paper_bgcolor="rgba(0,0,0,0)",
-            )
-            st.plotly_chart(fig_barras_comidas, use_container_width=True)
+        _cols_menu_tabla_html = ""
+        for _c in _comidas_orden:
+            _alim_c = seleccion[_c]
+            _cols_menu_tabla_html += f"""
+            <th style="background:#F5A15A;color:#FFFFFF;padding:12px 14px;text-align:left;font-weight:800;
+            font-size:0.92rem;border-right:1px solid rgba(255,255,255,0.35);">{_ICONOS_COMIDA_D9[_c]} {_mom(_c)}</th>"""
+        _filas_menu_tabla_html = "<tr>" + "".join(
+            f"""<td style="background:#FDEEDD;vertical-align:top;padding:12px 14px;border-right:1px solid #F6D9BC;
+            font-size:0.86rem;color:#5C4326;line-height:1.9;">
+            - {_dieta_nombre(seleccion[_c]['Carbohidrato'])}.<br>
+            - {_dieta_nombre(seleccion[_c]['Proteína'])}.<br>
+            - {_dieta_nombre(seleccion[_c]['Grasa'])}.</td>"""
+            for _c in _comidas_orden
+        ) + "</tr>"
+        _html_menu_final_tabla = f"""
+        <div style="overflow-x:auto;border-radius:16px;border:1px solid #F6D9BC;box-shadow:0 4px 14px rgba(0,0,0,0.06);margin-bottom:20px;">
+        <table style="width:100%;border-collapse:collapse;">
+        <thead><tr>{_cols_menu_tabla_html}</tr></thead>
+        <tbody>{_filas_menu_tabla_html}</tbody>
+        </table>
+        </div>
+        """
+        st.markdown(_html_sin_lineas_vacias(_html_menu_final_tabla), unsafe_allow_html=True)
 
     # =====================================================================================
     # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
