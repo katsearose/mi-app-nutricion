@@ -148,7 +148,7 @@ _OBJ_EN = {"Bajar de peso": "Lose weight", "Subir de peso": "Gain weight", "Mant
 #            fibra g, calcio mg, hierro mg, vitamina C mg)
 # =========================================================================================
 FOOD_DB_RAW = [
-    ('A3', 'Arroz blanco corriente', 'A', 358.0, 7.8, 0.7, 77.6, None, 6.0, 1.04, 0.9),
+    ('A3', 'Arroz blanco corriente', 'A', 358.0, 7.8, 0.7, None, None, 6.0, 1.04, 0.9),
     ('A2', 'Arroz pilado o pulido cocido', 'A', 115.0, 2.4, 0.1, None, None, 11.0, 0.3, 0.0),
     ('A167', 'Hojuela precocida de avena con quinua', 'A', 369.0, 11.1, 10.8, 58.3, 9.3, 40.0, 3.14, None),
     ('A5', 'Avena envasada', 'A', 380.0, 13.7, 4.7, None, None, 51.0, 3.5, 0.0),
@@ -10911,7 +10911,14 @@ elif hoja_activa == "8.-FATSECRET":
         nombre_mostrado = _nombre_alimento(f["nombre"])
 
         def _m(v, suf=""):
-            return f"{v:g}{suf}" if v is not None else T("s/d", "n/a")
+            return f"{v:g}{suf}" if v is not None else T("No disponible en TPCA", "Not available in TPCA")
+
+        _nota_tpca = T(
+            "Este dato no se encuentra registrado dentro de la Tabla Peruana de Composición de Alimentos (TPCA).",
+            "This value is not reported in the Peruvian Food Composition Table (TPCA)."
+        )
+        def _title_attr(v):
+            return f' title="{_nota_tpca}"' if v is None else ""
 
         kcal, prot, gras, cho, fibra = f["kcal"], f["proteinas"], f["grasas"], f["cho"], f["fibra"]
         _lbl_gras, _lbl_carb, _lbl_prot = T("Grasas", "Fat"), T("Carbohidratos", "Carbohydrates"), T("Proteínas", "Protein")
@@ -10932,11 +10939,11 @@ elif hoja_activa == "8.-FATSECRET":
             <div class="bpa-sub">{g_nombre} · {T('código', 'code')} {f['codigo']}</div>
             <div class="bpa-sub" style="margin-top:-10px;">{T('Resumen nutricional · por 100 g de porción comestible', 'Nutritional summary · per 100 g of edible portion')}</div>
             <div class="bpa-grid">
-                <div class="bpa-metric"><div class="lbl">🔥 {T('Energía', 'Energy')}</div><div class="val">{_m(kcal,' kcal')}</div></div>
-                <div class="bpa-metric"><div class="lbl">💪 {T('Proteínas', 'Protein')}</div><div class="val">{_m(prot,' g')}</div></div>
-                <div class="bpa-metric"><div class="lbl">🥑 {T('Grasas', 'Fat')}</div><div class="val">{_m(gras,' g')}</div></div>
-                <div class="bpa-metric"><div class="lbl">🍞 {T('Carbohidratos', 'Carbohydrates')}</div><div class="val">{_m(cho,' g')}</div></div>
-                <div class="bpa-metric"><div class="lbl">🌾 {T('Fibra', 'Fiber')}</div><div class="val">{_m(fibra,' g')}</div></div>
+                <div class="bpa-metric"{_title_attr(kcal)}><div class="lbl">🔥 {T('Energía', 'Energy')}</div><div class="val">{_m(kcal,' kcal')}</div></div>
+                <div class="bpa-metric"{_title_attr(prot)}><div class="lbl">💪 {T('Proteínas', 'Protein')}</div><div class="val">{_m(prot,' g')}</div></div>
+                <div class="bpa-metric"{_title_attr(gras)}><div class="lbl">🥑 {T('Grasas', 'Fat')}</div><div class="val">{_m(gras,' g')}</div></div>
+                <div class="bpa-metric"{_title_attr(cho)}><div class="lbl">🍞 {T('Carbohidratos', 'Carbohydrates')}</div><div class="val">{_m(cho,' g')}</div></div>
+                <div class="bpa-metric"{_title_attr(fibra)}><div class="lbl">🌾 {T('Fibra', 'Fiber')}</div><div class="val">{_m(fibra,' g')}</div></div>
             </div>
             {"<div class='bpa-bar-wrap'><div style='font-size:0.78rem;color:#9DA3AE;margin-bottom:6px;'>" + T('Distribución energética', 'Energy distribution') + "</div><div class='bpa-bar'>" + barras + "</div><div class='bpa-bar-label'>" + " · ".join(etiquetas) + "</div></div>" if barras else ""}
             <div class="bpa-source">📚 {T('Según la Tabla Peruana de Composición de Alimentos (INS/CENAN, 11.ª edición digital, 2025). Valores por 100 g de porción comestible.', 'According to the Peruvian Food Composition Table (INS/CENAN, 11th digital edition, 2025). Values per 100 g of edible portion.')}</div>
@@ -11019,6 +11026,10 @@ elif hoja_activa == "8.-FATSECRET":
         "easier to locate."
     ))
     orden_grupos = sorted(GRUPOS_ALIMENTOS.items(), key=lambda kv: -sum(1 for x in FOOD_DB if x["grupo_cod"] == kv[0]))
+    _nota_tpca_tabla = T(
+        "Este dato no se encuentra registrado dentro de la Tabla Peruana de Composición de Alimentos (TPCA).",
+        "This value is not reported in the Peruvian Food Composition Table (TPCA)."
+    )
     for cod, g in orden_grupos:
         g_nombre = _grupo_campo(cod, "nombre")
         items_g = sorted([x for x in FOOD_DB if x["grupo_cod"] == cod], key=lambda x: x["nombre"])
@@ -11031,11 +11042,12 @@ elif hoja_activa == "8.-FATSECRET":
             if not nombre_limpio or nombre_limpio.lower() in vistos:
                 continue
             vistos.add(nombre_limpio.lower())
-            kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else T("s/d", "n/a")
+            kcal_txt = f"{it['kcal']:g} kcal" if it["kcal"] is not None else T("No disponible en TPCA", "Not available in TPCA")
+            _td_title = f' title="{_nota_tpca_tabla}"' if it["kcal"] is None else ""
             filas_html += (
                 f"<tr><td style='padding:9px 16px;border-bottom:1px solid {color_fondo};color:#1C1C1E;font-size:0.86rem;'>"
                 f"{nombre_limpio}</td>"
-                f"<td style='padding:9px 16px;border-bottom:1px solid {color_fondo};text-align:right;"
+                f"<td{_td_title} style='padding:9px 16px;border-bottom:1px solid {color_fondo};text-align:right;"
                 f"font-weight:700;color:{color_borde};white-space:nowrap;font-size:0.86rem;'>{kcal_txt}</td></tr>"
             )
 
