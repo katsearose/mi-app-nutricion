@@ -148,7 +148,7 @@ _OBJ_EN = {"Bajar de peso": "Lose weight", "Subir de peso": "Gain weight", "Mant
 #            fibra g, calcio mg, hierro mg, vitamina C mg)
 # =========================================================================================
 FOOD_DB_RAW = [
-    ('A3', 'Arroz blanco corriente', 'A', 358.0, 7.8, 0.7, None, None, 6.0, 1.04, 0.9),
+    ('A3', 'Arroz blanco corriente', 'A', 358.0, 7.8, 0.7, 77.6, None, 6.0, 1.04, 0.9),
     ('A2', 'Arroz pilado o pulido cocido', 'A', 115.0, 2.4, 0.1, None, None, 11.0, 0.3, 0.0),
     ('A167', 'Hojuela precocida de avena con quinua', 'A', 369.0, 11.1, 10.8, 58.3, 9.3, 40.0, 3.14, None),
     ('A5', 'Avena envasada', 'A', 380.0, 13.7, 4.7, None, None, 51.0, 3.5, 0.0),
