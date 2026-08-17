@@ -138,6 +138,10 @@ _ACT_LABEL_EN = {
     "Intensa": "🔥 Very Active / Intense (Factor 1.8-2.1)",
 }
 _OBJ_EN = {"Bajar de peso": "Lose weight", "Subir de peso": "Gain weight", "Mantenerse": "Maintain weight"}
+# Nomenclatura homogénea de comidas: las claves internas ("Merienda 1"/"Merienda 2") no cambian
+# (se siguen usando como llaves de DIETA/porciones en todo el motor de cálculo), solo su etiqueta
+# visible en español, para no romper session_state ni la base de alimentos.
+_MOMENTO_ES_DISPLAY = {"Merienda 1": "Merienda de la Mañana", "Merienda 2": "Merienda de la Tarde"}
 
 # =========================================================================================
 # BASE PERUANA DE ALIMENTOS — datos reales extraídos de las Tablas Peruanas de Composición
@@ -1987,6 +1991,8 @@ div[data-testid="stImageCaption"] {
 .final-menu-col:nth-child(4) .final-menu-header { background:linear-gradient(135deg,#F9A825,#FFD54F); }
 .final-menu-col:nth-child(5) .final-menu-header { background:linear-gradient(135deg,#EF6C00,#FFAB91); }
 @media (max-width: 700px) { .final-menu-wrap { flex-direction:column; } }
+.menu-subtitulo-seccion { font-weight:800; font-size:1.02rem; color:#1E5631; margin:22px 0 10px 0;
+    padding-bottom:6px; border-bottom:2px solid rgba(30,86,49,0.15); }
 
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
@@ -2928,7 +2934,7 @@ def generar_pdf_reporte(datos):
     _MACRO_EN_PDF = {"Carbohidrato": "Carbohydrate", "Proteína": "Protein", "Grasa": "Fat"}
 
     def _mom_pdf(nombre):
-        return T(nombre, _MOMENTO_EN_PDF.get(nombre, nombre))
+        return T(_MOMENTO_ES_DISPLAY.get(nombre, nombre), _MOMENTO_EN_PDF.get(nombre, nombre))
 
     def _mac_pdf(nombre):
         return T(nombre, _MACRO_EN_PDF.get(nombre, nombre))
@@ -2959,8 +2965,44 @@ def generar_pdf_reporte(datos):
     # peso vertical extra era una de las causas de que el informe se desbordara a más de 2
     # páginas.)
 
-    # ---------------- 6. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES (5 bloques por momento de comida) ----------------
-    story.append(Paragraph(T("6. PLAN ALIMENTARIO DETALLADO POR MACRONUTRIENTES", "6. DETAILED MEAL PLAN BY MACRONUTRIENT"), estilo_seccion2))
+    # ---------------- 6. RESUMEN VISUAL DEL MENÚ (ESQUEMA SIN DATOS) ----------------
+    # Cuadro de consulta rápida: solo los alimentos elegidos por momento del día, sin
+    # cantidades ni valores calóricos. La Sección 7 (abajo) trae el desglose cuantitativo.
+    story.append(Paragraph(T("6. RESUMEN VISUAL DEL MENÚ (ESQUEMA SIN DATOS)", "6. VISUAL MENU SUMMARY (OUTLINE, NO FIGURES)"), estilo_seccion2))
+
+    if datos["tiene_dieta"]:
+        _MOMENTO_ICONO_A = {"Desayuno": "•", "Merienda 1": "•", "Almuerzo": "•", "Merienda 2": "•", "Cena": "•"}
+        _filas_esquema = [[
+            Paragraph(f"<b>{T('Momento', 'Meal')}</b>", estilo_texto_bold),
+            Paragraph(f"<b>🌾 {_mac_pdf('Carbohidrato')}</b>", estilo_texto_bold),
+            Paragraph(f"<b>🥩 {_mac_pdf('Proteína')}</b>", estilo_texto_bold),
+            Paragraph(f"<b>🥑 {_mac_pdf('Grasa')}</b>", estilo_texto_bold),
+        ]]
+        for _fila_esq in datos["dieta_filas"]:
+            _filas_esquema.append([
+                Paragraph(f"{_MOMENTO_ICONO_A.get(_fila_esq['momento'], '•')} <b>{_mom_pdf(_fila_esq['momento'])}</b>", estilo_texto),
+                Paragraph(_alim_pdf(_fila_esq["Carbohidrato"]["alimento"]), estilo_texto),
+                Paragraph(_alim_pdf(_fila_esq["Proteína"]["alimento"]), estilo_texto),
+                Paragraph(_alim_pdf(_fila_esq["Grasa"]["alimento"]), estilo_texto),
+            ])
+        _tabla_esquema = Table(_filas_esquema, colWidths=[34 * mm, 55 * mm, 55 * mm, 46 * mm])
+        _tabla_esquema.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(GRIS_MOD)),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        story.append(_tabla_esquema)
+        story.append(Spacer(1, 6))
+    else:
+        story.append(Paragraph(T("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
+                                  "No meal plan has been built yet in Sheet 9.-DIET during this session."),
+                                estilo_texto))
+        story.append(Spacer(1, 6))
+
+    # ---------------- 7. DESGLOSE NUTRICIONAL POR MACRONUTRIENTE (5 bloques por momento de comida, con datos exactos) ----------------
+    story.append(Paragraph(T("7. DESGLOSE NUTRICIONAL POR MACRONUTRIENTE (CON DATOS)", "7. NUTRITIONAL BREAKDOWN BY MACRONUTRIENT (WITH DATA)"), estilo_seccion2))
 
     _MOMENTO_ICONO = {"Desayuno": "•", "Merienda 1": "•", "Almuerzo": "•", "Merienda 2": "•", "Cena": "•"}
     _MACRO_BADGE = {
@@ -3047,7 +3089,7 @@ def generar_pdf_reporte(datos):
         story.append(Spacer(1, 6))
 
     # ---------------- 8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL ----------------
-    story.append(Paragraph(T("7. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", "7. CLINICAL RECOMMENDATIONS & NUTRITIONAL GUIDE"), estilo_seccion2))
+    story.append(Paragraph(T("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", "8. CLINICAL RECOMMENDATIONS & NUTRITIONAL GUIDE"), estilo_seccion2))
 
     estilo_subcat = ParagraphStyle("SubcatRecom", parent=estilo_seccion2, fontSize=10.5,
                                     spaceBefore=6, spaceAfter=3)
@@ -5388,6 +5430,13 @@ def advertencia_imc_composicion_corporal():
     </style>
     """, unsafe_allow_html=True)
 
+    # ===== 0) Declaración del módulo de Somatotipo (aclaración clínica obligatoria) =====
+    st.info(T(
+        "🧬 Módulo ilustrativo y educativo diseñado para ejemplificar las limitaciones del IMC. "
+        "No constituye un diagnóstico antropométrico automatizado mediante pliegues o diámetros.",
+        "🧬 Illustrative, educational module designed to demonstrate the limitations of BMI. It does not "
+        "constitute an automated anthropometric diagnosis based on skinfolds or diameters."))
+
     # ===== 1) ¿Qué hace el IMC? Ejemplo: dos personas, mismo peso y estatura =====
     st.markdown(f"""
     <div class="imc-warn-hero">
@@ -6618,12 +6667,18 @@ def _panel_llenar_datos():
                 "With your weight, height, age and gender we calculate your metabolism (BMR) and detect your "
                 "life stage — the foundation of your whole plan.")}</p></div>',
                 unsafe_allow_html=True)
+    def _on_genero_change():
+        """Callback: revalida/reinicia estado incoherente al conmutar de perfil (Hombre/Mujer)."""
+        if st.session_state.get("genero") == "Hombre":
+            st.session_state["embarazada"] = False
+
     b1c1, b1c2 = st.columns(2)
     with b1c1:
         nombre_usuario = st.text_input(T("¿Cómo te llamas?", "What's your name?"), value=st.session_state.get("nombre_usuario", ""),
                                         key="nombre_usuario", help=T("Tu plan se sentirá hecho a tu medida.", "Your plan will feel tailor-made for you."))
     with b1c2:
         genero = st.radio(T("Género:", "Gender:"), ["Hombre", "Mujer"], horizontal=True, key="genero",
+                           on_change=_on_genero_change,
                            format_func=lambda g: (T("♂ Hombre", "♂ Male") if g == "Hombre" else T("♀ Mujer", "♀ Female")))
     _nombre_saludo = nombre_display(nombre_usuario, genero)
     if nombre_usuario.strip():
@@ -6637,19 +6692,27 @@ def _panel_llenar_datos():
     # --- Ajusta valores previos que puedan exceder el nuevo tope al cambiar de género (evita error) ---
     if st.session_state.get("estatura", 0) and st.session_state["estatura"] > min(250, estatura_max_actual):
         st.session_state["estatura"] = min(250, estatura_max_actual)
-    if st.session_state.get("edad", 0) and st.session_state["edad"] > min(120, edad_max_actual):
-        st.session_state["edad"] = min(120, edad_max_actual)
-    if st.session_state.get("peso", 0) and st.session_state["peso"] > min(300.0, peso_max_actual):
-        st.session_state["peso"] = min(300.0, peso_max_actual)
+    if st.session_state.get("edad", 0) and st.session_state["edad"] > min(110, edad_max_actual):
+        st.session_state["edad"] = min(110, edad_max_actual)
+    if st.session_state.get("peso", 0) and st.session_state["peso"] > min(250.0, peso_max_actual):
+        st.session_state["peso"] = min(250.0, peso_max_actual)
 
     # ¿Embarazada? se decide primero porque cambia cómo pedimos el peso más abajo.
+    # Control de Edad y Embarazo: incompatible con perfiles pediátricos (< 12 años).
     embarazada = False
+    _edad_previa_emb = st.session_state.get("edad", 9)
     if genero == "Mujer":
-        embarazada = st.checkbox(T("🤰 ¿Estás embarazada?", "🤰 Are you pregnant?"), key="embarazada",
-                                  help=T("Si activas esto, tu TMB se calculará con la fórmula de gestación "
-                                       "en vez de Mifflin-St Jeor, y se reflejará en toda la app.",
-                                       "If you enable this, your BMR will be calculated with the gestational "
-                                       "formula instead of Mifflin-St Jeor, and it will be reflected across the app."))
+        if _edad_previa_emb < 12:
+            embarazada = False
+            st.session_state["embarazada"] = False
+            st.sidebar.warning(T("⚠️ La función de gestación solo está disponible para usuarios de 12 años o más.",
+                                  "⚠️ The pregnancy feature is only available for users aged 12 or older."))
+        else:
+            embarazada = st.checkbox(T("🤰 ¿Estás embarazada?", "🤰 Are you pregnant?"), key="embarazada",
+                                      help=T("Si activas esto, tu TMB se calculará con la fórmula de gestación "
+                                           "en vez de Mifflin-St Jeor, y se reflejará en toda la app.",
+                                           "If you enable this, your BMR will be calculated with the gestational "
+                                           "formula instead of Mifflin-St Jeor, and it will be reflected across the app."))
 
     if embarazada:
         b1c3, b1c4 = st.columns(2)
@@ -6657,7 +6720,7 @@ def _panel_llenar_datos():
             st.markdown(f'<p style="margin:0 0 4px 0;font-weight:800;color:#8E24AA;font-size:0.85rem;">'
                         f'🤰 {T("Peso Pregestacional (kg)","Pre-pregnancy Weight (kg)")}</p>', unsafe_allow_html=True)
             peso = st.number_input(T("Peso Pregestacional (kg):", "Pre-pregnancy Weight (kg):"), min_value=20.0,
-                                    max_value=min(300.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
+                                    max_value=min(250.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
                                     key="peso", label_visibility="collapsed",
                                     help=T("Tu peso ANTES del embarazo. Se usa para calcular tu TMB, tu IMC "
                                            "pregestacional y tu rango total de ganancia de peso (Tabla IOM).",
@@ -6667,7 +6730,7 @@ def _panel_llenar_datos():
             st.markdown(f'<p style="margin:0 0 4px 0;font-weight:800;color:#007AFF;font-size:0.85rem;">'
                         f'⚖️ {T("Peso Actual (kg)","Current Weight (kg)")}</p>', unsafe_allow_html=True)
             peso_actual = st.number_input(T("Peso Actual (kg):", "Current Weight (kg):"), min_value=20.0,
-                                           max_value=min(300.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
+                                           max_value=min(250.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
                                            key="peso_actual", label_visibility="collapsed",
                                            help=T("Tu peso HOY. Se usa en el Seguimiento de Peso semanal y en el "
                                                   "Plan Alimenticio / Fármacos / Cafeína.",
@@ -6679,21 +6742,21 @@ def _panel_llenar_datos():
                                         value=min(160, estatura_max_actual), step=1, key="estatura",
                                         help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
         with b1c6:
-            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
-                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
+            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(110, edad_max_actual),
+                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
     else:
         b1c3, b1c4, b1c5 = st.columns(3)
         with b1c3:
-            peso = st.number_input(T("Peso (kg):", "Weight (kg):"), min_value=20.0, max_value=min(300.0, peso_max_actual),
+            peso = st.number_input(T("Peso (kg):", "Weight (kg):"), min_value=20.0, max_value=min(250.0, peso_max_actual),
                                     value=min(75.0, peso_max_actual), step=0.1, key="peso",
-                                    help=T("Rango válido: 20 a 300 kg.", "Valid range: 20 to 300 kg."))
+                                    help=T("Rango válido: 20 a 250 kg.", "Valid range: 20 to 250 kg."))
         with b1c4:
             estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
                                         value=min(168, estatura_max_actual), step=1, key="estatura",
                                         help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
         with b1c5:
-            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(120, edad_max_actual),
-                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 120 años.", "Valid range: 1 to 120 years."))
+            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(110, edad_max_actual),
+                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
     etapa = etapa_desde_edad(edad)
     st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
               f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
@@ -6701,8 +6764,8 @@ def _panel_llenar_datos():
     trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
     if genero == "Mujer" and embarazada:
         semana_gestacion = st.number_input(
-            T("🗓️ Semana de Gestación (1 a 40):", "🗓️ Week of Gestation (1 to 40):"),
-            min_value=1, max_value=40, step=1, key="semana_gestacion",
+            T("🗓️ Semana de Gestación (1 a 42):", "🗓️ Week of Gestation (1 to 42):"),
+            min_value=1, max_value=42, step=1, key="semana_gestacion",
             help=T("Indica en qué semana de embarazo estás. El trimestre y el bono calórico se "
                    "detectan automáticamente.",
                    "Enter what week of pregnancy you're in. The trimester and caloric bonus are "
@@ -6815,8 +6878,25 @@ def _panel_llenar_datos():
                 "🤰 In Pregnancy Mode you don't choose a goal or pace: your calories are calculated automatically "
                 "by adding your trimester's energy block to your gestational BMR. Energy is never subtracted."))
     else:
+        _imc_obj_sidebar = (peso / ((estatura / 100.0) ** 2)) if estatura else 0
+        _obj_opciones_sidebar = ["Bajar de peso", "Subir de peso", "Mantenerse"]
+        if _imc_obj_sidebar >= 30:
+            _obj_opciones_sidebar = ["Bajar de peso", "Mantenerse"]
+            st.warning(T("El perfil detectado presenta Obesidad. Por seguridad clínica, la función de ganancia "
+                         "ponderal se encuentra deshabilitada. Se recomienda un plan de recomposición o déficit "
+                         "calórico supervisado.",
+                         "The detected profile shows Obesity. For clinical safety, the weight-gain feature is "
+                         "disabled. A supervised recomposition or caloric-deficit plan is recommended."))
+        elif 0 < _imc_obj_sidebar < 18.5:
+            _obj_opciones_sidebar = ["Subir de peso", "Mantenerse"]
+            st.warning(T("El perfil detectado presenta Bajo Peso. Por seguridad clínica, la función de reducción "
+                         "calórica se encuentra deshabilitada. Se sugiere un superávit normocalórico progresivo.",
+                         "The detected profile shows Underweight. For clinical safety, the calorie-reduction "
+                         "feature is disabled. A progressive normocaloric surplus is suggested."))
+        if st.session_state.get("objetivo") not in _obj_opciones_sidebar:
+            st.session_state["objetivo"] = _obj_opciones_sidebar[0]
         objetivo = st.selectbox(T("🎯 ¿Cuál es tu objetivo principal?", "🎯 What's your main goal?"),
-                                 ["Bajar de peso", "Subir de peso", "Mantenerse"],
+                                 _obj_opciones_sidebar,
                                  key="objetivo", format_func=lambda o: T(o, _OBJ_EN[o]))
 
         st.caption(T("⚙️ Ajuste del Ritmo (Velocidad del proceso):", "⚙️ Pace Adjustment (Process speed):"))
@@ -6974,19 +7054,14 @@ def _panel_llenar_datos():
                 "to give you more precise recommendations.")}</p></div>',
                 unsafe_allow_html=True)
     hemo = st.number_input(T("Hemoglobina (g/dL):", "Hemoglobin (g/dL):"), min_value=0.0, max_value=HEMO_MAX, value=None, step=0.1,
-                            placeholder=T("Opcional", "Optional"),
                             key="hemo", help=T("Normal: 12-17 g/dL, varía por género. Déjalo vacío si no tienes examen reciente.", "Normal: 12-17 g/dL, varies by gender. Leave empty if you don't have a recent test."))
     gluco = st.number_input(T("Glucosa (mg/dL):", "Glucose (mg/dL):"), min_value=0.0, max_value=GLUCO_MAX, value=None, step=1.0,
-                             placeholder=T("Opcional", "Optional"),
                              key="gluco", help=T("Normal en ayunas: 70-100 mg/dL. Déjalo vacío si no tienes examen reciente.", "Normal fasting: 70-100 mg/dL. Leave empty if you don't have a recent test."))
     coles = st.number_input(T("Colesterol (mg/dL):", "Cholesterol (mg/dL):"), min_value=0.0, max_value=COLES_MAX, value=None, step=1.0,
-                             placeholder=T("Opcional", "Optional"),
                              key="coles", help=T("Ideal: menor a 200 mg/dL. Déjalo vacío si no tienes examen reciente.", "Ideal: less than 200 mg/dL. Leave empty if you don't have a recent test."))
     trigli = st.number_input(T("Triglicéridos (mg/dL):", "Triglycerides (mg/dL):"), min_value=0.0, max_value=TRIGLI_MAX, value=None, step=1.0,
-                              placeholder=T("Opcional", "Optional"),
                               key="trigli", help=T("Ideal: menor a 150 mg/dL. Déjalo vacío si no tienes examen reciente.", "Ideal: less than 150 mg/dL. Leave empty if you don't have a recent test."))
     hierro = st.number_input(T("Hierro Sérico (µg/dL):", "Serum Iron (µg/dL):"), min_value=0.0, max_value=HIERRO_MAX, value=None, step=1.0,
-                              placeholder=T("Opcional", "Optional"),
                               key="hierro", help=T("Normal: 60-170 µg/dL. Déjalo vacío si no tienes examen reciente.", "Normal: 60-170 µg/dL. Leave empty if you don't have a recent test."))
 
 with st.sidebar.expander(T("📝 Llenar / Editar Mis Datos", "📝 Enter / Edit My Data"), expanded=True):
@@ -7408,6 +7483,11 @@ if hoja_activa == "0.-DATOS":
                 use_container_width=True,
                 type="primary",
             )
+        st.caption(T(
+            "CIAM&SUNI Web ofrece la experiencia interactiva, y la herramienta de exportación en Excel "
+            "permite la interoperabilidad offline para la gestión de planes nutricionales.",
+            "CIAM&SUNI Web offers the interactive experience, and the Excel export tool enables offline "
+            "interoperability for managing nutritional plans."))
     else:
         st.info(T("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
                 "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
@@ -7464,11 +7544,17 @@ if hoja_activa == "0.-DATOS":
                 (T("Estatura", "Height"), f"{estatura} cm ({estatura_m:.2f} m)"), (T("Edad", "Age"), T(f"{edad} años", f"{edad} years")),
                 (T("Etapa detectada", "Detected life stage"), T(etapa, _ETAPA_EN.get(etapa, etapa))),
             ]),
-            (4, T("🏃 Bloque 2 · Estilo de Vida y Objetivos", "🏃 Block 2 · Lifestyle and Goals"), [
-                (T("Actividad física", "Physical activity"), T(_ACT_LABEL_ES.get(actividad, actividad), _ACT_LABEL_EN.get(actividad, actividad))),
-                (T("Objetivo", "Goal"), T(objetivo, _OBJ_EN.get(objetivo, objetivo))),
-                (T("Ajuste (bajar)", "Adjustment (lose)"), f"{ajuste_bajar*100:.0f}%"), (T("Ajuste (subir)", "Adjustment (gain)"), f"{ajuste_subir*100:.0f}%"),
-            ]),
+            (4, T("🏃 Bloque 2 · Estilo de Vida y Objetivos", "🏃 Block 2 · Lifestyle and Goals"), (
+                [
+                    (T("Actividad física", "Physical activity"), T(_ACT_LABEL_ES.get(actividad, actividad), _ACT_LABEL_EN.get(actividad, actividad))),
+                    (T("Objetivo", "Goal"), T("Mantenimiento / Ganancia Ponderal Gestacional", "Maintenance / Gestational Weight Gain")),
+                    (T("Ajuste", "Adjustment"), f"+{ajuste_gestacion:.0f} kcal" if ajuste_gestacion else T("Sin ajuste (1er trimestre)", "No adjustment (1st trimester)")),
+                ] if (genero == "Mujer" and embarazada) else [
+                    (T("Actividad física", "Physical activity"), T(_ACT_LABEL_ES.get(actividad, actividad), _ACT_LABEL_EN.get(actividad, actividad))),
+                    (T("Objetivo", "Goal"), T(objetivo, _OBJ_EN.get(objetivo, objetivo))),
+                    (T("Ajuste (bajar)", "Adjustment (lose)"), f"{ajuste_bajar*100:.0f}%"), (T("Ajuste (subir)", "Adjustment (gain)"), f"{ajuste_subir*100:.0f}%"),
+                ]
+            )),
             (1, T("💓 Bloque 3 · Signos Vitales", "💓 Block 3 · Vital Signs"), [
                 (T("SpO2", "SpO2"), f"{spo2:.2f}%" if spo2 > 0 else T("Sin dato", "No data")),
                 (T("Pulso", "Pulse"), f"{pulso} lpm" if pulso > 0 else T("Sin dato", "No data")),
@@ -8725,6 +8811,14 @@ elif hoja_activa == "3.-TMB":
         </div>
         """, unsafe_allow_html=True)
     tarjeta_resultado_tmb(tmb)
+    if genero == "Mujer" and embarazada:
+        st.info(T(
+            f"🤰 Nota: El valor de {tmb:.0f} kcal/día representa la Tasa Metabólica Basal pura. El costo "
+            f"energético gestacional (+{ajuste_gestacion:.0f} kcal/día para el {trimestre}) se adicionará "
+            "explícitamente en la sección de Requerimiento Calórico Diario (RCD).",
+            f"🤰 Note: The value of {tmb:.0f} kcal/day represents the pure Basal Metabolic Rate. The "
+            f"gestational energy cost (+{ajuste_gestacion:.0f} kcal/day for the {trimestre}) will be added "
+            "explicitly in the Daily Caloric Requirement (DCR) section."))
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
@@ -9997,7 +10091,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
                 box-shadow:0 16px 36px rgba(30,86,49,0.30);">
         <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
             🔥 {T('Tu Requerimiento Calórico Diario (RCD)', 'Your Daily Caloric Requirement (DCR)')}</div>
-        <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">{T('kcal/día', 'kcal/day')}</span></div>
+        <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">{T('kcal/día', 'kcal/day')}</span></div>
         <div style="font-size:0.84rem;opacity:0.9;">{T('Sobre este total se reparten tus macronutrientes.', 'Your macronutrients are distributed across this total.')}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -10029,7 +10123,7 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
                     box-shadow:0 16px 36px rgba(30,86,49,0.30);">
             <div style="font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.92;">
                 🔥 {T("Tu RCD Gestacional (Requerimiento Calórico Diario)", "Your Gestational DCR (Daily Caloric Requirement)")}</div>
-            <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.2f} <span style="font-size:1.1rem;font-weight:700;">{T("kcal/día", "kcal/day")}</span></div>
+            <div style="font-size:2.8rem;font-weight:900;letter-spacing:-0.02em;margin:6px 0;">{rcd_final:.0f} <span style="font-size:1.1rem;font-weight:700;">{T("kcal/día", "kcal/day")}</span></div>
             <div style="font-size:0.84rem;opacity:0.9;">{T("Tus macronutrientes se reparten de forma segura sobre este total.", "Your macronutrients are distributed safely across this total.")}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -10077,6 +10171,9 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
             <p style="margin:2px 0;font-size:0.82rem;">🛡 {T('Previene la cetosis dañina', 'Prevents harmful ketosis')}</p>
             <p style="margin:2px 0 8px 0;font-size:0.82rem;">🧠 {T('Aporta un flujo constante de glucosa a través de la placenta', 'Provides a constant glucose flow across the placenta')}</p>
             <div class="mc-value">⚡ 4 kcal/g</div>
+            <p style="margin:8px 0 0 0;font-size:0.74rem;color:#5C6B60;line-height:1.4;">🌾 {T(
+                'Incluye un aporte recomendado de 28 a 30 g/día de fibra dietética para favorecer el tránsito intestinal durante la gestación.',
+                'Includes a recommended intake of 28 to 30 g/day of dietary fiber to support intestinal transit during pregnancy.')}</p>
             </div>""", unsafe_allow_html=True)
 
         st.divider()
@@ -10141,6 +10238,11 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
         </table>
         """
         st.markdown(_html_sin_lineas_vacias(_html_tabla_gest), unsafe_allow_html=True)
+        st.caption(T(
+            "Nota: Los gramos de proteína se calculan en función del peso pregestacional de referencia "
+            "para evitar sobreestimaciones derivadas de la retención de líquidos.",
+            "Note: Protein grams are calculated based on the reference pre-pregnancy weight to avoid "
+            "overestimations caused by fluid retention."))
 
         fig_donut_gest = go.Figure(data=[go.Pie(
             labels=[f"🥩 {T('Proteína', 'Protein')}", f"🥑 {T('Grasa', 'Fat')}", f"🌾 {T('Carbohidrato', 'Carbohydrate')}"],
@@ -10632,14 +10734,14 @@ elif hoja_activa == "7.-PORCIONES":
     }
 
     def _comida_nombre(nombre):
-        return T(nombre, _COMIDA_EN[nombre])
+        return T(_MOMENTO_ES_DISPLAY.get(nombre, nombre), _COMIDA_EN[nombre])
 
     _html_rcd_hero = f"""
     <div class="rcd-hero-card">
         <div class="rcd-hero-decor d1">🔥</div>
         <div class="rcd-hero-decor d2">🍎</div>
         <div class="rcd-label">⚡ {T('Tu Requerimiento Calórico Diario', 'Your Daily Caloric Requirement')}</div>
-        <div class="rcd-value">🎯 {_rcd_comidas:.2f} <span style="font-size:1.3rem;font-weight:700;">{T('kcal', 'kcal')}</span></div>
+        <div class="rcd-value">🎯 {_rcd_comidas:.0f} <span style="font-size:1.3rem;font-weight:700;">{T('kcal', 'kcal')}</span></div>
         <div class="rcd-sub">{T(
             "Para mantener tu metabolismo activo y evitar la ansiedad, hemos distribuido tus "
             "calorías totales a lo largo del día. Cada comida representa un porcentaje ideal de tu "
@@ -10651,11 +10753,11 @@ elif hoja_activa == "7.-PORCIONES":
             "percentage assigned to each meal."
         )}</div>
         <div class="rcd-hero-badges">
-            <span class="rcd-hero-badge">🌅 {_comida_nombre('Desayuno')} 25%</span>
+            <span class="rcd-hero-badge">🌅 {_comida_nombre('Desayuno')} · 25%</span>
             <span class="rcd-hero-badge">🍎 {_comida_nombre('Merienda 1')} · 5%</span>
-            <span class="rcd-hero-badge">🍽️ {_comida_nombre('Almuerzo')} 40%</span>
+            <span class="rcd-hero-badge">🍽️ {_comida_nombre('Almuerzo')} · 40%</span>
             <span class="rcd-hero-badge">🥪 {_comida_nombre('Merienda 2')} · 5%</span>
-            <span class="rcd-hero-badge">🌙 {_comida_nombre('Cena')} 25%</span>
+            <span class="rcd-hero-badge">🌙 {_comida_nombre('Cena')} · 25%</span>
         </div>
     </div>
     """
@@ -11158,7 +11260,7 @@ elif hoja_activa == "9.-DIETA":
 
     def _mom(nombre):
         """Traduce un nombre de comida (clave interna en español) según el idioma elegido."""
-        return T(nombre, _MOMENTO_EN_D9.get(nombre, nombre))
+        return T(_MOMENTO_ES_DISPLAY.get(nombre, nombre), _MOMENTO_EN_D9.get(nombre, nombre))
 
     def _mac(nombre):
         """Traduce un nombre de macronutriente (clave interna en español) según el idioma elegido."""
@@ -11187,7 +11289,7 @@ elif hoja_activa == "9.-DIETA":
         </div>
         <div class="resumen-nutri-card rn-rcd">
             <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 {T('Requerimiento Calórico Diario', 'Daily Caloric Requirement')}</div>
-            <div class="rn-rcd-value">{rcd_final:.2f}</div>
+            <div class="rn-rcd-value">{rcd_final:.0f}</div>
             <div style="font-size:0.85rem;opacity:0.9;">{T('kcal / día', 'kcal / day')}</div>
         </div>
     </div>
@@ -11369,9 +11471,14 @@ elif hoja_activa == "9.-DIETA":
         _tabla_menu_macro(_filas_visibles, "prot", "🥩", "Proteína", "Proteína")
         _tabla_menu_macro(_filas_visibles, "gras", "🥑", "Grasa", "Grasa")
     else:
-        # ---- Menú final: solo los tiempos de comida con los alimentos elegidos, sin gráficos
-        #      ni cifras — ordenado igual que la "Tabla 6" (imagen 3) ----
+        # ---- Menú final: Sección A (esquema del menú, sin cantidades ni kcal, para consulta
+        #      rápida) seguida de la Sección B (tablas detalladas con datos exactos por
+        #      macronutriente). Ambas secciones quedan también en "Mi Reporte" y en el PDF. ----
         st.markdown(f'<div class="menu-titulo-grande">📊 {T("RESULTADO FINAL DE TU MENÚ", "FINAL RESULT OF YOUR MENU")}</div>', unsafe_allow_html=True)
+
+        # --- Sección A: Resumen Visual del Menú (esquema / plantilla sin datos) ---
+        st.markdown(f'<div class="menu-subtitulo-seccion">🗂️ {T("A. Esquema del Menú (resumen sin cantidades)", "A. Menu Outline (summary without amounts)")}</div>',
+                    unsafe_allow_html=True)
         _cols_html_final = ""
         for _comida_f in _COMIDAS_ORDEN_D9:
             _sel_f = seleccion[_comida_f]
@@ -11385,6 +11492,13 @@ elif hoja_activa == "9.-DIETA":
                 </ul>
             </div>"""
         st.markdown(_html_sin_lineas_vacias(f'<div class="final-menu-wrap">{_cols_html_final}</div>'), unsafe_allow_html=True)
+
+        # --- Sección B: Desglose Nutricional (tablas detalladas con datos exactos) ---
+        st.markdown(f'<div class="menu-subtitulo-seccion">🔢 {T("B. Desglose Nutricional (gramos y kcal exactos)", "B. Nutritional Breakdown (exact grams and kcal)")}</div>',
+                    unsafe_allow_html=True)
+        _tabla_menu_macro(filas, "carb", "🌾", "Carbohidrato", "Carbohidrato")
+        _tabla_menu_macro(filas, "prot", "🥩", "Proteína", "Proteína")
+        _tabla_menu_macro(filas, "gras", "🥑", "Grasa", "Grasa")
 
         if st.button("← " + T("Volver a Editar mi Menú", "Back to Edit my Menu"), key="wiz_volver_editar_d9"):
             st.session_state["dieta_paso"] = 0
@@ -12545,7 +12659,7 @@ elif hoja_activa == "📄 MI REPORTE":
     r4, r5, r6 = st.columns(3)
     r4.metric(T("TMB", "BMR"), f"{tmb:.2f} kcal/{T('día', 'day')}")
     r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"{rcd:.2f} kcal/{T('día', 'day')}")
-    r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"{rcd_final:.2f} kcal/{T('día', 'day')}")
+    r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"{rcd_final:.0f} kcal/{T('día', 'day')}")
 
     st.markdown(f"#### 🍽️ {T('Macronutrientes recomendados', 'Recommended Macronutrients')}")
     r7, r8, r9 = st.columns(3)
@@ -12593,7 +12707,7 @@ elif hoja_activa == "📄 MI REPORTE":
 
     def _mom_r14(nombre):
         """Traduce un nombre de comida (clave interna en español) según el idioma elegido."""
-        return T(nombre, _MOMENTO_EN_R9.get(nombre, nombre))
+        return T(_MOMENTO_ES_DISPLAY.get(nombre, nombre), _MOMENTO_EN_R9.get(nombre, nombre))
 
     def _mac_r14(nombre):
         """Traduce un nombre de macronutriente (clave interna en español) según el idioma elegido."""
@@ -12626,6 +12740,27 @@ elif hoja_activa == "📄 MI REPORTE":
                 _dieta_totales_pdf[macro]["porcion"] += porcion_kcal
                 _dieta_totales_pdf[macro]["gramos"] += gramos_finales
             _dieta_filas_pdf.append(fila_macro_pdf)
+
+        # --- Sección A: Resumen Visual del Menú (esquema / plantilla sin datos, para consulta rápida) ---
+        st.markdown(f'<div class="menu-subtitulo-seccion">🗂️ {T("A. Esquema del Menú (resumen sin cantidades)", "A. Menu Outline (summary without amounts)")}</div>',
+                    unsafe_allow_html=True)
+        _cols_html_reporte = ""
+        for _fila_r14 in _dieta_filas_pdf:
+            _mom_r14_key = _fila_r14["momento"]
+            _cols_html_reporte += f"""
+            <div class="final-menu-col print-only-report">
+                <div class="final-menu-header">{_ICONOS_COMIDA_R9[_mom_r14_key]} {_mom_r14(_mom_r14_key)}</div>
+                <ul class="final-menu-list">
+                    <li>🌾 {_dieta_nombre(_fila_r14['Carbohidrato']['alimento'])}</li>
+                    <li>🥩 {_dieta_nombre(_fila_r14['Proteína']['alimento'])}</li>
+                    <li>🥑 {_dieta_nombre(_fila_r14['Grasa']['alimento'])}</li>
+                </ul>
+            </div>"""
+        st.markdown(_html_sin_lineas_vacias(f'<div class="final-menu-wrap print-only-report">{_cols_html_reporte}</div>'), unsafe_allow_html=True)
+
+        # --- Sección B: Desglose Nutricional (tablas detalladas con datos exactos) ---
+        st.markdown(f'<div class="menu-subtitulo-seccion">🔢 {T("B. Desglose Nutricional (gramos y kcal exactos)", "B. Nutritional Breakdown (exact grams and kcal)")}</div>',
+                    unsafe_allow_html=True)
 
         def _tabla_reporte_macro(clase_css, icono, titulo, macro_key):
             """Tabla de color (Carbohidrato / Proteína / Grasa) con fila TOTAL, igual que en la Hoja 9."""
