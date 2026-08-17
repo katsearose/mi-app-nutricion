@@ -6705,7 +6705,7 @@ def _panel_llenar_datos():
         if _edad_previa_emb < 12:
             embarazada = False
             st.session_state["embarazada"] = False
-            st.sidebar.warning(T("⚠️ La función de gestación solo está disponible para usuarios de 12 años o más.",
+            st.warning(T("⚠️ La función de gestación solo está disponible para usuarios de 12 años o más.",
                                   "⚠️ The pregnancy feature is only available for users aged 12 or older."))
         else:
             embarazada = st.checkbox(T("🤰 ¿Estás embarazada?", "🤰 Are you pregnant?"), key="embarazada",
