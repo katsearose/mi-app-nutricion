@@ -2786,11 +2786,11 @@ def generar_pdf_reporte(datos):
                             + (f"  ({T('en rango', 'in range')})" if datos.get("gestacion_en_rango") else f"  ({T('fuera de rango', 'out of range')})"))
     else:
         _fila_proy_mod3 = (T("Proyección (60 días)", "Projection (60 days)"),
-                            f"{datos['peso_proyectado']:.2f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.2f} kg)")
+                            f"{datos['peso_proyectado']:.1f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.1f} kg)")
     mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 2),
             _tabla_kv([
-                (T("Peso Actual", "Current Weight"), f"{datos['peso']:.2f} kg")
-                 if not _embarazada_pdf else (T("Peso Pregestacional / Actual", "Pre-pregnancy / Current Weight"), f"{datos['peso']:.2f} kg -> {datos.get('peso_actual', datos['peso']):.2f} kg"),
+                (T("Peso Actual", "Current Weight"), f"{datos['peso']:.1f} kg")
+                 if not _embarazada_pdf else (T("Peso Pregestacional / Actual", "Pre-pregnancy / Current Weight"), f"{datos['peso']:.1f} kg -> {datos.get('peso_actual', datos['peso']):.1f} kg"),
                 (T("Estatura", "Height"), f"{datos['estatura']} cm ({datos['estatura']/100:.2f} m)"),
                 (T("IMC Actual", "Current BMI") if not _embarazada_pdf else T("IMC Pregestacional", "Pre-pregnancy BMI"),
                  f"{datos['imc']} kg/m²  —  {_cat_imc_pdf_txt}" + (f" (P{datos['percentil']})" if datos.get("percentil") else "")),
@@ -2807,10 +2807,10 @@ def generar_pdf_reporte(datos):
         _limite_cafeina_txt = T("Máx. 400 mg/día", "Max. 400 mg/day")
     mod4 = [_cab_modulo(T("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES", "4. ENERGY REQUIREMENT & LIMITS")), Spacer(1, 2),
             _tabla_kv([
-                (T("Tasa Metabólica (TMB)", "Metabolic Rate (BMR)"), f"{datos['tmb']:.2f} kcal/{T('día', 'day')}"),
-                (T("Gasto Calórico Diario", "Daily Caloric Expenditure"), f"{datos['rcd']:.2f} kcal/{T('día', 'day')}"),
+                (T("Tasa Metabólica (TMB)", "Metabolic Rate (BMR)"), f"{datos['tmb']:.0f} kcal/{T('día', 'day')}"),
+                (T("Gasto Calórico Diario", "Daily Caloric Expenditure"), f"{datos['rcd']:.0f} kcal/{T('día', 'day')}"),
                 (T("Meta Gestacional Total", "Total Gestational Goal") if _embarazada_pdf else T("Meta Calórica", "Caloric Goal"),
-                 f"{datos['rcd_final']:.2f} kcal/{T('día', 'day')}" + (f"  (+{_bono_gestacional:.0f} kcal)" if _embarazada_pdf and _bono_gestacional > 0 else "")),
+                 f"{datos['rcd_final']:.0f} kcal/{T('día', 'day')}" + (f"  (+{_bono_gestacional:.0f} kcal)" if _embarazada_pdf and _bono_gestacional > 0 else "")),
                 (T("Límite de Cafeína", "Caffeine Limit"), _limite_cafeina_txt),
             ])]
     story.append(_fila_doble(mod3, mod4))
@@ -2841,12 +2841,12 @@ def generar_pdf_reporte(datos):
         _explic2 = T(
             f"Tu IMC actual de {datos['imc']} se clasifica como {_cat_imc_pdf_txt.lower()}"
             + (f" (Percentil {datos['percentil']})" if datos.get("percentil") else "") + ". "
-            f"Tu meta calórica diaria de {datos['rcd_final']:.2f} kcal/día se calculó según tu objetivo "
+            f"Tu meta calórica diaria de {datos['rcd_final']:.0f} kcal/día se calculó según tu objetivo "
             f"nutricional ({_obj_pdf_txt}), a partir de tu Tasa Metabólica Basal y tu nivel de "
             "actividad física.",
             f"Your current BMI of {datos['imc']} is classified as {_cat_imc_pdf_txt.lower()}"
             + (f" (Percentile {datos['percentil']})" if datos.get("percentil") else "") + ". "
-            f"Your daily caloric goal of {datos['rcd_final']:.2f} kcal/day was calculated based on your "
+            f"Your daily caloric goal of {datos['rcd_final']:.0f} kcal/day was calculated based on your "
             f"nutritional goal ({_obj_pdf_txt}), from your Basal Metabolic Rate and your activity level.")
     story.append(Paragraph(f"<b>{T('Explicación Clínica:', 'Clinical Explanation:')}</b> {_explic2}", estilo_explic))
 
@@ -2881,10 +2881,10 @@ def generar_pdf_reporte(datos):
     _pct_gras_pdf = datos["cal_gras"] / _total_kcal_macros * 100
     mod6 = [_cab_modulo(T("6. DISTRIBUCIÓN DE MACRONUTRIENTES", "6. MACRONUTRIENT DISTRIBUTION")), Spacer(1, 2),
             _tabla_kv([
-                (f"{T('Proteínas', 'Protein')} ({_pct_prot_pdf:.0f}%)", f"{datos['gr_prot']:.2f} g  |  {datos['cal_prot']:.2f} kcal"),
-                (f"{T('Carbohidratos', 'Carbohydrates')} ({_pct_carb_pdf:.0f}%)", f"{datos['gr_carb']:.2f} g  |  {datos['cal_carb']:.2f} kcal"),
-                (f"{T('Grasas', 'Fats')} ({_pct_gras_pdf:.0f}%)", f"{datos['gr_gras']:.2f} g  |  {datos['cal_gras']:.2f} kcal"),
-                (T("Energía Total", "Total Energy"), f"{datos['rcd_final']:.2f} kcal/{T('día', 'day')}"),
+                (f"{T('Proteínas', 'Protein')} ({_pct_prot_pdf:.0f}%)", f"{datos['gr_prot']:.1f} g  |  {datos['cal_prot']:.0f} kcal"),
+                (f"{T('Carbohidratos', 'Carbohydrates')} ({_pct_carb_pdf:.0f}%)", f"{datos['gr_carb']:.1f} g  |  {datos['cal_carb']:.0f} kcal"),
+                (f"{T('Grasas', 'Fats')} ({_pct_gras_pdf:.0f}%)", f"{datos['gr_gras']:.1f} g  |  {datos['cal_gras']:.0f} kcal"),
+                (T("Energía Total", "Total Energy"), f"{datos['rcd_final']:.0f} kcal/{T('día', 'day')}"),
             ])]
     story.append(_fila_doble(mod5, mod6))
 
@@ -2946,7 +2946,7 @@ def generar_pdf_reporte(datos):
         [Paragraph(T('C.E.P. "SANTA MARÍA REINA" — CHICLAYO', 'C.E.P. "SANTA MARÍA REINA" — CHICLAYO'), estilo_eyebrow_hdr),
          Paragraph("", estilo_meta)],
         [Paragraph(T("PLAN DE ALIMENTACIÓN Y PRESCRIPCIÓN DIETÉTICA", "MEAL PLAN & DIETARY PRESCRIPTION"), estilo_pagina2_tit),
-         Paragraph(f"<b>{T('Meta:', 'Goal:')}</b> {datos['rcd_final']:.2f} kcal/{T('día', 'day')}", estilo_meta)],
+         Paragraph(f"<b>{T('Meta:', 'Goal:')}</b> {datos['rcd_final']:.0f} kcal/{T('día', 'day')}", estilo_meta)],
         [Paragraph(f"{T('Programa de Salud Escolar', 'School Health Program')} CIAM&amp;SUNI | {T('Paciente', 'Patient')}: {datos['nombre'].upper()} ({datos['edad']} {T('años', 'years')})",
                     estilo_subtitulo), ""],
     ], colWidths=[CONTENT_W - 45 * mm, 45 * mm])
@@ -3216,18 +3216,29 @@ def generar_pdf_reporte(datos):
     story.append(Spacer(1, 4))
 
     _aviso_parrafo = Paragraph(
-        T("<b>AVISO MÉDICO-LEGAL IMPORTANTE:</b> Este documento representa un informe automatizado de "
-          "distribución de porciones y energía generado por el aplicativo CIAM&amp;SUNI con fines estrictamente "
-          "educativos y de investigación escolar (Proyecto de Salud Escolar, Grupo N°04, 5° \"C\" Secundaria, "
-          "C.E.P. \"Santa María Reina\", Chiclayo). NO SUSTITUYE LA EVALUACIÓN CLÍNICA PRENATAL, EL DIAGNÓSTICO "
-          "MÉDICO NI LAS INDICACIONES PRESCRIPTIVAS DE UN MÉDICO GINECÓLOGO-OBSTETRA O NUTRICIONISTA CLÍNICO "
-          "COLEGIADO. Ningún dato personal o de salud es almacenado en servidores externos.",
-          "<b>IMPORTANT MEDICAL-LEGAL NOTICE:</b> This document represents an automated portion and energy "
-          "distribution report generated by the CIAM&amp;SUNI application for strictly educational and school "
-          "research purposes (School Health Project, Group No. 04, 5th Grade \"C\" Secondary School, "
-          "C.E.P. \"Santa María Reina\", Chiclayo). IT DOES NOT REPLACE PRENATAL CLINICAL EVALUATION, MEDICAL "
-          "DIAGNOSIS, OR THE PRESCRIPTIVE INDICATIONS OF A LICENSED OB-GYN OR CLINICAL NUTRITIONIST. No personal "
-          "or health data is stored on external servers."), estilo_aviso)
+        T("<b>DESCARGO DE RESPONSABILIDAD MÉDICA Y LEGAL:</b> La aplicación CIAM&amp;SUNI es una herramienta "
+          "tecnológica orientada al ámbito estrictamente educativo, informativo y de apoyo nutricional preventivo. "
+          "Los parámetros, diagnósticos de estado nutricional, proyecciones calóricas (TMB, RCD, IMC) y sugerencias "
+          "alimentarias generados por este software se basan en fórmulas estandarizadas y en la Tabla Peruana de "
+          "Composición de Alimentos (TPCA - 11.ª edición); por lo tanto, no constituyen un diagnóstico clínico, "
+          "prescripción médica ni reemplazan la consulta o supervisión directa de un profesional de la salud "
+          "(médico o nutricionista colegiado). El equipo desarrollador no asume responsabilidad legal ni médica "
+          "por la interpretación autónoma, decisiones dietéticas intercurrentes o el uso inadecuado de la "
+          "información proporcionada por esta plataforma. Se recomienda a los usuarios con condiciones clínicas "
+          "preexistentes (como diabetes, hipertensión o dislipidemias) consultar con un especialista antes de "
+          "realizar cambios significativos en su alimentación. Ningún dato personal o de salud es almacenado en "
+          "servidores externos.",
+          "<b>MEDICAL AND LEGAL DISCLAIMER:</b> The CIAM&amp;SUNI application is a technological tool intended "
+          "strictly for educational, informational, and preventive nutritional support purposes. The parameters, "
+          "nutritional status assessments, caloric projections (BMR, TDEE, BMI), and dietary suggestions generated "
+          "by this software are based on standardized formulas and the Peruvian Food Composition Table (TPCA - "
+          "11th edition); therefore, they do not constitute a clinical diagnosis, medical prescription, or replace "
+          "direct consultation with or supervision by a licensed health professional (physician or nutritionist). "
+          "The development team assumes no legal or medical liability for autonomous interpretation, intervening "
+          "dietary decisions, or improper use of the information provided by this platform. Users with pre-existing "
+          "clinical conditions (such as diabetes, hypertension, or dyslipidemia) are advised to consult a "
+          "specialist before making significant changes to their diet. No personal or health data is stored on "
+          "external servers."), estilo_aviso)
 
     _qr_celda = [
         _qr_flowable(_URL_APP_QR, tam_mm=18),
@@ -4884,7 +4895,7 @@ def tabla_iom_ganancia_visual(imc_usuario):
                 {_etq}{' ⭐ ' + T('TÚ AQUÍ', 'YOU ARE HERE') if _activa else ''}</td>
             <td style="text-align:center;color:#3C3C43;padding:12px 10px;font-size:0.82rem;">{_rango}</td>
             <td style="text-align:center;font-weight:800;color:#17301F;padding:12px 10px;font-size:0.86rem;">{_min:.1f}–{_max:.1f} kg</td>
-            <td style="text-align:center;color:#3C3C43;padding:12px 14px;border-radius:0 12px 12px 0;font-size:0.82rem;">≈ {_tasa:.2f} kg/{T('sem', 'wk')}</td>
+            <td style="text-align:center;color:#3C3C43;padding:12px 14px;border-radius:0 12px 12px 0;font-size:0.82rem;">≈ {_tasa:.1f} kg/{T('sem', 'wk')}</td>
         </tr>"""
     st.markdown(T("#### 🎯 Categorías de Ganancia de Peso Gestacional (IOM/ACOG)",
                   "#### 🎯 Gestational Weight-Gain Categories (IOM/ACOG)"))
@@ -4929,7 +4940,7 @@ def panel_diagnostico_pregestacional(imc, categoria):
         (T("IMC Pregest.", "Pre-preg. BMI"), f"{imc:g}", "⚖️", "#8E24AA"),
         (T("Ganancia Meta", "Gain Target"), f"+{_min_kg:g} a {_max_kg:g} kg" if st.session_state.get("idioma", "Español") != "English"
          else f"+{_min_kg:g} to {_max_kg:g} kg", "🤰", "#E91E8C"),
-        (T("Tasa Semanal", "Weekly Rate"), f"{_tasa:.2f} kg/{T('sem', 'wk')}", "🎯", "#5856D6"),
+        (T("Tasa Semanal", "Weekly Rate"), f"{_tasa:.1f} kg/{T('sem', 'wk')}", "🎯", "#5856D6"),
         (T("Estado", "Status"), _estado_gestacional_txt(categoria), "🩺", _color),
     ]
     _kpis = "".join(f"""
@@ -6261,7 +6272,7 @@ def _build_panel_control_definitivo(rcd_v, tmb_v, rcd_final_v, ajuste_aplicado_v
             max_ritmo_pct = 1.0 if objetivo_v == "Bajar de peso" else 0.5
             pct_ritmo = min(ritmo_pct_semanal_v / max_ritmo_pct, 1.0) if max_ritmo_pct else 0
             color_ritmo = "#FF3B30" if objetivo_v == "Bajar de peso" else "#0A84FF"
-            _gauge_altair(pct_ritmo, color_ritmo, f"{cambio_semanal_kg_v:.2f} kg/semana",
+            _gauge_altair(pct_ritmo, color_ritmo, f"{cambio_semanal_kg_v:.1f} kg/semana",
                           f"Estimamos que {'bajarás' if objetivo_v=='Bajar de peso' else 'subirás'} a este "
                           "ritmo, sin perder músculo.", "ritmo")
         else:
@@ -7573,7 +7584,7 @@ if hoja_activa == "0.-DATOS":
         _sd = lambda v: T("Sin dato", "No data") if v is None else v
         _tablas_resumen = [
             (0, T("👤 Bloque 1 · Perfil Básico", "👤 Block 1 · Basic Profile"), [
-                (T("Nombre", "Name"), _nombre_saludo), (T("Género", "Gender"), T(genero, "Male" if genero == "Hombre" else "Female")), (T("Peso", "Weight"), f"{peso:.2f} kg"),
+                (T("Nombre", "Name"), _nombre_saludo), (T("Género", "Gender"), T(genero, "Male" if genero == "Hombre" else "Female")), (T("Peso", "Weight"), f"{peso:.1f} kg"),
                 (T("Estatura", "Height"), f"{estatura} cm ({estatura_m:.2f} m)"), (T("Edad", "Age"), T(f"{edad} años", f"{edad} years")),
                 (T("Etapa detectada", "Detected life stage"), T(etapa, _ETAPA_EN.get(etapa, etapa))),
             ]),
@@ -7589,17 +7600,17 @@ if hoja_activa == "0.-DATOS":
                 ]
             )),
             (1, T("💓 Bloque 3 · Signos Vitales", "💓 Block 3 · Vital Signs"), [
-                (T("SpO2", "SpO2"), f"{spo2:.2f}%" if spo2 > 0 else T("Sin dato", "No data")),
+                (T("SpO2", "SpO2"), f"{spo2:.1f}%" if spo2 > 0 else T("Sin dato", "No data")),
                 (T("Pulso", "Pulse"), f"{pulso} lpm" if pulso > 0 else T("Sin dato", "No data")),
-                (T("Temperatura", "Temperature"), f"{temp_corp:.2f}°C" if temp_corp > 0 else T("Sin dato", "No data")),
+                (T("Temperatura", "Temperature"), f"{temp_corp:.1f}°C" if temp_corp > 0 else T("Sin dato", "No data")),
                 (T("Presión arterial", "Blood pressure"), f"{pas}/{pad} mmHg" if pas > 0 and pad > 0 else T("Sin dato", "No data")),
             ]),
             (1, T("🩸 Bloque 4 · Perfil Bioquímico", "🩸 Block 4 · Biochemical Profile"), [
-                (T("Hemoglobina", "Hemoglobin"), f"{hemo:.2f} g/dL" if hemo > 0 else T("Sin dato", "No data")),
-                (T("Glucosa", "Glucose"), f"{gluco:.2f} mg/dL" if gluco > 0 else T("Sin dato", "No data")),
-                (T("Colesterol", "Cholesterol"), f"{coles:.2f} mg/dL" if coles > 0 else T("Sin dato", "No data")),
-                (T("Triglicéridos", "Triglycerides"), f"{trigli:.2f} mg/dL" if trigli > 0 else T("Sin dato", "No data")),
-                (T("Hierro", "Iron"), f"{hierro:.2f} µg/dL" if hierro > 0 else T("Sin dato", "No data")),
+                (T("Hemoglobina", "Hemoglobin"), f"{hemo:.1f} g/dL" if hemo > 0 else T("Sin dato", "No data")),
+                (T("Glucosa", "Glucose"), f"{gluco:.1f} mg/dL" if gluco > 0 else T("Sin dato", "No data")),
+                (T("Colesterol", "Cholesterol"), f"{coles:.1f} mg/dL" if coles > 0 else T("Sin dato", "No data")),
+                (T("Triglicéridos", "Triglycerides"), f"{trigli:.1f} mg/dL" if trigli > 0 else T("Sin dato", "No data")),
+                (T("Hierro", "Iron"), f"{hierro:.1f} µg/dL" if hierro > 0 else T("Sin dato", "No data")),
             ]),
         ]
         for _idx_col, _titulo_tabla, _filas_tabla in _tablas_resumen:
@@ -8873,7 +8884,7 @@ elif hoja_activa == "3.-TMB":
             <span style="font-size:1.2rem;color:#D6336C;">+</span>
             <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
             <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Masa Magra','Lean Mass')}</p>
-            <p style="margin:0;font-weight:900;color:#17301F;">{masa_magra_kg:.2f} kg</p></div>
+            <p style="margin:0;font-weight:900;color:#17301F;">{masa_magra_kg:.1f} kg</p></div>
             <span style="font-size:1.2rem;color:#D6336C;">×</span>
             <div style="background:#FFFFFF;border-radius:12px;padding:10px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
             <p style="margin:0;font-size:0.7rem;color:#5C6B60;">{T('Multiplicador','Multiplier')}</p>
@@ -9138,7 +9149,7 @@ elif hoja_activa == "4.-RCD":
     <div class="cp5-glass-flow" style="margin-top:6px;">
         <div class="cp5-flow-card">
             <div class="cp5-flow-label">⚡ TMB</div>
-            <div class="cp5-flow-value">{tmb:.2f}</div>
+            <div class="cp5-flow-value">{tmb:.0f}</div>
             <div class="cp5-flow-legend">kcal/día — tu gasto en reposo (Hoja 3)</div>
         </div>
         <div class="cp5-flow-arrow">×</div>
@@ -9150,7 +9161,7 @@ elif hoja_activa == "4.-RCD":
         <div class="cp5-flow-arrow">=</div>
         <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.35);">
             <div class="cp5-flow-label">🔥 RCD base</div>
-            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_base:.2f}</div>
+            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_base:.0f}</div>
             <div class="cp5-flow-legend">kcal/día — antes del ajuste por clima</div>
         </div>
     </div>
@@ -9158,7 +9169,7 @@ elif hoja_activa == "4.-RCD":
     <div class="cp5-glass-flow" style="margin-top:6px;">
         <div class="cp5-flow-card">
             <div class="cp5-flow-label">⚡ BMR</div>
-            <div class="cp5-flow-value">{tmb:.2f}</div>
+            <div class="cp5-flow-value">{tmb:.0f}</div>
             <div class="cp5-flow-legend">kcal/day — your resting expenditure (Sheet 3)</div>
         </div>
         <div class="cp5-flow-arrow">×</div>
@@ -9170,7 +9181,7 @@ elif hoja_activa == "4.-RCD":
         <div class="cp5-flow-arrow">=</div>
         <div class="cp5-flow-card" style="background:rgba(255,149,0,0.12);border-color:rgba(255,149,0,0.35);">
             <div class="cp5-flow-label">🔥 Base DCR</div>
-            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_base:.2f}</div>
+            <div class="cp5-flow-value" style="color:#E67E22;">{rcd_base:.0f}</div>
             <div class="cp5-flow-legend">kcal/day — before climate adjustment</div>
         </div>
     </div>
@@ -9180,11 +9191,11 @@ elif hoja_activa == "4.-RCD":
     st.markdown(f"""
     <div style="text-align:center;background:#F7F9F7;border-radius:18px;padding:16px 20px;margin-top:16px;
                 font-family:var(--font-round);border:1px solid rgba(0,0,0,0.04);">
-        <span style="font-size:1.3rem;font-weight:800;color:#17301F;">{tmb:.2f}</span>
+        <span style="font-size:1.3rem;font-weight:800;color:#17301F;">{tmb:.0f}</span>
         <span style="font-size:1.1rem;color:#8A94A6;margin:0 10px;">×</span>
         <span style="font-size:1.3rem;font-weight:800;color:#34C759;">{factor:.2f}</span>
         <span style="font-size:1.1rem;color:#8A94A6;margin:0 10px;">=</span>
-        <span style="font-size:1.5rem;font-weight:900;color:#E67E22;">{rcd_base:.2f} kcal</span>
+        <span style="font-size:1.5rem;font-weight:900;color:#E67E22;">{rcd_base:.0f} kcal</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -9385,7 +9396,7 @@ elif hoja_activa == "4.-RCD":
         <div style="position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:0.16;">🔥</div>
         <div style="font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.95;">
             Resultado Final · Requerimiento Calórico Diario</div>
-        <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.2f} <span style="font-size:1.2rem;font-weight:700;">kcal/día</span></div>
+        <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.0f} <span style="font-size:1.2rem;font-weight:700;">kcal/día</span></div>
         <div style="font-size:0.86rem;opacity:0.92;">{_sub_hero_rcd}</div>
     </div>
     """, f"""
@@ -9395,7 +9406,7 @@ elif hoja_activa == "4.-RCD":
         <div style="position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:0.16;">🔥</div>
         <div style="font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;opacity:0.95;">
             Final Result · Daily Caloric Requirement</div>
-        <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.2f} <span style="font-size:1.2rem;font-weight:700;">kcal/day</span></div>
+        <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.02em;margin:8px 0;">🔥 {rcd:.0f} <span style="font-size:1.2rem;font-weight:700;">kcal/day</span></div>
         <div style="font-size:0.86rem;opacity:0.92;">{_sub_hero_rcd}</div>
     </div>
     """), unsafe_allow_html=True)
@@ -9728,7 +9739,7 @@ elif hoja_activa == "4.-RCD":
                     {_etq_iom}{' ⭐' if _es_fila_iom_activa else ''}</td>
                 <td style="text-align:center;color:#3C3C43;padding:12px 10px;font-size:0.82rem;">{_rango_imc_iom}</td>
                 <td style="text-align:center;font-weight:800;color:#17301F;padding:12px 10px;font-size:0.86rem;">{_min_iom:.1f}–{_max_iom:.1f} kg</td>
-                <td style="text-align:center;color:#3C3C43;padding:12px 14px;border-radius:0 12px 12px 0;font-size:0.82rem;">≈ {_tasa_iom:.2f} kg/{T('sem','wk')}</td>
+                <td style="text-align:center;color:#3C3C43;padding:12px 14px;border-radius:0 12px 12px 0;font-size:0.82rem;">≈ {_tasa_iom:.1f} kg/{T('sem','wk')}</td>
             </tr>"""
         st.markdown(_html_sin_lineas_vacias(f"""
         <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-family:var(--font-round);">
@@ -10512,8 +10523,8 @@ elif hoja_activa == "6.-MACRONUTRIENTES":
             referencia=T("Modelo de reparto de macronutrientes por nivel", "Macronutrient distribution model by level"))}</div>""", unsafe_allow_html=True)
         st.caption(T("Así se calculan los escenarios Mínimo, Intermedio y Máximo basados en tu peso actual.",
                      "This is how the Minimum, Intermediate, and Maximum scenarios are calculated based on your current weight."))
-        st.info(f"⚖️ {T('Peso usado en los cálculos', 'Weight used in calculations')}: **{peso_usuario:.2f} kg** · "
-                f"🔥 {T('RCD objetivo', 'Target DCR')}: **{rcd_usuario:.2f} {T('kcal/día', 'kcal/day')}**")
+        st.info(f"⚖️ {T('Peso usado en los cálculos', 'Weight used in calculations')}: **{peso_usuario:.1f} kg** · "
+                f"🔥 {T('RCD objetivo', 'Target DCR')}: **{rcd_usuario:.0f} {T('kcal/día', 'kcal/day')}**")
 
         _filas_niveles_html = ""
         _COL_PROT = ("#C2185B", "#FFEBF0")
@@ -10815,14 +10826,14 @@ elif hoja_activa == "7.-PORCIONES":
         <tr>
             <td class="comida-nombre">{_ICONOS_COMIDA[_comida]} {_comida_nombre(_comida)}</td>
             <td>{_pct*100:.0f}%</td>
-            <td>{_kcal_comida:.2f} {T('kcal', 'kcal')}</td>
+            <td>{_kcal_comida:.0f} {T('kcal', 'kcal')}</td>
         </tr>"""
 
     _filas_comidas_html += f"""
         <tr class="fila-total-comidas">
             <td class="comida-nombre" style="color:#FFFFFF;">🔥 {T('RCD (Total Distribuido)', 'DCR (Total Distributed)')}</td>
             <td>100%</td>
-            <td>{_suma_kcal_comidas:.2f} {T('kcal', 'kcal')}</td>
+            <td>{_suma_kcal_comidas:.0f} {T('kcal', 'kcal')}</td>
         </tr>"""
 
     _html_tabla_comidas = f"""
@@ -10852,16 +10863,16 @@ elif hoja_activa == "7.-PORCIONES":
     <div class="val-card">
         <div class="val-card-title">🔍 {T('Comparación: RCD Calculado vs. Total Distribuido', 'Comparison: Calculated DCR vs. Total Distributed')}</div>
         <table class="val-comparacion-table">
-            <tr><td>{T('RCD Calculado', 'Calculated DCR')}</td><td>{_rcd_comidas:.2f} {T('kcal', 'kcal')}</td></tr>
-            <tr><td>{T('Total Distribuido', 'Total Distributed')}</td><td>{_suma_kcal_comidas:.2f} {T('kcal', 'kcal')}</td></tr>
-            <tr><td>{T('Diferencia', 'Difference')}</td><td>{_diferencia_validacion:.2f} {T('kcal', 'kcal')}</td></tr>
+            <tr><td>{T('RCD Calculado', 'Calculated DCR')}</td><td>{_rcd_comidas:.0f} {T('kcal', 'kcal')}</td></tr>
+            <tr><td>{T('Total Distribuido', 'Total Distributed')}</td><td>{_suma_kcal_comidas:.0f} {T('kcal', 'kcal')}</td></tr>
+            <tr><td>{T('Diferencia', 'Difference')}</td><td>{_diferencia_validacion:.0f} {T('kcal', 'kcal')}</td></tr>
             <tr class="{_fila_estado_clase}"><td>{T('Estado', 'Status')}</td><td>{_estado_txt}</td></tr>
         </table>
         <div class="val-card-title" style="margin-top:4px;">📋 {T('Estado de Validación', 'Validation Status')}</div>
         <div class="val-checklist">
-<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('RCD Calculado', 'Calculated DCR')} ............. {_rcd_comidas:.2f} {T('kcal', 'kcal')}
-<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('Total Distribuido', 'Total Distributed')} ......... {_suma_kcal_comidas:.2f} {T('kcal', 'kcal')}
-<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('Diferencia', 'Difference')} ................ {_diferencia_validacion:.2f} {T('kcal', 'kcal')}
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('RCD Calculado', 'Calculated DCR')} ............. {_rcd_comidas:.0f} {T('kcal', 'kcal')}
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('Total Distribuido', 'Total Distributed')} ......... {_suma_kcal_comidas:.0f} {T('kcal', 'kcal')}
+<span class="{'val-ok' if _coincide else 'val-bad'}">{'✔' if _coincide else '✖'}</span> {T('Diferencia', 'Difference')} ................ {_diferencia_validacion:.0f} {T('kcal', 'kcal')}
         </div>
     </div>
     """
@@ -10885,8 +10896,8 @@ elif hoja_activa == "7.-PORCIONES":
         <div class="val-banner-error">
             <span class="val-banner-icon">🔴</span>
             <div class="val-banner-title">⚠ {T(
-                f'Existe una diferencia de {_diferencia_validacion:.2f} kcal entre el RCD y la distribución diaria.',
-                f'There is a difference of {_diferencia_validacion:.2f} kcal between the DCR and the daily distribution.'
+                f'Existe una diferencia de {_diferencia_validacion:.0f} kcal entre el RCD y la distribución diaria.',
+                f'There is a difference of {_diferencia_validacion:.0f} kcal between the DCR and the daily distribution.'
             )}</div>
             <div class="val-banner-sub">{T('Revise la planificación.', 'Please review the plan.')}</div>
         </div>
@@ -11301,7 +11312,7 @@ elif hoja_activa == "9.-DIETA":
 
     _filas_tiempos_html = "".join(
         f"""<div class="rn-tiempos-row"><span>{_ICONOS_COMIDA_D9[_c]} {_mom(_c)}</span>
-            <span class="rn-kcal">{porciones[_c]['kcal']:.2f} kcal</span></div>"""
+            <span class="rn-kcal">{porciones[_c]['kcal']:.0f} kcal</span></div>"""
         for _c in porciones
     )
 
@@ -11314,11 +11325,11 @@ elif hoja_activa == "9.-DIETA":
         <div class="resumen-nutri-card rn-macros">
             <div class="rn-title">🍽️ {T('Distribución de Macronutrientes', 'Macronutrient Distribution')}</div>
             <div class="rn-macro-row">🥩 {T('Proteínas', 'Protein')}
-                <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.2f} g</span></div>
+                <span class="rn-macro-pill" style="background:#FFEDEC;color:#C0392B;">{gr_prot:.1f} g</span></div>
             <div class="rn-macro-row">🌾 {T('Carbohidratos', 'Carbohydrates')}
-                <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.2f} g</span></div>
+                <span class="rn-macro-pill" style="background:#FFF3E0;color:#E67E22;">{gr_carb:.1f} g</span></div>
             <div class="rn-macro-row">🥑 {T('Grasas', 'Fats')}
-                <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.2f} g</span></div>
+                <span class="rn-macro-pill" style="background:#EAFAEE;color:#1E5631;">{gr_gras:.1f} g</span></div>
         </div>
         <div class="resumen-nutri-card rn-rcd">
             <div class="rn-title" style="justify-content:center;color:#FFFFFF;">🎯 {T('Requerimiento Calórico Diario', 'Daily Caloric Requirement')}</div>
@@ -11470,7 +11481,7 @@ elif hoja_activa == "9.-DIETA":
             <tr>
                 <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
                 <td>{_dieta_nombre(f[macro_key])}</td>
-                <td>{f[f'kcal ({_prefijo})']} kcal</td>
+                <td>{f[f'kcal ({_prefijo})']:.0f} kcal</td>
                 <td>{f[f'Porción corregida ({_prefijo})']:.1f} kcal</td>
                 <td>{f[f'Gramos ({_prefijo})']:.1f} g</td>
             </tr>"""
@@ -12488,7 +12499,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
         ("5", "⚖️", T("Convertimos esa energía en una estimación de peso", "We convert that energy into a weight estimate"),
          T("El modelo utiliza aproximadamente 7,700 kcal por kilogramo como equivalente energético de referencia.",
            "The model uses approximately 7,700 kcal per kilogram as a reference energy equivalent."),
-         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 ≈ {peso_cambio_60:.2f} kg", "#EDE9FE", "#C4B5FD", "#6D28D9"),
+         f"{deficit_diario*_DIAS_PROY:.0f} ÷ 7,700 ≈ {peso_cambio_60:.1f} kg", "#EDE9FE", "#C4B5FD", "#6D28D9"),
     ]
     for _num, _ic_p, _titulo, _desc, _formula, _bg_p, _bd_p, _hx_p in _pasos:
         st.markdown(f"""
@@ -12508,7 +12519,7 @@ elif hoja_activa == "13.-LÍNEA DE TIEMPO":
     <div style="background:linear-gradient(120deg,#8B5CF6,#6D28D9);border-radius:18px;
     padding:16px 20px;margin:8px 0 14px 0;box-shadow:0 6px 16px rgba(139,92,246,0.35);">
     <p style="margin:0;color:#FFFFFF;font-size:0.92rem;"><b>{T('Resultado', 'Result')}:</b> {peso:.1f} {'−' if _es_bajar else ('+' if not _es_mantener else '±')}
-    {abs(peso_cambio_60):.2f} = <b style="font-size:1.1rem;">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
+    {abs(peso_cambio_60):.1f} = <b style="font-size:1.1rem;">{_peso_final:.1f} kg</b> — {T(f'peso estimado en {_DIAS_PROY} días.', f'estimated weight in {_DIAS_PROY} days.')}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -12655,8 +12666,8 @@ elif hoja_activa == "📄 MI REPORTE":
         _trimestre_r14_txt = T(_trimestre_r14, {"Primer trimestre": "First trimester", "Segundo trimestre": "Second trimester",
                                                   "Tercer trimestre": "Third trimester"}.get(_trimestre_r14, _trimestre_r14))
         rg1, rg2, rg3 = st.columns(3)
-        rg1.metric(T("Peso Pregestacional", "Pre-pregnancy Weight"), f"{peso:.2f} kg")
-        rg2.metric(T("Peso Actual", "Current Weight"), f"{_peso_actual_r14:.2f} kg")
+        rg1.metric(T("Peso Pregestacional", "Pre-pregnancy Weight"), f"{peso:.1f} kg")
+        rg2.metric(T("Peso Actual", "Current Weight"), f"{_peso_actual_r14:.1f} kg")
         rg3.metric(T("Estatura", "Height"), f"{estatura} cm")
         rg4, rg5, rg6 = st.columns(3)
         rg4.metric(T("Edad", "Age"), f"{edad} {T('años', 'years')}")
@@ -12683,22 +12694,22 @@ elif hoja_activa == "📄 MI REPORTE":
         _en_rango_r14 = _canal_min_hoy_r14 - 1 <= _kg_ganados_r14 <= _canal_max_hoy_r14 + 1
     else:
         r1, r2, r3 = st.columns(3)
-        r1.metric(T("Peso", "Weight"), f"{peso:.2f} kg")
+        r1.metric(T("Peso", "Weight"), f"{peso:.1f} kg")
         r2.metric(T("Estatura", "Height"), f"{estatura} cm")
         with r3:
             tarjeta_categoria_imc(f"{T('IMC', 'BMI')}: {imc}", _categoria_imc_usuario)
 
     st.markdown(f"#### 🔥 {T('Requerimiento energético', 'Energy Requirement')}")
     r4, r5, r6 = st.columns(3)
-    r4.metric(T("TMB", "BMR"), f"{tmb:.2f} kcal/{T('día', 'day')}")
-    r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"{rcd:.2f} kcal/{T('día', 'day')}")
+    r4.metric(T("TMB", "BMR"), f"{tmb:.0f} kcal/{T('día', 'day')}")
+    r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"{rcd:.0f} kcal/{T('día', 'day')}")
     r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"{rcd_final:.0f} kcal/{T('día', 'day')}")
 
     st.markdown(f"#### 🍽️ {T('Macronutrientes recomendados', 'Recommended Macronutrients')}")
     r7, r8, r9 = st.columns(3)
-    r7.metric(T("Proteínas", "Protein"), f"{gr_prot:.2f} g")
-    r8.metric(T("Carbohidratos", "Carbohydrates"), f"{gr_carb:.2f} g")
-    r9.metric(T("Grasas", "Fats"), f"{gr_gras:.2f} g")
+    r7.metric(T("Proteínas", "Protein"), f"{gr_prot:.1f} g")
+    r8.metric(T("Carbohidratos", "Carbohydrates"), f"{gr_carb:.1f} g")
+    r9.metric(T("Grasas", "Fats"), f"{gr_gras:.1f} g")
 
     # --- Bloque 2: Análisis sanguíneo, si hay datos ---
     st.markdown(f"#### 🩸 {T('Análisis sanguíneo', 'Blood Analysis')}")
@@ -12845,7 +12856,7 @@ elif hoja_activa == "📄 MI REPORTE":
     _filas_dist_html = "".join(
         f'<tr><td style="padding:8px 10px;">{_MOM_ICONO_R14[m]} {_mom_r14(m)}</td>'
         f'<td style="padding:8px 10px;text-align:center;">{porciones[m]["pct"]*100:.0f}%</td>'
-        f'<td style="padding:8px 10px;text-align:right;">{porciones[m]["kcal"]:.2f} kcal</td></tr>'
+        f'<td style="padding:8px 10px;text-align:right;">{porciones[m]["kcal"]:.0f} kcal</td></tr>'
         for m in _MOM_ORDEN_R14
     )
     _tot_pct_r14 = sum(porciones[m]["pct"] for m in _MOM_ORDEN_R14)
@@ -12863,7 +12874,7 @@ elif hoja_activa == "📄 MI REPORTE":
         <tr style="background:#F2F2F7;font-weight:800;">
             <td style="padding:8px 10px;">{T('TOTAL', 'TOTAL')}</td>
             <td style="padding:8px 10px;text-align:center;">{_tot_pct_r14*100:.0f}%</td>
-            <td style="padding:8px 10px;text-align:right;">{_tot_kcal_r14:.2f} kcal</td>
+            <td style="padding:8px 10px;text-align:right;">{_tot_kcal_r14:.0f} kcal</td>
         </tr>
         </tbody>
     </table>
@@ -13048,6 +13059,43 @@ elif hoja_activa == "📄 MI REPORTE":
                  "guardar, enviar o imprimir directamente desde tu lector de PDF.",
                  "Generates a PDF styled as a clinical report (not a page screenshot) that you can save, "
                  "send, or print directly from your PDF reader."))
+
+    # ---- Descargo de responsabilidad médico-legal: visible antes de exportar (footer del módulo) ----
+    st.markdown(f"""
+    <div style="background:#FFF3F3;border:1px solid #F5C2C2;border-left:5px solid #C0392B;border-radius:14px;
+                padding:14px 20px;margin:14px 0;font-size:0.78rem;line-height:1.55;color:#5A2A2A;">
+    <b style="color:#C0392B;">⚖️ {T('DESCARGO DE RESPONSABILIDAD MÉDICA Y LEGAL', 'MEDICAL AND LEGAL DISCLAIMER')}</b><br>
+    {T(
+        "La aplicación CIAM&SUNI es una herramienta tecnológica orientada al ámbito estrictamente educativo, "
+        "informativo y de apoyo nutricional preventivo. Los parámetros, diagnósticos de estado nutricional, "
+        "proyecciones calóricas (TMB, RCD, IMC) y sugerencias alimentarias generados por este software se basan "
+        "en fórmulas estandarizadas y en la Tabla Peruana de Composición de Alimentos (TPCA - 11.ª edición); por "
+        "lo tanto, no constituyen un diagnóstico clínico, prescripción médica ni reemplazan la consulta o "
+        "supervisión directa de un profesional de la salud (médico o nutricionista colegiado). El equipo "
+        "desarrollador no asume responsabilidad legal ni médica por la interpretación autónoma, decisiones "
+        "dietéticas intercurrentes o el uso inadecuado de la información proporcionada por esta plataforma. Se "
+        "recomienda a los usuarios con condiciones clínicas preexistentes (como diabetes, hipertensión o "
+        "dislipidemias) consultar con un especialista antes de realizar cambios significativos en su alimentación.",
+        "The CIAM&SUNI application is a technological tool intended strictly for educational, informational, and "
+        "preventive nutritional support purposes. The parameters, nutritional status assessments, caloric "
+        "projections (BMR, TDEE, BMI), and dietary suggestions generated by this software are based on "
+        "standardized formulas and the Peruvian Food Composition Table (TPCA - 11th edition); therefore, they do "
+        "not constitute a clinical diagnosis, medical prescription, or replace direct consultation with or "
+        "supervision by a licensed health professional (physician or nutritionist). The development team assumes "
+        "no legal or medical liability for autonomous interpretation, intervening dietary decisions, or improper "
+        "use of the information provided by this platform. Users with pre-existing clinical conditions (such as "
+        "diabetes, hypertension, or dyslipidemia) are advised to consult a specialist before making significant "
+        "changes to their diet."
+    )}
+    </div>
+    """, unsafe_allow_html=True)
+
+    _acepta_descargo = st.checkbox(
+        T("He leído y entiendo el descargo de responsabilidad médica y legal anterior.",
+          "I have read and understand the medical and legal disclaimer above."),
+        key="acepta_descargo_pdf",
+    )
+
     st.download_button(
         T("📄 Descargar Informe en PDF", "📄 Download Report as PDF"),
         data=_pdf_bytes,
@@ -13055,7 +13103,11 @@ elif hoja_activa == "📄 MI REPORTE":
         mime="application/pdf",
         use_container_width=True,
         type="primary",
+        disabled=not _acepta_descargo,
     )
+    if not _acepta_descargo:
+        st.caption(T("☝️ Marca la casilla para habilitar la descarga.",
+                      "☝️ Check the box to enable the download."))
 
     caja_util(T(
         f"Este es tu informe final, {_nombre_saludo}: reúne en un solo lugar todo lo que calculamos en "
