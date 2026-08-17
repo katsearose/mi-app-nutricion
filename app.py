@@ -4956,24 +4956,40 @@ def panel_diagnostico_pregestacional(imc, categoria):
 
 
 _ESTADO_CHECKLIST_GESTACIONAL = {
-    "Bajo Peso": ["Meta de ganancia total más alta: +12.5 a +18.0 kg", "Prioriza calidad y frecuencia de comidas",
-                  "Sigue tu curva semana a semana en Línea de Tiempo", "Recomendable acudir a nutrición/obstetricia"],
-    "Peso Saludable": ["Meta de ganancia total: +11.5 a +16.0 kg", "Ritmo esperado: ≈0.42 kg/semana (2°/3er trim.)",
-                        "Sigue tu curva semana a semana en Línea de Tiempo", "Continúa con tus controles prenatales"],
-    "Sobrepeso": ["Meta de ganancia total más baja: +7.0 a +11.5 kg", "El aporte calórico extra sigue siendo automático por trimestre",
-                  "Sigue tu curva semana a semana en Línea de Tiempo", "Recomendable acudir a nutrición/obstetricia"],
-    "Obesidad": ["Meta de ganancia total más baja: +5.0 a +9.0 kg", "Ganancia lenta y controlada, nunca en déficit",
-                 "Sigue tu curva semana a semana en Línea de Tiempo", "Seguimiento estrecho con obstetricia recomendado"],
+    "Bajo Peso": ["🎯 Meta total: Subir entre 12.5 y 18 kg durante todo tu embarazo.",
+                  "🍽️ Prioriza la calidad y frecuencia de tus comidas.",
+                  "🗓️ Revisa tu progreso semana a semana en la Línea de Tiempo.",
+                  "🩺 Te recomendamos acudir a nutrición u obstetricia."],
+    "Peso Saludable": ["🎯 Meta total: Subir entre 11.5 y 16 kg durante todo tu embarazo.",
+                        "📈 Aumento semanal: Aproximadamente medio kilo por semana (en el 2° y 3° trimestre).",
+                        "🗓️ Tu progreso: Revisa cómo vas semana a semana en la pestaña Línea de Tiempo.",
+                        "🩺 Tip clave: Asiste siempre a tus controles médicos de rutina."],
+    "Sobrepeso": ["🎯 Meta total: Subir entre 7 y 11.5 kg durante todo tu embarazo.",
+                  "🔥 El aporte extra de calorías se sigue sumando automáticamente cada trimestre.",
+                  "🗓️ Revisa tu progreso semana a semana en la Línea de Tiempo.",
+                  "🩺 Te recomendamos acudir a nutrición u obstetricia."],
+    "Obesidad": ["🎯 Meta total: Subir entre 5 y 9 kg durante todo tu embarazo.",
+                 "🐢 El aumento debe ser lento y controlado, nunca en déficit.",
+                 "🗓️ Revisa tu progreso semana a semana en la Línea de Tiempo.",
+                 "🩺 Se recomienda un seguimiento cercano con obstetricia."],
 }
 _ESTADO_CHECKLIST_GESTACIONAL_EN = {
-    "Bajo Peso": ["Higher total gain target: +12.5 to +18.0 kg", "Prioritize meal quality and frequency",
-                  "Track your week-by-week curve in Timeline", "Recommended to see nutrition/obstetrics"],
-    "Peso Saludable": ["Total gain target: +11.5 to +16.0 kg", "Expected pace: ≈0.42 kg/week (2nd/3rd trim.)",
-                        "Track your week-by-week curve in Timeline", "Continue with your prenatal check-ups"],
-    "Sobrepeso": ["Lower total gain target: +7.0 to +11.5 kg", "Extra caloric intake is still automatic per trimester",
-                  "Track your week-by-week curve in Timeline", "Recommended to see nutrition/obstetrics"],
-    "Obesidad": ["Lower total gain target: +5.0 to +9.0 kg", "Slow, controlled gain — never a deficit",
-                 "Track your week-by-week curve in Timeline", "Close follow-up with obstetrics recommended"],
+    "Bajo Peso": ["🎯 Total goal: Gain between 12.5 and 18 kg during your whole pregnancy.",
+                  "🍽️ Prioritize the quality and frequency of your meals.",
+                  "🗓️ Check your week-by-week progress in the Timeline tab.",
+                  "🩺 We recommend seeing nutrition or obstetrics."],
+    "Peso Saludable": ["🎯 Total goal: Gain between 11.5 and 16 kg during your whole pregnancy.",
+                        "📈 Weekly gain: About half a kilo per week (in the 2nd and 3rd trimester).",
+                        "🗓️ Your progress: Check how you're doing week by week in the Timeline tab.",
+                        "🩺 Key tip: Always keep up with your routine medical check-ups."],
+    "Sobrepeso": ["🎯 Total goal: Gain between 7 and 11.5 kg during your whole pregnancy.",
+                  "🔥 The extra caloric intake still adds up automatically each trimester.",
+                  "🗓️ Check your week-by-week progress in the Timeline tab.",
+                  "🩺 We recommend seeing nutrition or obstetrics."],
+    "Obesidad": ["🎯 Total goal: Gain between 5 and 9 kg during your whole pregnancy.",
+                 "🐢 The gain should be slow and controlled, never a deficit.",
+                 "🗓️ Check your week-by-week progress in the Timeline tab.",
+                 "🩺 Close follow-up with obstetrics is recommended."],
 }
 
 
@@ -4986,7 +5002,7 @@ def tarjeta_estado_pregestacional(categoria):
     _dic = _ESTADO_CHECKLIST_GESTACIONAL_EN if _en else _ESTADO_CHECKLIST_GESTACIONAL
     _fallback_key = "Sobrepeso"
     _items = _dic.get(categoria, _dic[_fallback_key])
-    _lis = "".join(f'<div class="estado-nutri-item"><span>✓</span><span>{it}</span></div>' for it in _items)
+    _lis = "".join(f'<div class="estado-nutri-item"><span>{it}</span></div>' for it in _items)
     st.markdown(f"""
     <div class="bento-card" style="border-top:4px solid {estilo['hex']};">
         <span class="bento-eyebrow">🤰 {T("Estado Gestacional", "Gestational Status")}</span>
@@ -4996,33 +5012,50 @@ def tarjeta_estado_pregestacional(categoria):
     """, unsafe_allow_html=True)
 
 
+_INICIO_IMC_TXT = {
+    "Bajo Peso": ("Iniciaste tu embarazo con bajo peso (IMC: {imc:g}), así que se prioriza una ganancia mayor para ti y tu bebé.",
+                  "You started your pregnancy underweight (BMI: {imc:g}), so a higher weight gain is prioritized for you and your baby."),
+    "Peso Saludable": ("Iniciaste tu embarazo con un peso ideal (IMC: {imc:g}), lo cual es excelente para ti y tu bebé.",
+                        "You started your pregnancy at an ideal weight (BMI: {imc:g}), which is excellent for you and your baby."),
+    "Sobrepeso": ("Iniciaste tu embarazo con sobrepeso (IMC: {imc:g}), por eso tu meta de ganancia es un poco menor.",
+                  "You started your pregnancy overweight (BMI: {imc:g}), so your gain target is a bit lower."),
+    "Obesidad": ("Iniciaste tu embarazo con obesidad (IMC: {imc:g}), por eso tu meta de ganancia es más baja y controlada.",
+                 "You started your pregnancy with obesity (BMI: {imc:g}), so your gain target is lower and controlled."),
+}
+
+
 def interpretacion_inteligente_pregestacional(imc, categoria):
     """Versión gestacional de 'Interpretación Inteligente': en vez de recomendar mantener el
     peso o reducir grasa (lógica de adulto no gestante), enfoca los puntos en el seguimiento
-    ponderal gestacional (IOM/ACOG) y remite a la Línea de Tiempo para el detalle semana a semana."""
+    ponderal gestacional (IOM/ACOG) y remite a la Línea de Tiempo para el detalle semana a semana.
+    Redactado en lenguaje cercano y sin tecnicismos, pensado para cualquier paciente o jurado."""
     _etq, _min_kg, _max_kg, _tasa, _color, _fondo = _meta_iom_por_imc(imc)
-    _en = st.session_state.get("idioma", "Español") == "English"
-    if _en:
+    _es_txt, _en_txt = _INICIO_IMC_TXT.get(categoria, _INICIO_IMC_TXT["Sobrepeso"])
+    if st.session_state.get("idioma", "Español") == "English":
         _puntos = [
-            f"Your pre-pregnancy BMI ({imc:g}) places you in the '{_cat_imc_txt(categoria)}' IOM/ACOG category.",
-            f"Your total recommended gain by week 40 is +{_min_kg:g} to +{_max_kg:g} kg, at ≈{_tasa:.2f} kg/week in the 2nd/3rd trimester.",
-            "This is not about maintaining weight or losing fat: the goal is a controlled, adequate gain for feto-placental development.",
-            "Follow your week-by-week curve against this target in '13.-TIMELINE' (Gestational Weight Tracking).",
+            f"<b>Your starting point:</b> {_en_txt.format(imc=imc)}",
+            f"<b>How much should you gain?:</b> The recommendation is to gain between {_min_kg:g} and {_max_kg:g} kilos in total by week 40.",
+            "<b>Why do you need to gain weight?:</b> At this stage the goal isn't to lose weight or burn fat. "
+            "The extra weight is completely healthy and includes your baby, the placenta, amniotic fluid, "
+            "and your body's natural changes.",
+            "<b>How to track it?:</b> Check your progress in the '13. TIMELINE' section to confirm your "
+            "weight gain stays steady and safe.",
         ]
     else:
         _puntos = [
-            f"Tu IMC pregestacional ({imc:g}) te ubica en la categoría IOM/ACOG '{_cat_imc_txt(categoria)}'.",
-            f"Tu ganancia total recomendada a la semana 40 es de +{_min_kg:g} a +{_max_kg:g} kg, a un ritmo de ≈{_tasa:.2f} kg/semana en el 2° y 3er trimestre.",
-            "Aquí no aplica 'mantener el peso' ni 'reducir grasa': la meta es una ganancia controlada y adecuada para el desarrollo feto-placentario.",
-            "Sigue tu curva semana a semana frente a esta meta en '13.-LÍNEA DE TIEMPO' (Seguimiento del Peso Gestacional).",
+            f"<b>Tu punto de partida:</b> {_es_txt.format(imc=imc)}",
+            f"<b>¿Cuánto debes aumentar?:</b> Lo recomendado es subir entre {_min_kg:g} y {_max_kg:g} kilos en total al llegar a la semana 40.",
+            "<b>¿Por qué debes subir de peso?:</b> En esta etapa no se busca bajar de peso ni quemar grasa. El "
+            "peso adicional es totalmente saludable e incluye al bebé, la placenta, el líquido amniótico y los "
+            "cambios naturales de tu cuerpo.",
+            "<b>¿Cómo monitorearlo?:</b> Revisa tu avance en la sección '13. LÍNEA DE TIEMPO' para confirmar que "
+            "tu aumento de peso sea constante y seguro.",
         ]
     _lis = "".join(f"<li>{p}</li>" for p in _puntos)
-    _seg_texto = T(f"Según tu IMC pregestacional ({_cat_imc_txt(categoria)}) y las guías IOM/ACOG:",
-                   f"Based on your pre-pregnancy BMI ({_cat_imc_txt(categoria)}) and IOM/ACOG guidelines:")
     st.markdown(f"""
     <div style="background:{_fondo};border-radius:18px;padding:16px 20px;margin-top:6px;">
-        <div style="font-weight:800;color:{_color};margin-bottom:6px;">🤰 {T("Interpretación Inteligente Pregestacional", "Smart Pre-pregnancy Interpretation")}</div>
-        <div style="font-size:0.85rem;color:#3A3A3C;">{_seg_texto}</div>
+        <div style="font-weight:800;color:{_color};margin-bottom:6px;">🤰 {T("Interpretación Pregestacional", "Pre-pregnancy Interpretation")}</div>
+        <div style="font-weight:700;font-size:0.9rem;color:{_color};margin-bottom:4px;">💡 {T("¿Qué significan estos datos para ti?", "What does this data mean for you?")}</div>
         <ul style="margin:6px 0 0 18px;padding:0;font-size:0.85rem;color:#3A3A3C;line-height:1.7;">{_lis}</ul>
     </div>
     """, unsafe_allow_html=True)
