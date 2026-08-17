@@ -1973,6 +1973,21 @@ div[data-testid="stImageCaption"] {
 .dieta-total-bar .dt-check { font-size:0.92rem; font-weight:700; background:rgba(255,255,255,0.22); display:inline-block;
     padding:6px 16px; border-radius:999px; margin-top:6px; }
 
+/* ---------- Hoja 9.-DIETA: wizard paso a paso + menú final tipo "Tabla 6" ---------- */
+.final-menu-wrap { display:flex; gap:14px; flex-wrap:wrap; margin:18px 0 26px 0; }
+.final-menu-col { flex:1 1 170px; min-width:150px; background:#FFFFFF; border-radius:18px; overflow:hidden;
+    box-shadow:0 4px 14px rgba(0,0,0,0.07); border:1px solid rgba(0,0,0,0.05); }
+.final-menu-header { padding:12px 8px; text-align:center; font-weight:800; font-size:0.88rem; color:#FFFFFF; }
+.final-menu-list { list-style:none; margin:0; padding:14px 16px; }
+.final-menu-list li { padding:8px 0; font-size:0.86rem; color:#3C3C43; border-bottom:1px dashed rgba(0,0,0,0.09); line-height:1.3; }
+.final-menu-list li:last-child { border-bottom:none; }
+.final-menu-col:nth-child(1) .final-menu-header { background:linear-gradient(135deg,#1E88E5,#4FC3F7); }
+.final-menu-col:nth-child(2) .final-menu-header { background:linear-gradient(135deg,#8E24AA,#CE93D8); }
+.final-menu-col:nth-child(3) .final-menu-header { background:linear-gradient(135deg,#2E7D32,#66BB6A); }
+.final-menu-col:nth-child(4) .final-menu-header { background:linear-gradient(135deg,#F9A825,#FFD54F); }
+.final-menu-col:nth-child(5) .final-menu-header { background:linear-gradient(135deg,#EF6C00,#FFAB91); }
+@media (max-width: 700px) { .final-menu-wrap { flex-direction:column; } }
+
 /* ---------- estilos de impresión: Hoja "MI REPORTE" ---------- */
 @media print {
     section[data-testid="stSidebar"], header[data-testid="stHeader"], .navbar,
@@ -11198,8 +11213,38 @@ elif hoja_activa == "9.-DIETA":
             "(FDA — Food Safety for Moms-to-Be)."
         ))
 
-    seleccion = {}
-    for comida in DIETA:
+    _COMIDAS_ORDEN_D9 = list(DIETA.keys())  # ["Desayuno", "Merienda 1", "Almuerzo", "Merienda 2", "Cena"]
+
+    # Valores por defecto: garantizan que TODAS las comidas tengan una selección completa desde
+    # el inicio (el primer alimento disponible), aunque el usuario aún no haya llegado a ese paso
+    # del wizard. Así "Mi Reporte" y el PDF siempre disponen de un menú completo y consistente.
+    for _comida_ini in _COMIDAS_ORDEN_D9:
+        for _macro_ini, _pfx_ini in [("Carbohidrato", "c"), ("Proteína", "p"), ("Grasa", "g")]:
+            _key_ini = f"{_pfx_ini}_{_comida_ini}"
+            if _key_ini not in st.session_state:
+                _opts_ini = list(dieta_filtrada_para(_comida_ini, _macro_ini, embarazada).keys())
+                if _opts_ini:
+                    st.session_state[_key_ini] = _opts_ini[0]
+
+    st.session_state.setdefault("dieta_paso", 0)
+    if st.session_state["dieta_paso"] > len(_COMIDAS_ORDEN_D9):
+        st.session_state["dieta_paso"] = len(_COMIDAS_ORDEN_D9)
+
+    # ---- Indicador de progreso tipo "Wizard": [1.Desayuno] ➔ [2.Merienda 1] ➔ ... ➔ [🏆 Ver Menú] ----
+    _PASOS_LABEL_D9 = [f"{_i + 1}. {_ICONOS_COMIDA_D9[_c]} {_mom(_c)}" for _i, _c in enumerate(_COMIDAS_ORDEN_D9)]
+    _PASOS_LABEL_D9.append("🏆 " + T("Ver Menú Final", "View Final Menu"))
+    _cols_wizard_d9 = st.columns(len(_PASOS_LABEL_D9))
+    for _i, _lbl in enumerate(_PASOS_LABEL_D9):
+        with _cols_wizard_d9[_i]:
+            if st.button(_lbl, key=f"wiz_paso_{_i}", use_container_width=True,
+                         type=("primary" if _i == st.session_state["dieta_paso"] else "secondary")):
+                st.session_state["dieta_paso"] = _i
+                st.rerun()
+
+    _paso_d9 = st.session_state["dieta_paso"]
+
+    if _paso_d9 < len(_COMIDAS_ORDEN_D9):
+        comida = _COMIDAS_ORDEN_D9[_paso_d9]
         st.markdown(f'<div class="comida-momento-banner">{_ICONOS_COMIDA_D9[comida]} {_mom(comida).upper()}</div>',
                     unsafe_allow_html=True)
         _opciones_carb = dieta_filtrada_para(comida, "Carbohidrato", embarazada)
@@ -11208,23 +11253,39 @@ elif hoja_activa == "9.-DIETA":
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f'<div class="macro-select-label carb">🌾 {_mac("Carbohidrato")}</div>', unsafe_allow_html=True)
-            carb_sel = st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
-                                     format_func=_dieta_nombre,
-                                     key=f"c_{comida}", label_visibility="collapsed")
+            st.selectbox(f"{_mac('Carbohidrato')} — {_mom(comida)}", list(_opciones_carb.keys()),
+                         format_func=_dieta_nombre, key=f"c_{comida}", label_visibility="collapsed")
         with c2:
             st.markdown(f'<div class="macro-select-label prot">🥩 {_mac("Proteína")}</div>', unsafe_allow_html=True)
-            prot_sel = st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
-                                     format_func=_dieta_nombre,
-                                     key=f"p_{comida}", label_visibility="collapsed")
+            st.selectbox(f"{_mac('Proteína')} — {_mom(comida)}", list(_opciones_prot.keys()),
+                         format_func=_dieta_nombre, key=f"p_{comida}", label_visibility="collapsed")
         with c3:
             st.markdown(f'<div class="macro-select-label gras">🥑 {_mac("Grasa")}</div>', unsafe_allow_html=True)
-            gras_sel = st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
-                                     format_func=_dieta_nombre,
-                                     key=f"g_{comida}", label_visibility="collapsed")
+            st.selectbox(f"{_mac('Grasa')} — {_mom(comida)}", list(_opciones_gras.keys()),
+                         format_func=_dieta_nombre, key=f"g_{comida}", label_visibility="collapsed")
+
+        _nav1, _nav2, _nav3 = st.columns([1, 2, 1])
+        with _nav1:
+            if _paso_d9 > 0:
+                if st.button("← " + T("Comida Anterior", "Previous Meal"), key="wiz_prev_d9", use_container_width=True):
+                    st.session_state["dieta_paso"] -= 1
+                    st.rerun()
+        with _nav3:
+            _txt_next_d9 = (T("Generar Menú Completo 🏆", "Generate Full Menu 🏆")
+                            if _paso_d9 == len(_COMIDAS_ORDEN_D9) - 1
+                            else T("Siguiente Comida →", "Next Meal →"))
+            if st.button(_txt_next_d9, key="wiz_next_d9", use_container_width=True, type="primary"):
+                st.session_state["dieta_paso"] += 1
+                st.rerun()
+
+    # Se reconstruye la selección completa (las 5 comidas) desde session_state en cada corrida,
+    # tanto de los pasos ya visitados como de los que aún tienen su valor por defecto.
+    seleccion = {}
+    for comida in _COMIDAS_ORDEN_D9:
         seleccion[comida] = {
-            "Carbohidrato": carb_sel,
-            "Proteína": prot_sel,
-            "Grasa": gras_sel,
+            "Carbohidrato": st.session_state.get(f"c_{comida}"),
+            "Proteína": st.session_state.get(f"p_{comida}"),
+            "Grasa": st.session_state.get(f"g_{comida}"),
         }
 
     # Guardado explícito y estable del plan elegido: no dependemos de que las claves individuales
@@ -11259,18 +11320,17 @@ elif hoja_activa == "9.-DIETA":
         suma_gramos_carb += fila["Gramos (Carb)"]; suma_gramos_prot += fila["Gramos (Prot)"]
         suma_gramos_gras += fila["Gramos (Gras)"]
 
-    total_general = round(suma_porcion_carb + suma_porcion_prot + suma_porcion_gras, 2)
-
     # =====================================================================================
-    # SECCIÓN 3 — Muestra de la Dieta Tipo Menú (3 tablas de color + barra total)
+    # SECCIÓN 3 — Vista Wizard: tablas que se van llenando (imagen 2) o Menú Final (imagen 3)
     # =====================================================================================
-    st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("MUESTRA DE TU DIETA TIPO MENÚ", "PREVIEW OF YOUR MENU-STYLE DIET")}</div>', unsafe_allow_html=True)
-
-    def _tabla_menu_macro(clase_css, icono, titulo, macro_key, suma_kcal, suma_porcion, suma_gramos):
-        """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL."""
+    def _tabla_menu_macro(filas_arg, clase_css, icono, titulo, macro_key):
+        """Construye una de las 3 tablas de color (Carbohidrato / Proteína / Grasa) con fila TOTAL,
+        usando solo las comidas ya recorridas hasta el paso actual del wizard (filas_arg)."""
         _prefijo = {"Carbohidrato": "Carb", "Proteína": "Prot", "Grasa": "Gras"}[macro_key]
+        _suma_porcion = sum(f[f'Porción corregida ({_prefijo})'] for f in filas_arg)
+        _suma_gramos = sum(f[f'Gramos ({_prefijo})'] for f in filas_arg)
         filas_html = ""
-        for f in filas:
+        for f in filas_arg:
             filas_html += f"""
             <tr>
                 <td class="dm-momento">{_ICONOS_COMIDA_D9[f['Momento']]} {_mom(f['Momento'])}</td>
@@ -11283,8 +11343,8 @@ elif hoja_activa == "9.-DIETA":
             <tr class="dm-total">
                 <td class="dm-momento" colspan="2">{T('TOTAL', 'TOTAL')}</td>
                 <td>—</td>
-                <td>{suma_porcion:.1f} kcal</td>
-                <td>{suma_gramos:.1f} g</td>
+                <td>{_suma_porcion:.1f} kcal</td>
+                <td>{_suma_gramos:.1f} g</td>
             </tr>"""
         html = f"""
         <div class="dieta-menu-wrap {clase_css}">
@@ -11301,25 +11361,34 @@ elif hoja_activa == "9.-DIETA":
         """
         st.markdown(_html_sin_lineas_vacias(html), unsafe_allow_html=True)
 
-    _tabla_menu_macro("carb", "🌾", "Carbohidrato", "Carbohidrato", suma_kcal_carb, suma_porcion_carb, suma_gramos_carb)
-    _tabla_menu_macro("prot", "🥩", "Proteína", "Proteína", suma_kcal_prot, suma_porcion_prot, suma_gramos_prot)
-    _tabla_menu_macro("gras", "🥑", "Grasa", "Grasa", suma_kcal_gras, suma_porcion_gras, suma_gramos_gras)
+    if _paso_d9 < len(_COMIDAS_ORDEN_D9):
+        # ---- Vista de progreso: las tablas (estilo imagen 2) se van llenando comida a comida ----
+        st.markdown(f'<div class="menu-titulo-grande">🍽️ {T("Tu Menú se va Armando...", "Your Menu is Being Built...")}</div>', unsafe_allow_html=True)
+        _filas_visibles = filas[:_paso_d9 + 1]
+        _tabla_menu_macro(_filas_visibles, "carb", "🌾", "Carbohidrato", "Carbohidrato")
+        _tabla_menu_macro(_filas_visibles, "prot", "🥩", "Proteína", "Proteína")
+        _tabla_menu_macro(_filas_visibles, "gras", "🥑", "Grasa", "Grasa")
+    else:
+        # ---- Menú final: solo los tiempos de comida con los alimentos elegidos, sin gráficos
+        #      ni cifras — ordenado igual que la "Tabla 6" (imagen 3) ----
+        st.markdown(f'<div class="menu-titulo-grande">📊 {T("RESULTADO FINAL DE TU MENÚ", "FINAL RESULT OF YOUR MENU")}</div>', unsafe_allow_html=True)
+        _cols_html_final = ""
+        for _comida_f in _COMIDAS_ORDEN_D9:
+            _sel_f = seleccion[_comida_f]
+            _cols_html_final += f"""
+            <div class="final-menu-col">
+                <div class="final-menu-header">{_ICONOS_COMIDA_D9[_comida_f]} {_mom(_comida_f)}</div>
+                <ul class="final-menu-list">
+                    <li>🌾 {_dieta_nombre(_sel_f['Carbohidrato'])}</li>
+                    <li>🥩 {_dieta_nombre(_sel_f['Proteína'])}</li>
+                    <li>🥑 {_dieta_nombre(_sel_f['Grasa'])}</li>
+                </ul>
+            </div>"""
+        st.markdown(_html_sin_lineas_vacias(f'<div class="final-menu-wrap">{_cols_html_final}</div>'), unsafe_allow_html=True)
 
-    # ---- Barra final destacada: suma total = RCD ----
-    _diferencia_total = abs(total_general - rcd_final)
-    _check_txt = (T("✅ ¡Coincide exactamente con tu RCD!", "✅ Exactly matches your DCR!") if _diferencia_total < 1
-                  else T(f"⚠️ Diferencia de {_diferencia_total:.1f} kcal respecto a tu RCD",
-                         f"⚠️ Difference of {_diferencia_total:.1f} kcal from your DCR"))
-    _html_barra_total = f"""
-    <div class="dieta-total-bar">
-        <div class="dt-label">🌾 {T('Carbohidratos', 'Carbohydrates')} + 🥩 {T('Proteínas', 'Protein')} + 🥑 {T('Grasas', 'Fats')}</div>
-        <div class="dt-formula">{suma_porcion_carb:.1f} kcal + {suma_porcion_prot:.1f} kcal + {suma_porcion_gras:.1f} kcal</div>
-        <div class="dt-value">= {total_general:.1f} kcal</div>
-        <div style="font-size:0.9rem;opacity:0.92;">{T('Este total equivale a tu', 'This total equals your')} <b>{T('TOTAL DE CALORÍAS DIARIAS (RCD)', 'TOTAL DAILY CALORIC REQUIREMENT (DCR)')}</b></div>
-        <div class="dt-check">{_check_txt}</div>
-    </div>
-    """
-    st.markdown(_html_sin_lineas_vacias(_html_barra_total), unsafe_allow_html=True)
+        if st.button("← " + T("Volver a Editar mi Menú", "Back to Edit my Menu"), key="wiz_volver_editar_d9"):
+            st.session_state["dieta_paso"] = 0
+            st.rerun()
 
     st.divider()
     st.markdown(f"#### ❓ {T('Guía para entender tu tabla de dieta', 'Guide to Understanding Your Diet Table')}")
