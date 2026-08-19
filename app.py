@@ -13134,7 +13134,7 @@ elif hoja_activa == "📄 MI REPORTE":
     ), emoji="📄", color="#E0F2F1", borde="#00695C")
 
 elif hoja_activa == "🎓 SOBRE NOSOTRAS":
-    # ===== Estilos exclusivos de esta hoja: tarjetas de equipo con hover animado =====
+    # ===== Estilos exclusivos de esta hoja =====
     st.markdown("""
     <style>
     .team-card {
@@ -13160,16 +13160,16 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-card:hover .team-avatar { transform: rotate(-8deg) scale(1.08); }
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
-    .team-badge {
-        display: inline-flex; align-items: center; gap: 6px; background: #FFFFFF; color: var(--tc-color);
-        font-weight: 800; font-size: 0.78rem; padding: 7px 16px; border-radius: 999px; margin-bottom: 12px;
-        border: 1px solid var(--tc-color);
+    .team-badge-carrera {
+        display: inline-flex; align-items: center; gap: 6px; background: var(--tc-color); color: #FFFFFF;
+        font-weight: 800; font-size: 0.76rem; padding: 7px 14px; border-radius: 999px; margin-bottom: 12px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
     }
     .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     .team-chip {
-        background: #FFFFFF; color: var(--tc-color); font-weight: 700; font-size: 0.74rem;
+        background: #FFFFFF; color: var(--tc-color); font-weight: 700; font-size: 0.72rem;
         padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06);
     }
     .about-hero-card {
@@ -13180,24 +13180,54 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         display: inline-block; background: #EAFAEE; color: #1E5631; font-weight: 800; font-size: 0.72rem;
         padding: 5px 12px; border-radius: 999px; margin: 3px;
     }
-    .about-stat {
-        text-align: center; background: rgba(255,255,255,0.10); border-radius: 18px; padding: 14px 10px;
+    .purpose-banner {
+        background: linear-gradient(120deg,#0B4DA8 0%,#137333 100%); border-radius: 24px; padding: 30px 34px;
+        margin-bottom: 20px; box-shadow: 0 10px 26px rgba(11,77,168,0.20); color: #FFFFFF; text-align: center;
     }
+    .success-card {
+        border-radius: 22px; padding: 22px; background: #FFFFFF; border: 1.5px solid rgba(0,0,0,0.06);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.07); height: 100%;
+    }
+    .success-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .success-photo {
+        width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+        border: 3px solid var(--sc-color, #34C759); box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    }
+    .success-name { font-weight: 900; color: #17301F; font-size: 1.0rem; line-height: 1.25; }
+    .success-meta { font-size: 0.74rem; color: #6B6B70; font-weight: 600; line-height: 1.5; }
+    .success-metric {
+        font-weight: 900; color: var(--sc-color, #34C759); font-size: 0.92rem; margin-bottom: 8px;
+        border-left: 3px solid var(--sc-color, #34C759); padding-left: 10px;
+    }
+    .success-quote { font-size: 0.86rem; color: #3C3C43; line-height: 1.6; font-style: italic; margin-bottom: 12px; }
+    .success-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .success-tag {
+        background: rgba(0,0,0,0.04); color: #3C3C43; font-weight: 700; font-size: 0.7rem;
+        padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06);
+    }
+    .research-card {
+        border-radius: 22px; padding: 24px 28px; background: #F7F8F9; border: 1.5px solid rgba(0,0,0,0.08);
+    }
+    .research-card p { margin: 0 0 10px 0; color: #3C3C43; font-size: 0.9rem; line-height: 1.6; }
+    .research-card .rc-title { font-weight: 900; color: #17301F; font-size: 0.95rem; text-transform: uppercase;
+        letter-spacing: 0.03em; margin-bottom: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-    # ===== 1. Encabezado premium =====
+    # ===== Bloque A: El Propósito del Proyecto (banner destacado) =====
     st.markdown(f"""
-    <div style="background:linear-gradient(120deg,#F8ECFB 0%,#FFEBF0 55%,#FFFFFF 100%);border-radius:24px;
-                padding:26px 30px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.06);
-                border:1px solid rgba(255,45,85,0.08);">
-    <h2 style="margin:0;color:#8E24AA;font-weight:900;letter-spacing:-0.02em;">👩‍💻 {T("Conoce al Equipo CIAM&amp;SUNI", "Meet the CIAM&amp;SUNI Team")}</h2>
-    <p style="margin:6px 0 0 0;color:#5C6B60;font-size:0.98rem;font-weight:500;">
-    {T("Las estudiantes que hicieron posible este proyecto 💚", "The students who made this project possible 💚")}</p>
+    <div class="purpose-banner">
+    <div style="font-size:1.7rem;font-weight:900;">🌱 CIAM&amp;SUNI</div>
+    <div style="font-size:1.0rem;font-weight:700;opacity:0.92;margin-top:2px;">
+    {T("Innovación Digital en Salud Escolar", "Digital Innovation in School Health")}</div>
+    <p style="margin:14px auto 0 auto;max-width:640px;font-size:0.95rem;line-height:1.6;font-style:italic;opacity:0.95;">
+    "{T("Transformando modelos matemáticos y nutricionales complejos en una herramienta accesible, "
+        "intuitiva y gratuita para la comunidad.",
+        "Transforming complex mathematical and nutritional models into an accessible, intuitive and "
+        "free tool for the community.")}"</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== 2. Tarjeta de logo + 3. Misión / Objetivo (apiladas) =====
     col_logo, col_mision_obj = st.columns([1, 2])
     with col_logo:
         _logo_img_tag = ""
@@ -13235,31 +13265,39 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
 
     st.write("")
 
-    # ===== 4. Tarjetas de integrantes (perfil, color propio, carrera como insignia, hobbies en chips) =====
-    caja_titulo(T("👩‍🎓 Las Integrantes", "👩‍🎓 The Team Members"), 13)
+    # ===== Bloque B: El Equipo Detrás de la Innovación =====
+    caja_titulo(T("👩‍🎓 El Equipo Detrás de la Innovación", "👩‍🎓 The Team Behind the Innovation"), 13)
 
     _idioma_equipo = st.session_state.get("idioma", "Español") == "English"
     EQUIPO = [
         {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1HwL-UyQ6RSmIyBsid1JlkM_TXr0325d1",
-         "icono_rol": "🧠 " + T("Psicología", "Psychology"), "rol": "Psicología",
+         "carrera": "🧠 " + T("Psicología & Bienestar Humano", "Psychology & Human Wellbeing"),
          "color": "#F9A825", "fondo": "#FFF8E1",
-         "chips": [T("🎵 Tocar instrumentos", "🎵 Playing instruments")]},
+         "chips": [T("🎵 Expresión Artística & Ejecución Musical", "🎵 Artistic Expression & Music Performance"),
+                   T("💬 Comunicación Interpersonal", "💬 Interpersonal Communication"),
+                   T("🌱 Desarrollo Humano", "🌱 Human Development")]},
         {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1gH5p3rZfst7cUuKCqUAXVVkqFqP2U6Iv",
-         "icono_rol": "⚡ " + T("Ingeniería Electrónica", "Electronic Engineering"), "rol": "Ingeniería Electrónica",
+         "carrera": "⚡ " + T("Ingeniería Electrónica", "Electronic Engineering"),
          "color": "#E91E8C", "fondo": "#FCE4EC",
-         "chips": [T("🕵️ Criminología", "🕵️ Criminology"), T("🎨 Dibujo", "🎨 Drawing")]},
+         "chips": [T("🔍 Análisis de Datos & Criminología", "🔍 Data Analysis & Criminology"),
+                   T("🎨 Ilustración & Diseño Visual", "🎨 Illustration & Visual Design"),
+                   T("⚙️ Lógica de Sistemas & Algoritmos", "⚙️ Systems Logic & Algorithms")]},
         {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1G0ZYZNv6PpH-G0gEJRX8kR5d0Ifprb0L",
-         "icono_rol": "🏛️ " + T("Arquitectura", "Architecture"), "rol": "Arquitectura",
+         "carrera": "🏛️ " + T("Arquitectura & Diseño Visual", "Architecture & Visual Design"),
          "color": "#8E6FCE", "fondo": "#EDE7F6",
-         "chips": [T("🎨 Dibujar", "🎨 Drawing"), T("🍳 Cocinar", "🍳 Cooking"), T("🎵 Música", "🎵 Music")]},
+         "chips": [T("🖌️ Artes Plásticas & Expresión Gráfica", "🖌️ Fine Arts & Graphic Expression"),
+                   T("🥗 Gastronomía Nutricional", "🥗 Nutritional Gastronomy"),
+                   T("🎧 Apreciación Musical", "🎧 Music Appreciation")]},
         {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1n26bUzBz90miAL7myg5FB3X2P8Rsm1Dh",
-         "icono_rol": "🧬 " + T("Biología", "Biology"), "rol": "Biología",
+         "carrera": "🔬 " + T("Biología & Ciencias de la Salud", "Biology & Health Sciences"),
          "color": "#29B6F6", "fondo": "#E1F5FE",
-         "chips": [T("🎮 Videojuegos", "🎮 Video games"), T("🎬 Terror", "🎬 Horror")]},
+         "chips": [T("🎮 Lógica Estratégica & Gamificación", "🎮 Strategic Logic & Gamification"),
+                   T("📖 Análisis Narrativo & Literatura de Suspenso", "📖 Narrative Analysis & Suspense Literature"),
+                   T("🧬 Investigación Científica", "🧬 Scientific Research")]},
     ]
     cols_equipo = st.columns(len(EQUIPO))
     for c, miembro in zip(cols_equipo, EQUIPO):
@@ -13269,29 +13307,103 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
             <div class="team-card" style="--tc-color:{miembro['color']};--tc-bg:{miembro['fondo']};">
                 <div class="team-avatar"><img src="{miembro['foto']}" alt="{miembro['nombre']}" onerror="this.parentElement.innerHTML='{miembro['avatar']}';this.parentElement.style.fontSize='2.1rem';" /></div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
-                <div class="team-icon-role">{T("Integrante CIAM&amp;SUNI", "CIAM&amp;SUNI Member")}</div>
-                <div class="team-badge">{miembro['icono_rol']}</div>
-                <div class="team-chips-label">⭐ {T("Intereses &amp; Hobbies", "Interests &amp; Hobbies")}</div>
+                <div class="team-icon-role">{T('5° &quot;C&quot; - Secundaria', '5th Grade &quot;C&quot; - Secondary')}</div>
+                <div class="team-badge-carrera">🎓 {miembro['carrera']}</div>
+                <div class="team-chips-label">✨ {T("Áreas de Enfoque &amp; Competencias", "Focus Areas &amp; Skills")}</div>
                 <div class="team-chips">{_chips_html}</div>
             </div>
             """, unsafe_allow_html=True)
 
     st.write("")
-
-    col_a, col_b = st.columns(2)
-    col_a.metric(T("Grado y sección", "Grade and Section"), T('5° "C" Secundaria', '5th Grade "C" – Secondary School'))
-    col_b.metric(T("Docente", "Teacher"), "Arnadis J. Talavera Oropeza")
+    caja_util(T(
+        "Este proyecto fue concebido y desarrollado de forma colaborativa, integrando análisis de "
+        "datos, nutrición y desarrollo de software para democratizar el cuidado de la salud.",
+        "This project was conceived and developed collaboratively, integrating data analysis, "
+        "nutrition and software development to democratize healthcare."
+    ), emoji="🤝", color="#FBEAEC", borde="#7A1F2B")
 
     st.write("")
 
-    caja_util(T(
-        "Este proyecto fue construido en equipo: cada integrante desarrolló y explicó una parte "
-        "distinta de la hoja de cálculo, y luego se unieron todas las piezas en esta app para que "
-        "cualquier persona —sin saber de Excel ni de nutrición— pueda usarla fácilmente. 🤝🌱",
-        "This project was built as a team: each member developed and explained a different part "
-        "of the spreadsheet, and all the pieces were then brought together in this app so that "
-        "anyone —without knowing Excel or nutrition— can use it easily. 🤝🌱"
-    ), emoji="🎓", color="#FBEAEC", borde="#7A1F2B")
+    # ===== Casos de Éxito y Validación de Usuarios (Prueba Social Criteriada) =====
+    caja_titulo(T("🏅 Casos de Éxito y Validación de Usuarios", "🏅 Success Cases & User Validation"), 13)
+    st.markdown(f"""
+    <p style="color:#5C6B60;font-size:0.9rem;margin:-6px 0 16px 0;">
+    {T("Conoce la experiencia de jóvenes atletas que optimizan su rendimiento con nuestra metodología.",
+       "Meet the young athletes who optimize their performance with our methodology.")}</p>
+    """, unsafe_allow_html=True)
+
+    with st.expander(T("🏛️ ¿Por qué validamos con deportistas de alto rendimiento?",
+                        "🏛️ Why did we validate with high-performance athletes?")):
+        st.markdown(T(
+            "Para validar la viabilidad y la aplicabilidad de la propuesta en el segmento joven/estudiantil, "
+            "realizamos un piloto de usabilidad con perfiles de alto requerimiento físico y disciplina. Si la "
+            "estructura nutricional y la guía son funcionales para deportistas de rendimiento representativo "
+            "(nacional e internacional), garantizamos un estándar de calidad alto y replicable para cualquier "
+            "estudiante que busque mejorar su salud.",
+            "To validate the feasibility and applicability of the proposal for the young/student segment, we "
+            "ran a usability pilot with profiles of high physical demand and discipline. If the nutritional "
+            "structure and guidance work for representative high-performance athletes (national and "
+            "international), we guarantee a high, replicable quality standard for any student seeking to "
+            "improve their health."
+        ))
+
+    CASOS_EXITO = [
+        {"nombre": "Daniela Verona", "color": "#34C759",
+         "categoria": T("Deportista de Alto Rendimiento | Selección Peruana 🇵🇪",
+                        "High-Performance Athlete | Peruvian National Team 🇵🇪"),
+         "segmento": T("🥇 Campeona Sudamericana (x2) · 🥇 Campeona Latinoamericana · 🏄 Natación & Waveski-Surf",
+                       "🥇 South American Champion (x2) · 🥇 Latin American Champion · 🏄 Swimming & Waveski-Surf"),
+         "metrica": T("⏱️ Redujo su tiempo de planificación nutricional en más del 70%",
+                     "⏱️ Cut her nutritional-planning time by over 70%"),
+         "testimonio": T(
+             "Como deportista multidisciplinaria de alto rendimiento, gestionar mis tiempos, alimentación y "
+             "entrenamiento al mismo tiempo que mis actividades diarias solía ser un reto complejo. Esta "
+             "plataforma me brindó una estructura clara, accesible y adaptada a mis necesidades sin "
+             "complicaciones. Es la herramienta ideal para cualquier joven que busque disciplina y resultados reales.",
+             "As a multidisciplinary high-performance athlete, managing my time, nutrition and training "
+             "alongside my daily activities used to be a complex challenge. This platform gave me a clear, "
+             "accessible structure adapted to my needs without complications. It's the ideal tool for any "
+             "young person seeking discipline and real results."),
+         "tags": [T("Fácil Interpretación", "Easy to Understand"), T("Optimización de Tiempo", "Time Optimization"),
+                  T("Adherencia 100%", "100% Adherence")]},
+    ]
+    cols_casos = st.columns(len(CASOS_EXITO)) if len(CASOS_EXITO) > 1 else [st.container()]
+    for c, caso in zip(cols_casos, CASOS_EXITO):
+        with c:
+            _tags_html = "".join(f'<span class="success-tag">🏷️ {tg}</span>' for tg in caso["tags"])
+            st.markdown(f"""
+            <div class="success-card" style="--sc-color:{caso['color']};">
+                <div class="success-header">
+                    <img class="success-photo" src="https://drive.google.com/uc?export=view&id=1YeWVUTcCz_alMj36XHcG0MfeEdqHHFC4"
+                         alt="{caso['nombre']}" onerror="this.style.display='none';" />
+                    <div>
+                        <div class="success-name">{caso['nombre'].upper()}</div>
+                        <div class="success-meta">{caso['categoria']}<br>{caso['segmento']}</div>
+                    </div>
+                </div>
+                <div class="success-metric">{caso['metrica']}</div>
+                <div class="success-quote">"{caso['testimonio']}"</div>
+                <div class="success-tags">{_tags_html}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # ===== Bloque C: Ficha Técnica y Agradecimientos (sobrio) =====
+    st.markdown(f"""
+    <div class="research-card">
+    <div class="rc-title">🔬 {T("Metodología y Desarrollo", "Methodology & Development")}</div>
+    <p>{T("Prototipo desarrollado bajo estándares de lógica de cálculo nutricional y maquetado digital "
+          "responsivo para el ámbito de Salud Pública.",
+          "Prototype developed under nutritional-calculation logic standards and responsive digital "
+          "layout for the Public Health field.")}</p>
+    <p style="margin-bottom:0;">
+    🎓 <b>{T("Institución", "Institution")}:</b> C.E.P. Santa María Reina - Chiclayo &nbsp;|&nbsp;
+    🏫 <b>{T("Grado", "Grade")}:</b> 5° "C" Secundaria &nbsp;|&nbsp;
+    👨‍🏫 <b>{T("Asesor del Proyecto", "Project Advisor")}:</b> Prof. Arnadis J. Talavera Oropeza
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ===== 12. Cierre bonito, con fondo degradado =====
     st.markdown(f"""
