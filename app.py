@@ -7238,15 +7238,15 @@ nombre_usuario = st.session_state["nombre_usuario"]
 _nombre_saludo = nombre_display(nombre_usuario, genero)
 
 peso_max_actual = PESO_MAX[genero]
-peso = st.session_state["peso"]
+peso = st.session_state.get("peso") or 0.0
 peso_actual = st.session_state.get("peso_actual", peso)
 semana_gestacion = st.session_state.get("semana_gestacion", 12)
 
 estatura_max_actual = ESTATURA_MAX[genero]
-estatura = st.session_state["estatura"]
+estatura = st.session_state.get("estatura") or 0
 
 edad_max_actual = EDAD_MAX[genero]
-edad = st.session_state["edad"]
+edad = st.session_state.get("edad") or 9
 
 etapa = etapa_desde_edad(edad)
 
@@ -7276,10 +7276,10 @@ else:
 
 # --- Signos vitales (Bloque 3, persistente) ---
 spo2 = st.session_state.get("spo2") or 0.0
-pulso = st.session_state["pulso"]
-temp_corp = st.session_state["temp_corp"]
-pas = st.session_state["pas"]
-pad = st.session_state["pad"]
+pulso = st.session_state.get("pulso") or 0
+temp_corp = st.session_state.get("temp_corp") or 0.0
+pas = st.session_state.get("pas") or 0
+pad = st.session_state.get("pad") or 0
 
 # --- Perfil bioquímico (Bloque 4, persistente) ---
 hemo = st.session_state.get("hemo") or 0.0
