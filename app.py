@@ -12896,35 +12896,48 @@ elif hoja_activa == "📄 MI REPORTE":
 
     # --- Bloque 3B: Distribución de porciones por tiempos del día ---
     st.markdown(f"#### ⏰ {T('Distribución de porciones por tiempos del día', 'Portion Distribution by Time of Day')}")
-    _MOM_ICONO_R14 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
-    _MOM_ORDEN_R14 = ["Desayuno", "Merienda 1", "Almuerzo", "Merienda 2", "Cena"]
-    _filas_dist_html = "".join(
-        f'<tr><td style="padding:8px 10px;">{_MOM_ICONO_R14[m]} {_mom_r14(m)}</td>'
-        f'<td style="padding:8px 10px;text-align:center;">{porciones[m]["pct"]*100:.0f}%</td>'
-        f'<td style="padding:8px 10px;text-align:right;">{porciones[m]["kcal"]:.0f} kcal</td></tr>'
-        for m in _MOM_ORDEN_R14
-    )
-    _tot_pct_r14 = sum(porciones[m]["pct"] for m in _MOM_ORDEN_R14)
-    _tot_kcal_r14 = sum(porciones[m]["kcal"] for m in _MOM_ORDEN_R14)
-    st.markdown(_html_sin_lineas_vacias(f"""
-    <div class="print-only-report" style="background:#FFFFFF;border:1px solid #E5E5EA;border-radius:16px;overflow:hidden;
-                box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
-    <table style="width:100%;border-collapse:collapse;font-size:0.86rem;">
-        <thead><tr style="background:#32ADE6;color:#FFFFFF;">
-            <th style="padding:8px 10px;text-align:left;">{T('Momento', 'Meal')}</th>
-            <th style="padding:8px 10px;">{T('Porcentaje', 'Percentage')}</th>
-            <th style="padding:8px 10px;text-align:right;">Kcal</th>
-        </tr></thead>
-        <tbody>{_filas_dist_html}
-        <tr style="background:#F2F2F7;font-weight:800;">
-            <td style="padding:8px 10px;">{T('TOTAL', 'TOTAL')}</td>
-            <td style="padding:8px 10px;text-align:center;">{_tot_pct_r14*100:.0f}%</td>
-            <td style="padding:8px 10px;text-align:right;">{_tot_kcal_r14:.0f} kcal</td>
-        </tr>
-        </tbody>
-    </table>
-    </div>
-    """), unsafe_allow_html=True)
+    if _datos_incompletos or rcd_final <= 0:
+        st.markdown(f"""
+        <div style="background:#FFF9E6;border:1.5px solid #FFCC0055;border-left:5px solid #FFCC00;border-radius:18px;
+                    padding:18px 22px;box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <div style="font-weight:900;color:#8A6D00;font-size:0.98rem;margin-bottom:4px;">📌 {T("Plan de alimentación no generado", "Meal plan not generated")}</div>
+        <div style="color:#3C3C43;font-size:0.88rem;line-height:1.55;">{T(
+            "Por favor, ingresa tu peso, estatura y edad en la sección 'Llenar / Editar Mis Datos'. Una vez "
+            "completado, aquí se calculará la distribución de tus comidas y tu proyección de peso.",
+            "Please enter your weight, height and age in the 'Enter / Edit My Data' section. Once completed, "
+            "your meal distribution and weight projection will be calculated here.")}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        _MOM_ICONO_R14 = {"Desayuno": "🌅", "Merienda 1": "🍎", "Almuerzo": "🍽️", "Merienda 2": "🥪", "Cena": "🌙"}
+        _MOM_ORDEN_R14 = ["Desayuno", "Merienda 1", "Almuerzo", "Merienda 2", "Cena"]
+        _filas_dist_html = "".join(
+            f'<tr><td style="padding:8px 10px;">{_MOM_ICONO_R14[m]} {_mom_r14(m)}</td>'
+            f'<td style="padding:8px 10px;text-align:center;">{porciones[m]["pct"]*100:.0f}%</td>'
+            f'<td style="padding:8px 10px;text-align:right;">{porciones[m]["kcal"]:.0f} kcal</td></tr>'
+            for m in _MOM_ORDEN_R14
+        )
+        _tot_pct_r14 = sum(porciones[m]["pct"] for m in _MOM_ORDEN_R14)
+        _tot_kcal_r14 = sum(porciones[m]["kcal"] for m in _MOM_ORDEN_R14)
+        st.markdown(_html_sin_lineas_vacias(f"""
+        <div class="print-only-report" style="background:#FFFFFF;border:1px solid #E5E5EA;border-radius:16px;overflow:hidden;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.86rem;">
+            <thead><tr style="background:#32ADE6;color:#FFFFFF;">
+                <th style="padding:8px 10px;text-align:left;">{T('Momento', 'Meal')}</th>
+                <th style="padding:8px 10px;">{T('Porcentaje', 'Percentage')}</th>
+                <th style="padding:8px 10px;text-align:right;">Kcal</th>
+            </tr></thead>
+            <tbody>{_filas_dist_html}
+            <tr style="background:#F2F2F7;font-weight:800;">
+                <td style="padding:8px 10px;">{T('TOTAL', 'TOTAL')}</td>
+                <td style="padding:8px 10px;text-align:center;">{_tot_pct_r14*100:.0f}%</td>
+                <td style="padding:8px 10px;text-align:right;">{_tot_kcal_r14:.0f} kcal</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+        """), unsafe_allow_html=True)
 
     st.write("")
 
@@ -12932,7 +12945,20 @@ elif hoja_activa == "📄 MI REPORTE":
     _deficit_r = rcd - rcd_final
     _peso_cambio_r = (_deficit_r * 60) / 7700
     _peso_proyectado_r = peso - _peso_cambio_r
-    if _es_gestante_r14:
+    if _datos_incompletos or rcd_final <= 0:
+        st.markdown(f"#### 📈 {T('Proyección estimada (60 días)', 'Estimated Projection (60 days)')}")
+        st.markdown(f"""
+        <div style="background:#FFF9E6;border:1.5px solid #FFCC0055;border-left:5px solid #FFCC00;border-radius:18px;
+                    padding:18px 22px;box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 6px 16px rgba(0,0,0,0.05);">
+        <div style="font-weight:900;color:#8A6D00;font-size:0.98rem;margin-bottom:4px;">📌 {T("Plan de alimentación no generado", "Meal plan not generated")}</div>
+        <div style="color:#3C3C43;font-size:0.88rem;line-height:1.55;">{T(
+            "Por favor, ingresa tu peso, estatura y edad en la sección 'Llenar / Editar Mis Datos'. Una vez "
+            "completado, aquí se calculará tu proyección de peso.",
+            "Please enter your weight, height and age in the 'Enter / Edit My Data' section. Once completed, "
+            "your weight projection will be calculated here.")}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    elif _es_gestante_r14:
         st.markdown(f"#### 🤰 {T('Estado de Ganancia Ponderal Gestacional (IOM 2009)', 'Gestational Weight-Gain Status (IOM 2009)')}")
         _estado_r14_ok = _en_rango_r14
         _estado_r14_color = "#34C759" if _estado_r14_ok else "#FF9500"
@@ -13189,7 +13215,6 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
     .team-badge-carrera, div.team-badge-carrera {
         display: inline-flex !important; align-items: center; gap: 8px;
-        background-color: var(--tc-badge) !important; background: var(--tc-badge) !important;
         color: #FFFFFF !important; font-weight: 900 !important; font-size: 1.02rem !important; line-height: 1.3;
         padding: 12px 20px; border-radius: 999px; margin: 4px 0 16px 0;
         box-shadow: 0 8px 18px rgba(0,0,0,0.32), 0 2px 6px rgba(0,0,0,0.18);
@@ -13378,7 +13403,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
                 <div class="team-avatar"><img src="{miembro['foto']}" alt="{miembro['nombre']}" onerror="this.parentElement.innerHTML='{miembro['avatar']}';this.parentElement.style.fontSize='2.1rem';" /></div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
                 <div class="team-icon-role">{T('5° &quot;C&quot; - Secundaria', '5th Grade &quot;C&quot; - Secondary')}</div>
-                <div class="team-badge-carrera">🎓 {miembro['carrera']}</div>
+                <div class="team-badge-carrera" style="background-color:{miembro['color']} !important;background:{miembro['color']} !important;color:#FFFFFF !important;">🎓 {miembro['carrera']}</div>
                 <div class="team-chips-label">✨ {T("Áreas de Enfoque &amp; Competencias", "Focus Areas &amp; Skills")}</div>
                 <div class="team-chips">{_chips_html}</div>
             </div>
