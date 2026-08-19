@@ -7225,6 +7225,33 @@ for _hoja_nav in OPCIONES_HOJAS:
 
 st.sidebar.markdown("---")
 
+st.sidebar.markdown(f"""
+<div style="border-radius:20px;padding:18px 16px;margin:4px 0 14px 0;position:relative;overflow:hidden;
+            background:linear-gradient(135deg,#7B2FF7 0%,#F72585 55%,#FF9E42 100%);
+            box-shadow:0 10px 26px rgba(123,47,247,0.35);">
+    <div style="display:inline-block;background:rgba(255,255,255,0.22);color:#FFFFFF;font-size:0.62rem;
+                font-weight:900;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;
+                border-radius:999px;margin-bottom:8px;">
+        {T("Divulgación Científica", "Scientific Outreach")}
+    </div>
+    <div style="color:#FFFFFF;font-weight:900;font-size:1.0rem;line-height:1.3;margin-bottom:4px;">
+        📲 {T("¡Únete a la Comunidad CIAM &amp; SUNI!", "Join the CIAM &amp; SUNI Community!")}
+    </div>
+    <div style="color:#FFFFFF;opacity:0.94;font-size:0.78rem;line-height:1.45;margin-bottom:12px;">
+        {T("Recetas, tips de nutrición y el detrás de escena del proyecto.",
+           "Recipes, nutrition tips and the behind-the-scenes of the project.")}
+    </div>
+    <a href="https://www.instagram.com/ciamsuninutricix/" target="_blank" style="text-decoration:none;">
+        <div style="background:#FFFFFF;color:#7B2FF7;font-weight:900;font-size:0.82rem;text-align:center;
+                    padding:9px 12px;border-radius:999px;box-shadow:0 4px 10px rgba(0,0,0,0.15);">
+            👉 @ciamsuninutricix
+        </div>
+    </a>
+</div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("---")
+
 # =========================================================================================
 # DATOS DEL USUARIO — ahora se ingresan en la hoja "0.-DATOS" (Mis Datos), no en el sidebar.
 # Aquí solo leemos los valores actuales de session_state (con valores por defecto) para que
