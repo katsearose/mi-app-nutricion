@@ -13156,9 +13156,10 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
     .team-badge-carrera {
-        display: inline-flex; align-items: center; gap: 6px; background-color: var(--tc-badge) !important;
-        color: #FFFFFF !important; font-weight: 800; font-size: 0.78rem; padding: 8px 16px; border-radius: 999px;
-        margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.22); text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+        display: inline-flex; align-items: center; gap: 8px; background-color: var(--tc-badge) !important;
+        color: #FFFFFF !important; font-weight: 900; font-size: 0.92rem; line-height: 1.25; padding: 10px 18px;
+        border-radius: 999px; margin: 2px 0 14px 0; box-shadow: 0 6px 16px rgba(0,0,0,0.28), 0 2px 4px rgba(0,0,0,0.15);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.20); letter-spacing: 0.01em;
     }
     .team-badge-carrera * { color: #FFFFFF !important; }
     .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
