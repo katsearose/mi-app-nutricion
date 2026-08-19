@@ -13224,6 +13224,19 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .research-card p { margin: 0 0 10px 0; color: #3C3C43; font-size: 0.9rem; line-height: 1.6; }
     .research-card .rc-title { font-weight: 900; color: #17301F; font-size: 0.95rem; text-transform: uppercase;
         letter-spacing: 0.03em; margin-bottom: 10px; }
+    .ficha-card {
+        border-radius: 22px; padding: 22px 18px; text-align: center; height: 100%;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08); border: 1.5px solid rgba(0,0,0,0.04);
+    }
+    .ficha-card .fc-label { font-weight: 900; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em;
+        margin-bottom: 10px; }
+    .ficha-card .fc-main { font-weight: 900; font-size: 1.28rem; line-height: 1.3; margin-bottom: 4px; }
+    .ficha-card .fc-sub { font-weight: 600; font-size: 0.86rem; opacity: 0.85; }
+    .decorative-photo-wrap { text-align: center; margin: 8px 0 4px 0; }
+    .decorative-photo {
+        width: 100%; max-width: 480px; border-radius: 26px; object-fit: cover; aspect-ratio: 16/10;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.22); border: 5px solid #FFFFFF;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -13390,7 +13403,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
             st.markdown(f"""
             <div class="success-card">
                 <div class="success-header">
-                    <img class="success-photo" src="https://drive.google.com/uc?export=view&id=1YeWVUTcCz_alMj36XHcG0MfeEdqHHFC4"
+                    <img class="success-photo" src="https://drive.google.com/uc?export=view&id=1LuwJzS4zROgBGV6uecTPfMOLV1ogTWRJ"
                          alt="{caso['nombre']}" onerror="this.style.display='none';" />
                     <div>
                         <div class="success-name">{caso['nombre'].upper()}</div>
@@ -13405,19 +13418,48 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
 
     st.write("")
 
-    # ===== Bloque C: Ficha Técnica y Agradecimientos (sobrio) =====
+    # ===== Bloque C: Ficha Técnica y Agradecimientos (3 tarjetas coloridas) =====
     st.markdown(f"""
-    <div class="research-card">
-    <div class="rc-title">🔬 {T("Metodología y Desarrollo", "Methodology & Development")}</div>
-    <p>{T("Prototipo desarrollado bajo estándares de lógica de cálculo nutricional y maquetado digital "
+    <div class="research-card" style="text-align:center;background:#FFFFFF;">
+    <div class="rc-title" style="text-align:center;">🔬 {T("Metodología y Desarrollo", "Methodology & Development")}</div>
+    <p style="text-align:center;font-style:italic;">"{T("Prototipo desarrollado bajo estándares de lógica de cálculo nutricional y maquetado digital "
           "responsivo para el ámbito de Salud Pública.",
           "Prototype developed under nutritional-calculation logic standards and responsive digital "
-          "layout for the Public Health field.")}</p>
-    <p style="margin-bottom:0;">
-    🎓 <b>{T("Institución", "Institution")}:</b> C.E.P. Santa María Reina - Chiclayo &nbsp;|&nbsp;
-    🏫 <b>{T("Grado", "Grade")}:</b> 5° "C" Secundaria &nbsp;|&nbsp;
-    👨‍🏫 <b>{T("Asesor del Proyecto", "Project Advisor")}:</b> Prof. Arnadis J. Talavera Oropeza
-    </p>
+          "layout for the Public Health field.")}"</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+    col_f1, col_f2, col_f3 = st.columns(3)
+    with col_f1:
+        st.markdown(f"""
+        <div class="ficha-card" style="background:#E0F2FE;">
+        <div class="fc-label" style="color:#0369A1;">🏫 {T("Institución", "Institution")}</div>
+        <div class="fc-main" style="color:#0C4A6E;">C.E.P. Santa María Reina</div>
+        <div class="fc-sub" style="color:#0369A1;">📍 Chiclayo</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_f2:
+        st.markdown(f"""
+        <div class="ficha-card" style="background:#D1FAE5;">
+        <div class="fc-label" style="color:#047857;">🎓 {T("Grado y Sección", "Grade & Section")}</div>
+        <div class="fc-main" style="color:#065F46;">5° &quot;C&quot; {T("SECUNDARIA", "SECONDARY")}</div>
+        <div class="fc-sub" style="color:#047857;">{T("Promoción 2026", "Class of 2026")}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_f3:
+        st.markdown(f"""
+        <div class="ficha-card" style="background:#FEF3C7;">
+        <div class="fc-label" style="color:#B45309;">👨‍🏫 {T("Asesor del Proyecto", "Project Advisor")}</div>
+        <div class="fc-main" style="color:#78350F;font-size:1.1rem;">Prof. Arnadis J. Talavera Oropeza</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
+    st.markdown(f"""
+    <div class="decorative-photo-wrap">
+    <img class="decorative-photo" src="https://drive.google.com/uc?export=view&id=1YeWVUTcCz_alMj36XHcG0MfeEdqHHFC4"
+         alt="{T('Equipo CIAM&SUNI', 'CIAM&SUNI Team')}" onerror="this.parentElement.style.display='none';" />
     </div>
     """, unsafe_allow_html=True)
 
