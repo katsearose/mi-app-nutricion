@@ -2286,7 +2286,7 @@ def generar_pdf_reporte(datos):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
-        topMargin=14 * mm, bottomMargin=12 * mm, leftMargin=16 * mm, rightMargin=16 * mm,
+        topMargin=8 * mm, bottomMargin=8 * mm, leftMargin=10 * mm, rightMargin=10 * mm,
         title=T("Informe de Orientación Nutricional Clínica - CIAM&SUNI",
                  "Clinical Nutritional Guidance Report - CIAM&SUNI"),
     )
@@ -2325,16 +2325,16 @@ def generar_pdf_reporte(datos):
                                    fontSize=8.5, textColor=_rl_hex(GRIS_TXT), leading=12.2)
     estilo_texto_bold = ParagraphStyle("TextoBold", parent=estilo_texto, fontName="Helvetica-Bold")
     estilo_explic = ParagraphStyle("Explicacion", parent=estilo_texto, fontSize=8.3, leading=11.8,
-                                    spaceBefore=3, spaceAfter=11)
+                                    spaceBefore=2, spaceAfter=7)
     estilo_pill = ParagraphStyle("Pill", parent=styles["Normal"], fontName="Helvetica-Bold",
                                   fontSize=7.4, alignment=TA_CENTER)
     estilo_pagina2_tit = ParagraphStyle("Pag2Tit", parent=styles["Heading1"], fontName="Helvetica-Bold",
                                          fontSize=13, textColor=rl_colors.white, spaceAfter=1)
     estilo_cafeina_disclaimer = ParagraphStyle("CafeinaDisclaimer", parent=styles["Normal"], fontName="Helvetica-Bold",
                                                 fontSize=6.8, textColor=_rl_hex("#991b1b"), leading=9.6,
-                                                spaceBefore=4)
+                                                spaceBefore=2)
     estilo_seccion2 = ParagraphStyle("Seccion2", parent=styles["Heading2"], fontName="Helvetica-Bold",
-                                      fontSize=10.2, textColor=_rl_hex(CYAN), spaceBefore=10, spaceAfter=5)
+                                      fontSize=10.2, textColor=_rl_hex(CYAN), spaceBefore=6, spaceAfter=3)
     estilo_banner_nombre = ParagraphStyle("BannerNombre", parent=styles["Normal"], fontName="Helvetica-Bold",
                                            fontSize=11.5, textColor=rl_colors.white, leading=13.5)
     estilo_banner_label = ParagraphStyle("BannerLabel", parent=styles["Normal"], fontName="Helvetica",
@@ -2356,7 +2356,7 @@ def generar_pdf_reporte(datos):
     estilo_footer = ParagraphStyle("Footer", parent=styles["Normal"], fontName="Helvetica",
                                     fontSize=6.8, textColor=_rl_hex(GRIS_SUAVE))
     estilo_recom_tit = ParagraphStyle("RecomTit", parent=estilo_texto_bold, fontSize=8.7, textColor=_rl_hex(VERDE))
-    estilo_recom_txt = ParagraphStyle("RecomTxt", parent=estilo_texto, leftIndent=2, spaceAfter=7, leading=11.8)
+    estilo_recom_txt = ParagraphStyle("RecomTxt", parent=estilo_texto, leftIndent=2, spaceAfter=4, leading=11.8)
     estilo_aviso = ParagraphStyle("Aviso", parent=styles["Normal"], fontName="Helvetica",
                                    fontSize=6.5, textColor=_rl_hex("#6C6C70"), leading=9)
 
@@ -2425,7 +2425,7 @@ def generar_pdf_reporte(datos):
         t.setStyle(TableStyle([
             ("ALIGN", (0, 0), (0, -1), "LEFT"), ("ALIGN", (1, 0), (1, -1), "CENTER"), ("ALIGN", (-1, 0), (-1, -1), "CENTER"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
             ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
         story.append(t)
@@ -2436,8 +2436,8 @@ def generar_pdf_reporte(datos):
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(GRIS_MOD)),
             ("LINEBEFORE", (0, 0), (0, -1), 2.6, _rl_hex(CYAN)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4),
         ]))
         return t
 
@@ -2454,11 +2454,11 @@ def generar_pdf_reporte(datos):
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(GRIS_MOD)),
             ("BOX", (0, 0), (-1, -1), 0.6, _rl_hex(LINEA)),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, 0), 7), ("BOTTOMPADDING", (0, 0), (-1, 0), 1),
-            ("TOPPADDING", (0, 1), (-1, 1), 1), ("BOTTOMPADDING", (0, 1), (-1, 1), 2),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, 0), 4), ("BOTTOMPADDING", (0, 0), (-1, 0), 1),
+            ("TOPPADDING", (0, 1), (-1, 1), 1), ("BOTTOMPADDING", (0, 1), (-1, 1), 1),
             ("TOPPADDING", (0, 2), (-1, 2), 1), ("BOTTOMPADDING", (0, 2), (-1, 2), 1),
-            ("TOPPADDING", (0, 3), (-1, 3), 1), ("BOTTOMPADDING", (0, 3), (-1, 3), 7),
+            ("TOPPADDING", (0, 3), (-1, 3), 1), ("BOTTOMPADDING", (0, 3), (-1, 3), 4),
         ]))
         return t
 
@@ -2490,7 +2490,7 @@ def generar_pdf_reporte(datos):
         t = Table([[p]], colWidths=[ancho])
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(est["fondo"])),
-            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
         return t
@@ -2502,7 +2502,7 @@ def generar_pdf_reporte(datos):
         t.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
             ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
         return t
@@ -2514,7 +2514,7 @@ def generar_pdf_reporte(datos):
         t.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("LINEBELOW", (0, 0), (-1, -2), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
             ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0),
         ]))
         return t
@@ -2547,13 +2547,13 @@ def generar_pdf_reporte(datos):
     header_tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(AZUL_TXT)),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, 0), 6), ("BOTTOMPADDING", (0, -1), (-1, -1), 6),
     ]))
     _membrete_institucional()
     story.append(header_tbl)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 5))
 
     # ---------------- TARJETA DE PRESENTACIÓN DEL PACIENTE (Dashboard Card clara, 5 columnas) ----------------
     _sexo_txt = T("Femenino", "Female") if datos["genero"] == "Mujer" else T("Masculino", "Male")
@@ -2570,21 +2570,21 @@ def generar_pdf_reporte(datos):
         _etapa_pdf_txt = datos['etapa']
 
     def _card_celda(label, valor):
-        return [Paragraph(label.upper(), estilo_card_label), Spacer(1, 2), Paragraph(valor, estilo_card_valor)]
+        return [Paragraph(label.upper(), estilo_card_label), Spacer(1, 1), Paragraph(valor, estilo_card_valor)]
 
     _id_badge_tbl = Table([[Paragraph(T("REGISTRADO", "REGISTERED"), estilo_card_badge)]], colWidths=[26 * mm])
     _id_badge_tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(VERDE_BG)),
-        ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]))
-    _celda_id_estado = [Paragraph(T("ID / ESTADO", "ID / STATUS"), estilo_card_label), Spacer(1, 2),
+    _celda_id_estado = [Paragraph(T("ID / ESTADO", "ID / STATUS"), estilo_card_label), Spacer(1, 1),
                          Paragraph(f"ID: {_id_expediente}", ParagraphStyle("CardId", parent=estilo_card_valor, fontName="Courier-Bold", fontSize=7.6)),
-                         Spacer(1, 3), _id_badge_tbl]
+                         Spacer(1, 2), _id_badge_tbl]
 
     _banner_col_w = CONTENT_W / 5
     banner_tbl = Table([[
-        [Paragraph(T("PACIENTE", "PATIENT"), estilo_card_label), Spacer(1, 2), Paragraph(datos['nombre'].upper(), estilo_card_nombre)],
+        [Paragraph(T("PACIENTE", "PATIENT"), estilo_card_label), Spacer(1, 1), Paragraph(datos['nombre'].upper(), estilo_card_nombre)],
         _card_celda(T("Edad / Etapa", "Age / Stage"), f"{datos['edad']} {T('años', 'yrs')} · {_etapa_pdf_txt}"),
         _card_celda(T("Sexo Biológico", "Biological Sex"), _sexo_txt),
         _card_celda(T("Estado Fisiológico", "Physiological State"), _estado_fisio_txt),
@@ -2598,13 +2598,13 @@ def generar_pdf_reporte(datos):
         ("LINEBEFORE", (2, 0), (2, 0), 0.5, _rl_hex(LINEA)),
         ("LINEBEFORE", (3, 0), (3, 0), 0.5, _rl_hex(LINEA)),
         ("LINEBEFORE", (4, 0), (4, 0), 0.5, _rl_hex(LINEA)),
-        ("TOPPADDING", (0, 0), (-1, -1), 9), ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
-        ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 7), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
     ]))
     story.append(banner_tbl)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
 
-    mod1 = [_cab_modulo(T("1. INFORMACIÓN PERSONAL Y FISIOLÓGICA", "1. PERSONAL & PHYSIOLOGICAL INFORMATION")), Spacer(1, 2),
+    mod1 = [_cab_modulo(T("1. INFORMACIÓN PERSONAL Y FISIOLÓGICA", "1. PERSONAL & PHYSIOLOGICAL INFORMATION")), Spacer(1, 1),
             _tabla_kv([
                 (T("Etapa de Vida", "Life Stage"), f"{_etapa_pdf_txt} ({datos['edad']} {T('años', 'years')})"),
                 (T("Sexo Biológico", "Biological Sex"), _sexo_txt),
@@ -2702,7 +2702,7 @@ def generar_pdf_reporte(datos):
         _e = SEMAFORO_ESTILO[color_key]["etiqueta"]
         return _ETIQUETA_SEMAFORO_EN.get(_e, _e) if _idioma_pdf_en else _e
 
-    mod2 = [_cab_modulo(T("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)", "2. VITAL SIGNS (PHYSIOLOGICAL STATE)")), Spacer(1, 2),
+    mod2 = [_cab_modulo(T("2. SIGNOS VITALES (ESTADO FISIOLÓGICO)", "2. VITAL SIGNS (PHYSIOLOGICAL STATE)")), Spacer(1, 1),
             _tabla_vitales([
                 (T("Presión Arterial", "Blood Pressure"), _et(_col_pa), _col_pa),
                 (T("Oxigenación (SpO<sub>2</sub>)", "Oxygenation (SpO<sub>2</sub>)"), _et(_col_ox), _col_ox),
@@ -2778,7 +2778,7 @@ def generar_pdf_reporte(datos):
                   f"{datos['rcd_final']:.0f} kcal", T("por día", "per day"), CYAN, _kpi_ancho_c),
     ], gap=_kpi_gap)
     story.append(_kpi_row)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 5))
 
     if _embarazada_pdf and datos.get("canal_min") is not None:
         _fila_proy_mod3 = (T("Ganancia Ponderal (IOM/ACOG)", "Weight Gain (IOM/ACOG)"),
@@ -2787,7 +2787,7 @@ def generar_pdf_reporte(datos):
     else:
         _fila_proy_mod3 = (T("Proyección (60 días)", "Projection (60 days)"),
                             f"{datos['peso_proyectado']:.1f} kg ({'+' if _peso_delta >= 0 else ''}{_peso_delta:.1f} kg)")
-    mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 2),
+    mod3 = [_cab_modulo(T("3. ANTROPOMETRÍA Y PROYECCIÓN", "3. ANTHROPOMETRY & PROJECTION")), Spacer(1, 1),
             _tabla_kv([
                 (T("Peso Actual", "Current Weight"), f"{datos['peso']:.1f} kg")
                  if not _embarazada_pdf else (T("Peso Pregestacional / Actual", "Pre-pregnancy / Current Weight"), f"{datos['peso']:.1f} kg -> {datos.get('peso_actual', datos['peso']):.1f} kg"),
@@ -2805,7 +2805,7 @@ def generar_pdf_reporte(datos):
         _limite_cafeina_txt = T("Máx. 100 mg/día (adolescente)", "Max. 100 mg/day (adolescent)")
     else:
         _limite_cafeina_txt = T("Máx. 400 mg/día", "Max. 400 mg/day")
-    mod4 = [_cab_modulo(T("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES", "4. ENERGY REQUIREMENT & LIMITS")), Spacer(1, 2),
+    mod4 = [_cab_modulo(T("4. REQUERIMIENTO ENERGÉTICO Y LÍMITES", "4. ENERGY REQUIREMENT & LIMITS")), Spacer(1, 1),
             _tabla_kv([
                 (T("Tasa Metabólica (TMB)", "Metabolic Rate (BMR)"), f"{datos['tmb']:.0f} kcal/{T('día', 'day')}"),
                 (T("Gasto Calórico Diario", "Daily Caloric Expenditure"), f"{datos['rcd']:.0f} kcal/{T('día', 'day')}"),
@@ -2867,7 +2867,7 @@ def generar_pdf_reporte(datos):
     _col_lipidico = max([_col_trigli, _col_coles], key=lambda c: _ORDEN_RIESGO.get(c, 0))
     _et_lipidico = _sin_datos_txt if _col_lipidico == "gris" else _et(_col_lipidico)
 
-    mod5 = [_cab_modulo(T("5. ANÁLISIS SANGUÍNEO (SEMÁFORO)", "5. BLOOD ANALYSIS (TRIAGE)")), Spacer(1, 2),
+    mod5 = [_cab_modulo(T("5. ANÁLISIS SANGUÍNEO (SEMÁFORO)", "5. BLOOD ANALYSIS (TRIAGE)")), Spacer(1, 1),
             _tabla_vitales([
                 (T("Hemoglobina", "Hemoglobin"), _et(_col_hemo) if datos["tiene_examen"] else _sin_datos_txt, _col_hemo),
                 (T("Glucosa Basal", "Fasting Glucose"), _et(_col_gluco) if datos["tiene_examen"] else _sin_datos_txt, _col_gluco),
@@ -2879,7 +2879,7 @@ def generar_pdf_reporte(datos):
     _pct_prot_pdf = datos["cal_prot"] / _total_kcal_macros * 100
     _pct_carb_pdf = datos["cal_carb"] / _total_kcal_macros * 100
     _pct_gras_pdf = datos["cal_gras"] / _total_kcal_macros * 100
-    mod6 = [_cab_modulo(T("6. DISTRIBUCIÓN DE MACRONUTRIENTES", "6. MACRONUTRIENT DISTRIBUTION")), Spacer(1, 2),
+    mod6 = [_cab_modulo(T("6. DISTRIBUCIÓN DE MACRONUTRIENTES", "6. MACRONUTRIENT DISTRIBUTION")), Spacer(1, 1),
             _tabla_kv([
                 (f"{T('Proteínas', 'Protein')} ({_pct_prot_pdf:.0f}%)", f"{datos['gr_prot']:.1f} g  |  {datos['cal_prot']:.0f} kcal"),
                 (f"{T('Carbohidratos', 'Carbohydrates')} ({_pct_carb_pdf:.0f}%)", f"{datos['gr_carb']:.1f} g  |  {datos['cal_carb']:.0f} kcal"),
@@ -2953,12 +2953,12 @@ def generar_pdf_reporte(datos):
     header2.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(AZUL_TXT)),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, 0), 10), ("BOTTOMPADDING", (0, -1), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, 0), 6), ("BOTTOMPADDING", (0, -1), (-1, -1), 6),
     ]))
     story.append(header2)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 5))
 
     # (Se retira la tabla resumen "Distribución de Porciones": duplicaba la información que
     # ya se detalla, alimento por alimento, en la sección de Plan Alimentario de abajo, y su
@@ -2990,16 +2990,16 @@ def generar_pdf_reporte(datos):
             ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(GRIS_MOD)),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4),
         ]))
         story.append(_tabla_esquema)
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 4))
     else:
         story.append(Paragraph(T("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
                                   "No meal plan has been built yet in Sheet 9.-DIET during this session."),
                                 estilo_texto))
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 4))
 
     # ---------------- 7. DESGLOSE NUTRICIONAL POR MACRONUTRIENTE (5 bloques por momento de comida, con datos exactos) ----------------
     story.append(Paragraph(T("7. DESGLOSE NUTRICIONAL POR MACRONUTRIENTE (CON DATOS)", "7. NUTRITIONAL BREAKDOWN BY MACRONUTRIENT (WITH DATA)"), estilo_seccion2))
@@ -3019,7 +3019,7 @@ def generar_pdf_reporte(datos):
         t = Table([[p]], colWidths=[ancho])
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), _rl_hex(bg)),
-            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
         return t
@@ -3048,22 +3048,22 @@ def generar_pdf_reporte(datos):
         t.setStyle(TableStyle([
             ("SPAN", (0, 0), (-1, 0)),
             ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(AZUL_TXT)),
-            ("TOPPADDING", (0, 0), (-1, 0), 6), ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
-            ("LEFTPADDING", (0, 0), (-1, 0), 8),
+            ("TOPPADDING", (0, 0), (-1, 0), 3), ("BOTTOMPADDING", (0, 0), (-1, 0), 3),
+            ("LEFTPADDING", (0, 0), (-1, 0), 4),
             ("BACKGROUND", (0, 1), (-1, 1), _rl_hex(GRIS_MOD)),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("ALIGN", (2, 1), (-1, -1), "CENTER"),
             ("SPAN", (0, n - 1), (1, n - 1)),
             ("BACKGROUND", (0, n - 1), (-1, n - 1), _rl_hex(LINEA)),
             ("GRID", (0, 1), (-1, -1), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 1), (-1, -1), 4), ("BOTTOMPADDING", (0, 1), (-1, -1), 4),
+            ("TOPPADDING", (0, 1), (-1, -1), 2), ("BOTTOMPADDING", (0, 1), (-1, -1), 2),
         ]))
         return t
 
     if datos["tiene_dieta"]:
         for _fila_comida in datos["dieta_filas"]:
             story.append(_bloque_comida(_fila_comida))
-            story.append(Spacer(1, 5))
+            story.append(Spacer(1, 3))
 
         _tot_c, _tot_p, _tot_g = (datos["dieta_totales"]["Carbohidrato"], datos["dieta_totales"]["Proteína"],
                                    datos["dieta_totales"]["Grasa"])
@@ -3078,21 +3078,21 @@ def generar_pdf_reporte(datos):
             ("BACKGROUND", (0, 0), (-1, 0), _rl_hex(GRIS_MOD)),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("ALIGN", (1, 1), (-1, -1), "CENTER"),
             ("GRID", (0, 0), (-1, -1), 0.4, _rl_hex(LINEA)),
-            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
         story.append(_resumen_tot)
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 4))
     else:
         story.append(Paragraph(T("Aún no se armó un plan de comidas en la Hoja 9.-DIETA durante esta sesión.",
                                   "No meal plan has been built yet in Sheet 9.-DIET during this session."),
                                 estilo_texto))
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 4))
 
     # ---------------- 8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL ----------------
     story.append(Paragraph(T("8. RECOMENDACIONES CLÍNICAS Y GUÍA NUTRICIONAL", "8. CLINICAL RECOMMENDATIONS & NUTRITIONAL GUIDE"), estilo_seccion2))
 
     estilo_subcat = ParagraphStyle("SubcatRecom", parent=estilo_seccion2, fontSize=10.5,
-                                    spaceBefore=6, spaceAfter=3)
+                                    spaceBefore=4, spaceAfter=2)
 
     def _dedup(lst):
         vistos, out = set(), []
@@ -3181,8 +3181,8 @@ def generar_pdf_reporte(datos):
     def _celda_recom_matriz(titulo, items, bg, fg):
         estilo_tit_col = ParagraphStyle("RecomColTit", parent=estilo_texto_bold, fontSize=8.4, textColor=_rl_hex(fg))
         estilo_item_col = ParagraphStyle("RecomColItem", parent=estilo_texto, fontSize=7.4, leading=10.4,
-                                          textColor=_rl_hex(fg), spaceAfter=4)
-        flows = [Paragraph(titulo, estilo_tit_col), Spacer(1, 4)]
+                                          textColor=_rl_hex(fg), spaceAfter=2)
+        flows = [Paragraph(titulo, estilo_tit_col), Spacer(1, 2)]
         for it in items:
             flows.append(Paragraph(f"•  {it}", estilo_item_col))
         return flows
@@ -3201,19 +3201,19 @@ def generar_pdf_reporte(datos):
         ("BACKGROUND", (0, 0), (0, 0), _rl_hex(VERDE_BG)),
         ("BACKGROUND", (2, 0), (2, 0), _rl_hex("#dbeafe")),
         ("BACKGROUND", (4, 0), (4, 0), _rl_hex(ROJO_BG)),
-        ("LEFTPADDING", (0, 0), (0, 0), 9), ("RIGHTPADDING", (0, 0), (0, 0), 7),
-        ("LEFTPADDING", (2, 0), (2, 0), 9), ("RIGHTPADDING", (2, 0), (2, 0), 7),
-        ("LEFTPADDING", (4, 0), (4, 0), 9), ("RIGHTPADDING", (4, 0), (4, 0), 7),
-        ("TOPPADDING", (0, 0), (-1, -1), 10), ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (0, 0), (0, 0), 5), ("RIGHTPADDING", (0, 0), (0, 0), 4),
+        ("LEFTPADDING", (2, 0), (2, 0), 5), ("RIGHTPADDING", (2, 0), (2, 0), 4),
+        ("LEFTPADDING", (4, 0), (4, 0), 5), ("RIGHTPADDING", (4, 0), (4, 0), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("LEFTPADDING", (1, 0), (1, 0), 0), ("RIGHTPADDING", (1, 0), (1, 0), 0),
         ("LEFTPADDING", (3, 0), (3, 0), 0), ("RIGHTPADDING", (3, 0), (3, 0), 0),
     ]))
     story.append(_matriz_recom)
 
     # ---------------- PIE DE PÁGINA MÉDICO-LEGAL ----------------
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
     story.append(HRFlowable(width="100%", thickness=0.6, color=_rl_hex(LINEA)))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 2))
 
     _aviso_parrafo = Paragraph(
         T("<b>DESCARGO DE RESPONSABILIDAD MÉDICA Y LEGAL:</b> La aplicación CIAM&amp;SUNI es una herramienta "
@@ -6586,14 +6586,14 @@ def _etiquetas_nav_activas():
     return ETIQUETAS_NAV_EN if st.session_state.get("idioma", "Español") == "English" else ETIQUETAS_NAV
 
 _DEFAULTS_SESION = {
-    "nombre_usuario": "", "genero": "Hombre", "peso": 75.0, "estatura": 168, "edad": 9,
+    "nombre_usuario": "", "genero": "Hombre", "peso": None, "estatura": None, "edad": None,
     "actividad": "Ligero", "objetivo": "Bajar de peso",
     "ajuste_bajar_sel": "Equilibrado (-20%) ⭐ Recomendado",
     "ajuste_subir_sel": "Equilibrado (+15%) ⭐ Recomendado",
-    "spo2": 98.0, "pulso": 75, "temp_corp": 36.5, "pas": 120, "pad": 80,
+    "spo2": None, "pulso": None, "temp_corp": None, "pas": None, "pad": None,
     "hemo": None, "trigli": None, "gluco": None, "coles": None, "hierro": None,
     "embarazada": False, "trimestre_emb": "Primer trimestre", "vive_en_chiclayo": False,
-    "semana_gestacion": 12, "peso_actual": 75.0,
+    "semana_gestacion": 12, "peso_actual": None,
     "muneca_cm": 17.5, "usar_somatotipo": False,
 }
 for _clave, _valor_defecto in _DEFAULTS_SESION.items():
@@ -6744,7 +6744,7 @@ def _panel_llenar_datos():
     # ¿Embarazada? se decide primero porque cambia cómo pedimos el peso más abajo.
     # Control de Edad y Embarazo: incompatible con perfiles pediátricos (< 12 años).
     embarazada = False
-    _edad_previa_emb = st.session_state.get("edad", 9)
+    _edad_previa_emb = st.session_state.get("edad") or 18
     if genero == "Mujer":
         if _edad_previa_emb < 12:
             embarazada = False
@@ -6764,7 +6764,7 @@ def _panel_llenar_datos():
             st.markdown(f'<p style="margin:0 0 4px 0;font-weight:800;color:#8E24AA;font-size:0.85rem;">'
                         f'🤰 {T("Peso Pregestacional (kg)","Pre-pregnancy Weight (kg)")}</p>', unsafe_allow_html=True)
             peso = st.number_input(T("Peso Pregestacional (kg):", "Pre-pregnancy Weight (kg):"), min_value=20.0,
-                                    max_value=min(250.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
+                                    max_value=min(250.0, peso_max_actual), value=None, step=0.1,
                                     key="peso", label_visibility="collapsed",
                                     help=T("Tu peso ANTES del embarazo. Se usa para calcular tu TMB, tu IMC "
                                            "pregestacional y tu rango total de ganancia de peso (Tabla IOM).",
@@ -6774,7 +6774,7 @@ def _panel_llenar_datos():
             st.markdown(f'<p style="margin:0 0 4px 0;font-weight:800;color:#007AFF;font-size:0.85rem;">'
                         f'⚖️ {T("Peso Actual (kg)","Current Weight (kg)")}</p>', unsafe_allow_html=True)
             peso_actual = st.number_input(T("Peso Actual (kg):", "Current Weight (kg):"), min_value=20.0,
-                                           max_value=min(250.0, peso_max_actual), value=min(65.0, peso_max_actual), step=0.1,
+                                           max_value=min(250.0, peso_max_actual), value=None, step=0.1,
                                            key="peso_actual", label_visibility="collapsed",
                                            help=T("Tu peso HOY. Se usa en el Seguimiento de Peso semanal y en el "
                                                   "Plan Alimenticio / Fármacos / Cafeína.",
@@ -6783,27 +6783,31 @@ def _panel_llenar_datos():
         b1c5, b1c6 = st.columns(2)
         with b1c5:
             estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
-                                        value=min(160, estatura_max_actual), step=1, key="estatura",
+                                        value=None, step=1, key="estatura",
                                         help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
         with b1c6:
             edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(110, edad_max_actual),
-                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
+                                    value=None, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
     else:
         b1c3, b1c4, b1c5 = st.columns(3)
         with b1c3:
             peso = st.number_input(T("Peso (kg):", "Weight (kg):"), min_value=20.0, max_value=min(250.0, peso_max_actual),
-                                    value=min(75.0, peso_max_actual), step=0.1, key="peso",
+                                    value=None, step=0.1, key="peso",
                                     help=T("Rango válido: 20 a 250 kg.", "Valid range: 20 to 250 kg."))
         with b1c4:
             estatura = st.number_input(T("Estatura (cm):", "Height (cm):"), min_value=50, max_value=min(250, estatura_max_actual),
-                                        value=min(168, estatura_max_actual), step=1, key="estatura",
+                                        value=None, step=1, key="estatura",
                                         help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
         with b1c5:
             edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(110, edad_max_actual),
-                                    value=9, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
-    etapa = etapa_desde_edad(edad)
-    st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
-              f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
+                                    value=None, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
+    if edad is not None:
+        etapa = etapa_desde_edad(edad)
+        st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
+                  f"🔎 Automatically detected life stage: **{_ETAPA_EN.get(etapa, etapa)}**"))
+    else:
+        etapa = "Adultez"
+        st.caption(T("✍️ Ingresa tu edad para detectar tu etapa de vida.", "✍️ Enter your age to detect your life stage."))
 
     trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
     if genero == "Mujer" and embarazada:
@@ -6922,7 +6926,7 @@ def _panel_llenar_datos():
                 "🤰 In Pregnancy Mode you don't choose a goal or pace: your calories are calculated automatically "
                 "by adding your trimester's energy block to your gestational BMR. Energy is never subtracted."))
     else:
-        _imc_obj_sidebar = (peso / ((estatura / 100.0) ** 2)) if estatura else 0
+        _imc_obj_sidebar = (peso / ((estatura / 100.0) ** 2)) if (peso and estatura) else 0
         _obj_opciones_sidebar = ["Bajar de peso", "Subir de peso", "Mantenerse"]
         if _imc_obj_sidebar >= 30:
             _obj_opciones_sidebar = ["Bajar de peso", "Mantenerse"]
@@ -7024,33 +7028,33 @@ def _panel_llenar_datos():
                 "These indicators show how your body is functioning right now, and help detect warning "
                 "signs early.")}</p></div>',
                 unsafe_allow_html=True)
-    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=50.0, max_value=100.0, value=98.0, step=1.0,
+    spo2 = st.number_input(T("Oxigenación SpO2 (%):", "Oxygen Saturation SpO2 (%):"), min_value=50.0, max_value=100.0, value=None, step=1.0,
                             key="spo2", help=T("Normal: 95% a 100%. Rango biológico válido: 50% a 100%.",
                                                 "Normal: 95% to 100%. Valid biological range: 50% to 100%."))
-    if spo2 > 0:
+    if spo2:
         _c = "verde" if spo2 >= 95 else ("rojo" if spo2 < 90 else "ambar")
         _badge_vital(spo2, "%", _c, T("Normal", "Normal") if _c == "verde" else (T("Bajo", "Low") if _c == "rojo" else T("Atención", "Alert")))
 
-    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=30, max_value=220, value=75, step=1,
+    pulso = st.number_input(T("Pulso (lpm):", "Pulse (bpm):"), min_value=30, max_value=220, value=None, step=1,
                              key="pulso", help=T("Ideal en reposo: 60 a 100 lpm. Rango biológico válido: 30 a 220 lpm.",
                                                   "Ideal at rest: 60 to 100 bpm. Valid biological range: 30 to 220 bpm."))
-    if pulso > 0:
+    if pulso:
         _c = "verde" if 60 <= pulso <= 100 else "ambar"
         _badge_vital(pulso, " lpm", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
-    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=30.0, max_value=43.0, value=36.5, step=0.1,
+    temp_corp = st.number_input(T("Temperatura (°C):", "Temperature (°C):"), min_value=30.0, max_value=43.0, value=None, step=0.1,
                                  key="temp_corp", help=T("Normal: 36.5°C a 37.5°C. Rango biológico válido: 30.0°C a 43.0°C.",
                                                           "Normal: 36.5°C to 37.5°C. Valid biological range: 30.0°C to 43.0°C."))
-    if temp_corp > 0:
+    if temp_corp:
         _c = "verde" if 36.5 <= temp_corp <= 37.5 else "ambar"
         _badge_vital(temp_corp, "°C", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
     st.markdown(f"**{T('Presión Arterial (mmHg):', 'Blood Pressure (mmHg):')}**")
-    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=60, max_value=240, value=120, step=1, key="pas",
+    pas = st.number_input(T("Sistólica:", "Systolic:"), min_value=60, max_value=240, value=None, step=1, key="pas",
                            help=T("Rango biológico válido: 60 a 240 mmHg. Ejemplo: 120.", "Valid biological range: 60 to 240 mmHg. Example: 120."))
-    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=40, max_value=140, value=80, step=1, key="pad",
+    pad = st.number_input(T("Diastólica:", "Diastolic:"), min_value=40, max_value=140, value=None, step=1, key="pad",
                            help=T("Rango biológico válido: 40 a 140 mmHg. Ejemplo: 80.", "Valid biological range: 40 to 140 mmHg. Example: 80."))
-    if pas > 0 and pad > 0:
+    if pas and pad:
         if pas < 60 or pas > 240 or pad < 40 or pad > 140:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
                          f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
@@ -7080,7 +7084,7 @@ def _panel_llenar_datos():
                            "Inconsistency detected: hypothermia usually lowers heart rate, not raises it into tachycardia. Please check both values."))
         return _adv
 
-    _advertencias_vitales = _validar_coherencia_fisiologica(pas, pad, spo2, temp_corp, pulso)
+    _advertencias_vitales = _validar_coherencia_fisiologica(pas or 0, pad or 0, spo2 or 0, temp_corp or 0, pulso or 0)
     if _advertencias_vitales:
         for _adv in _advertencias_vitales:
             st.warning(f"⚠️ {T('Advertencia de coherencia clínica', 'Clinical coherence warning')}: {_adv}")
@@ -7116,10 +7120,14 @@ with st.sidebar.expander(T("📝 Llenar / Editar Mis Datos", "📝 Enter / Edit 
 # función; aquí las recuperamos desde st.session_state, que el fragment ya actualizó al vuelo)
 nombre_usuario = st.session_state.get("nombre_usuario", "")
 genero = st.session_state.get("genero", "Hombre")
-peso = st.session_state.get("peso", 75.0)
-peso_actual = st.session_state.get("peso_actual", peso)
-estatura = st.session_state.get("estatura", 168)
-edad = st.session_state.get("edad", 9)
+# Nota: los campos de "Llenar / Editar Mis Datos" ya no traen valores predeterminados en el
+# formulario (aparecen vacíos). Los "or <valor>" de abajo son solo un respaldo interno para que
+# el resto del cálculo no falle mientras el usuario aún no ha completado esos campos.
+_datos_incompletos = any(st.session_state.get(_k) is None for _k in ("peso", "estatura", "edad"))
+peso = st.session_state.get("peso") or 75.0
+peso_actual = st.session_state.get("peso_actual") or peso
+estatura = st.session_state.get("estatura") or 168
+edad = st.session_state.get("edad") or 9
 etapa = etapa_desde_edad(edad)
 embarazada = st.session_state.get("embarazada", False) if genero == "Mujer" else False
 trimestre = st.session_state.get("trimestre_emb", "Primer trimestre")
@@ -7133,11 +7141,11 @@ elif objetivo == "Subir de peso":
     ajuste_txt = st.session_state.get("ajuste_subir_sel", "Equilibrado (+15%) ⭐ Recomendado")
 else:
     ajuste_txt = None
-spo2 = st.session_state.get("spo2", 0.0)
-pulso = st.session_state.get("pulso", 0)
-temp_corp = st.session_state.get("temp_corp", 0.0)
-pas = st.session_state.get("pas", 0)
-pad = st.session_state.get("pad", 0)
+spo2 = st.session_state.get("spo2") or 0.0
+pulso = st.session_state.get("pulso") or 0
+temp_corp = st.session_state.get("temp_corp") or 0.0
+pas = st.session_state.get("pas") or 0
+pad = st.session_state.get("pad") or 0
 hemo = st.session_state.get("hemo") or 0.0
 gluco = st.session_state.get("gluco") or 0.0
 coles = st.session_state.get("coles") or 0.0
@@ -7468,6 +7476,11 @@ st.markdown("---")
 
 # ---------------------------------------------------------------------------------------
 if hoja_activa == "0.-DATOS":
+    if _datos_incompletos:
+        st.warning(T("✍️ Completa tu peso, estatura y edad en el panel lateral **Llenar / Editar Mis Datos** "
+                      "para que tus resultados sean reales y no valores de ejemplo.",
+                      "✍️ Fill in your weight, height and age in the sidebar **Enter / Edit My Data** panel "
+                      "so your results are real and not placeholder values."))
     # --- Bloque destacado: por qué descargar el Excel original (va antes del formulario) ---
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#1E5631 0%,#2E7D32 60%,#4CAF50 100%);border-radius:26px;
@@ -7476,7 +7489,7 @@ if hoja_activa == "0.-DATOS":
         <div style="font-size:0.8rem;letter-spacing:0.03em;text-transform:uppercase;font-weight:700;opacity:0.9;">
             📂 {T("Antes de empezar", "Before you start")}</div>
         <div style="font-size:1.5rem;font-weight:800;margin:6px 0 10px 0;letter-spacing:-0.01em;">
-            {T("¿Por qué deberías descargar el Excel original?", "Why should you download the original Excel file?")}</div>
+            {T("¿Por qué deberías descargar nuestro Excel?", "Why should you download our Excel?")}</div>
         <div style="font-size:0.98rem;line-height:1.55;opacity:0.97;max-width:760px;">
             {T("Esta app es una réplica bonita y fácil de usar, pero el Excel es la herramienta completa: es tuya, "
             "para siempre, y puedes llevarla contigo a donde quieras.",
@@ -7528,10 +7541,10 @@ if hoja_activa == "0.-DATOS":
                 type="primary",
             )
         st.caption(T(
-            "CIAM&SUNI Web ofrece la experiencia interactiva, y la herramienta de exportación en Excel "
-            "permite la interoperabilidad offline para la gestión de planes nutricionales.",
-            "CIAM&SUNI Web offers the interactive experience, and the Excel export tool enables offline "
-            "interoperability for managing nutritional plans."))
+            "Disfruta la versión web interactiva o descarga el Excel para trabajar tus planes nutricionales "
+            "100% sin internet y donde quieras.",
+            "Enjoy the interactive web version or download the Excel file to work on your nutritional plans "
+            "100% offline and wherever you go."))
     else:
         st.info(T("Para habilitar este botón, coloca el archivo del Excel (por ejemplo "
                 "`Proyecto_sana_alimentacion_-_Grupo_n_04_CIAM_SUNI.xlsx`) en la misma carpeta que este script "
