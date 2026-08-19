@@ -12639,6 +12639,21 @@ elif hoja_activa == "📄 MI REPORTE":
     hoja_header(14, T("Un informe médico completo, con tus datos, resultados y recomendaciones — listo para imprimir.",
                        "A complete medical report, with your data, results, and recommendations — ready to print."))
 
+    if _datos_incompletos:
+        st.markdown(f"""
+        <div style="background:#EAF3FF;border:1.5px solid #007AFF33;border-left:5px solid #007AFF;border-radius:20px;
+                    padding:18px 24px;margin-bottom:16px;box-shadow:0 6px 16px rgba(0,0,0,0.05);">
+        <div style="font-weight:900;color:#007AFF;font-size:1.02rem;margin-bottom:4px;">📌 {T("¡Bienvenido a tu Centro de Control!", "Welcome to your Control Center!")}</div>
+        <div style="color:#3C3C43;font-size:0.9rem;line-height:1.55;">{T(
+            "Por favor, completa tu peso, estatura y edad en el panel izquierdo (📝 Llenar / Editar Mis Datos) "
+            "para calcular tu diagnóstico nutricional y requerimiento calórico.",
+            "Please complete your weight, height and age in the left panel (📝 Enter / Edit My Data) "
+            "to calculate your nutritional diagnosis and caloric requirement.")}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.warning(T("👈 Completa tu perfil a la izquierda para ver tus resultados reales.",
+                      "👈 Complete your profile on the left to see your real results."))
+
     st.markdown(f"""
     <div style="background:#E7F6FD;border-left:5px solid #32ADE6;border-radius:20px;
                 padding:16px 24px;margin-bottom:16px;
@@ -12663,16 +12678,23 @@ elif hoja_activa == "📄 MI REPORTE":
             <div style="text-align:right;color:#6C6C70;font-size:0.85rem;">{T("Generado", "Generated")}: {_fecha_reporte}</div>
         </div>
         <hr style="border:none;border-top:1px solid #F2F2F7;margin:14px 0;">
-        <b>{T("Nombre", "Name")}:</b> {_nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
-        <b>{T("Edad", "Age")}:</b> {edad} {T("años", "years")} ({_etapa_r14_txt}) &nbsp;&nbsp;|&nbsp;&nbsp;
-        <b>{T("Género", "Gender")}:</b> {T(genero, "Female" if genero == "Mujer" else "Male")}
+        <b>{T("Nombre", "Name")}:</b> {"--" if _datos_incompletos else _nombre_saludo} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>{T("Edad", "Age")}:</b> {(f"{edad} {T('años', 'years')} ({_etapa_r14_txt})") if not _datos_incompletos else "--"} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>{T("Género", "Gender")}:</b> {T(genero, "Female" if genero == "Mujer" else "Male") if not _datos_incompletos else T("Selecciona en el panel", "Select in the panel")}
     </div>
     """, unsafe_allow_html=True)
 
     # --- Bloque 1: Datos antropométricos (cabecera dual si está en Modo Embarazo) ---
     _es_gestante_r14 = (genero == "Mujer" and embarazada)
     st.markdown(f"#### 📏 {T('Datos antropométricos', 'Anthropometric Data')}")
-    if _es_gestante_r14:
+    if _datos_incompletos:
+        st.info(T("🟡 Faltan datos por ingresar (peso, estatura y/o edad) para calcular el IMC, la TMB y los macronutrientes.",
+                   "🟡 Missing data (weight, height and/or age) to calculate BMI, BMR and macronutrients."))
+        rn1, rn2, rn3 = st.columns(3)
+        rn1.metric(T("Peso", "Weight"), "--")
+        rn2.metric(T("Estatura", "Height"), "--")
+        rn3.metric(T("IMC", "BMI"), "--")
+    elif _es_gestante_r14:
         _peso_actual_r14 = st.session_state.get("peso_actual", peso_actual)
         _semana_r14 = st.session_state.get("semana_gestacion", semana_gestacion)
         _trimestre_r14 = _trimestre_desde_semana(_semana_r14)
@@ -12714,15 +12736,25 @@ elif hoja_activa == "📄 MI REPORTE":
 
     st.markdown(f"#### 🔥 {T('Requerimiento energético', 'Energy Requirement')}")
     r4, r5, r6 = st.columns(3)
-    r4.metric(T("TMB", "BMR"), f"{tmb:.0f} kcal/{T('día', 'day')}")
-    r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"{rcd:.0f} kcal/{T('día', 'day')}")
-    r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"{rcd_final:.0f} kcal/{T('día', 'day')}")
+    if _datos_incompletos:
+        r4.metric(T("TMB", "BMR"), f"-- kcal/{T('día', 'day')}")
+        r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"-- kcal/{T('día', 'day')}")
+        r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"-- kcal/{T('día', 'day')}")
+    else:
+        r4.metric(T("TMB", "BMR"), f"{tmb:.0f} kcal/{T('día', 'day')}")
+        r5.metric(T("RCD (gasto diario)", "TDEE (daily expenditure)"), f"{rcd:.0f} kcal/{T('día', 'day')}")
+        r6.metric(T("Meta calórica (objetivo)", "Caloric Goal (target)"), f"{rcd_final:.0f} kcal/{T('día', 'day')}")
 
     st.markdown(f"#### 🍽️ {T('Macronutrientes recomendados', 'Recommended Macronutrients')}")
     r7, r8, r9 = st.columns(3)
-    r7.metric(T("Proteínas", "Protein"), f"{gr_prot:.1f} g")
-    r8.metric(T("Carbohidratos", "Carbohydrates"), f"{gr_carb:.1f} g")
-    r9.metric(T("Grasas", "Fats"), f"{gr_gras:.1f} g")
+    if _datos_incompletos:
+        r7.metric(T("Proteínas", "Protein"), "-- g")
+        r8.metric(T("Carbohidratos", "Carbohydrates"), "-- g")
+        r9.metric(T("Grasas", "Fats"), "-- g")
+    else:
+        r7.metric(T("Proteínas", "Protein"), f"{gr_prot:.1f} g")
+        r8.metric(T("Carbohidratos", "Carbohydrates"), f"{gr_carb:.1f} g")
+        r9.metric(T("Grasas", "Fats"), f"{gr_gras:.1f} g")
 
     # --- Bloque 2: Análisis sanguíneo, si hay datos ---
     st.markdown(f"#### 🩸 {T('Análisis sanguíneo', 'Blood Analysis')}")
@@ -13147,7 +13179,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     }
     .team-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.14); }
     .team-avatar {
-        width: 116px; height: 116px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
         margin: 0 auto 14px auto; background: #FFFFFF; border: 4px solid var(--tc-color);
         box-shadow: 0 6px 14px rgba(0,0,0,0.14); overflow: hidden; transition: transform 0.35s ease;
     }
@@ -13155,13 +13187,16 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-card:hover .team-avatar { transform: rotate(-6deg) scale(1.06); }
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
-    .team-badge-carrera {
-        display: inline-flex; align-items: center; gap: 8px; background-color: var(--tc-badge) !important;
-        color: #FFFFFF !important; font-weight: 900; font-size: 0.92rem; line-height: 1.25; padding: 10px 18px;
-        border-radius: 999px; margin: 2px 0 14px 0; box-shadow: 0 6px 16px rgba(0,0,0,0.28), 0 2px 4px rgba(0,0,0,0.15);
-        text-shadow: 0 1px 2px rgba(0,0,0,0.20); letter-spacing: 0.01em;
+    .team-badge-carrera, div.team-badge-carrera {
+        display: inline-flex !important; align-items: center; gap: 8px;
+        background-color: var(--tc-badge) !important; background: var(--tc-badge) !important;
+        color: #FFFFFF !important; font-weight: 900 !important; font-size: 1.02rem !important; line-height: 1.3;
+        padding: 12px 20px; border-radius: 999px; margin: 4px 0 16px 0;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.32), 0 2px 6px rgba(0,0,0,0.18);
+        text-shadow: 0 1px 3px rgba(0,0,0,0.30); letter-spacing: 0.01em;
+        border: 2px solid rgba(255,255,255,0.55);
     }
-    .team-badge-carrera * { color: #FFFFFF !important; }
+    .team-badge-carrera *, div.team-badge-carrera * { color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
     .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
