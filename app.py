@@ -13297,28 +13297,28 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     _idioma_equipo = st.session_state.get("idioma", "Español") == "English"
     EQUIPO = [
         {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩",
-         "foto": "https://drive.google.com/uc?export=view&id=1HwL-UyQ6RSmIyBsid1JlkM_TXr0325d1",
+         "foto": "https://drive.google.com/thumbnail?id=1HwL-UyQ6RSmIyBsid1JlkM_TXr0325d1&sz=w400",
          "carrera": "🧠 " + T("Psicología & Bienestar Humano", "Psychology & Human Wellbeing"),
          "color": "#7C3AED", "fondo": "#FCE7F3",
          "chips": [(T("🎵 Expresión Artística & Ejecución Musical", "🎵 Artistic Expression & Music Performance"), "arte"),
                    (T("💬 Comunicación Interpersonal", "💬 Interpersonal Communication"), "social"),
                    (T("🌱 Desarrollo Humano", "🌱 Human Development"), "salud")]},
         {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩",
-         "foto": "https://drive.google.com/uc?export=view&id=1gH5p3rZfst7cUuKCqUAXVVkqFqP2U6Iv",
+         "foto": "https://drive.google.com/thumbnail?id=1gH5p3rZfst7cUuKCqUAXVVkqFqP2U6Iv&sz=w400",
          "carrera": "⚡ " + T("Ingeniería Electrónica", "Electronic Engineering"),
          "color": "#0284C7", "fondo": "#E0F2FE",
          "chips": [(T("🔍 Análisis de Datos & Criminología", "🔍 Data Analysis & Criminology"), "datos"),
                    (T("🎨 Ilustración & Diseño Visual", "🎨 Illustration & Visual Design"), "arte"),
                    (T("⚙️ Lógica de Sistemas & Algoritmos", "⚙️ Systems Logic & Algorithms"), "datos")]},
         {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩",
-         "foto": "https://drive.google.com/uc?export=view&id=1G0ZYZNv6PpH-G0gEJRX8kR5d0Ifprb0L",
+         "foto": "https://drive.google.com/thumbnail?id=1G0ZYZNv6PpH-G0gEJRX8kR5d0Ifprb0L&sz=w400",
          "carrera": "🏛️ " + T("Arquitectura & Diseño Visual", "Architecture & Visual Design"),
          "color": "#EA580C", "fondo": "#FFEDD5",
          "chips": [(T("🖌️ Artes Plásticas & Expresión Gráfica", "🖌️ Fine Arts & Graphic Expression"), "arte"),
                    (T("🥗 Gastronomía Nutricional", "🥗 Nutritional Gastronomy"), "salud"),
                    (T("🎧 Apreciación Musical", "🎧 Music Appreciation"), "arte")]},
         {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩",
-         "foto": "https://drive.google.com/uc?export=view&id=1n26bUzBz90miAL7myg5FB3X2P8Rsm1Dh",
+         "foto": "https://drive.google.com/thumbnail?id=1n26bUzBz90miAL7myg5FB3X2P8Rsm1Dh&sz=w400",
          "carrera": "🔬 " + T("Biología & Ciencias de la Salud", "Biology & Health Sciences"),
          "color": "#059669", "fondo": "#D1FAE5",
          "chips": [(T("🎮 Lógica Estratégica & Gamificación", "🎮 Strategic Logic & Gamification"), "datos"),
@@ -13403,7 +13403,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
             st.markdown(f"""
             <div class="success-card">
                 <div class="success-header">
-                    <img class="success-photo" src="https://drive.google.com/uc?export=view&id=1LuwJzS4zROgBGV6uecTPfMOLV1ogTWRJ"
+                    <img class="success-photo" src="https://drive.google.com/thumbnail?id=1LuwJzS4zROgBGV6uecTPfMOLV1ogTWRJ&sz=w400"
                          alt="{caso['nombre']}" onerror="this.style.display='none';" />
                     <div>
                         <div class="success-name">{caso['nombre'].upper()}</div>
@@ -13458,7 +13458,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     st.write("")
     st.markdown(f"""
     <div class="decorative-photo-wrap">
-    <img class="decorative-photo" src="https://drive.google.com/uc?export=view&id=1YeWVUTcCz_alMj36XHcG0MfeEdqHHFC4"
+    <img class="decorative-photo" src="https://drive.google.com/thumbnail?id=1YeWVUTcCz_alMj36XHcG0MfeEdqHHFC4&sz=w800"
          alt="{T('Equipo CIAM&SUNI', 'CIAM&SUNI Team')}" onerror="this.parentElement.style.display='none';" />
     </div>
     """, unsafe_allow_html=True)
