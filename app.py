@@ -7275,7 +7275,7 @@ else:
     ajuste_subir = 0.0
 
 # --- Signos vitales (Bloque 3, persistente) ---
-spo2 = st.session_state["spo2"]
+spo2 = st.session_state.get("spo2") or 0.0
 pulso = st.session_state["pulso"]
 temp_corp = st.session_state["temp_corp"]
 pas = st.session_state["pas"]
