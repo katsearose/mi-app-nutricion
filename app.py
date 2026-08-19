@@ -13152,10 +13152,11 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     }
     .team-card:hover::after { transform: scaleX(1); }
     .team-avatar {
-        width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 2.1rem; margin: 0 auto 12px auto; background: #FFFFFF; border: 2px solid var(--tc-color);
-        transition: transform 0.35s ease;
+        width: 78px; height: 78px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 12px auto; background: #FFFFFF; border: 3px solid var(--tc-color);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.10); overflow: hidden; transition: transform 0.35s ease;
     }
+    .team-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
     .team-card:hover .team-avatar { transform: rotate(-8deg) scale(1.08); }
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
@@ -13240,18 +13241,22 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     _idioma_equipo = st.session_state.get("idioma", "Español") == "English"
     EQUIPO = [
         {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩",
+         "foto": "https://drive.google.com/uc?export=view&id=1HwL-UyQ6RSmIyBsid1JlkM_TXr0325d1",
          "icono_rol": "🧠 " + T("Psicología", "Psychology"), "rol": "Psicología",
          "color": "#F9A825", "fondo": "#FFF8E1",
          "chips": [T("🎵 Tocar instrumentos", "🎵 Playing instruments")]},
         {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩",
+         "foto": "https://drive.google.com/uc?export=view&id=1gH5p3rZfst7cUuKCqUAXVVkqFqP2U6Iv",
          "icono_rol": "⚡ " + T("Ingeniería Electrónica", "Electronic Engineering"), "rol": "Ingeniería Electrónica",
          "color": "#E91E8C", "fondo": "#FCE4EC",
          "chips": [T("🕵️ Criminología", "🕵️ Criminology"), T("🎨 Dibujo", "🎨 Drawing")]},
         {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩",
+         "foto": "https://drive.google.com/uc?export=view&id=1G0ZYZNv6PpH-G0gEJRX8kR5d0Ifprb0L",
          "icono_rol": "🏛️ " + T("Arquitectura", "Architecture"), "rol": "Arquitectura",
          "color": "#8E6FCE", "fondo": "#EDE7F6",
          "chips": [T("🎨 Dibujar", "🎨 Drawing"), T("🍳 Cocinar", "🍳 Cooking"), T("🎵 Música", "🎵 Music")]},
         {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩",
+         "foto": "https://drive.google.com/uc?export=view&id=1n26bUzBz90miAL7myg5FB3X2P8Rsm1Dh",
          "icono_rol": "🧬 " + T("Biología", "Biology"), "rol": "Biología",
          "color": "#29B6F6", "fondo": "#E1F5FE",
          "chips": [T("🎮 Videojuegos", "🎮 Video games"), T("🎬 Terror", "🎬 Horror")]},
@@ -13262,7 +13267,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
             _chips_html = "".join(f'<span class="team-chip">{ch}</span>' for ch in miembro["chips"])
             st.markdown(f"""
             <div class="team-card" style="--tc-color:{miembro['color']};--tc-bg:{miembro['fondo']};">
-                <div class="team-avatar">{miembro['avatar']}</div>
+                <div class="team-avatar"><img src="{miembro['foto']}" alt="{miembro['nombre']}" onerror="this.parentElement.innerHTML='{miembro['avatar']}';this.parentElement.style.fontSize='2.1rem';" /></div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
                 <div class="team-icon-role">{T("Integrante CIAM&amp;SUNI", "CIAM&amp;SUNI Member")}</div>
                 <div class="team-badge">{miembro['icono_rol']}</div>
