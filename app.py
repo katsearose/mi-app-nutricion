@@ -13161,17 +13161,21 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
     .team-badge-carrera {
-        display: inline-flex; align-items: center; gap: 6px; background: var(--tc-color); color: #FFFFFF;
+        display: inline-flex; align-items: center; gap: 6px; background: var(--tc-badge); color: #FFFFFF !important;
         font-weight: 800; font-size: 0.76rem; padding: 7px 14px; border-radius: 999px; margin-bottom: 12px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.18);
     }
     .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
     .team-chip {
-        background: #FFFFFF; color: var(--tc-color); font-weight: 700; font-size: 0.72rem;
+        font-weight: 700; font-size: 0.72rem;
         padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06);
     }
+    .team-chip-salud   { background: #D1FAE5; color: #047857; }
+    .team-chip-datos   { background: #DBEAFE; color: #1D4ED8; }
+    .team-chip-arte    { background: #EDE9FE; color: #6D28D9; }
+    .team-chip-social   { background: #FCE7F3; color: #BE185D; }
     .about-hero-card {
         border-radius: 24px; padding: 22px 24px; text-align: center; background: #FFFFFF;
         border: 1.5px solid rgba(0,0,0,0.05); box-shadow: 0 4px 14px rgba(0,0,0,0.06); height: 100%;
@@ -13185,25 +13189,34 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         margin-bottom: 20px; box-shadow: 0 10px 26px rgba(11,77,168,0.20); color: #FFFFFF; text-align: center;
     }
     .success-card {
-        border-radius: 22px; padding: 22px; background: #FFFFFF; border: 1.5px solid rgba(0,0,0,0.06);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.07); height: 100%;
+        border-radius: 22px; padding: 22px; background: #F0FDF4; border: 1.5px solid rgba(0,0,0,0.06);
+        border-left: 6px solid #10B981; box-shadow: 0 6px 18px rgba(0,0,0,0.07); height: 100%;
     }
-    .success-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .success-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
     .success-photo {
         width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
-        border: 3px solid var(--sc-color, #34C759); box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        border: 3px solid #10B981; box-shadow: 0 3px 8px rgba(0,0,0,0.12);
     }
     .success-name { font-weight: 900; color: #17301F; font-size: 1.0rem; line-height: 1.25; }
     .success-meta { font-size: 0.74rem; color: #6B6B70; font-weight: 600; line-height: 1.5; }
-    .success-metric {
-        font-weight: 900; color: var(--sc-color, #34C759); font-size: 0.92rem; margin-bottom: 8px;
-        border-left: 3px solid var(--sc-color, #34C759); padding-left: 10px;
+    .success-achievements { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .success-ach-oro {
+        background: #FEF3C7; color: #92400E; border: 1px solid #F59E0B; font-weight: 800; font-size: 0.72rem;
+        padding: 5px 11px; border-radius: 999px;
+    }
+    .success-ach-seleccion {
+        background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; font-weight: 800; font-size: 0.72rem;
+        padding: 5px 11px; border-radius: 999px;
+    }
+    .success-ach-disciplina {
+        background: #E0F2FE; color: #0369A1; border: 1px solid #7DD3FC; font-weight: 800; font-size: 0.72rem;
+        padding: 5px 11px; border-radius: 999px;
     }
     .success-quote { font-size: 0.86rem; color: #3C3C43; line-height: 1.6; font-style: italic; margin-bottom: 12px; }
     .success-tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .success-tag {
-        background: rgba(0,0,0,0.04); color: #3C3C43; font-weight: 700; font-size: 0.7rem;
-        padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06);
+        background: rgba(16,185,129,0.10); color: #047857; font-weight: 700; font-size: 0.7rem;
+        padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(16,185,129,0.25);
     }
     .research-card {
         border-radius: 22px; padding: 24px 28px; background: #F7F8F9; border: 1.5px solid rgba(0,0,0,0.08);
@@ -13273,38 +13286,40 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         {"nombre": "Diana Carolina Cháves Cobián", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1HwL-UyQ6RSmIyBsid1JlkM_TXr0325d1",
          "carrera": "🧠 " + T("Psicología & Bienestar Humano", "Psychology & Human Wellbeing"),
-         "color": "#F9A825", "fondo": "#FFF8E1",
-         "chips": [T("🎵 Expresión Artística & Ejecución Musical", "🎵 Artistic Expression & Music Performance"),
-                   T("💬 Comunicación Interpersonal", "💬 Interpersonal Communication"),
-                   T("🌱 Desarrollo Humano", "🌱 Human Development")]},
+         "color": "#7C3AED", "fondo": "#FCE7F3",
+         "chips": [(T("🎵 Expresión Artística & Ejecución Musical", "🎵 Artistic Expression & Music Performance"), "arte"),
+                   (T("💬 Comunicación Interpersonal", "💬 Interpersonal Communication"), "social"),
+                   (T("🌱 Desarrollo Humano", "🌱 Human Development"), "salud")]},
         {"nombre": "Kathia Lizbeth Paz Gonzales", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1gH5p3rZfst7cUuKCqUAXVVkqFqP2U6Iv",
          "carrera": "⚡ " + T("Ingeniería Electrónica", "Electronic Engineering"),
-         "color": "#E91E8C", "fondo": "#FCE4EC",
-         "chips": [T("🔍 Análisis de Datos & Criminología", "🔍 Data Analysis & Criminology"),
-                   T("🎨 Ilustración & Diseño Visual", "🎨 Illustration & Visual Design"),
-                   T("⚙️ Lógica de Sistemas & Algoritmos", "⚙️ Systems Logic & Algorithms")]},
+         "color": "#0284C7", "fondo": "#E0F2FE",
+         "chips": [(T("🔍 Análisis de Datos & Criminología", "🔍 Data Analysis & Criminology"), "datos"),
+                   (T("🎨 Ilustración & Diseño Visual", "🎨 Illustration & Visual Design"), "arte"),
+                   (T("⚙️ Lógica de Sistemas & Algoritmos", "⚙️ Systems Logic & Algorithms"), "datos")]},
         {"nombre": "Sofía Alejandra Suarez Zulueta", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1G0ZYZNv6PpH-G0gEJRX8kR5d0Ifprb0L",
          "carrera": "🏛️ " + T("Arquitectura & Diseño Visual", "Architecture & Visual Design"),
-         "color": "#8E6FCE", "fondo": "#EDE7F6",
-         "chips": [T("🖌️ Artes Plásticas & Expresión Gráfica", "🖌️ Fine Arts & Graphic Expression"),
-                   T("🥗 Gastronomía Nutricional", "🥗 Nutritional Gastronomy"),
-                   T("🎧 Apreciación Musical", "🎧 Music Appreciation")]},
+         "color": "#EA580C", "fondo": "#FFEDD5",
+         "chips": [(T("🖌️ Artes Plásticas & Expresión Gráfica", "🖌️ Fine Arts & Graphic Expression"), "arte"),
+                   (T("🥗 Gastronomía Nutricional", "🥗 Nutritional Gastronomy"), "salud"),
+                   (T("🎧 Apreciación Musical", "🎧 Music Appreciation"), "arte")]},
         {"nombre": "Ariana Itamar Farro Díaz", "avatar": "👩",
          "foto": "https://drive.google.com/uc?export=view&id=1n26bUzBz90miAL7myg5FB3X2P8Rsm1Dh",
          "carrera": "🔬 " + T("Biología & Ciencias de la Salud", "Biology & Health Sciences"),
-         "color": "#29B6F6", "fondo": "#E1F5FE",
-         "chips": [T("🎮 Lógica Estratégica & Gamificación", "🎮 Strategic Logic & Gamification"),
-                   T("📖 Análisis Narrativo & Literatura de Suspenso", "📖 Narrative Analysis & Suspense Literature"),
-                   T("🧬 Investigación Científica", "🧬 Scientific Research")]},
+         "color": "#059669", "fondo": "#D1FAE5",
+         "chips": [(T("🎮 Lógica Estratégica & Gamificación", "🎮 Strategic Logic & Gamification"), "datos"),
+                   (T("📖 Análisis Narrativo & Literatura de Suspenso", "📖 Narrative Analysis & Suspense Literature"), "arte"),
+                   (T("🧬 Investigación Científica", "🧬 Scientific Research"), "salud")]},
     ]
     cols_equipo = st.columns(len(EQUIPO))
     for c, miembro in zip(cols_equipo, EQUIPO):
         with c:
-            _chips_html = "".join(f'<span class="team-chip">{ch}</span>' for ch in miembro["chips"])
+            _chips_html = "".join(
+                f'<span class="team-chip team-chip-{cat}">{ch}</span>' for ch, cat in miembro["chips"]
+            )
             st.markdown(f"""
-            <div class="team-card" style="--tc-color:{miembro['color']};--tc-bg:{miembro['fondo']};">
+            <div class="team-card" style="--tc-color:{miembro['color']};--tc-badge:{miembro['color']};--tc-bg:{miembro['fondo']};">
                 <div class="team-avatar"><img src="{miembro['foto']}" alt="{miembro['nombre']}" onerror="this.parentElement.innerHTML='{miembro['avatar']}';this.parentElement.style.fontSize='2.1rem';" /></div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
                 <div class="team-icon-role">{T('5° &quot;C&quot; - Secundaria', '5th Grade &quot;C&quot; - Secondary')}</div>
@@ -13349,12 +13364,13 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
 
     CASOS_EXITO = [
         {"nombre": "Daniela Verona", "color": "#34C759",
-         "categoria": T("Deportista de Alto Rendimiento | Selección Peruana 🇵🇪",
-                        "High-Performance Athlete | Peruvian National Team 🇵🇪"),
-         "segmento": T("🥇 Campeona Sudamericana (x2) · 🥇 Campeona Latinoamericana · 🏄 Natación & Waveski-Surf",
-                       "🥇 South American Champion (x2) · 🥇 Latin American Champion · 🏄 Swimming & Waveski-Surf"),
-         "metrica": T("⏱️ Redujo su tiempo de planificación nutricional en más del 70%",
-                     "⏱️ Cut her nutritional-planning time by over 70%"),
+         "categoria": T("Deportista de Alto Rendimiento", "High-Performance Athlete"),
+         "logros": [
+             (T("🥇 Campeona Sudamericana (x2)", "🥇 South American Champion (x2)"), "oro"),
+             (T("🥇 Campeona Latinoamericana", "🥇 Latin American Champion"), "oro"),
+             (T("🇵🇪 Selección Peruana", "🇵🇪 Peruvian National Team"), "seleccion"),
+             (T("🏄 Natación & Waveski-Surf", "🏄 Swimming & Waveski-Surf"), "disciplina"),
+         ],
          "testimonio": T(
              "Como deportista multidisciplinaria de alto rendimiento, gestionar mis tiempos, alimentación y "
              "entrenamiento al mismo tiempo que mis actividades diarias solía ser un reto complejo. Esta "
@@ -13372,16 +13388,16 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         with c:
             _tags_html = "".join(f'<span class="success-tag">🏷️ {tg}</span>' for tg in caso["tags"])
             st.markdown(f"""
-            <div class="success-card" style="--sc-color:{caso['color']};">
+            <div class="success-card">
                 <div class="success-header">
                     <img class="success-photo" src="https://drive.google.com/uc?export=view&id=1YeWVUTcCz_alMj36XHcG0MfeEdqHHFC4"
                          alt="{caso['nombre']}" onerror="this.style.display='none';" />
                     <div>
                         <div class="success-name">{caso['nombre'].upper()}</div>
-                        <div class="success-meta">{caso['categoria']}<br>{caso['segmento']}</div>
+                        <div class="success-meta">{caso['categoria']}</div>
                     </div>
                 </div>
-                <div class="success-metric">{caso['metrica']}</div>
+                <div class="success-achievements">{"".join(f'<span class="success-ach-{cat}">{lg}</span>' for lg, cat in caso["logros"])}</div>
                 <div class="success-quote">"{caso['testimonio']}"</div>
                 <div class="success-tags">{_tags_html}</div>
             </div>
