@@ -13197,8 +13197,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     <style>
     .team-card {
         position: relative; border-radius: 24px; padding: 26px 20px 20px 20px; text-align: center;
-        background: var(--tc-bg); border: 1.5px solid rgba(0,0,0,0.05);
-        border-top: 6px solid var(--tc-color);
+        border: 1.5px solid rgba(0,0,0,0.05);
         box-shadow: 0 4px 14px rgba(0,0,0,0.06);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         overflow: hidden; height: 100%;
@@ -13206,22 +13205,25 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     .team-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.14); }
     .team-avatar {
         width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 14px auto; background: #FFFFFF; border: 4px solid var(--tc-color);
+        margin: 0 auto 14px auto; background: #FFFFFF;
         box-shadow: 0 6px 14px rgba(0,0,0,0.14); overflow: hidden; transition: transform 0.35s ease;
     }
     .team-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
     .team-card:hover .team-avatar { transform: rotate(-6deg) scale(1.06); }
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
-    .team-badge-carrera, div.team-badge-carrera {
+    .team-badge-carrera, div.team-badge-carrera, span.team-badge-carrera {
         display: inline-flex !important; align-items: center; gap: 8px;
-        color: #FFFFFF !important; font-weight: 900 !important; font-size: 1.02rem !important; line-height: 1.3;
+        font-weight: 900 !important; font-size: 1.05rem !important; line-height: 1.3;
         padding: 12px 20px; border-radius: 999px; margin: 4px 0 16px 0;
         box-shadow: 0 8px 18px rgba(0,0,0,0.32), 0 2px 6px rgba(0,0,0,0.18);
         text-shadow: 0 1px 3px rgba(0,0,0,0.30); letter-spacing: 0.01em;
         border: 2px solid rgba(255,255,255,0.55);
     }
-    .team-badge-carrera *, div.team-badge-carrera * { color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
+    .team-badge-carrera, .team-badge-carrera *,
+    div.team-badge-carrera, div.team-badge-carrera * {
+        color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; opacity: 1 !important;
+    }
     .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
@@ -13399,11 +13401,11 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
                 f'<span class="team-chip team-chip-{cat}">{ch}</span>' for ch, cat in miembro["chips"]
             )
             st.markdown(f"""
-            <div class="team-card" style="--tc-color:{miembro['color']};--tc-badge:{miembro['color']};--tc-bg:{miembro['fondo']};">
-                <div class="team-avatar"><img src="{miembro['foto']}" alt="{miembro['nombre']}" onerror="this.parentElement.innerHTML='{miembro['avatar']}';this.parentElement.style.fontSize='2.1rem';" /></div>
+            <div class="team-card" style="background-color:{miembro['fondo']};background:{miembro['fondo']};border-top:6px solid {miembro['color']};">
+                <div class="team-avatar" style="border:4px solid {miembro['color']};"><img src="{miembro['foto']}" alt="{miembro['nombre']}" onerror="this.parentElement.innerHTML='{miembro['avatar']}';this.parentElement.style.fontSize='2.1rem';" /></div>
                 <div class="team-name">{miembro['nombre'].upper()}</div>
                 <div class="team-icon-role">{T('5° &quot;C&quot; - Secundaria', '5th Grade &quot;C&quot; - Secondary')}</div>
-                <div class="team-badge-carrera" style="background-color:{miembro['color']} !important;background:{miembro['color']} !important;color:#FFFFFF !important;">🎓 {miembro['carrera']}</div>
+                <div class="team-badge-carrera" style="background-color:{miembro['color']};background:{miembro['color']};color:#FFFFFF;"><span style="color:#FFFFFF;">🎓 {miembro['carrera']}</span></div>
                 <div class="team-chips-label">✨ {T("Áreas de Enfoque &amp; Competencias", "Focus Areas &amp; Skills")}</div>
                 <div class="team-chips">{_chips_html}</div>
             </div>
@@ -13420,7 +13422,7 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     st.write("")
 
     # ===== Casos de Éxito y Validación de Usuarios (Prueba Social Criteriada) =====
-    caja_titulo(T("🏅 Casos de Éxito y Validación de Usuarios", "🏅 Success Cases & User Validation"), 13)
+    caja_titulo(T("🏅 Validación de Usuarios", "🏅 User Validation"), 13)
     st.markdown(f"""
     <p style="color:#5C6B60;font-size:0.9rem;margin:-6px 0 16px 0;">
     {T("Conoce la experiencia de jóvenes atletas que optimizan su rendimiento con nuestra metodología.",
