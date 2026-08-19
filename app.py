@@ -7292,7 +7292,7 @@ hierro = st.session_state.get("hierro") or 0.0
 # CÁLCULOS CENTRALES (siguiendo el orden y las referencias EXACTAS de las hojas del Excel)
 # =========================================================================================
 estatura_m = estatura / 100.0
-imc = round(peso / (estatura_m ** 2))  # =REDONDEAR(D30/F30) -> 0 decimales, igual que el Excel
+imc = round(peso / (estatura_m ** 2)) if estatura_m > 0 else 0  # =REDONDEAR(D30/F30) -> 0 decimales, igual que el Excel
 
 _imc_previo_obesidad = (round(peso / ((estatura / 100.0) ** 2)) >= 30) if (estatura and peso) else False
 
