@@ -13138,33 +13138,29 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
     st.markdown("""
     <style>
     .team-card {
-        position: relative; border-radius: 24px; padding: 24px 20px 20px 20px; text-align: center;
-        background: var(--tc-bg); border: 1.5px solid var(--tc-color);
+        position: relative; border-radius: 24px; padding: 26px 20px 20px 20px; text-align: center;
+        background: var(--tc-bg); border: 1.5px solid rgba(0,0,0,0.05);
+        border-top: 6px solid var(--tc-color);
         box-shadow: 0 4px 14px rgba(0,0,0,0.06);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         overflow: hidden; height: 100%;
     }
     .team-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.14); }
-    .team-card::after {
-        content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
-        background: var(--tc-color); transform: scaleX(0); transform-origin: left;
-        transition: transform 0.3s ease;
-    }
-    .team-card:hover::after { transform: scaleX(1); }
     .team-avatar {
-        width: 78px; height: 78px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 12px auto; background: #FFFFFF; border: 3px solid var(--tc-color);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.10); overflow: hidden; transition: transform 0.35s ease;
+        width: 116px; height: 116px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 14px auto; background: #FFFFFF; border: 4px solid var(--tc-color);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.14); overflow: hidden; transition: transform 0.35s ease;
     }
     .team-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-    .team-card:hover .team-avatar { transform: rotate(-8deg) scale(1.08); }
+    .team-card:hover .team-avatar { transform: rotate(-6deg) scale(1.06); }
     .team-name { font-weight: 900; letter-spacing: 0.01em; color: #17301F; font-size: 1.0rem; margin-bottom: 2px; }
     .team-icon-role { font-size: 0.72rem; color: #8A94A6; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
     .team-badge-carrera {
-        display: inline-flex; align-items: center; gap: 6px; background: var(--tc-badge); color: #FFFFFF !important;
-        font-weight: 800; font-size: 0.76rem; padding: 7px 14px; border-radius: 999px; margin-bottom: 12px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+        display: inline-flex; align-items: center; gap: 6px; background-color: var(--tc-badge) !important;
+        color: #FFFFFF !important; font-weight: 800; font-size: 0.78rem; padding: 8px 16px; border-radius: 999px;
+        margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.22); text-shadow: 0 1px 1px rgba(0,0,0,0.15);
     }
+    .team-badge-carrera * { color: #FFFFFF !important; }
     .team-chips-label { font-size: 0.68rem; font-weight: 800; color: #6B6B70; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 6px; }
     .team-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
@@ -13192,10 +13188,11 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         border-radius: 22px; padding: 22px; background: #F0FDF4; border: 1.5px solid rgba(0,0,0,0.06);
         border-left: 6px solid #10B981; box-shadow: 0 6px 18px rgba(0,0,0,0.07); height: 100%;
     }
-    .success-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .success-header { display: flex; align-items: center; gap: 18px; margin-bottom: 14px; }
     .success-photo {
-        width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
-        border: 3px solid #10B981; box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        width: 116px; height: 116px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+        border: 4px solid #10B981; outline: 3px solid #FBBF24; outline-offset: 3px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.18);
     }
     .success-name { font-weight: 900; color: #17301F; font-size: 1.0rem; line-height: 1.25; }
     .success-meta { font-size: 0.74rem; color: #6B6B70; font-weight: 600; line-height: 1.5; }
@@ -13212,6 +13209,15 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
         background: #E0F2FE; color: #0369A1; border: 1px solid #7DD3FC; font-weight: 800; font-size: 0.72rem;
         padding: 5px 11px; border-radius: 999px;
     }
+    .method-banner {
+        border-radius: 22px; padding: 22px 26px; margin-bottom: 18px;
+        background: linear-gradient(120deg,#E0F2FE 0%,#DCFCE7 100%); border: 1.5px solid rgba(0,0,0,0.05);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06); position: relative;
+    }
+    .method-banner .mb-title { font-weight: 900; color: #0C4A6E; font-size: 0.95rem; text-transform: uppercase;
+        letter-spacing: 0.03em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .method-banner .mb-quote { font-size: 0.92rem; color: #1F2937; line-height: 1.65; font-style: italic;
+        position: relative; padding-left: 18px; border-left: 4px solid #10B981; }
     .success-quote { font-size: 0.86rem; color: #3C3C43; line-height: 1.6; font-style: italic; margin-bottom: 12px; }
     .success-tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .success-tag {
@@ -13360,20 +13366,24 @@ elif hoja_activa == "🎓 SOBRE NOSOTRAS":
        "Meet the young athletes who optimize their performance with our methodology.")}</p>
     """, unsafe_allow_html=True)
 
-    with st.expander(T("🏛️ ¿Por qué validamos con deportistas de alto rendimiento?",
-                        "🏛️ Why did we validate with high-performance athletes?")):
-        st.markdown(T(
-            "Para validar la viabilidad y la aplicabilidad de la propuesta en el segmento joven/estudiantil, "
-            "realizamos un piloto de usabilidad con perfiles de alto requerimiento físico y disciplina. Si la "
-            "estructura nutricional y la guía son funcionales para deportistas de rendimiento representativo "
-            "(nacional e internacional), garantizamos un estándar de calidad alto y replicable para cualquier "
-            "estudiante que busque mejorar su salud.",
-            "To validate the feasibility and applicability of the proposal for the young/student segment, we "
-            "ran a usability pilot with profiles of high physical demand and discipline. If the nutritional "
-            "structure and guidance work for representative high-performance athletes (national and "
-            "international), we guarantee a high, replicable quality standard for any student seeking to "
-            "improve their health."
-        ))
+    st.markdown(f"""
+    <div class="method-banner">
+    <div class="mb-title">🏛️ {T("¿Por qué validamos con deportistas de alto rendimiento?",
+                                  "Why did we validate with high-performance athletes?")}</div>
+    <div class="mb-quote">"{T(
+        "Para validar la viabilidad y la aplicabilidad de la propuesta en el segmento joven/estudiantil, "
+        "realizamos un piloto de usabilidad con perfiles de alto requerimiento físico y disciplina. Si la "
+        "estructura nutricional y la guía son funcionales para deportistas de rendimiento representativo "
+        "(nacional e internacional), garantizamos un estándar de calidad alto y replicable para cualquier "
+        "estudiante que busque mejorar su salud.",
+        "To validate the feasibility and applicability of the proposal for the young/student segment, we "
+        "ran a usability pilot with profiles of high physical demand and discipline. If the nutritional "
+        "structure and guidance work for representative high-performance athletes (national and "
+        "international), we guarantee a high, replicable quality standard for any student seeking to "
+        "improve their health."
+    )}"</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     CASOS_EXITO = [
         {"nombre": "Daniela Verona", "color": "#34C759",
