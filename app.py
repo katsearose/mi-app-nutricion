@@ -6786,8 +6786,8 @@ def _panel_llenar_datos():
                                         value=None, step=1, key="estatura",
                                         help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
         with b1c6:
-            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(110, edad_max_actual),
-                                    value=None, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
+            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=2, max_value=min(110, edad_max_actual),
+                                    value=None, step=1, key="edad", help=T("Rango válido: 2 a 110 años.", "Valid range: 2 to 110 years."))
     else:
         b1c3, b1c4, b1c5 = st.columns(3)
         with b1c3:
@@ -6799,8 +6799,8 @@ def _panel_llenar_datos():
                                         value=None, step=1, key="estatura",
                                         help=T("Rango válido: 50 a 250 cm.", "Valid range: 50 to 250 cm."))
         with b1c5:
-            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=1, max_value=min(110, edad_max_actual),
-                                    value=None, step=1, key="edad", help=T("Rango válido: 1 a 110 años.", "Valid range: 1 to 110 years."))
+            edad = st.number_input(T("Edad (años):", "Age (years):"), min_value=2, max_value=min(110, edad_max_actual),
+                                    value=None, step=1, key="edad", help=T("Rango válido: 2 a 110 años.", "Valid range: 2 to 110 years."))
     if edad is not None:
         etapa = etapa_desde_edad(edad)
         st.info(T(f"🔎 Etapa detectada automáticamente: **{etapa}**",
@@ -6936,11 +6936,13 @@ def _panel_llenar_datos():
                          "The detected profile shows Obesity. For clinical safety, the weight-gain feature is "
                          "disabled. A supervised recomposition or caloric-deficit plan is recommended."))
         elif 0 < _imc_obj_sidebar < 18.5:
-            _obj_opciones_sidebar = ["Subir de peso", "Mantenerse"]
-            st.warning(T("El perfil detectado presenta Bajo Peso. Por seguridad clínica, la función de reducción "
-                         "calórica se encuentra deshabilitada. Se sugiere un superávit normocalórico progresivo.",
-                         "The detected profile shows Underweight. For clinical safety, the calorie-reduction "
-                         "feature is disabled. A progressive normocaloric surplus is suggested."))
+            _obj_opciones_sidebar = ["Subir de peso"]
+            st.warning(T("El perfil detectado presenta Bajo Peso. Por seguridad clínica, las funciones de reducción "
+                         "calórica y mantenimiento se encuentran deshabilitadas. Tu único objetivo disponible es "
+                         "subir de peso; puedes elegir el ritmo/plazo con el que deseas lograrlo.",
+                         "The detected profile shows Underweight. For clinical safety, the calorie-reduction and "
+                         "maintenance features are disabled. Your only available goal is to gain weight; you can "
+                         "still choose the pace/timeframe to achieve it."))
         if st.session_state.get("objetivo") not in _obj_opciones_sidebar:
             st.session_state["objetivo"] = _obj_opciones_sidebar[0]
         objetivo = st.selectbox(T("🎯 ¿Cuál es tu objetivo principal?", "🎯 What's your main goal?"),
@@ -7222,33 +7224,6 @@ for _hoja_nav in OPCIONES_HOJAS:
         on_click=_ir_a_hoja,
         args=(_hoja_nav,),
     )
-
-st.sidebar.markdown("---")
-
-st.sidebar.markdown(f"""
-<div style="border-radius:20px;padding:18px 16px;margin:4px 0 14px 0;position:relative;overflow:hidden;
-            background:linear-gradient(135deg,#7B2FF7 0%,#F72585 55%,#FF9E42 100%);
-            box-shadow:0 10px 26px rgba(123,47,247,0.35);">
-    <div style="display:inline-block;background:rgba(255,255,255,0.22);color:#FFFFFF;font-size:0.62rem;
-                font-weight:900;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;
-                border-radius:999px;margin-bottom:8px;">
-        {T("Divulgación Científica", "Scientific Outreach")}
-    </div>
-    <div style="color:#FFFFFF;font-weight:900;font-size:1.0rem;line-height:1.3;margin-bottom:4px;">
-        📲 {T("¡Únete a la Comunidad CIAM &amp; SUNI!", "Join the CIAM &amp; SUNI Community!")}
-    </div>
-    <div style="color:#FFFFFF;opacity:0.94;font-size:0.78rem;line-height:1.45;margin-bottom:12px;">
-        {T("Recetas, tips de nutrición y el detrás de escena del proyecto.",
-           "Recipes, nutrition tips and the behind-the-scenes of the project.")}
-    </div>
-    <a href="https://www.instagram.com/ciamsuninutricix/" target="_blank" style="text-decoration:none;">
-        <div style="background:#FFFFFF;color:#7B2FF7;font-weight:900;font-size:0.82rem;text-align:center;
-                    padding:9px 12px;border-radius:999px;box-shadow:0 4px 10px rgba(0,0,0,0.15);">
-            👉 @ciamsuninutricix
-        </div>
-    </a>
-</div>
-""", unsafe_allow_html=True)
 
 st.sidebar.markdown("---")
 
