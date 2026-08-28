@@ -2636,12 +2636,12 @@ def generar_pdf_reporte(datos):
         if _pas <= 0 or _pad <= 0: return _vt("Sin datos"), "gris"
         if _embarazada_vitales_pdf and (_pas >= 140 or _pad >= 90):
             return _vt("Sospecha de Preeclampsia"), "rojo"
-        if _pas < 90 or _pad < 60: return _vt("Baja / Hipotensión"), "ambar"
-        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return _vt("Normal / Óptima"), "verde"
-        if 120 <= _pas <= 129 and _pad < 80: return _vt("Elevado"), "ambar"
         if _pas > 180 or _pad > 120: return _vt("Emergencia Hipertensiva"), "rojo"
-        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return _vt("Hipertensión Estadio 2"), "rojo"
-        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return _vt("Hipertensión Estadio 1"), "rojo"
+        if _pas >= 140 or _pad >= 90: return _vt("Hipertensión Estadio 2"), "rojo"
+        if (130 <= _pas <= 139) or (85 <= _pad <= 89): return _vt("Hipertensión Estadio 1"), "rojo"
+        if (121 <= _pas <= 129) or (81 <= _pad <= 84): return _vt("Elevado"), "ambar"
+        if 90 <= _pas <= 120 and 60 <= _pad <= 80: return _vt("Normal / Óptima"), "verde"
+        if _pas < 90 or _pad < 60: return _vt("Baja / Hipotensión"), "ambar"
         return _vt("Normal / Óptima"), "verde"
 
     def _clasif_spo2_pdf(_s):
@@ -7062,12 +7062,12 @@ def _panel_llenar_datos():
                          f'⚠️ {T("Valor fuera de rango clínico. Por favor verifica tus datos", "Value outside clinical range. Please check your data")}</p>', unsafe_allow_html=True)
         elif pad >= pas:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                         f'⚠️ {T("La presión diastólica debe ser menor que la sistólica. Verifica el valor ingresado.", "Diastolic pressure must be lower than systolic. Please check the entered value.")}</p>', unsafe_allow_html=True)
-        elif (pas - pad) < 20:
+                         f'⚠️ {T("La presión sistólica (primer número) siempre debe ser mayor que la diastólica por al menos 30 mmHg. Verifica el valor ingresado.", "Systolic pressure (first number) must always be higher than diastolic by at least 30 mmHg. Please check the entered value.")}</p>', unsafe_allow_html=True)
+        elif (pas - pad) < 25:
             st.markdown(f'<p style="color:#C0392B;font-weight:700;font-size:0.78rem;">'
-                         f'⚠️ {T("La presión sistólica debe ser mayor que la diastólica (diferencia mínima de 20 mmHg). Verifica el valor ingresado.", "Systolic pressure must be higher than diastolic (minimum 20 mmHg difference). Please check the entered value.")}</p>', unsafe_allow_html=True)
+                         f'⚠️ {T("La presión sistólica debe ser mayor que la diastólica (diferencia mínima recomendada de 25 mmHg). Verifica el valor ingresado.", "Systolic pressure must be higher than diastolic (minimum recommended difference of 25 mmHg). Please check the entered value.")}</p>', unsafe_allow_html=True)
         else:
-            _c = "verde" if (90 <= pas <= 119 and 60 <= pad <= 79) else "ambar"
+            _c = "verde" if (90 <= pas <= 120 and 60 <= pad <= 80) else "ambar"
             _badge_vital(f"{pas}/{pad}", "", _c, T("Normal", "Normal") if _c == "verde" else T("Atención", "Alert"))
 
     # ===== Motor de Validación Fisiológica Cruzada =====
@@ -7075,9 +7075,12 @@ def _panel_llenar_datos():
         _adv = []
         if _sys > 0 and _dia > 0:
             _pp = _sys - _dia
-            if 0 < _pp < 15:
+            if 0 < _pp < 25:
                 _adv.append(T(f"Presión de pulso inusualmente estrecha ({_pp} mmHg, óptimo 30–50 mmHg). Verifica las cifras de presión sistólica y diastólica.",
                                f"Unusually narrow pulse pressure ({_pp} mmHg, optimal 30–50 mmHg). Please check the systolic and diastolic figures."))
+            elif _pp > 60:
+                _adv.append(T(f"Presión de pulso inusualmente amplia ({_pp} mmHg), lo que puede indicar rigidez arterial. Verifica las cifras de presión sistólica y diastólica.",
+                               f"Unusually wide pulse pressure ({_pp} mmHg), which may indicate arterial stiffness. Please check the systolic and diastolic figures."))
         if _spo2 > 0 and _spo2 < 75.0:
             _adv.append(T("La saturación ingresada (<75%) es críticamente baja. Confirma que no sea un error de tipeo.",
                            "The entered saturation (<75%) is critically low. Confirm this is not a typing error."))
@@ -7887,12 +7890,12 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
         if _pas < 50 or _pas > 300 or _pad < 30 or _pad > 200: return _ctf("Valor no válido"), "gris"
         if embarazada and (_pas >= 140 or _pad >= 90):
             return _ctf("Sospecha de Preeclampsia"), "rojo"
-        if _pas < 90 or _pad < 60: return _ctf("Baja / Hipotensión"), "ambar"
-        if 90 <= _pas <= 119 and 60 <= _pad <= 79: return _ctf("Normal / Óptima"), "verde"
-        if 120 <= _pas <= 129 and _pad < 80: return _ctf("Elevado"), "ambar"
         if _pas > 180 or _pad > 120: return _ctf("Emergencia Hipertensiva"), "rojo"
-        if 140 <= _pas <= 180 or 90 <= _pad <= 120: return _ctf("Hipertensión Estadio 2"), "rojo"
-        if 130 <= _pas <= 139 or 80 <= _pad <= 89: return _ctf("Hipertensión Estadio 1"), "rojo"
+        if _pas >= 140 or _pad >= 90: return _ctf("Hipertensión Estadio 2"), "rojo"
+        if (130 <= _pas <= 139) or (85 <= _pad <= 89): return _ctf("Hipertensión Estadio 1"), "rojo"
+        if (121 <= _pas <= 129) or (81 <= _pad <= 84): return _ctf("Elevado"), "ambar"
+        if 90 <= _pas <= 120 and 60 <= _pad <= 80: return _ctf("Normal / Óptima"), "verde"
+        if _pas < 90 or _pad < 60: return _ctf("Baja / Hipotensión"), "ambar"
         return _ctf("Normal / Óptima"), "verde"
 
     def _clasif_spo2(_s):
@@ -8431,26 +8434,26 @@ elif hoja_activa == "1B.-ESTADO FISIOLÓGICO":
 
     _idx_pa_activa = None
     if pas > 0 and pad > 0 and not _pa_rango_invalido:
-        if pas < 90 or pad < 60:
-            _idx_pa_activa = 0   # Baja / Hipotensión
-        elif 90 <= pas <= 119 and 60 <= pad <= 79:
-            _idx_pa_activa = 1   # Normal / Óptima
-        elif 120 <= pas <= 129 and pad < 80:
-            _idx_pa_activa = 2   # Elevado
-        elif pas > 180 or pad > 120:
+        if pas > 180 or pad > 120:
             _idx_pa_activa = 5   # Hipertensión Severa / Emergencia Hipertensiva
-        elif 140 <= pas <= 180 or 90 <= pad <= 120:
+        elif pas >= 140 or pad >= 90:
             _idx_pa_activa = 4   # Hipertensión Estadio 2
-        elif 130 <= pas <= 139 or 80 <= pad <= 89:
+        elif (130 <= pas <= 139) or (85 <= pad <= 89):
             _idx_pa_activa = 3   # Hipertensión Estadio 1
+        elif (121 <= pas <= 129) or (81 <= pad <= 84):
+            _idx_pa_activa = 2   # Elevado
+        elif 90 <= pas <= 120 and 60 <= pad <= 80:
+            _idx_pa_activa = 1   # Normal / Óptima
+        elif pas < 90 or pad < 60:
+            _idx_pa_activa = 0   # Baja / Hipotensión
         else:
             _idx_pa_activa = 1
 
     _pa_filas_data = [
         ([T("Baja / Hipotensión", "Low / Hypotension"), "&lt; 90", T("o", "or"), "&lt; 60"], "azul"),
-        ([T("Normal / Óptima", "Normal / Optimal"), "90 – 119", T("y", "and"), "60 – 79"], "verde"),
-        ([T("Elevado", "Elevated"), "120 – 129", T("y", "and"), "&lt; 80"], "amarillo"),
-        ([T("Hipertensión Estadio 1", "Hypertension Stage 1"), "130 – 139", T("o", "or"), "80 – 89"], "naranja"),
+        ([T("Normal / Óptima", "Normal / Optimal"), "90 – 120", T("y", "and"), "60 – 80"], "verde"),
+        ([T("Elevada / Normal-Alta", "Elevated / High-Normal"), "121 – 129", T("y/o", "and/or"), "81 – 84"], "amarillo"),
+        ([T("Hipertensión Estadio 1", "Hypertension Stage 1"), "130 – 139", T("o", "or"), "85 – 89"], "naranja"),
         ([T("Hipertensión Estadio 2", "Hypertension Stage 2"), "≥ 140", T("o", "or"), "≥ 90"], "rojo"),
         ([T("Emergencia Hipertensiva", "Hypertensive Emergency"), "&gt; 180", T("y/o", "and/or"), "&gt; 120"], "purpura"),
     ]
